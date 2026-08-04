@@ -1,0 +1,683 @@
+<!-- AUTHOR: Mustard -->
+<!-- DATE: 29/07/2026 -->
+
+<!-- ============================================================================ -->
+<!-- ==========  SCRIPT LEVEL DESIGN DOCUMENT (SLDD) — INSTRUCTIONS   ========== -->
+<!-- ============================================================================ -->
+
+This is the guide for the SLDD (SCRIPT LEVEL DESIGN DOCUMENT).
+
+An SLDD lays down the script and event flow for a single level. Its purpose is to
+describe events sequentially, in a form that can be cleanly divided and
+categorised, so that it can later be analysed and translated into strategies,
+tasks and assets through an agentic approach — with the goal of speeding up
+development.
+
+This way of describing a level works well for developers who take a cinematic or
+screenplay-centred approach to storytelling and gameplay design.
+
+It works best with linear or semi-linear level design, but it can be applied to
+other design philosophies as long as the gameplay follows a flow of events and
+actions.
+
+Every SLDD has two sections: DEFINITIONS and LEVEL SCRIPT.
+
+  DEFINITIONS   A preliminary section that identifies and contextualises the
+                script lines that follow.
+
+  LEVEL SCRIPT  The script lines of the level. Each line carries an ID and a
+                structure that defines and describes one event in the game.
+
+This guide documents the sections, definitions and nomenclature of the SLDD. At
+the end you will find an empty SLDD template ready to copy.
+
+Each SLDD is a .txt file named after the level it represents (L##).
+Example: L01.txt
+
+
+<!-- ============================================================================ -->
+<!-- ==========                   PARSING RULES                      ========== -->
+<!-- ============================================================================ -->
+
+These rules exist so that a script can be read reliably by automation. Breaking
+them will not break the document for a human reader, but it will break the
+tooling.
+
+  1.  Fields are separated by a double pipe:  ||
+      Surrounding whitespace is trimmed, so lines may be aligned freely for
+      readability.
+
+  2.  A parameter value MUST NOT contain the double pipe (||). If a line of
+      dialogue needs it, rewrite the line.
+
+  3.  Each parameter is written as  Key: Value  and is split on the FIRST colon
+      only. Values may therefore contain colons freely.
+      Example:  Line: She said: "get up."     -> Key = "Line", Value = 'She said: "get up."'
+
+  4.  Parameter ORDER IS FIXED per event type, exactly as listed in the EVENT
+      PARAMETERS section. Do not reorder and do not omit. An unused parameter is
+      written as N/A, never deleted.
+
+  5.  One event per line. A script line never wraps onto a second line.
+
+  6.  Event IDs are unique within a file and increase sequentially. Never reuse
+      an ID; if an event is cut, retire its number rather than renumbering the
+      file, so that external references stay valid.
+
+  7.  Comments are ignored by automation. See the COMMENTS section.
+
+  8.  Boolean parameters use a single character: T (true) or F (false).
+
+  9.  Durations and times are in seconds, written as a decimal (1.0, 0.25, 12.5).
+
+  10. The DEFINITIONS and LEVEL SCRIPT banner lines delimit the two sections and
+      MUST be present and unmodified.
+
+
+<!-- ============================================================================ -->
+<!-- ==========                      ID CARD                         ========== -->
+<!-- ============================================================================ -->
+
+The ID CARD is the first block of the DEFINITIONS section. It carries the
+identifying information for the level script: the name of the game, the author of
+the file, the date the file was created, the level number, the name of the level,
+and an optional short comment.
+
+Dates use the format DD/MM/YYYY.
+
+Example:
+
+###ID CARD:
+Game: MR. MOONLIGHT
+Author: Mustard
+Date: 29/07/2026
+Level Number: 1
+Level Name: Day 1. Muddy
+Special comment: This is the vertical slice demo version of level 1.
+
+
+<!-- ============================================================================ -->
+<!-- ==========                     CHARACTERS                       ========== -->
+<!-- ============================================================================ -->
+
+The CHARACTERS block is part of the DEFINITIONS section. It declares the
+characters present in the level and assigns each one an abbreviation used to
+identify them in the script lines.
+
+Example:
+
+###CHARACTERS:
+T = Tracey
+R = Rylee
+H = Holly
+S = Scott
+V = Vernon
+
+
+<!-- ============================================================================ -->
+<!-- ==========                       ENEMIES                        ========== -->
+<!-- ============================================================================ -->
+
+The ENEMIES block is part of the DEFINITIONS section. It declares the enemies and
+monsters present in the level and assigns each one an abbreviation used to
+identify them in the script lines.
+
+Example:
+
+###ENEMIES:
+E-W = Wolf
+E-S = Cultist Spotter
+E-Z = Cultist Zealot
+E-F = Furman
+
+
+<!-- ============================================================================ -->
+<!-- ==========                EVENT SCRIPT FORMAT                   ========== -->
+<!-- ============================================================================ -->
+
+The LEVEL SCRIPT section is composed of script lines. Each line describes one
+event or action that happens, or needs to happen, in the game. Every line follows
+the same structure and is identified by an event ID, an event type, and that
+type's parameters. All fields are separated by a double pipe (||).
+
+Nomenclature:
+
+  Event ID          EID
+  Event Type        ET
+  Event Parameters  EP
+
+Event ID composition:
+
+  L##     Level number, taken from the level number of the file
+  E-###   Event number, increasing sequentially by 1
+
+Event ID syntax:
+
+  L##E-###
+
+Event ID examples:
+
+  L01E-022
+  L03E-135
+  L07E-007
+
+Script line syntax:
+
+  EID || ET || EP
+
+Where EP is that event type's fixed list of parameters, each also separated by a
+double pipe. The full form is therefore:
+
+  EID || ET || Key: Value || Key: Value || Key: Value
+
+
+<!-- ============================================================================ -->
+<!-- ==========                     EVENT TYPES                      ========== -->
+<!-- ============================================================================ -->
+
+The table below lists every event type that may appear in a script line. It gives
+the full name, the short name used in the script lines, and what that event does
+in the game.
+
+Some event types carry a variable character in their name, used to distinguish
+them by character, enemy, objective number or boolean state:
+
+  @   Replaced by a character or enemy abbreviation declared in DEFINITIONS.
+  #   Replaced by the objective number within this level. The first objective of
+      every level is always number 1.
+  B   Replaced by a boolean: T (true) or F (false).
+
+-------------------------------------------------------------------------------------------------
+EVENT TYPE           | SHORT   | DESCRIPTION
+-------------------------------------------------------------------------------------------------
+PLAYER ACTION        | PA      | An action performed by the player that is required for the main
+                     |         | flow of the level. Some player actions can trigger their own
+                     |         | branch of events, such as secondary objectives.
+                     |         |
+SYSTEM ACTION        | SA      | A change in the game triggered by the system rather than the
+                     |         | player. It may have consequences for gameplay, UI, player
+                     |         | interaction and more. Like player actions, some system actions
+                     |         | can trigger their own branch of events.
+                     |         |
+DIALOGUE:@           | D:@     | A line of spoken dialogue, audible in game, delivered by a
+                     |         | character. Shown in the UI as a subtitle line, in the style of
+                     |         | the subtitles in Silent Hill 1.
+                     |         |
+THOUGHT:@            | T:@     | A line of inner dialogue, with no audio in game, belonging to a
+                     |         | character. Shown in the UI as a subtitle line, in the same style.
+                     |         |
+HAND ANIMATION       | HA      | Triggers an animation on the first-person POV rig. This covers
+                     |         | the entire visible player body except the head, which is the
+                     |         | camera.
+                     |         |
+WORLD ANIMATION      | WA      | Triggers an animation on one or more game objects in the scene.
+                     |         | Usually for elements surrounding the player and within their
+                     |         | field of view.
+                     |         |
+CHARACTER ANIMATION  | CA:@    | Triggers an animation on a specific character, meaning any
+                     |         | character other than the first-person player.
+                     |         |
+ENEMY ANIMATION      | EA:@    | Triggers an animation on a specific enemy.
+                     |         |
+CAMERA BLOCK:B       | CB:B    | Locks or unlocks player camera control. Used mainly for visual
+                     |         | storytelling or to force focus during gameplay. Every occurrence
+                     |         | must carry the opposite boolean value to the previous CAMERA
+                     |         | BLOCK in the file, so that control is always returned. The first
+                     |         | occurrence in a file is assumed to invert the level's starting
+                     |         | state.
+                     |         |
+MOVEMENT BLOCK:B     | MB:B    | Locks or unlocks player movement control. Used mainly for visual
+                     |         | storytelling or to force focus during gameplay. The same
+                     |         | alternation rule as CAMERA BLOCK applies.
+                     |         |
+CUTSCENE             | C       | A cutscene that unfolds for the player: a succession of
+                     |         | animations, effects and other events. The cutscene line outlines
+                     |         | the sequence as a whole. It is normally paired with camera and
+                     |         | movement blocks for storytelling purposes.
+                     |         |
+VFX:User Interface   | VFX:UI  | A visual effect applied to the player UI.
+                     |         |
+VFX:Player View      | VFX:PV  | A visual effect applied to the player camera. It may be a
+                     |         | localised effect or a full-screen shader.
+                     |         |
+SFX                  | SFX     | A sound effect or environmental audio cue.
+                     |         |
+PLAYER EFFECT        | PFX     | An effect applied to the player, usually preceded by a SYSTEM
+                     |         | ACTION line. These effects alter gameplay or player stats, such
+                     |         | as draining stamina or slowing movement.
+                     |         |
+SYSTEM MESSAGE       | SM      | A message from the system indicating an interaction, a tutorial
+                     |         | or a pickup. It is neither spoken nor thought by a character.
+                     |         | Shown in the UI as a subtitle line, in the same style.
+                     |         |
+OBJECTIVE:#:START    | O:#:S   | Creates an objective, which is added to the pause menu.
+                     |         |
+OBJECTIVE:#:UPDATE   | O:#:U   | Updates the description of an existing objective, referenced by
+                     |         | its number.
+                     |         |
+OBJECTIVE:#:END      | O:#:E   | Completes and removes an objective, referenced by its number.
+-------------------------------------------------------------------------------------------------
+
+
+<!-- ============================================================================ -->
+<!-- ==========                  EVENT PARAMETERS                    ========== -->
+<!-- ============================================================================ -->
+
+Every event type takes a fixed list of parameters. In the script line these are
+separated by double pipes (||), like the other fields.
+
+Each parameter is created carrying the placeholder value N/A. If a parameter is
+not used by a given event, leave N/A in place. Never delete a parameter and never
+change the order.
+
+Some parameters have a default other than N/A. Where that is the case, the
+default is stated in the parameter description and should be written into the
+line when it is created.
+
+Each entry below shows the blank line as it should first be written, followed by
+a description of every parameter.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### PA — PLAYER ACTION
+
+L##E-### || PA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+
+  Name          Short label for the action. Doubles as the task and asset name
+                downstream, so keep it to a few words.
+  Description   What the player does, written from the player's side.
+  Trigger       The input or condition that performs it: interact, look at, walk
+                into, hold, press.
+  Target        The object, character or volume the action is performed on.
+  Requires      Items, states or unlocked systems the player must already have
+                for this action to be possible. N/A if unconditional.
+  Blocking      T or F. Whether the level flow halts until this action is
+                performed. Default F.
+  Branch        The event ID range this action opens if it starts its own branch,
+                such as a secondary objective. N/A if it does not.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### SA — SYSTEM ACTION
+
+L##E-### || SA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+
+  Name          Short label for the system action.
+  Description   What changes in the game, and what the player perceives of it.
+  Trigger       What causes it to fire: completion of a previous event, entering
+                a trigger volume, a timer, an objective state change.
+  Target        The system, object or actor being changed.
+  Condition     Any prerequisite that must hold for it to fire. N/A if
+                unconditional.
+  Blocking      T or F. Whether the level flow halts until this resolves.
+                Default F.
+  Branch        The event ID range this action opens if it starts its own branch.
+                N/A if it does not.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### D:@ — DIALOGUE
+
+L##E-### || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+
+  Line            The text that composes this dialogue.
+  Tone            A description of the emotional or vocal delivery of the line:
+                  angry, fast paced, slow, confused, and so on.
+  Color           The colour the text is shown in. Default white.
+  Display Method  How the line appears in the UI. Immediate: the text appears at
+                  once with no transition. Typewriter: the line unfolds slowly,
+                  character by character.
+  Lipsync         T or F. When the display method is Typewriter, indicates
+                  whether the words should unfold in sync with the audio file, so
+                  that they appear karaoke-style as the character speaks them,
+                  for better immersion. Note that this parameter implies a
+                  substantial feature — word-by-word syncing against audio files
+                  — and is recorded here as a statement of intent. Default F.
+  Aftertime       Time in seconds the line remains on screen. Default 1.0.
+  Text effect     Any effect applied to the displayed text, of the kind used in
+                  visual novels, such as shake.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### T:@ — THOUGHT
+
+L##E-### || T:@ || Line: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+
+  Line            The text that composes this inner dialogue.
+  Color           The colour the text is shown in. Default white.
+  Display Method  How the line appears in the UI. Immediate or Typewriter, as
+                  described under DIALOGUE.
+  Aftertime       Time in seconds the line remains on screen. Default 1.0.
+  Text effect     Any effect applied to the displayed text, such as shake.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### HA — HAND ANIMATION
+
+L##E-### || HA || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+
+  Name             Short label for the animation. Becomes the clip name in the
+                   project, so keep it consistent across the file.
+  Description      What the arms and hands do, and what the player sees of it.
+  Clip             The animation clip identifier in the project, once it exists.
+                   N/A while the clip is still unauthored.
+  Duration         Length in seconds. An estimate is acceptable during drafting.
+  Loop             T or F. Whether the clip loops until stopped. Default F.
+  Blend            How the clip combines with what is already playing: override,
+                   additive, or the name of the layer it plays on.
+  Animation Event  A frame or moment at which gameplay must fire, described in
+                   words. For example: the frame the pickaxe connects, the frame
+                   the item leaves the hand. N/A if the clip is purely cosmetic.
+  Interruptible    T or F. Whether player input can cut the animation short.
+                   Default T.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### WA — WORLD ANIMATION
+
+L##E-### || WA || Name: N/A || Description: N/A || Target: N/A || Clip: N/A || Duration: N/A || Loop: F || Animation Event: N/A || Trigger: N/A
+
+  Name             Short label for the animation.
+  Description      What moves in the scene, and what the player sees of it.
+  Target           The game object or objects animated. List several separated by
+                   commas if the animation is shared.
+  Clip             The animation clip identifier in the project. N/A while
+                   unauthored.
+  Duration         Length in seconds.
+  Loop             T or F. Whether the clip loops until stopped. Default F.
+  Animation Event  A frame or moment at which gameplay must fire, described in
+                   words. For example: the frame a door becomes passable.
+  Trigger          What starts the animation: proximity, line of sight, a
+                   previous event, or a timer.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### CA:@ — CHARACTER ANIMATION
+
+L##E-### || CA:@ || Name: N/A || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+
+  Name             Short label for the animation.
+  Description      What the character does, and what the player sees of it.
+  Character        The character abbreviation, matching the one in the event type
+                   and declared in DEFINITIONS.
+  Clip             The animation clip identifier in the project. N/A while
+                   unauthored.
+  Duration         Length in seconds.
+  Loop             T or F. Whether the clip loops until stopped. Default F.
+  Blend            How the clip combines with what is already playing: override,
+                   additive, or the layer it plays on.
+  Root Motion      T or F. Whether the clip moves the character through the
+                   world, as opposed to animating in place. Default F.
+  Animation Event  A frame or moment at which gameplay must fire, described in
+                   words.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### EA:@ — ENEMY ANIMATION
+
+L##E-### || EA:@ || Name: N/A || Description: N/A || Enemy: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
+
+  Name             Short label for the animation.
+  Description      What the enemy does, and what the player sees of it.
+  Enemy            The enemy abbreviation, matching the one in the event type and
+                   declared in DEFINITIONS.
+  Clip             The animation clip identifier in the project. N/A while
+                   unauthored.
+  Duration         Length in seconds.
+  Loop             T or F. Whether the clip loops until stopped. Default F.
+  State            The behaviour state this animation belongs to: idle, perceive,
+                   pursue, attack, recover, lose target, die. This ties the clip
+                   to the enemy's state machine.
+  Root Motion      T or F. Whether the clip moves the enemy through the world.
+                   Default F.
+  Animation Event  A frame or moment at which gameplay must fire, described in
+                   words. For example: the frame a bite lands.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### CB:B — CAMERA BLOCK
+
+L##E-### || CB:B || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+
+  Name          Short label for the block, so it can be referred to elsewhere.
+  Reason        Why camera control is being taken or returned. This is the
+                design intent, not the implementation.
+  Look Target   Where the camera is forced to point while blocked. N/A when
+                unblocking, or when the camera simply holds its current heading.
+  Release       What returns control: an event ID, a duration in seconds, or a
+                condition. N/A on the unblocking line itself.
+  Transition    How control is taken or handed back: instant, ease in, ease out,
+                with a duration in seconds where relevant.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### MB:B — MOVEMENT BLOCK
+
+L##E-### || MB:B || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+
+  Name          Short label for the block, so it can be referred to elsewhere.
+  Reason        Why movement control is being taken or returned.
+  Release       What returns control: an event ID, a duration in seconds, or a
+                condition. N/A on the unblocking line itself.
+  Transition    How control is taken or handed back: instant, decelerate, with a
+                duration in seconds where relevant.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### C — CUTSCENE
+
+L##E-### || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+
+  Name          Short label for the cutscene.
+  Description   The sequence as a whole, in a few sentences. Detail belongs to
+                the individual event lines it contains.
+  Sequence      The event ID range the cutscene comprises, written as a span.
+                For example: L01E-045 to L01E-052.
+  Duration      Total length in seconds. An estimate is acceptable during
+                drafting.
+  Skippable     T or F. Whether the player can skip it. Default F.
+  Camera Mode   How the camera behaves: first person held, forced look, scripted
+                path, fixed.
+  Blocking      T or F. Whether the level flow halts until it completes.
+                Default T.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### VFX:UI — VISUAL EFFECT, USER INTERFACE
+
+L##E-### || VFX:UI || Name: N/A || Description: N/A || Execution: N/A
+
+  Name          The name of the UI visual effect.
+  Description   What this effect does to the UI HUD elements.
+  Execution     Any notes or peculiarities of this particular occurrence — speed,
+                intensity, and similar parameters of its execution.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### VFX:PV — VISUAL EFFECT, PLAYER VIEW
+
+L##E-### || VFX:PV || Name: N/A || Description: N/A || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+
+  Name          The name of the player view visual effect.
+  Description   What this effect does to the player camera, and what the player
+                perceives.
+  Execution     Any notes or peculiarities of this particular occurrence.
+  Duration      Length in seconds. Use N/A for an effect that persists until
+                cleared by a later event.
+  Intensity     Strength of the effect, described in words or as a value, so that
+                repeated uses of the same effect can be compared.
+  Layer         Whether it is a localised effect or a full-screen shader, and
+                where it sits relative to other active effects.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### SFX — SOUND EFFECT
+
+L##E-### || SFX || Name: N/A || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+
+  Name          Short label for the sound.
+  Description   What is heard, and what it tells the player. Sound carries
+                information in this game, so state what the player should learn
+                from it.
+  Audio         The audio file identifier in the project. N/A while unauthored.
+  Source        Where it plays from: 2D, meaning non-diegetic and unpositioned;
+                or 3D, followed by the object or position it is attached to.
+  Volume        Relative level, described in words or as a value.
+  Loop          T or F. Whether the sound loops until stopped. Default F.
+  Fade          Fade in and out behaviour, with durations in seconds where
+                relevant.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### PFX — PLAYER EFFECT
+
+L##E-### || PFX || Name: N/A || Description: N/A || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+
+  Name          Short label for the effect.
+  Description   What happens to the player and how it feels to play.
+  Stat          The player stat or system affected: health, stamina, movement
+                speed, fear, hallucination, inventory capacity.
+  Magnitude     How much it changes, as a value or a proportion, and in which
+                direction.
+  Duration      Length in seconds. Use N/A for a permanent change or one cleared
+                by a later event.
+  Stacking      T or F. Whether a second application adds to the first or
+                replaces it. Default F.
+  Curve         How the effect applies over its duration: instant, ramp in,
+                decay, pulse.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### SM — SYSTEM MESSAGE
+
+L##E-### || SM || Line: N/A || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+
+  Line            The text of the message.
+  Category        What kind of message it is: interaction, tutorial, pickup,
+                  warning. This allows messages to be filtered or styled
+                  consistently as a group.
+  Color           The colour the text is shown in. Default white.
+  Display Method  How the line appears in the UI. Immediate or Typewriter, as
+                  described under DIALOGUE.
+  Aftertime       Time in seconds the line remains on screen. Default 1.0.
+  Text effect     Any effect applied to the displayed text, such as shake.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### O:#:S — OBJECTIVE START
+
+L##E-### || O:#:S || Title: N/A || Description: N/A || Optional: F || Marker: N/A
+
+  Title         The objective text as it appears in the pause menu. Keep it in
+                the player character's voice, as it is her own note to herself.
+  Description   Any longer explanation for the developer. This is design intent
+                and is not necessarily shown to the player.
+  Optional      T or F. Whether the level can be completed without it.
+                Default F.
+  Marker        Whether the objective places a marker on the map or compass, and
+                where. N/A if it places none.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### O:#:U — OBJECTIVE UPDATE
+
+L##E-### || O:#:U || Title: N/A || Description: N/A || Reason: N/A
+
+  Title         The new objective text replacing the previous one.
+  Description   Any longer explanation for the developer.
+  Reason        What in the fiction caused the objective to change. This keeps
+                the update traceable to the event that motivated it.
+
+
+<!-- ---------------------------------------------------------------------------- -->
+### O:#:E — OBJECTIVE END
+
+L##E-### || O:#:E || Title: N/A || Result: N/A || Consequence: N/A
+
+  Title         The objective text at the moment it closes, for reference. This
+                must match the most recent title, whether from the START line or
+                from the last UPDATE.
+  Result        How it closed: completed, failed, abandoned.
+  Consequence   What the closure changes: an item gained, a system unlocked, a
+                new objective opened. N/A if nothing follows.
+
+
+<!-- ============================================================================ -->
+<!-- ==========                       COMMENTS                       ========== -->
+<!-- ============================================================================ -->
+
+An SLDD may contain comments. Comments are ignored by automation and exist purely
+for the developer reading the file. They use HTML comment syntax, which makes them
+cleanly detachable from the script.
+
+Example:
+
+<!-- Write your comments here -->
+
+A comment may occupy its own line, or several consecutive lines. Do not place a
+comment on the same line as a script line, as the parser reads one event per line.
+
+Note that the DEFINITIONS and LEVEL SCRIPT banner lines are NOT comments. They
+delimit the two sections of the document and must remain in place.
+
+
+<!-- ============================================================================ -->
+<!-- ==========                   TEMPLATE SLDD                      ========== -->
+<!-- ============================================================================ -->
+
+Copy everything between the two banner lines below into a new file named after the
+level, for example L01.txt. Fill in the DEFINITIONS placeholders, then delete the
+event lines you do not need and duplicate the ones you do.
+
+The LEVEL SCRIPT below contains one blank line of every event type, in the order
+they appear in the EVENT TYPES table, numbered sequentially. Renumber them as you
+build the real script.
+
+
+============================        DEFINITIONS         ===================================================
+
+###ID CARD:
+Game: N/A
+Author: N/A
+Date: DD/MM/YYYY
+Level Number: N/A
+Level Name: N/A
+Special comment: N/A
+
+###CHARACTERS:
+A = N/A
+B = N/A
+C = N/A
+
+###ENEMIES:
+E-A = N/A
+E-B = N/A
+E-C = N/A
+
+============================    END OF DEFINITIONS      ===================================================
+
+============================        LEVEL SCRIPT        ===================================================
+
+L01E-001 || PA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-002 || SA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-003 || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-004 || T:@ || Line: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-005 || HA || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-006 || WA || Name: N/A || Description: N/A || Target: N/A || Clip: N/A || Duration: N/A || Loop: F || Animation Event: N/A || Trigger: N/A
+L01E-007 || CA:@ || Name: N/A || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-008 || EA:@ || Name: N/A || Description: N/A || Enemy: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
+L01E-009 || CB:T || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+L01E-010 || MB:T || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+L01E-011 || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L01E-012 || VFX:UI || Name: N/A || Description: N/A || Execution: N/A
+L01E-013 || VFX:PV || Name: N/A || Description: N/A || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-014 || SFX || Name: N/A || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-015 || PFX || Name: N/A || Description: N/A || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-016 || SM || Line: N/A || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-017 || O:1:S || Title: N/A || Description: N/A || Optional: F || Marker: N/A
+L01E-018 || O:1:U || Title: N/A || Description: N/A || Reason: N/A
+L01E-019 || O:1:E || Title: N/A || Result: N/A || Consequence: N/A
+L01E-020 || MB:F || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+L01E-021 || CB:F || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+
+============================    END OF LEVEL SCRIPT     ===================================================
