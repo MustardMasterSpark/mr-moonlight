@@ -1,0 +1,204 @@
+# =============================================================================
+#  MR. MOONLIGHT — .gitattributes
+#  Place at the project root, next to Assets/ Packages/ ProjectSettings/
+#
+#  ORDER MATTERS. Git applies the LAST pattern that matches a file.
+#  The binary .asset exceptions MUST stay below the generic .asset rule.
+#
+#  CORE RULE: a file is either LFS-binary OR YAML-merged. NEVER both.
+#  Combining `filter=lfs` with `merge=unityyamlmerge` on the same file is the
+#  documented cause of corrupted TerrainData and LightingData assets.
+# =============================================================================
+
+
+# =============================================================================
+#  1. DEFAULT
+# =============================================================================
+* text=auto
+
+
+# =============================================================================
+#  2. TEXT FILES
+# =============================================================================
+*.cs        text diff=csharp
+*.shader    text
+*.shadergraph text
+*.hlsl      text
+*.cginc     text
+*.compute   text
+*.asmdef    text
+*.asmref    text
+*.json      text
+*.md        text
+*.txt       text
+*.uxml      text
+*.uss       text
+*.yml       text
+*.yaml      text
+*.xml       text
+*.csv       text
+*.gitattributes text
+.gitignore  text
+
+
+# =============================================================================
+#  3. UNITY YAML — SMART MERGE
+#  Unity's own SmartMerge documentation scopes this tool to .unity and .prefab.
+#  The wider lists circulating online are the source of the corruption reports.
+#  This list stays deliberately conservative.
+# =============================================================================
+*.unity              merge=unityyamlmerge eol=lf
+*.prefab             merge=unityyamlmerge eol=lf
+
+
+# =============================================================================
+#  4. UNITY YAML — TEXT, NO MERGE DRIVER
+#  Normalised to LF and diffable, but resolved by hand on conflict. For a solo
+#  developer, conflicts here are rare and a manual resolution is safer than a
+#  merge driver that can silently mangle the file.
+# =============================================================================
+*.mat                eol=lf
+*.anim               eol=lf
+*.controller         eol=lf
+*.overrideController eol=lf
+*.physicMaterial     eol=lf
+*.physicsMaterial2D  eol=lf
+*.mask               eol=lf
+*.playable           eol=lf
+*.signal             eol=lf
+*.terrainlayer       eol=lf
+*.renderTexture      eol=lf
+*.spriteatlas        eol=lf
+*.guiskin            eol=lf
+*.flare              eol=lf
+*.fontsettings       eol=lf
+*.mixer              eol=lf
+*.lighting           eol=lf
+*.inputactions       eol=lf
+*.asset              eol=lf
+*.meta               eol=lf
+
+
+# =============================================================================
+#  5. BINARY .asset EXCEPTIONS  <<< MUST STAY BELOW SECTION 4 >>>
+#  These file types keep binary payloads inside a .asset wrapper even under
+#  Force Text serialization. Treating them as text corrupts them.
+#  LFS only. No merge driver. No eol.
+# =============================================================================
+*_[Tt]errain.asset       filter=lfs diff=lfs merge=lfs -text
+*[Tt]errain[Dd]ata.asset filter=lfs diff=lfs merge=lfs -text
+LightingData.asset       filter=lfs diff=lfs merge=lfs -text
+NavMesh.asset            filter=lfs diff=lfs merge=lfs -text
+*[Nn]av[Mm]esh[Dd]ata.asset filter=lfs diff=lfs merge=lfs -text
+
+# NOTE: the terrain rules above are currently INERT — .gitignore excludes
+# terrain assets during the sculpting phase. They are staged here so that
+# deleting the .gitignore block is the only step needed to start tracking
+# terrain correctly. Do not remove them.
+
+
+# =============================================================================
+#  6. LFS — 3D
+# =============================================================================
+*.fbx    filter=lfs diff=lfs merge=lfs -text
+*.FBX    filter=lfs diff=lfs merge=lfs -text
+*.obj    filter=lfs diff=lfs merge=lfs -text
+*.blend  filter=lfs diff=lfs merge=lfs -text
+*.dae    filter=lfs diff=lfs merge=lfs -text
+*.3ds    filter=lfs diff=lfs merge=lfs -text
+*.ma     filter=lfs diff=lfs merge=lfs -text
+*.mb     filter=lfs diff=lfs merge=lfs -text
+*.max    filter=lfs diff=lfs merge=lfs -text
+*.lxo    filter=lfs diff=lfs merge=lfs -text
+*.c4d    filter=lfs diff=lfs merge=lfs -text
+*.abc    filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  7. LFS — IMAGES
+# =============================================================================
+*.png    filter=lfs diff=lfs merge=lfs -text
+*.PNG    filter=lfs diff=lfs merge=lfs -text
+*.jpg    filter=lfs diff=lfs merge=lfs -text
+*.jpeg   filter=lfs diff=lfs merge=lfs -text
+*.gif    filter=lfs diff=lfs merge=lfs -text
+*.bmp    filter=lfs diff=lfs merge=lfs -text
+*.tga    filter=lfs diff=lfs merge=lfs -text
+*.tif    filter=lfs diff=lfs merge=lfs -text
+*.tiff   filter=lfs diff=lfs merge=lfs -text
+*.iff    filter=lfs diff=lfs merge=lfs -text
+*.pict   filter=lfs diff=lfs merge=lfs -text
+*.psd    filter=lfs diff=lfs merge=lfs -text
+*.psb    filter=lfs diff=lfs merge=lfs -text
+*.ai     filter=lfs diff=lfs merge=lfs -text
+*.exr    filter=lfs diff=lfs merge=lfs -text
+*.hdr    filter=lfs diff=lfs merge=lfs -text
+*.pdf    filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  8. LFS — AUDIO
+# =============================================================================
+*.wav    filter=lfs diff=lfs merge=lfs -text
+*.mp3    filter=lfs diff=lfs merge=lfs -text
+*.ogg    filter=lfs diff=lfs merge=lfs -text
+*.aif    filter=lfs diff=lfs merge=lfs -text
+*.aiff   filter=lfs diff=lfs merge=lfs -text
+*.flac   filter=lfs diff=lfs merge=lfs -text
+*.rns    filter=lfs diff=lfs merge=lfs -text
+*.reason filter=lfs diff=lfs merge=lfs -text
+*.flp    filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  9. LFS — VIDEO
+# =============================================================================
+*.mp4    filter=lfs diff=lfs merge=lfs -text
+*.mov    filter=lfs diff=lfs merge=lfs -text
+*.webm   filter=lfs diff=lfs merge=lfs -text
+*.avi    filter=lfs diff=lfs merge=lfs -text
+*.mpg    filter=lfs diff=lfs merge=lfs -text
+*.mpeg   filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  10. LFS — FONTS
+# =============================================================================
+*.ttf    filter=lfs diff=lfs merge=lfs -text
+*.otf    filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  11. LFS — BINARIES AND ARCHIVES
+# =============================================================================
+*.dll    filter=lfs diff=lfs merge=lfs -text
+*.so     filter=lfs diff=lfs merge=lfs -text
+*.dylib  filter=lfs diff=lfs merge=lfs -text
+*.a      filter=lfs diff=lfs merge=lfs -text
+*.aar    filter=lfs diff=lfs merge=lfs -text
+*.jar    filter=lfs diff=lfs merge=lfs -text
+*.bundle filter=lfs diff=lfs merge=lfs -text
+*.zip    filter=lfs diff=lfs merge=lfs -text
+*.7z     filter=lfs diff=lfs merge=lfs -text
+*.rar    filter=lfs diff=lfs merge=lfs -text
+*.gz     filter=lfs diff=lfs merge=lfs -text
+
+# NOTE: *.unitypackage is NOT listed here. It is ignored in .gitignore instead.
+# Asset Store packages are re-downloadable; committing them doubles the LFS
+# footprint for no benefit. Some templates LFS-track it — don't.
+
+
+# =============================================================================
+#  12. HEIGHTMAP EXPORTS
+#  Small (~2 MB) partial backups of terrain shape while TerrainData is excluded.
+# =============================================================================
+*.raw    filter=lfs diff=lfs merge=lfs -text
+*.r16    filter=lfs diff=lfs merge=lfs -text
+
+
+# =============================================================================
+#  13. DIFF SUPPRESSION
+#  Keeps generated files out of diffs and out of GitHub language statistics.
+# =============================================================================
+Packages/packages-lock.json linguist-generated=true
+Assets/ThirdParty/**        linguist-vendored=true
