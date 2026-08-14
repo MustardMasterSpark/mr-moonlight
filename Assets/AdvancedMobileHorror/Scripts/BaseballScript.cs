@@ -8,6 +8,10 @@ namespace AdvancedHorrorFPS
     {
         public static BaseballScript Instance;
         public int Damage = 40;
+        // GDD v0.2 sec 7.1: "swings that drain stamina" (unconditional on landing) /
+        // sec 7.2 melee holds a "stamina cost" stat, but no amount or curve is specified.
+        // Placeholder value pending design pass.
+        public float StaminaCostPerSwing = 15f;
         public bool isHitting = false;
         public bool isGrabbed = false;
 
@@ -44,6 +48,7 @@ namespace AdvancedHorrorFPS
             if (isHitting) return;
             if (InventoryManager.Instance.isInventoryOpened) return;
             isHitting = true;
+            HeroPlayerScript.Instance.firstPersonController.DrainStamina(StaminaCostPerSwing);
             //Firing Animation
             HeroPlayerScript.Instance.Hand_Baseball.GetComponent<Animation>().Play("Hitting");
             StartCoroutine(ReleaseHit(1.5f));

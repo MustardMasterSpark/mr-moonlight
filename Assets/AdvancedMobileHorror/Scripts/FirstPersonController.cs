@@ -127,6 +127,14 @@ namespace AdvancedHorrorFPS
 		private float Stamina = 100;
         float lastBreatingSoundTime = 0;
 
+        // Lets other systems (e.g. melee hits) spend stamina outside of sprinting.
+        public void DrainStamina(float amount)
+        {
+            Stamina -= amount;
+            if (Stamina < 0) Stamina = 0;
+            GameCanvas.Instance.Slider_Stamina.fillAmount = (Stamina / 100f);
+        }
+
         private void Move()
 		{
 			float targetSpeed = MoveSpeed;

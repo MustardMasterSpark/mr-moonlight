@@ -1,0 +1,337 @@
+MR. MOONLIGHT (MVP) - GAME DESIGN DOCUMENT - V0.2
+VERTICAL SLICE - Level 1: Muddy
+Version 0.2 - 30/07/2026
+Mustard - Carlos Ivan Calva Avalos
+
+MATURE CONTENT
+This is a work of fiction. Contains violence, substance abuse, mental-health themes, religious and blasphemous
+imagery, and strong language. Discretion advised.
+
+INDEX
+01 Executive Summary - One pager, core loop, win and loss conditions, elevator pitch, comparable games, ship dates.
+02 Story - 1978, Aanniarvik Island, Tracey, and how Day 1 begins.
+03 Cast - The five characters that appear in Day 1, and who is only spoken about.
+04 Game Flow - The loop diagram for the slice, and how failure is handled without a save menu.
+05 The Island in Day 1 - The fixed route, the eight locations it passes through, and what was cut.
+06 Look and Feel - Keywords, art style, sound design, themes, mockup screens.
+07 Game Mechanics - Player verbs, every system in the slice, and how the level script drives the engine.
+08 Enemies and Threats - Wolf, Zealot, Spotter, Furman, bear trap, and their state machines.
+09 Items - The seventeen objects the player can hold or use in Day 1.
+10 AI Architecture - The eight development agents, what each one does, and what the player ends up seeing.
+11 Token Budget and API Constraints - What the agent crew costs, and the four constraints that shape it.
+12 Feedback: Cut From the Vertical Slice - Everything removed from v0.1, and when it comes back.
+13 MVP Critical Route - The full critical-feature list with a build method for each.
+14 Technical Strategy and Timeline - Seven steps, and a chronogram from 31 July to 31 August 2026.
+
+01 EXECUTIVE SUMMARY
+
+Mr. Moonlight is a slow, gritty, first-person horror game set on an Alaskan island in 1978. You are Tracey -
+hungover, barefoot, and alone at a campsite where seven friends should be. This document describes Day 1: the
+first of seven days, and the only one being built right now.
+
+Title: Mr. Moonlight
+Genre: First-person survival horror shooter with exploration
+This document covers: The Day 1 vertical slice only
+Engine: Unity 6.3 LTS
+Slice platform: PC (Windows x64), released on itch.io
+Later platforms: Steam and GOG, then consoles - post-slice
+Audience: Adults, 18+, niche horror
+Target rating: ESRB Mature 17+
+Session length: 30 to 50 minutes
+Team: One developer, assisted by a crew of Claude agents
+Slice ship target: itch.io, first week of September 2026
+
+THE CORE LOOP, IN ONE SENTENCE
+Explore a dark forest on a fixed route, scavenge what you can carry, survive or avoid what finds you, and reach
+shelter before the night closes.
+
+WIN AND LOSS CONDITIONS
+WIN: Day 1 is complete when Tracey pulls Scott out of the mine and reaches the church on the Hill of Crosses.
+LOSS: Tracey dies. There is no game-over screen to manage: the level restarts at the last scene checkpoint.
+
+ELEVATOR PITCH - THE FICTION
+A group of friends, a weeklong camping trip, a remote Alaskan island. Trying to have one good last time together
+before the important adulthood changes arrive. Something goes wrong.
+You are Tracey, a grumpy drug addict trying to save her kidnapped friends from a cult that will sacrifice them at
+the end of the week. There is something about the island: each night its terrain shifts into something deadly, and
+every night it forces you to find shelter before three in the morning.
+Day 1 is where none of that is known yet. Tracey wakes up with a hangover and no boots, and spends a morning
+being annoyed about it. By nightfall she is dragging an unconscious friend through a mine while people in black
+whistle to each other in the dark.
+
+ELEVATOR PITCH - THE MECHANICS OF THE SLICE
+- A fixed route, hand built. Day 1 runs on one authored path through eight locations. The procedural island
+  generator that reshuffles the map every day is a full-game feature and is not in the slice - see section 12.
+- Navigation you have to stop for. A map and a compass, taken from William's tent. Deploying them locks Tracey
+  in place and exposes her, so reading the map is a decision, not a free action.
+- Combat that costs something. A pickaxe with heavy slow swings, and two firearms handed over late. Every blow
+  drains stamina. Some encounters are meant to be walked around, not won.
+- Fear as a visible state. Fear rises at scripted moments and shows itself through chromatic aberration, camera
+  shake and Tracey's breathing. The player reads their own condition off the screen and the headphones, not off
+  a number.
+- A backpack that is too small. The coolers at the campsite hold more than Tracey can carry. The fifth pickup is
+  refused, and the player has to drop something.
+- Sound as information. A radio call locates a person. A whistle locates a patrol. Sprinting makes noise, which is
+  why the boots matter.
+
+COMPARABLE GAMES
+Slenderman: The Eight Pages (2012) - Being hunted in a dark forest while looking for scattered things.
+Misery (2025) - A daily run against a hard clock, ending at a shelter.
+Dusk (2018) - Crude, violent low-poly shooting against a cult.
+The Forest (2018) - Resource pressure and a hostile population in the woods.
+Silent Hill 1 (1999) - Plain white subtitle lines, and telling the story through them rather than around them.
+
+DATES
+Vertical slice playable: 31 August 2026
+itch.io release of the slice: First week of September 2026
+Steam page with demo: Weeks after the itch.io release
+Full seven-day game: TBD, aiming for Q1 2027
+
+02 STORY
+
+1978. AANNIARVIK ISLAND, ALASKA.
+Seven friends are arriving at the point in life where the important decisions get made, and they are all quietly
+afraid that this is where the friendship ends. So they take a break from the hard Alaskan winter routine and go to
+an island for one last weeklong camping trip, with booze and enough other things to make it memorable.
+Aanniarvik was inhabited by natives a long time ago. During the Second World War it became an American base,
+waiting for a Japanese invasion that never came. Now it is an empty island with a population of one: a forest
+ranger, the uncle of Holly, your childhood friend.
+You are Tracey. Twenty-something, a history major who dropped out, in possession of some nasty habits and a
+permanently foul mouth. You did not want to come. Your friends insisted far too much. Fine. One more time.
+
+03 CAST
+
+Five characters exist in Day 1. Three more are named in dialogue but never appear.
+
+Tracey - PLAYABLE. Addict, asshole, dull - her words. The player never sees her face, only her hands.
+Rylee - VOICE ON THE RADIO. Lady jester. Has Tracey's boots, falling asleep while talking.
+Holly - AT THE CABIN. Miss Perfect. Hands over the marijuana.
+Scott - FOUND IN THE MINE. Transmits once on the radio, then an unconscious body on a stretcher.
+Vernon - AT THE CABIN, THEN ON THE RADIO. Holly's uncle. Gives Tracey the M1911 and the morphine.
+
+NAMED BUT NOT PRESENT IN DAY 1
+Robert, William and Shannon are talked about in Rylee's radio conversation and appear in the Polaroid photograph.
+Amaruq and Mr. Moonlight are named in the full-game fiction and do not appear anywhere in the Day 1 script.
+
+04 GAME FLOW
+
+The slice is one day, not seven. Loop: EXPLORE (map + compass, stamina, light, sound) -> SCAVENGE (pick up
+items, backpack is capped) -> ENCOUNTER (wolves, cultists, bear trap; fight it or slip past it) -> OBJECTIVE
+ADVANCES (pause menu updates) -> next scene. On death/capture: restart at the last scene checkpoint (automatic,
+no save menu). After objectives 1-6 close: NIGHT FALLS after the mine -> REACH THE CHURCH -> DAY 1 COMPLETE.
+
+WHAT CHANGED FROM VERSION 0.1
+Structure: seven days each with its own objective -> one day, seven objectives inside it.
+Saving: limited-use manual save system -> removed, automatic checkpoint at the start of each scene.
+Map: regenerated procedurally every day -> one fixed, hand-built route.
+Night deadline: reach shelter before 3:00 a.m. or die -> night arrives on script after the mine, not a live mechanic.
+Failure: return to the beginning of the day -> return to the start of the current scene.
+
+05 THE ISLAND IN DAY 1
+
+The player moves east from the campsite to the Glade, then to Vernon's cabin, then into the mine, then north to
+the church. No optional areas, no backtracking. The only branch is at the bear trap.
+
+LOCATIONS
+Camping site (Scenes 01-04) - RV, two tents, William's locked tent, bonfire, canteen table, two coolers.
+The forest road (Scene 05) - A single wolf crosses at distance and ignores Tracey. Fear is introduced here.
+The Glade (Scene 06) - Observation post with mounted telescope. Boots, Polaroid, pickaxe, a light in the distance.
+Vernon's cabin (Scenes 07-08) - The only safe room in the level. Holly and Vernon are here.
+Flak tower (Scene 08) - Visible in the distance, cannot be entered.
+Mineshaft (Scene 09) - Linear tunnel, entered with a lamp. Cultists inside. Infirmary holds Scott.
+The church (Scene 10) - Reached after the Virgin Mary statue and up the Hill of Crosses, Furman in pursuit.
+
+TWO LOCATIONS WERE CUT: The Dock and the Radio station / Workshop.
+
+06 LOOK AND FEEL
+
+KEYWORDS: Substance abuse, punk-acid style, foul language, crude combat, claustrophobic darkness, item
+management, exploration, regret, monsters, traps, hide and seek, objective centric, night sky.
+
+ART STYLE: Low-poly 3D in the manner of the fifth console generation. Cold palette: green, grey, brown, high
+contrast, little warm light except firelight. UI is minimal, high-contrast punk/grunge. Subtitles plain white lines.
+
+SOUND DESIGN: Headphones assumed. Stereo positional/doppler audio carries information. Very little music.
+
+THEMES
+Substance abuse - Not explained in Day 1; system arrives Day 2.
+Religion - Orthodox Christian imagery, no exposition.
+Ethics - Only planted in Day 1.
+Mental health - Shown only through what Tracey mutters to herself.
+
+07 GAME MECHANICS
+
+Everything below exists in the Day 1 script. Nothing here is aspirational: if a system is listed, at least one
+event line in L01.txt requires it.
+
+7.1 WHAT THE PLAYER DOES
+
+Verb: Look | What it means: Free camera. Blocked during scripted moments. | When it unlocks: After the first
+dialogue lines
+Verb: Move | What it means: Walk. Slower while holding the radio. | When it unlocks: After the vomit animation
+Verb: Sprint | What it means: Faster, and noticeably louder than walking. | When it unlocks: When the boots go
+on, at the Glade
+Verb: Interact | What it means: One button. Picks up, opens, pulls, knocks. | When it unlocks: At the wristwatch,
+as the first tutorial
+Verb: Carry and drop | What it means: Backpack holds a limited number of items; the player chooses what to
+lose. | When it unlocks: At the blue cooler
+Verb: Navigate | What it means: Deploy map and compass. Locks Tracey in place while open. | When it unlocks:
+From William's tent
+Verb: Swing | What it means: Heavy, slow pickaxe blows that drain stamina. | When it unlocks: Pulled from the
+telescope frame
+Verb: Shoot | What it means: M1911, then the Arisaka. Loud, scarce, and a last resort. | When it unlocks: Vernon's
+cabin, then the mine infirmary
+Verb: Drag | What it means: Pull Scott on the stretcher. Movement and combat are restricted. | When it unlocks:
+The mine infirmary
+
+(Figure 3 - Action layout. Faint melee is struck through: it was cut in v0.1 and stays cut.)
+
+7.2 SYSTEMS IN THE SLICE
+
+Twenty systems. The last one is the keystone - without it nothing else runs in sequence.
+
+System: Player controller | What the player sees: Walking, looking, sprinting, first-person arms. | What it has
+to hold: Speed, sprint state, noise level. | Built from: Owned FPS asset, adapted
+
+System: Control locks | What the player sees: The camera or the legs stop answering during a scripted beat. |
+What it has to hold: Two independent boolean locks that always get released. | Built from: Systems Smith
+
+System: Interaction | What the player sees: A prompt icon appears when something can be used. | What it has to
+hold: Range, line of sight, required item. | Built from: Owned FPS asset
+
+System: Inventory | What the player sees: The fifth pickup is refused and Tracey complains. | What it has to
+hold: Capacity, contents, discard. | Built from: Systems Smith
+
+System: Stamina | What the player sees: A bar that appears for the first time during the vomiting, then drains
+and refills. | What it has to hold: Current, max, drain and regen rates. | Built from: Systems Smith
+
+System: Health and damage | What the player sees: Getting bitten hurts and does not come back on its own. |
+What it has to hold: Current, max, damage sources. | Built from: Systems Smith
+
+System: Fear | What the player sees: Chromatic aberration, camera shake, and breathing that gets heavier. | What
+it has to hold: A single fear value with thresholds that drive VFX and audio. | Built from: Systems Smith
+
+System: Melee | What the player sees: Slow pickaxe swings that cost stamina and stagger a Furman. | What it has
+to hold: Damage, swing time, stamina cost, stun. | Built from: Owned FPS asset, extended
+
+System: Firearms | What the player sees: Two guns, arriving late, loud enough to matter. | What it has to hold:
+Damage, fire rate, ammo count. | Built from: Owned FPS asset
+
+System: Map and compass | What the player sees: The screen fills with a paper map and Tracey stops moving. |
+What it has to hold: Player heading, position, deploy lock. | Built from: Systems Smith
+
+System: Light | What the player sees: A mining lamp in the tunnel, matches as an emergency. | What it has to
+hold: Range, intensity, fuel or battery. | Built from: Systems Smith
+
+System: Substances | What the player sees: Morphine and marijuana are handed over and can be used once. | What
+it has to hold: Instant buff, timed drawback. | Built from: Systems Smith, minimal version
+
+System: Bear trap | What the player sees: A snap, a large chunk of health and stamina gone, and a limp. | What it
+has to hold: Trigger volume, damage, injured state. | Built from: Systems Smith
+
+System: Stretcher escort | What the player sees: Scott comes with you, slowly, and you cannot fight properly. |
+What it has to hold: Attach point, speed penalty, restrictions. | Built from: Systems Smith
+
+System: Objective tracker | What the player sees: A line in the pause menu that changes as the day goes wrong. |
+What it has to hold: Start, update and end for seven objectives. | Built from: Level Weaver
+
+System: Subtitles | What the player sees: Plain white lines, typewriter or immediate. | What it has to hold: Text,
+colour, display method, onscreen time. | Built from: Nani Novel, adapted
+
+System: Audio manager | What the player sees: Ambience, prop sources, enemy signatures, breathing. | What it has
+to hold: Mixer states driven by fear and location. | Built from: Systems Smith
+
+System: Scene checkpoint | What the player sees: Dying puts you back at the start of the current scene. | What it
+has to hold: Current scene index and its entry state. | Built from: Systems Smith
+
+System: Time of day | What the player sees: Morning at the camp, dusk at the cabin, full dark at the mine exit. |
+What it has to hold: A lighting set per scene. Not a live clock. | Built from: Baked lightmaps
+
+System: SLDD runner | What the player sees: Nothing directly - it is why every other thing happens in order. |
+What it has to hold: Parses L01.txt and fires each event in sequence. | Built from: Level Weaver
+
+7.3 HOW THE LEVEL SCRIPT DRIVES THE ENGINE
+
+Day 1 is not scripted inside Unity. It is written in a plain-text format of my own, the Script Level Design
+Document, as 223 numbered event lines. Each line is one event, with a fixed type and a fixed parameter list,
+separated by double pipes. Example:
+
+L01E-039 || PFX || Name: Stamina refill || Description: Refill part of the stamina bar and begin slow stamina
+recovery. || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+
+Each event type maps to one implementation (PA, SA, D:@/T:@/SM, HA, WA/CA:@/EA:@, CB:B/MB:B, C, VFX:UI,
+VFX:PV, SFX, PFX, O:#:S/U/E, OL). PFX = Player effect: a stat modifier applied to the player stats block, built by
+Systems Smith.
+
+NOTE: The current script file in a txt engine will be obfuscated and stored within Unity run files.
+
+08 ENEMIES AND THREATS
+
+Wolf (E-W) - Introduced at distance on the forest road, ignores Tracey. Returns as a pack at the Glade.
+Behaviour: Roam, circle the player, bite, break off when struck, flee when hurt, afraid of fire.
+
+Cultist Zealot (E-Z) - Branch A of the road to the cabin. Must be winnable with the pickaxe and nothing else.
+Behaviour: Hidden, charge on sight, melee, follow at distance if the player escapes, low health.
+
+Cultist Spotter (E-S) - Branch B. Patrol with a lamp, ignore at distance, whistle to summon, never lose interest
+once alerted. Fighting them while injured is meant to kill you.
+
+Furman (E-F) - Appears once, in the night escape, pursuing Tracey up the Hill of Crosses. A chase, not an
+encounter. Behaviour: Charge, heavy bites, raises fear on approach, large health pool, staggered by a heavy blow.
+
+Bear trap - One trap, on the road to the cabin. Cannot kill, but takes a large amount of health and stamina and
+decides which of the two branches the player gets. Behaviour: Trigger volume, one-shot, applies the injured state,
+gates the branch.
+
+CUT FROM THE ENEMY ROSTER: Stone totems, the Cultist Priest and punji traps.
+
+09 ITEMS
+
+Seventeen objects: Canteen, Walkie-talkie, Boots, William's tent key, Map and compass pouch, Polaroid
+photograph, Inuit pickaxe (melee weapon), Matches, Beer, Soda can, Crackers, Mining lamp, M1911 pistol,
+Morphine, Marijuana, Arisaka rifle, Stretcher.
+
+CUT FROM THE ITEM LIST: Ka-Bar knife, double barrel, crossbow, Zippo, gas can, flashlight, D batteries, general
+ammunition.
+
+10 AI ARCHITECTURE
+
+Eight agents, all development tools; none ships inside the game. Script Warden, Slice Producer, Level Weaver,
+Systems Smith, Enemy Brain, QA Hunter, Package Cartographer, Scribe. They share four flat files: script-defects.md,
+today.md, package-map.md, build-report.md.
+
+RULES THE AGENTS WORK UNDER
+1. Nothing gets invented. If a needed detail is not in the three source documents, the agent marks it TBD and stops.
+2. The format specification wins on format, the level script wins on Day 1 content, this document wins on everything else.
+3. Purchased packages are wrapped, not rewritten. Adapters go in our own namespace.
+4. One merged change per system per day.
+5. Every change arrives with the event IDs it implements.
+
+11 TOKEN BUDGET AND API CONSTRAINTS
+
+22 active development days, 31 July - 31 August 2026. Total $2.82 per active day across the crew. Whole-slice cost:
+about $80 expected, $122 ceiling with contingency. The Sonnet 5 introductory rate ends 31 August 2026, which is
+the reason the schedule ends there.
+
+12 FEEDBACK: CUT FROM THE VERTICAL SLICE
+
+Procedural island generation, manual save system, the seven-day structure, the 3:00 a.m. deadline as a live clock,
+shrooms, stone totems/Cultist Priest/punji traps, Dock/Radio station/Workshop, several unused weapons, melee
+faint and the telescope star minigame. All cut for the Day 1 slice; most return in the full game.
+
+13 MVP CRITICAL ROUTE
+
+Full critical-feature list across environment/level art, characters/creatures, animation, audio, UI, gameplay
+systems, level scripting/content, and build/release. Gameplay systems section lists: player controller adaptation
+(owned FPS asset, wrapped by Systems Smith), camera/movement locks, interaction system, inventory, stamina/
+health/damage, fear state, melee with the pickaxe (FPS asset melee, extended), two firearms, map/compass
+navigation, light sources, morphine/marijuana effects, bear trap, stretcher escort, four enemy state machines,
+objective tracker, scene checkpoint, SLDD parser and event runner (the keystone).
+
+14 TECHNICAL STRATEGY AND TIMELINE
+
+Seven steps: (1) finish the Claude tutorial and set up the crew, (2) clean the level script, (3) map what I already
+own, (4) build the script runner, (5) greybox the whole route, (6) layer in the systems and the enemies, (7) art,
+audio, build, ship. Chronogram runs 31 July - 31 August 2026 across two parallel tracks (agent/code, and art/audio/
+writing). The pressure valve is the mine (Scenes 08-10, outline only as of this version). The art risk is the
+Furman. The date is fixed by the Sonnet 5 price increase on 1 September 2026.
