@@ -1,5 +1,6 @@
 <!-- AUTHOR: Mustard -->
 <!-- DATE: 29/07/2026 -->
+<!-- REVISED: 07/08/2026 — parameter trim, MUS / IT / OL types, Action parameter -->
 
 <!-- ============================================================================ -->
 <!-- ==========  SCRIPT LEVEL DESIGN DOCUMENT (SLDD) — INSTRUCTIONS   ========== -->
@@ -36,6 +37,45 @@ Example: L01.txt
 
 
 <!-- ============================================================================ -->
+<!-- ==========               WHAT CHANGED IN THIS REVISION           ========== -->
+<!-- ============================================================================ -->
+
+This revision was made after the first full pass over L01. The changes are driven
+by what a complete level script actually needed, not by speculation.
+
+  1.  PARAMETERS REMOVED. Parameters that were structurally redundant, or that a
+      design decision has made dead, were deleted from their event types:
+
+        Character   removed from CA:@   — the type suffix already names them
+        Enemy       removed from EA:@   — same
+        Lipsync     removed from D:@    — the slice ships non-verbal
+                                          vocalisations, not full voice acting
+        Text effect removed from D:@, T:@ and SM
+        Description removed from O:#:S and O:#:U
+        Marker      removed from O:#:S  — Day 1 navigates by compass, not markers
+
+      Parameters that are merely UNAUTHORED were kept. Clip, Duration, Audio,
+      Volume, Fade, Stat, Magnitude, Curve, Blend, Animation Event, Intensity and
+      Layer are all empty in a first draft because the assets do not exist yet.
+      That is not the same as unused, and stripping them would remove the fields
+      the implementation has to fill.
+
+  2.  ACTION PARAMETER ADDED to SFX, MUS, PFX and IT. Anything that persists —
+      a looping sound, a music bed, a stat modifier, an item — needs a way to be
+      turned off by a later line. Action names the operation, and Name is the
+      handle the later line refers back to.
+
+  3.  NEW TYPES. MUS (music), IT (item) and OL (outline). See the EVENT TYPES
+      table.
+
+  4.  CAMERA AND MOVEMENT BLOCKS ON CUTSCENES. C now carries its own Camera Block
+      and Movement Block parameters. See the note under CB:B.
+
+  5.  SEQUENCE ON OL, matching C, so an outline can point at the span of events it
+      covers.
+
+
+<!-- ============================================================================ -->
 <!-- ==========                   PARSING RULES                      ========== -->
 <!-- ============================================================================ -->
 
@@ -64,6 +104,11 @@ tooling.
       an ID; if an event is cut, retire its number rather than renumbering the
       file, so that external references stay valid.
 
+      This rule protects external references. It therefore only binds once a file
+      has external references. A draft that nothing points at yet may be reflowed
+      once, cleanly, from 001 — after which the rule applies normally. L01 was
+      reflowed this way on 07/08/2026.
+
   7.  Comments are ignored by automation. See the COMMENTS section.
 
   8.  Boolean parameters use a single character: T (true) or F (false).
@@ -72,6 +117,9 @@ tooling.
 
   10. The DEFINITIONS and LEVEL SCRIPT banner lines delimit the two sections and
       MUST be present and unmodified.
+
+  11. A level is not finished while it still contains OL lines. OL is a drafting
+      type. Counting OL lines is the cheapest completeness metric available.
 
 
 <!-- ============================================================================ -->
@@ -104,6 +152,9 @@ The CHARACTERS block is part of the DEFINITIONS section. It declares the
 characters present in the level and assigns each one an abbreviation used to
 identify them in the script lines.
 
+An abbreviation may be more than one letter where a single letter is already
+taken. Match case exactly: S and Sh are different characters.
+
 Example:
 
 ###CHARACTERS:
@@ -111,6 +162,7 @@ T = Tracey
 R = Rylee
 H = Holly
 S = Scott
+Sh = Shannon
 V = Vernon
 
 
@@ -197,7 +249,9 @@ PLAYER ACTION        | PA      | An action performed by the player that is requi
 SYSTEM ACTION        | SA      | A change in the game triggered by the system rather than the
                      |         | player. It may have consequences for gameplay, UI, player
                      |         | interaction and more. Like player actions, some system actions
-                     |         | can trigger their own branch of events.
+                     |         | can trigger their own branch of events. SA also carries level
+                     |         | staging: the dressing of a space, and the rules that govern a
+                     |         | space, are system actions.
                      |         |
 DIALOGUE:@           | D:@     | A line of spoken dialogue, audible in game, delivered by a
                      |         | character. Shown in the UI as a subtitle line, in the style of
@@ -232,8 +286,7 @@ MOVEMENT BLOCK:B     | MB:B    | Locks or unlocks player movement control. Used 
                      |         |
 CUTSCENE             | C       | A cutscene that unfolds for the player: a succession of
                      |         | animations, effects and other events. The cutscene line outlines
-                     |         | the sequence as a whole. It is normally paired with camera and
-                     |         | movement blocks for storytelling purposes.
+                     |         | the sequence as a whole and declares its own control locks.
                      |         |
 VFX:User Interface   | VFX:UI  | A visual effect applied to the player UI.
                      |         |
@@ -242,9 +295,20 @@ VFX:Player View      | VFX:PV  | A visual effect applied to the player camera. I
                      |         |
 SFX                  | SFX     | A sound effect or environmental audio cue.
                      |         |
+MUSIC                | MUS     | A music cue: an ambient bed, a tension layer, a sting or a
+                     |         | credits track. Always non-diegetic and unpositioned, which is
+                     |         | why it carries no Source parameter. Kept separate from SFX
+                     |         | because music is scored against the scene rather than emitted by
+                     |         | an object, and because it is mixed on its own bus.
+                     |         |
 PLAYER EFFECT        | PFX     | An effect applied to the player, usually preceded by a SYSTEM
                      |         | ACTION line. These effects alter gameplay or player stats, such
                      |         | as draining stamina or slowing movement.
+                     |         |
+ITEM                 | IT      | Declares an item: placed in the world, granted to the player,
+                     |         | consumed or removed. This is what makes the level's item
+                     |         | manifest machine-readable, so that quantities and container
+                     |         | contents do not have to be parsed back out of prose.
                      |         |
 SYSTEM MESSAGE       | SM      | A message from the system indicating an interaction, a tutorial
                      |         | or a pickup. It is neither spoken nor thought by a character.
@@ -256,6 +320,13 @@ OBJECTIVE:#:UPDATE   | O:#:U   | Updates the description of an existing objectiv
                      |         | its number.
                      |         |
 OBJECTIVE:#:END      | O:#:E   | Completes and removes an objective, referenced by its number.
+                     |         |
+OUTLINE              | OL      | A drafting type. Describes, in general notes, a span of the
+                     |         | level that has not yet been broken into individual events, or
+                     |         | summarises a series of events that follow it. It is the only
+                     |         | type that does not describe a single thing happening in the
+                     |         | game, and a level is not finished while any remain. Use Sequence
+                     |         | to point at the span it covers.
 -------------------------------------------------------------------------------------------------
 
 
@@ -294,7 +365,8 @@ L##E-### || PA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A |
   Blocking      T or F. Whether the level flow halts until this action is
                 performed. Default F.
   Branch        The event ID range this action opens if it starts its own branch,
-                such as a secondary objective. N/A if it does not.
+                such as a secondary objective or an optional discovery. Written
+                as a span: L01E-072 to L01E-078. N/A if it does not.
 
 
 <!-- ---------------------------------------------------------------------------- -->
@@ -310,7 +382,8 @@ L##E-### || SA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A |
   Condition     Any prerequisite that must hold for it to fire. N/A if
                 unconditional.
   Blocking      T or F. Whether the level flow halts until this resolves.
-                Default F.
+                Default F. A beat — a deliberate pause for dramatic effect — is
+                written as an SA with Blocking: T.
   Branch        The event ID range this action opens if it starts its own branch.
                 N/A if it does not.
 
@@ -318,37 +391,29 @@ L##E-### || SA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A |
 <!-- ---------------------------------------------------------------------------- -->
 ### D:@ — DIALOGUE
 
-L##E-### || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L##E-### || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: Typewriter || Aftertime: 1.0
 
   Line            The text that composes this dialogue.
   Tone            A description of the emotional or vocal delivery of the line:
-                  angry, fast paced, slow, confused, and so on.
+                  angry, fast paced, slow, confused, and so on. This is the brief
+                  for whoever records or performs it.
   Color           The colour the text is shown in. Default white.
   Display Method  How the line appears in the UI. Immediate: the text appears at
                   once with no transition. Typewriter: the line unfolds slowly,
-                  character by character.
-  Lipsync         T or F. When the display method is Typewriter, indicates
-                  whether the words should unfold in sync with the audio file, so
-                  that they appear karaoke-style as the character speaks them,
-                  for better immersion. Note that this parameter implies a
-                  substantial feature — word-by-word syncing against audio files
-                  — and is recorded here as a statement of intent. Default F.
+                  character by character. Default Typewriter.
   Aftertime       Time in seconds the line remains on screen. Default 1.0.
-  Text effect     Any effect applied to the displayed text, of the kind used in
-                  visual novels, such as shake.
 
 
 <!-- ---------------------------------------------------------------------------- -->
 ### T:@ — THOUGHT
 
-L##E-### || T:@ || Line: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L##E-### || T:@ || Line: N/A || Color: white || Display Method: Typewriter || Aftertime: 1.0
 
   Line            The text that composes this inner dialogue.
   Color           The colour the text is shown in. Default white.
   Display Method  How the line appears in the UI. Immediate or Typewriter, as
-                  described under DIALOGUE.
+                  described under DIALOGUE. Default Typewriter.
   Aftertime       Time in seconds the line remains on screen. Default 1.0.
-  Text effect     Any effect applied to the displayed text, such as shake.
 
 
 <!-- ---------------------------------------------------------------------------- -->
@@ -394,12 +459,10 @@ L##E-### || WA || Name: N/A || Description: N/A || Target: N/A || Clip: N/A || D
 <!-- ---------------------------------------------------------------------------- -->
 ### CA:@ — CHARACTER ANIMATION
 
-L##E-### || CA:@ || Name: N/A || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L##E-### || CA:@ || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
 
   Name             Short label for the animation.
   Description      What the character does, and what the player sees of it.
-  Character        The character abbreviation, matching the one in the event type
-                   and declared in DEFINITIONS.
   Clip             The animation clip identifier in the project. N/A while
                    unauthored.
   Duration         Length in seconds.
@@ -411,16 +474,17 @@ L##E-### || CA:@ || Name: N/A || Description: N/A || Character: N/A || Clip: N/A
   Animation Event  A frame or moment at which gameplay must fire, described in
                    words.
 
+  The character is named by the type suffix — CA:H is Holly — and is not repeated
+  as a parameter.
+
 
 <!-- ---------------------------------------------------------------------------- -->
 ### EA:@ — ENEMY ANIMATION
 
-L##E-### || EA:@ || Name: N/A || Description: N/A || Enemy: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
+L##E-### || EA:@ || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
 
   Name             Short label for the animation.
   Description      What the enemy does, and what the player sees of it.
-  Enemy            The enemy abbreviation, matching the one in the event type and
-                   declared in DEFINITIONS.
   Clip             The animation clip identifier in the project. N/A while
                    unauthored.
   Duration         Length in seconds.
@@ -432,6 +496,9 @@ L##E-### || EA:@ || Name: N/A || Description: N/A || Enemy: N/A || Clip: N/A || 
                    Default F.
   Animation Event  A frame or moment at which gameplay must fire, described in
                    words. For example: the frame a bite lands.
+
+  The enemy is named by the type suffix — EA:F is the Furman — and is not
+  repeated as a parameter.
 
 
 <!-- ---------------------------------------------------------------------------- -->
@@ -448,6 +515,13 @@ L##E-### || CB:B || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A
                 condition. N/A on the unblocking line itself.
   Transition    How control is taken or handed back: instant, ease in, ease out,
                 with a duration in seconds where relevant.
+
+  BLOCKS DECLARED ON A CUTSCENE. A C event declares its own Camera Block and
+  Movement Block. Those are scoped to the cutscene and released automatically
+  when it ends, and they do NOT participate in the CB:B / MB:B alternation chain.
+  Only standalone CB and MB lines alternate. This exists because most cutscenes
+  take both locks and give both back, and writing four extra lines around every
+  one of them buries the script.
 
 
 <!-- ---------------------------------------------------------------------------- -->
@@ -466,20 +540,27 @@ L##E-### || MB:B || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
 <!-- ---------------------------------------------------------------------------- -->
 ### C — CUTSCENE
 
-L##E-### || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L##E-### || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Camera Block: T || Movement Block: T || Blocking: T
 
-  Name          Short label for the cutscene.
-  Description   The sequence as a whole, in a few sentences. Detail belongs to
-                the individual event lines it contains.
-  Sequence      The event ID range the cutscene comprises, written as a span.
-                For example: L01E-045 to L01E-052.
-  Duration      Total length in seconds. An estimate is acceptable during
-                drafting.
-  Skippable     T or F. Whether the player can skip it. Default F.
-  Camera Mode   How the camera behaves: first person held, forced look, scripted
-                path, fixed.
-  Blocking      T or F. Whether the level flow halts until it completes.
-                Default T.
+  Name            Short label for the cutscene.
+  Description     The sequence as a whole, in a few sentences. Detail belongs to
+                  the individual event lines it contains.
+  Sequence        The event ID range the cutscene comprises, written as a span.
+                  For example: L01E-045 to L01E-052.
+  Duration        Total length in seconds. An estimate is acceptable during
+                  drafting.
+  Skippable       T or F. Whether the player can skip it. Default F.
+  Camera Mode     How the camera behaves: first person held, forced look,
+                  scripted path, fixed. A scripted path is the mode to use when
+                  the camera travels along an authored curve.
+  Camera Block    T or F. Whether the cutscene takes camera control for its
+                  duration. Released automatically when the cutscene ends.
+                  Default T.
+  Movement Block  T or F. Whether the cutscene takes movement control for its
+                  duration. Released automatically when the cutscene ends.
+                  Default T.
+  Blocking        T or F. Whether the level flow halts until it completes.
+                  Default T.
 
 
 <!-- ---------------------------------------------------------------------------- -->
@@ -513,12 +594,17 @@ L##E-### || VFX:PV || Name: N/A || Description: N/A || Execution: N/A || Duratio
 <!-- ---------------------------------------------------------------------------- -->
 ### SFX — SOUND EFFECT
 
-L##E-### || SFX || Name: N/A || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L##E-### || SFX || Name: N/A || Description: N/A || Action: Play || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
 
-  Name          Short label for the sound.
+  Name          Short label for the sound. For a looping sound this doubles as
+                the handle a later Stop line refers back to, so keep it identical
+                across the pair.
   Description   What is heard, and what it tells the player. Sound carries
                 information in this game, so state what the player should learn
                 from it.
+  Action        Play or Stop. Stop silences a sound started by an earlier line
+                carrying the same Name. Default Play. A one-shot never needs a
+                Stop line; a Loop: T sound always does.
   Audio         The audio file identifier in the project. N/A while unauthored.
   Source        Where it plays from: 2D, meaning non-diegetic and unpositioned;
                 or 3D, followed by the object or position it is attached to.
@@ -529,12 +615,39 @@ L##E-### || SFX || Name: N/A || Description: N/A || Audio: N/A || Source: N/A ||
 
 
 <!-- ---------------------------------------------------------------------------- -->
+### MUS — MUSIC
+
+L##E-### || MUS || Name: N/A || Description: N/A || Action: Play || Audio: N/A || Volume: N/A || Loop: F || Fade: N/A
+
+  Name          Short label for the cue. As with SFX, this is the handle a later
+                Stop line refers back to.
+  Description   What the music is doing dramatically: what it should make the
+                player feel, and what it is scoring.
+  Action        Play or Stop. Default Play.
+  Audio         The track identifier in the project. N/A while unauthored.
+  Volume        Relative level, described in words or as a value.
+  Loop          T or F. Whether the cue loops until stopped. Default F.
+  Fade          Fade in and out behaviour, with durations in seconds. Music
+                almost always wants a fade; a hard cut is the exception and
+                should be stated as one.
+
+  MUS carries no Source parameter. Music is always non-diegetic. A radio or a
+  record player audible in the world is a diegetic object and belongs in SFX
+  with a 3D source.
+
+
+<!-- ---------------------------------------------------------------------------- -->
 ### PFX — PLAYER EFFECT
 
-L##E-### || PFX || Name: N/A || Description: N/A || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L##E-### || PFX || Name: N/A || Description: N/A || Action: Apply || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
 
-  Name          Short label for the effect.
+  Name          Short label for the effect. For an effect with no fixed duration
+                this is the handle a later Clear line refers back to.
   Description   What happens to the player and how it feels to play.
+  Action        Apply or Clear. Clear ends an effect started by an earlier line
+                carrying the same Name. Default Apply. An effect with Duration:
+                N/A persists until cleared, so it must have a matching Clear line
+                somewhere later in the file.
   Stat          The player stat or system affected: health, stamina, movement
                 speed, fear, hallucination, inventory capacity.
   Magnitude     How much it changes, as a value or a proportion, and in which
@@ -548,43 +661,63 @@ L##E-### || PFX || Name: N/A || Description: N/A || Stat: N/A || Magnitude: N/A 
 
 
 <!-- ---------------------------------------------------------------------------- -->
+### IT — ITEM
+
+L##E-### || IT || Name: N/A || Description: N/A || Action: Place || Quantity: 1 || Source: N/A || Effect: N/A
+
+  Name          The item, named exactly as it is named everywhere else in the
+                project. This is the key the item database is built on, so
+                inconsistent naming here is expensive later.
+  Description   What the item is and what it is for in this level.
+  Action        Place, Grant, Consume or Remove.
+                  Place    The item is dressed into the world and can be found.
+                  Grant    The item goes straight into the player's inventory,
+                           usually from a scripted handover.
+                  Consume  The item is used up.
+                  Remove   The item is taken away without being used.
+                Default Place.
+  Quantity      How many. Default 1.
+  Source        Where it comes from: the container it is in, the character who
+                hands it over, or the place it is dressed into.
+  Effect        What acquiring or using it changes — a system unlocked, a stat
+                restored, a capacity raised. N/A if the item is inert here.
+
+  IT does not display anything to the player. The message announcing a pickup is
+  a separate SM line, so that an item can be placed silently.
+
+
+<!-- ---------------------------------------------------------------------------- -->
 ### SM — SYSTEM MESSAGE
 
-L##E-### || SM || Line: N/A || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L##E-### || SM || Line: N/A || Category: N/A || Color: white || Display Method: Immediate || Aftertime: 1.0
 
   Line            The text of the message.
   Category        What kind of message it is: interaction, tutorial, pickup,
-                  warning. This allows messages to be filtered or styled
-                  consistently as a group.
+                  warning. This is what styling should key off, so that colour is
+                  driven by data rather than written into each line by hand.
   Color           The colour the text is shown in. Default white.
   Display Method  How the line appears in the UI. Immediate or Typewriter, as
-                  described under DIALOGUE.
+                  described under DIALOGUE. Default Immediate.
   Aftertime       Time in seconds the line remains on screen. Default 1.0.
-  Text effect     Any effect applied to the displayed text, such as shake.
 
 
 <!-- ---------------------------------------------------------------------------- -->
 ### O:#:S — OBJECTIVE START
 
-L##E-### || O:#:S || Title: N/A || Description: N/A || Optional: F || Marker: N/A
+L##E-### || O:#:S || Title: N/A || Optional: F
 
   Title         The objective text as it appears in the pause menu. Keep it in
                 the player character's voice, as it is her own note to herself.
-  Description   Any longer explanation for the developer. This is design intent
-                and is not necessarily shown to the player.
   Optional      T or F. Whether the level can be completed without it.
                 Default F.
-  Marker        Whether the objective places a marker on the map or compass, and
-                where. N/A if it places none.
 
 
 <!-- ---------------------------------------------------------------------------- -->
 ### O:#:U — OBJECTIVE UPDATE
 
-L##E-### || O:#:U || Title: N/A || Description: N/A || Reason: N/A
+L##E-### || O:#:U || Title: N/A || Reason: N/A
 
   Title         The new objective text replacing the previous one.
-  Description   Any longer explanation for the developer.
   Reason        What in the fiction caused the objective to change. This keeps
                 the update traceable to the event that motivated it.
 
@@ -602,6 +735,32 @@ L##E-### || O:#:E || Title: N/A || Result: N/A || Consequence: N/A
                 new objective opened. N/A if nothing follows.
 
 
+<!-- ---------------------------------------------------------------------------- -->
+### OL — OUTLINE
+
+L##E-### || OL || Name: N/A || Description: N/A || Sequence: N/A
+
+  Name          Short label for the span being outlined.
+  Description   The general notes: what happens across this stretch of the level,
+                written as design intent rather than as a single event.
+  Sequence      The event ID range this outline covers, written as a span, once
+                the span exists. N/A while the events beneath it are still
+                unwritten.
+
+  OL is a drafting type and a completeness metric. Two legitimate uses:
+
+    1.  A stretch of level that is designed but not yet broken into events.
+        Sequence is N/A. This is debt, and the count of these lines is how far
+        the level is from finished.
+
+    2.  A heading over a series of events that follow it, summarising them so a
+        reader — or an agent — can grasp the shape without reading every line.
+        Sequence points at that span.
+
+  Never use OL for something that is one event. If it can be written as a real
+  type, write it as a real type.
+
+
 <!-- ============================================================================ -->
 <!-- ==========                       COMMENTS                       ========== -->
 <!-- ============================================================================ -->
@@ -616,6 +775,11 @@ Example:
 
 A comment may occupy its own line, or several consecutive lines. Do not place a
 comment on the same line as a script line, as the parser reads one event per line.
+
+Comments are for things automation must NOT act on: scene banners, open questions,
+proposals, post-MVP ideas, and notes about why something is the way it is. Anything
+that has to reach the build is an event line, not a comment. If a note describes a
+rule the game must obey, it is a SYSTEM ACTION, however informally it was written.
 
 Note that the DEFINITIONS and LEVEL SCRIPT banner lines are NOT comments. They
 delimit the two sections of the document and must remain in place.
@@ -660,24 +824,27 @@ E-C = N/A
 
 L01E-001 || PA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
 L01E-002 || SA || Name: N/A || Description: N/A || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
-L01E-003 || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
-L01E-004 || T:@ || Line: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-003 || D:@ || Line: N/A || Tone: N/A || Color: white || Display Method: Typewriter || Aftertime: 1.0
+L01E-004 || T:@ || Line: N/A || Color: white || Display Method: Typewriter || Aftertime: 1.0
 L01E-005 || HA || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
 L01E-006 || WA || Name: N/A || Description: N/A || Target: N/A || Clip: N/A || Duration: N/A || Loop: F || Animation Event: N/A || Trigger: N/A
-L01E-007 || CA:@ || Name: N/A || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
-L01E-008 || EA:@ || Name: N/A || Description: N/A || Enemy: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
+L01E-007 || CA:@ || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-008 || EA:@ || Name: N/A || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || State: N/A || Root Motion: F || Animation Event: N/A
 L01E-009 || CB:T || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
 L01E-010 || MB:T || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
-L01E-011 || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L01E-011 || C || Name: N/A || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Camera Block: T || Movement Block: T || Blocking: T
 L01E-012 || VFX:UI || Name: N/A || Description: N/A || Execution: N/A
 L01E-013 || VFX:PV || Name: N/A || Description: N/A || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
-L01E-014 || SFX || Name: N/A || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
-L01E-015 || PFX || Name: N/A || Description: N/A || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
-L01E-016 || SM || Line: N/A || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
-L01E-017 || O:1:S || Title: N/A || Description: N/A || Optional: F || Marker: N/A
-L01E-018 || O:1:U || Title: N/A || Description: N/A || Reason: N/A
-L01E-019 || O:1:E || Title: N/A || Result: N/A || Consequence: N/A
-L01E-020 || MB:F || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
-L01E-021 || CB:F || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+L01E-014 || SFX || Name: N/A || Description: N/A || Action: Play || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-015 || MUS || Name: N/A || Description: N/A || Action: Play || Audio: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-016 || PFX || Name: N/A || Description: N/A || Action: Apply || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-017 || IT || Name: N/A || Description: N/A || Action: Place || Quantity: 1 || Source: N/A || Effect: N/A
+L01E-018 || SM || Line: N/A || Category: N/A || Color: white || Display Method: Immediate || Aftertime: 1.0
+L01E-019 || O:1:S || Title: N/A || Optional: F
+L01E-020 || O:1:U || Title: N/A || Reason: N/A
+L01E-021 || O:1:E || Title: N/A || Result: N/A || Consequence: N/A
+L01E-022 || OL || Name: N/A || Description: N/A || Sequence: N/A
+L01E-023 || MB:F || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+L01E-024 || CB:F || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
 
 ============================    END OF LEVEL SCRIPT     ===================================================
