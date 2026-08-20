@@ -1,0 +1,670 @@
+<!-- ==========================================================================
+     L01 — MR. MOONLIGHT, DAY 1
+     Converted to SLDD format from the previous EVT-### working draft.
+
+     Conversion notes:
+       - Event IDs map one to one: EVT-001 becomes L01E-001. No event was
+         reordered, merged or dropped.
+       - Old NOTE events became comments, which is what the SLDD reserves
+         comments for. Their IDs are retired and not reused: L01E-196,
+         L01E-206, L01E-224.
+       - Old BEAT events are mapped to SA with Blocking: T. The SLDD has no
+         BEAT type; consider adding one.
+       - Old OUTLINE events use the type OL, which is NOT yet in the SLDD guide.
+         It needs adding, with parameters: Name || Description || Intended Type.
+         These 26 events carry real design content, so turning them into
+         comments would hide the back half of the level from automation.
+       - Every parameter is present and in the order the guide fixes. Values
+         that were not in the source are N/A, or the stated default.
+
+     Objective numbering assigned during conversion:
+       1  L01E-007 S  ->  L01E-015 E
+       2  L01E-033 S  ->  L01E-042 E
+       3  L01E-045 S  ->  L01E-053 U  ->  L01E-063 E
+       4  (no START)  ->  L01E-087 U  ->  L01E-125 U  ->  L01E-172 E   <-- BUG
+       5  L01E-100 S  ->  L01E-124 E
+       6  L01E-173 S  ->  L01E-186 E
+       7  L01E-192 S  ->  L01E-203 U  ->  L01E-211 U  ->  L01E-221 E
+
+     Search this file for "SCRIPT BUG" and "CONVERSION FLAG" for everything
+     that needs a decision.
+========================================================================== -->
+
+============================		DEFINITIONS			===================================================
+
+###ID CARD:
+Game: MR. MOONLIGHT
+Author: Mustard
+Date: 29/07/2026
+Level Number: 1
+Level Name: Day 1. Muddy
+Special comment: This is the vertical slice demo version of level 1.
+
+###CHARACTERS:
+T = Tracey
+R = Rylee
+H = Holly
+S = Scott
+V = Vernon
+
+###ENEMIES:
+E-W = Wolf
+E-S = Cultist Spotter
+E-Z = Cultist Zealot
+E-F = Furman
+
+============================	END OF DEFINITIONS		===================================================
+
+
+============================		LEVEL SCRIPT		===================================================
+
+<!-- =============================================================================
+     SCENE 01 — WAKING AT THE CAMPSITE 6:30 am
+============================================================================= -->
+
+
+L01E-001 || VFX:PV || Name: Black screen || Description: The camera view is completely dark. || Execution: after the player starts a new game from the main menu, the black screen is already active || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-000 || VFX:UI || Name: Black screen || Description: after the player starts a new game from the main menu, the black screen is already active. All UI elements (except the subtitle text) are black. || Execution: N/A
+L01E-000 || CB:T || Name: Camera blocked from start || Reason: the start of level 1 has tracey waking up. the tutorial unfold slow naturally, so the first interaction (described later in this file which is setting off the clock alarm) will teach players to use the camera view || Look Target: Looking at your arms, the clock is visible in a corner || Release: N/A || Transition: N/A
+L01E-000 || MB:T || Name: Movement blocked from start || Reason: the start of level 1 has tracey waking up. the tutorial unfold slow naturally, movement will be recovered after setting up the alarm and the vomit animation || Release: N/A || Transition: N/A
+L01E-002 || SFX || Name: Radio Call || Description: A faint radio call can be heard in the distance. Its looped, but it has a pause among each repetition || Audio: N/A || Source: walkie talkie hidden in cooler || Volume: N/A || Loop: T || Fade: N/A
+L01E-003 || SFX || Name: Seiko alarm || Description: Tracey's Seiko watch alarm begins to ring. || Audio: N/A || Source: seiko wristwatch || Volume: N/A || Loop: T || Fade: N/A
+L01E-004 || D:T || Line: Uhhhh... || Tone: groggy, hangover || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-005 || D:T || Line: Auhhhhh... || Tone: groggy, hangover || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || VFX:UI || Name: Black screen fade out || Description: The black screen fades from any UI elements. || Execution: N/A
+L01E-007 || O:1:S || Title: That stupid alarm... || Description: N/A || Optional: F || Marker: N/A
+L01E-008 || D:T || Line: All right, all right already! || Tone: groggy, hangover, grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-006 || VFX:PV || Name: Blur || Description: Everything is slighly blurry except the Seiko watch. || Execution: this effect is set before we fade out the black || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-006 || VFX:PV || Name: Black screen fade out || Description: The black screen slowly fades. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-009 || D:T || Line: I hear you! I hear you... || Tone: groggy, hangover, grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+<!-- the next is a proposed event, or maybe just keep it with the C (cutscene event) NEW EVENT: Camera automatic movement | Origin: the camera is looking up at the top of the trees | target: the camera turns to look at the hand of the player (I think this metod can be controlled with a bezier line like https://assetstore.unity.com/packages/tools/game-toolkits/curved-path-generator-243012, I also own the DOTween Pro asset if that's any help https://assetstore.unity.com/packages/tools/visual-scripting/dotween-pro-32416)-->
+L01E-000 || CB:F || Name: Camera control enabled || Reason: enable only after the camera automatic movement finish || Look Target: N/A || Release: N/A || Transition: N/A
+
+L01E-000 || PA || Name: Player looks at the wristwatch || Description:  || Trigger: the player focus on the unblurred zone that shows the clock it will unfold the following events || Target: N/A || Requires: N/A || Blocking: T || Branch: N/A
+L01E-012 || VFX:UI || Name: Watch interaction icon || Description: Show the interaction icon when the player looks at the watch. || Execution: N/A
+L01E-000 || PA || Name: Player stops watch alarm || Description: The player click the interaction button to stop the alarm || Trigger: The player click the interaction button to stop the alarm || Target: N/A || Requires: N/A || Blocking: T || Branch: N/A
+L01E-013 || HA || Name: Reach for watch || Description: First-person animation: Tracey reaches toward the watch and clicks the watch. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+<!-- maybe for the next event (which was triggered by PA (stops watch) ) this should call a universal event to stop the mentioned event, do you think it should be a good idea? what is your suggestion ? -->
+L01E-003 || SFX || Name: Seiko alarm OFF|| Description: Player turns off the alarm || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-015 || O:1:E || Title: That stupid alarm... || Result: completed || Consequence: N/A
+
+L01E-016 || VFX:PV || Name: Vision clears slightly || Description: Tracey's vision clears slightly, but remains a bit hazy and blurry. The clearer zone for focus in the scene now is a table with the water canteen|| Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-017 || D:T || Line: Ufffffffff... || Tone: groggy, hangover, a bit of relieff || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-018 || D:T || Line: It's way too early... || Tone: groggy, hangover, anoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-019 || D:T || Line: Why the fuck didn't I turn it off? || Tone: groggy, hangover, anoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+
+L01E-000 || CB:T || Name: Camera block || Reason: we block the camera to allow the next cutscene || Look Target: N/A || Release: N/A || Transition: N/A
+L01E-020 || C || Name: Wake-up sequence || Description: Temporarily disable player control for the wake-up sequence. || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L01E-021 || HA || Name: Get up || Description: First-person animation: Tracey gets up. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-022 || VFX:PV || Name: Blur and camera shake || Description: Her vision suddenly blurs and the camera shakes. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-023 || SFX || Name: Disorientation sting || Description: Sudden disorientation sting. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-023 || SFX || Name: pre vomit sound || Description: sound of thic liquid building up || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-024 || D:T || Line: Uhhhg... shit... || Tone: Her voice fades || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-025 || HA || Name: Drop and vomit || Description: Tracey drops to her knees and vomits. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+
+L01E-026 || SA || Name: Reveal stamina bar || Description: Reveal the stamina bar and drain stamina during the vomiting animation. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-027 || D:T || Line: Puaaaghhhhhhhhhhhhhhhhhhh! || Tone: retching, heaving || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-028 || D:T || Line: Ah... ah... fuck... || Tone: tired, disgusted || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-029 || D:T || Line: Getting too old for this shit. || Tone: tired, annoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-030 || HA || Name: Wipe mouth || Description: Tracey wipes her mouth; her hand briefly passes in front of the camera. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-031 || VFX:PV || Name: Vision clears, focus table || Description: Her vision clears a little more and the camera focuses on the table. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-032 || D:T || Line: Uhhhh... water... || Tone: Spoken weakly || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-033 || O:2:S || Title: Water, please... || Description: N/A || Optional: F || Marker: N/A
+
+L01E-000 || HA || Name: stand up || Description: Tracey stands up after puking || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || MB:F || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+L01E-000 || CB:F || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+
+L01E-035 || PA || Name: Pick up canteen || Description: The player picks up the canteen from the table. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+<!-- I was about to write again some MB and CB evbents bc the next animation also takes control away, MAYBE, we should also allow for the player animations (hand animations), and cutscene events to take a paramneter to indicate movement, camera block, etc, also what would be the path of the camera, etc, idk-->
+L01E-036 || HA || Name: Drink from canteen || Description: Tracey immediately drinks from the canteen while looking up at the trees. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-037 || SM || Line: Canteen picked up. || Category: N/A || Color: blue || Display Method: Immediate || Aftertime: 1.0 || Text effect: N/A
+L01E-038 || SFX || Name: Drinking sounds || Description: Drinking sounds. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-039 || PFX || Name: Stamina refill || Description: Refill part of the stamina bar and begin slow stamina recovery. || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-040 || VFX:PV || Name: Vision fully clears || Description: Tracey's vision clears completely. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-041 || D:T || Line: Ahhhhhhh... || Tone: relief || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-042 || O:2:E || Title: Water, please... || Result: completed || Consequence: N/A
+L01E-000 || MB:F || Name: N/A || Reason: N/A || Release: N/A || Transition: N/A
+L01E-000 || CB:F || Name: N/A || Reason: N/A || Look Target: N/A || Release: N/A || Transition: N/A
+
+<!-- =============================================================================
+     SCENE 02 — THE MISSING BOOTS 7 am
+============================================================================= -->
+
+L01E-043 || SFX || Name: Radio call louder || Description: The radio call becomes louder and easier to locate. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-044 || D:T || Line: What in the world? || Tone: surprise || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-045 || O:3:S || Title: Who's calling? || Description: N/A || Optional: F || Marker: N/A
+L01E-046 || HA || Name: store canteen in belt carrier, notice bare feet || Description: Tracey puts the canteen on her belt, then realizes she is not wearing boots. some hand movements of frustration as he says the next lines || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-047 || D:T || Line: Wha... what!? || Tone: surprise, angry || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-048 || D:T || Line: My boots! My fucking boots! || Tone: anger || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-049 || D:T || Line: Fucking assholes. || Tone: annoyed, grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-050 || T:T || Line: You've done it again! || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-051 || T:T || Line: My boots better not be in the fucking cooler, Rylee. || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-052 || T:T || Line: I better look around for my boots. || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-053 || O:4:S || Title: My fucking boots. || Description: N/A || Reason: N/A
+
+
+L01E-054 || PA || Name: Search the campsite || Description: The player searches the campsite. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+
+
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-055 || PA || Name: Find blue cooler || Description: The player finds a blue cooler in front of the RV. It contains two beers, two sodas, and three packets of crackers. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-056 || PA || Name: Attempt fifth item || Description: The player attempts to pick up five items. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-057 || T:T || Line: I can't carry all of it... Better choose wisely. || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-058 || SA || Name: Inventory capacity rule || Description: Introduce the inventory-capacity rule. Allow the player to discard an item from the backpack menu or with the assigned discard input. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-000 || SM || Line: Right now you can only carry 4 items || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+<!-- END BLOCK -->
+
+
+L01E-059 || PA || Name: Find red cooler || Description: The player finds a red cooler behind the RV. It contains the radio and matches. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-060 || D:T || Line: Huh... This isn't where you belong. || Tone: confusion || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-061 || PA || Name: Pick up radio || Description: The player picks up the radio. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+
+L01E-000 || HA || Name: picking up radio || Description: you pick up the radio and its seen from the POV how you hold it against your right ear || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-062 || SA || Name: Start radio conversation || Description: Start the radio conversation. The player may move, but at reduced speed while Tracey holds the radio. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-000 || PFX || Name: player reduced speed, no jumps, blocked interaction with other objects || Description: limit player actions while you hear Tracey and Rylee convo || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+
+L01E-063 || O:3:E || Title: Who's calling? || Result: completed || Consequence: N/A
+
+<!-- =============================================================================
+     SCENE 03 — RADIO CONVERSATION WITH RYLEE 7:30 am
+============================================================================= -->
+
+L01E-064 || D:T || Line: Uhhh... hello? || Tone: doubt, confusion || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-065 || SA || Name: Beat: no response || Description: No response. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: T || Branch: N/A
+L01E-066 || D:T || Line: Hellooo? || Tone: impatient || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-067 || SA || Name: Beat: no response || Description: No response. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: T || Branch: N/A
+L01E-068 || D:T || Line: You better start talking. You took my boots, bitch! || Tone: fed up || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-069 || D:R || Line: Calm down. Good morning to you too! Huh... so you had the third radio. || Tone: condescending, witty, tired  || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-070 || D:T || Line: It was in a fucking cooler. I bet you were the airhead who left it there. Where are my boots? || Tone: annoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-071 || D:R || Line: I love you too, Tracey. Anyway, thanks for finding it. Robert would've killed me if it got lost. || Tone: relief, tired || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-072 || D:T || Line: Rylee. || Tone: blunt, deapan, annoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-073 || D:R || Line: I barely slept. Wild night. I was looking for the radio, but I guess I took a little nap. What time is it, anyway? || Tone: chatty, tired || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-074 || D:T || Line: RYLEE! || Tone: anger || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-075 || D:R || Line: Shhhh! Everyone is still sleeping. What do you want? || Tone: whisper, surprise || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-076 || D:T || Line: My motherfucking boots! Where are they? I'm walking around in my fucking socks on the fucking wet forest floor. || Tone: annoyed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-077 || SA || Name: Beat: brief pause || Description: Brief pause. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: T || Branch: N/A
+L01E-078 || D:R || Line: Oh, Tracey... don't kill me. I have them with me. || Tone: guilty, slow paced || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-079 || D:T || Line: You fat bitch. || Tone: anger || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-080 || D:R || Line: Hey! I'm sorry. Last night, you, Robert, and I went back to camp for more booze and the sleeping bags. Then you started puking and passed out. We left you all cozy near the bonfire, and I took off your boots so you could sleep comfortably... I guess I forgot I still had them. I'm sorry! It was an accident, I swear! || Tone: chatty, begging || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-081 || D:T || Line: Mmhmm. It better have been—and not one of your jokes. || Tone: Sarcastic || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-082 || D:R || Line: You should see yourself when you sleep. You look like a puppy, even after puking a gallon of shit. I'll take a photo while you're sleeping so you can see what I mean. || Tone: teasing || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-083 || D:T || Line: Gross. || Tone: disgusted || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-084 || D:R || Line: Relax. I'll get your consent—and only when you're naked. || Tone: inuendo, teasing || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-085 || D:T || Line: Fuck you, creep. Anyway, where the hell are you guys? You left me all alone. || Tone: grumpy, fed up || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-086 || D:R || Line: You don't remember? I guess not. You made a pretty big mess of yourself early on. Well, we're still in the Glade... Ah, I feel sorry for you, Tracey! The meteor shower was amazing! Then we lit another bonfire, had some zaza with hot dogs and vodka, and I made out with Holly and that Greek body of hers. Then I blew Scott while giving a double handjob to Will and the redskin. Shannon was there too, watching everything from her good-girl chair. || Tone: chatty, reminiscent, annoying tease || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-088 || D:T || Line: Shut the fuck up, you filthy whore. Ugh, disgusting. Just tell me where you are! || Tone: starts angry and disgusted, then just grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-089 || D:R || Line: Ah, don't hate me just because I'm pretty! || Tone: teasing, jest || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-090 || D:T || Line: Rylee, nobody thinks you're pretty, you cow. || Tone: deadpan, slowly || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-091 || D:R || Line: So rude! Well... uhh... I think we're not that far from camp? What did Will say? Uh... east! Yes, east! Just head east from the campsite. Straight ahead! || Tone: feelings hurt, then confused when remembering, then chatty || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-092 || D:T || Line: What kind of directions are those? || Tone: annoyed, confused || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-093 || D:R || Line: Sorry! Do you want me to wake Scott so he can come rescue you? || Tone: teasing || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-094 || SA || Name: Beat: Tracey hesitates || Description: Tracey hesitates. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: T || Branch: N/A
+L01E-095 || HA || Name: Look at radio || Description: First-person animation: Tracey looks at the radio uncertainly. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-096 || D:T || Line: Nah. A barefoot walk through the forest is exactly what I need to connect with my inner self. || Tone: sarcastic, grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-097 || D:R || Line: Your pride wins again. You missed your chance to be alone with Scott, dumbass. || Tone: smug, witty || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-098 || D:T || Line: Shut up! || Tone: ashamed, angry || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-099 || D:R || Line: Yeah, sorry. I will. I'm really tired. Mmmh... go inside Will's tent. There was an extra compass in there, so you can head east. That British weirdo keeps the key to his tent's lock under the RV rug. || Tone: chatty, tired || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-100 || O:5:S || Title: Get the compass from Will's tent. || Description: N/A || Optional: F || Marker: N/A
+L01E-101 || D:T || Line: Uhhhh... why do you- wait. What were you doing inside his tent? || Tone: confused, angry || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-102 || D:R || Line: Relax. I was just having a peek. I wanted to find underwear with cum stains, but I guess he's pretty clean. || Tone: teasing || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-103 || D:T || Line: Ugh... you're the worst. || Tone: disgusted, fed up || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-104 || D:R || Line: Yours truly. Sorry, I'm falling asleep. We'll wait for you, barefoot princess... || Tone: tired || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-105 || HA || Name: Lower the radio || Description: Tracey lowers the radio with a pout. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+<!-- end of PFX to limit player actions -->
+L01E-107 || T:T || Line: You fucking prick. || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+
+<!-- =============================================================================
+     SCENE 04 — WILL'S TENT AND THE COMPASS 8 am
+============================================================================= -->
+
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-108 || PA || Name: Try locked tent || Description: The player attempts to open William's tent without the key. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-109 || T:T || Line: The key was under the rug, according to the cow. || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+<!-- END BLOCK -->
+
+
+L01E-110 || PA || Name: Interact with RV rug || Description: The player interacts with the rug beneath the RV. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-111 || HA || Name: Lift rug, take key || Description: Tracey lifts the rug and picks up the key. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-112 || SM || Line: William's tent key. || Category: N/A || Color: blue || Display Method: Immediate || Aftertime: 1.0 || Text effect: N/A
+L01E-113 || D:T || Line: Now, let's get that compass. || Tone: grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-114 || PA || Name: Interact with tent door || Description: The player interacts with William's tent door. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-115 || HA || Name: Unlock and open tent || Description: Tracey unlocks the door. The lock falls and the tent opens. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-116 || PA || Name: Pick up compass || Description: The player picks up the compass. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-117 || HA || Name: Take compass pouch || Description: Tracey takes the compass and map neck pouch from inside a parka. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-118 || SM || Line: Map and compass. || Category: N/A || Color: blue || Display Method: Immediate || Aftertime: 1.0 || Text effect: N/A
+L01E-119 || SA || Name: Enable map and compass || Description: Enable the map-and-compass navigation mechanic. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-120 || PA || Name: Examine clothing || Description: Optional: the player examines the scattered clothing. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-121 || T:T || Line: Rylee... you didn't... || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+<!-- END BLOCK -->
+
+
+<!-- PROPOSAL: whenever entering inclosed spaces thru a door. I want to do a switch of the player to another space (like opening a door in resident evil 1 (think the door animation), that way, there is a tiny black timeout to create tension and also to offer a different space focused on interior so I can play with spaces making something bigger on the inside, etc, this can be helpful outside of the MVP in the later levels of the game, in the more bizzare stages) -->
+L01E-122 || PA || Name: Exit the tent || Description: The player exits the tent. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-123 || D:T || Line: Right. East. Let's go east. || Tone: grumpy || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-124 || O:5:E || Title: Get the compass from Will's tent. || Result: completed || Consequence: N/A
+L01E-087 || O:4:U || Title:  Head East to the Glade and get my boots. || Description: N/A || Reason: N/A
+
+<!-- =============================================================================
+     SCENE 05 — THE FOREST ROAD TO THE GLADE 8:30 am
+============================================================================= -->
+
+L01E-126 || PA || Name: Travel east || Description: The player travels east through the forest. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-127 || SA || Name: Wolf crosses path || Description: A single wolf crosses the player's view at a distance, following a predefined path. It ignores Tracey. Because she is barefoot, she cannot catch it. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-128 || SFX || Name: Distant wolf calls || Description: Distant wolf calls and movement through the brush. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-129 || D:T || Line: Ah—! || Tone: A muffled gasp || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-130 || T:T || Line: A fucking wolf! || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+<!-- the fear factor is a stat that is not trackable in the UI (unlike the stamina bar) -->
+L01E-131 || PFX || Name: Fear rises || Description: Increase Tracey's fear state. || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+<!-- the chromatic aberration is a visual effect that can be issued alongside the increase of the fear factor along with an increase in heave breathing -->
+L01E-132 || VFX:PV || Name: Mild chromatic aberration || Description: Add mild chromatic aberration. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-133 || SFX || Name: Heavier breathing || Description: Add slightly heavier breathing. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+<!-- END BLOCK -->
+
+L01E-134 || PA || Name: Continue east || Description: The player continues east. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-135 || SFX || Name: Attack sounds approach || Description: Sounds of an attack become audible as the player approaches the Glade. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-136 || D:T || Line: What's happening? || Tone: confused, scared || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-137 || D:T || Line: Jesus! || Tone: scared || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-138 || T:T || Line: God... what the fuck is going on? || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-139 || PFX || Name: Fear rises again || Description: Increase Tracey's fear state again. || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-140 || VFX:PV || Name: Aberration intensifies || Description: Intensify chromatic aberration. || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-141 || SFX || Name: Breathing intensifies || Description: Intensify Tracey's breathing and the distant struggle. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-142 || PA || Name: Near the Glade || Description: The player continues east and nears the Glade. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-143 || SFX || Name: Attack sounds fade || Description: The attack sounds fade away before the player can see into the Glade. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-144 || SA || Name: Beat: unnatural silence || Description: Brief, unnatural silence before the reveal. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: T || Branch: N/A
+
+<!-- =============================================================================
+     SCENE 06 — THE EMPTY GLADE 10:30 am
+============================================================================= -->
+
+L01E-145 || PA || Name: Enter the Glade || Description: The player enters the Glade. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+<!-- the next SA event could very well be a Jira ticket that describes the diorama and the props inside it -->
+L01E-146 || SA || Name: Stage abandoned Glade || Description: Stage the Glade as abandoned: belongings are scattered across the ground, the bonfire is extinguished, and the sleeping bags are in disarray. A pickaxe is embedded in the telescope frame. Tracey's boots lie near the bonfire. Near a table are a beer, a soda, and a Polaroid photograph of the group. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-147 || D:T || Line: Friends? || Tone: low voice, Her voice begins to break || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+
+<!-- the folowing 3 blocks are triggered by interacting at the object, ideally we direct the attention of the player visually towards the object, if not we could light hightlight it to call the attention of the player -->
+
+<!-- the boots are highlighted as a result of looking at the boots directly. -->
+L01E-148 || VFX:UI || Name: Highlight the boots || Description: Highlight the boots with a downward arrow and an interaction prompt. || Execution: N/A
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-149 || PA || Name: Pick up boots || Description: The player picks up Tracey's boots. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-150 || D:T || Line: Rylee... || Tone: shocked, sad, breaking voice || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-151 || HA || Name: Put on boots || Description: First-person animation: Tracey puts on her boots. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-152 || SA || Name: Enable sprinting || Description: Enable sprinting. Sprinting produces more noise than walking. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+<!-- END BLOCK -->
+
+<!-- the photo is highlighted as a result of looking at the photo directly. -->
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-153 || PA || Name: Pick up Polaroid || Description: The player picks up the Polaroid photograph of the group. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-154 || D:T || Line: Guys... || Tone: shocked, sad, breaking voice || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-155 || HA || Name: Study photograph || Description: Tracey studies the photograph. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-156 || D:T || Line: I... || Tone: shocked, sad, breaking voice || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-157 || HA || Name: Stow photograph || Description: Tracey places the photograph inside the map-and-compass pouch. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+<!-- END BLOCK -->
+
+<!-- the boots are highlighted as a result of looking at the boots directly. -->
+<!-- START BLOCK: TRHE FOLLOWING BLOCK OF EVENTS DEPENDS FROM THE TRIGGERR OF THE FIRST EVENT -->
+L01E-158 || PA || Name: Inspect telescope || Description: The player inspects the telescope. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-159 || HA || Name: Pull pickaxe free || Description: Tracey examines the pickaxe embedded in the telescope frame and pulls it free. She notices a shining light in the distant forest. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-160 || SM || Line: Pickaxe. || Category: N/A || Color: blue || Display Method: Immediate || Aftertime: 1.0 || Text effect: N/A
+L01E-161 || SA || Name: Unlock pickaxe || Description: Equip or unlock the pickaxe as a melee weapon. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-161 || SA || Name: distant shine || Description: during the whole sequence of the telescope as you take out the pickaxe you notice a distant flash in the forest, that's what auto prompts Tracey into looking at the telescope || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-162 || D:T || Line: Huh? || Tone: confused, intrigued || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-163 || C || Name: Telescope sequence || Description: Tracey automatically looks through the telescope. The player cannot leave telescope view until the shining light is located. view is enabled here but you cannot leave the telescope|| Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L01E-164 || SA || Name: Reveal distant cabin || Description: When the light is centered, reveal a distant cabin and a shadow near it. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-165 || D:T || Line: Who... are... || Tone: confused, intrigued || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-166 || SFX || Name: Wolves howl behind || Description: Wolves howl and snarl behind Tracey. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-165 || D:T || Line: Ahhhhh! || Tone: fear || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-167 || HA || Name: Pull from telescope || Description: Tracey abruptly pulls away from the telescope. || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+<!-- END BLOCK -->
+
+
+L01E-168 || SA || Name: Begin wolf encounter || Description: Restore player control and begin the wolf encounter. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-169 || PA || Name: Fight the wolf pack || Description: The player fights a pack of wolves using the pickaxe. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-170 || D:T || Line: I need to get out of here! || Tone: adrenaline, rushed || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-171 || T:T || Line: That cabin! I need to get there! || Color: white || Display Method: Typewriter || Aftertime: 1.0 || Text effect: N/A
+L01E-172 || O:4:E || Title: Head East to the Glade and get my boots. || Result: completed || Consequence: N/A
+L01E-173 || O:6:S || Title: Reach the cabin. || Description: N/A || Optional: F || Marker: N/A
+
+<!-- =============================================================================
+     SCENE 07 — THE ROAD TO VERNON'S CABIN 12:30 pm
+============================================================================= -->
+
+L01E-174 || PA || Name: Follow route to cabin || Description: The player follows the route toward the cabin. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-175 || SA || Name: Place bear trap || Description: Place a bear trap on the path. The first trap cannot kill Tracey, but it removes a large amount of health and stamina. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-176 || OL || Name: Branch A: zealot ambush || Description: BRANCH A: If the player avoids the bear trap, two zealot cultists attack on the road. The encounter must be survivable through combat. || Intended Type: N/A
+
+L01E-000 || OL || Name: Tracey screams when hitting melee or grunts in pain when hit || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name:  || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: next dialogue line is triggered after she kills the cultists || Description: N/A || Intended Type: N/A
+L01E-178 || D:T || Line: Oh God... || Tone: hyperventilating, shocked || Color: white || Display Method: Typewriter || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-179 || OL || Name: Branch B: spotter patrol || Description: BRANCH B: If the player is caught in the bear trap, the zealots do not attack. Two spotter cultists patrol at a distance with flashlights. || Intended Type: N/A
+L01E-180 || SA || Name: Spotter aggression rule || Description: In Branch B, the spotters remain non-hostile unless the player approaches or runs directly toward them. Fighting them in Tracey's injured state is intended to be fatal. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-181 || PA || Name: Avoid the patrol || Description: In Branch B, the player must wait for the patrol to pass or move around it. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+
+L01E-000 || OL || Name: tracey can make Muffled sounds of pain and anguish when her fear factor is high || Description: N/A || Intended Type: N/A
+L01E-183 || PFX || Name: Injured fear and shake || Description: Increase fear and apply a stronger camera shake while Tracey is injured. || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-184 || PA || Name: Knock on cabin door || Description: The player reaches the cabin and knocks on the door. || Trigger: N/A || Target: N/A || Requires: N/A || Blocking: F || Branch: N/A
+L01E-185 || SA || Name: Cabin exterior staging || Description: The cabin door is covered in crosses. The exterior is mostly dark, with only a small light visible inside. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-186 || O:6:E || Title: Reach the cabin. || Result: completed || Consequence: N/A
+
+<!-- =============================================================================
+     SCENE 08 — VERNON'S CABIN 3 pm
+============================================================================= -->
+
+L01E-000 || OL || Name: entry hallway || Description: once tracey enters the cabin, there is a hallway that creates tension. The cabin is low lit with some candles, all windows are closed Tracey must walk it (this is like the first encounter with the zombie in resident evil 1) || Intended Type: N/A
+L01E-000 || OL || Name: walking thru wooden surfaces will cause loud footstep noises from your boots, if you don't have them equiped, it will be silent (we need to flag if the player had equuiped the boots on this for an upcoming dialogue) || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name: Coughing Vernon's noises || Description: at the end of the hallway there are some cough noises, will become lauder once you approach them, these noises will stop when you enter the room || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: gunpoint by Holly || Description: at the end of the hallway you enter a main room where Holly will be pointing the M1911 at you || Intended Type: N/A
+L01E-000 || C || Name: we will take control off from the player to do this cutscene || Description: N/A || Sequence: N/A || Duration: N/A || Skippable: F || Camera Mode: N/A || Blocking: T
+L01E-000 || D:H || Line: Ahh! || Tone: scared || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: NO!! || Tone: scared, shock || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || HA || Name: Hands up || Description: Tracey puts his hands up in fear and response to Holly's aim || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || OL || Name: staging of the cabin || Description: the cabin is quite simple, it has a stove chimney (not turned on), a bed where Vernon is resting, 2 windows (covered with tables), a little orthodox shirne with icons and a cruxifix, a little table with one of the walkie talkies and other stuff and 2 wooden chairs || Intended Type: N/A
+L01E-000 || OL || Name: Holly is shaking || Description: Holly is shaking and scared while she aims at you || Intended Type: N/A
+L01E-000 || D:H || Line: Trey??! || Tone: scared, relief, doubt || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Holly! || Tone: relief || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Holly puts down the weapon animation || Description: N/A || Intended Type: N/A
+L01E-000 || HA || Name: Tracey rushes and hugs Holly || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || D:T || Line: Holly! Thank God you are ok || Tone: relief, sobbing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: Tracey, what's going on! || Tone: scared || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: I don't know. I- I... The Glade! something happened! I don't know where is everybody || Tone: confusion, desperation || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: There are... people here. they... they took them || Tone: confusion, desperation || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || HA || Name: Tracey puts one hand palm on her face, like a headache || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || CA:H || Name: Hollie puts both hands on her mouth, as a surprise and shock response to Traycey's information || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || SFX || Name: Violent cauging by Vernon || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || CA:H || Name: Turns back to see Vernon in surprise || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || HA || Name: Tracey puts her hands down and looks focus on Vernon || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || CA:V || Name: Vernon gets up from his bed, sits in the bed and looks at Hollie || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || D:V || Line: What have you done?! || Tone: Angry || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Who's... || Tone: confusion || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Vernon stands up and points with his finger at Hollie || Description: N/A || Intended Type: N/A
+L01E-000 || D:V || Line: WHAT HAVE YOU DONE?! || Tone: Angry || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Vernon starts Coughing again and blood leaks from his mouth, he falls sitting on her bed and takes and takes one of his hands to his mouth || Description: N/A || Intended Type: N/A
+L01E-000 || CA:H || Name: Holly reaches his uncle and holds him || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || D:T || Line: Holly? || Tone: doubt || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: He's my uncle. Vernon, he's the ranger of... || Tone: low voice || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V || Line: They are back... || Tone: alarm || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Who's back? || Tone: confusion, intrigue || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V || Line: The people who took your friends, they are back, that... thing... || Tone: fear, alarm || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || CA:V || Name: Vernon looks angry at Holly || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || D:V || Line: You stupid kid, what are you doing here?|| Tone: anger || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V || Line: I told you to never come here *cough* and you *cough* bring *cough* your friends *coughin*|| Tone: anger then it breaks in pain with the cough || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Vernon stops talking and takes his hand to his mouth again and lowers his head || Description: N/A || Intended Type: N/A
+L01E-000 || HA || Name: Tracey lifts up her hand trying to reach Vernon concerned || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || D:T || Line: Is he Ok? || Tone: confusion, pitty || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: He has tuberculosis. || Tone: low voice, pitty || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || HA || Name: Tracey lowers her hand and gives one step back and looks concerned at Holly || Description: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Animation Event: N/A || Interruptible: T
+L01E-000 || D:H || Line: Don't worry. He's strong, He survived Korea... || Tone: trusting, dissmissing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: walkie talkie call || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: animation everyone is surprised, Tracey picks up the walkie talkie from the table (not the one she uses) || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: during this short radio conversation tracey will walk a bit around the room focusing stuff like stove, the window, the table and finally the little shrine || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: Guys!!!? || Tone: alarm, hope || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Tracey!!! are you ok?!! || Tone: alarm, shock || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Scott!!!, yes!, I'm ok, I'm safe with Holly, where are you? whats going on? are you ok? || Tone: alarm || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Shannon is with me, she's fine but she's in shock. || Tone: alarm, but calming down || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: we managed to run away. I- Robert, Will, Rylee. They took them! || Tone: alarm, shock, regret || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Jesus... I'm scared Scott... *sobbing* || Tone: alarm, sudden fear and sobbing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || CA:H || Name: Holly stands up and hughs the side of tracey || Description: N/A || Character: N/A || Clip: N/A || Duration: N/A || Loop: F || Blend: N/A || Root Motion: F || Animation Event: N/A
+L01E-000 || D:S || Line: Tracey, you are alright. I am alright, Shannon is alright. I need you to be strong right now || Tone: assuring, calm || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: ... Yes, sorry... I'm sorry Scott... what do we do now? || Tone: sobbing, understanding, calmer || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: We need to group up. I'm not sure where we are, we didn't go to far from the glade. || Tone: confused, trying to remember || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: This... is a tunnel. We are in a Mineshaft || Tone: confused, then deadpan when he says "We are in a Mineshaft" || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: A Mineshaft? || Tone: confused || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Yes... Don't move from where you are, I'll go with you. || Tone: assuring, confident || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: What about Shannon? || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Shannon is ok, she's just scared, we'll be careful, right Shannon? || Tone: assuring, confident || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Shannon? Shannon are you ok? || Tone: eary angiush voice tone || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Scott! What's that!!! || Tone: fear, alarm! || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: cultist yells and noise thru the radio || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: no more radio messages from Scott || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: SCOTT?! SCOTT!! || Tone: alarm, panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Looks at Holli, Hollie is shocked and scared || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: Tracey starts shaking and puts the radio back in the table || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: Holly!, I--, Scott! I need to go! || Tone: panic, breaking voice || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Animation: Tracey turns around violently ready to go, but is stopped violently, Tracey turns and realizes that Hollie is holding her hand|| Description: N/A || Intended Type: N/A
+L01E-000 || D:H || Line: Tracey, wait! where are you going! || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: I need to find scott! in.. the mineshaft! || Tone: panic, breaking voice || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: But you don't even know where to go! || Tone: concern, raising the voice || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: north west... this time the mine is north west from here || Tone: slowly, painfully || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Vernon stand up with effort, suprising Hollie, he approaches the table || Description: N/A || Intended Type: N/A
+L01E-000 || D:V|| Line: The Gun, give her the Gun || Tone: demanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: What? || Tone: unexpected, confused || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: She's gonna need it. I have other weapons, and I don't remember giving you my gun || Tone: imposing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Hollie hands Tracey the gun as she examines it, in the background Vernon is taking out a morphine vial from a bagpack in the table, he is inyecting himself, Tracey notices this || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name: drug relief noises from Vernon || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:T || Line: Mister? are you ok? || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: yeah... I'll be fine || Tone: dissmising, unc energy || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: We need to hurry kid, I see you have a compass, we'll go northwest from here. || Tone: impatient, imposing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: I'll follow you in a bit, but you need to go now, we need to be back here before darkness || Tone: imposing, concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: You know how to use that? || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Tracey pulls up the gun again to examine it and pulls back the slide  || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: ...yeah || Tone: a bit of confidence || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Good, take this too, you are naked.. || Tone: relief || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Vernon hands the backpack from the table, animation of tracey putting the backpack.  || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: The backpack will increase the carry amount of items, inside it will have 30 pistol rounds, 1 morphine vial and a soda. || Description: N/A || Intended Type: N/A
+L01E-000 || SM || Line: backpack, you can now carry more stuff || Category: N/A || Color: blue || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Thanks || Tone: a bit of gratitude || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: There is a tower near the mine entrance, don't go near it must be swarming with those heathens... || Tone: explaining, then hatred || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Hurry now, you need to be fast, and you need to be quiet. || Tone: imposing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: I'll get my gear and follow you soon. I'll use the radio to *cough hard again* || Tone: imposing then pain || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+ 
+L01E-000 || OL || Name: Vernon falls again this time on the flor. Hollie looks in shock and kneels next to him, when he falls, a loud thum noise accompanies the fall, and the Christ icon from the shrine falls || Description: N/A || Intended Type: N/A
+L01E-000 || D:H || Line: Uncle!! || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Animation: tracey tries to kneel to help, Hollie turns her head to us || Description: N/A || Intended Type: N/A
+L01E-000 || D:H || Line: No!, you go and get Scott, I'll stay here. || Tone: demanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: A little of fear factor is increased, animatioon of shaking hands from Tracey, to which hollie will notice hold our hand and look at us || Description: N/A || Intended Type: N/A
+L01E-000 || D:H || Line: Trey... you look terrible. you are the strongest of us. Here... take it easy || Tone: calming, soothing, understanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Hollie hands 2 marihuana blunts and  || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: What? || Tone: confused || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:H || Line: You've heard Scott, I also need you to be strong. whatever the fuck is going on, we need to be possitive || Tone: confident, strong || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Possitive? They have our friends!! you---!! || Tone: confused, and angry, but then you stopp suddenly thinking about what you are saying || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Tracey stops her angry temper, breathes and fear factor reduces, looks at blunt for a second || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: You are right... I'm sorry Holly. I'll be back soon. || Tone: understanding, apologizing and thankful || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Hollie smiles at us, and then goes back at the side of his uncopunsius uncle || Description: N/A || Intended Type: N/A
+L01E-000 || D:H || Line: You can't be scared now Tracey. I trust in you. Go now! || Tone: confident || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || T:T || Line: trust in myself?... || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+
+
+<!-- =============================================================================
+     SCENE 09 — THE MINE 4 pm
+============================================================================= -->
+
+L01E-192 || O:7:S || Title: Find Scott. The mine is north west from the cabin || Description: N/A || Optional: F || Marker: N/A
+L01E-000 || OL || Name: along the way there are 2 roaming wolves, and 2 zealots, they can be avoided || Description: N/A || Intended Type: N/A
+L01E-193 || OL || Name: Flak tower visible || Description: The flak tower is visible in the distance, but it cannot be entered. || Intended Type: N/A
+L01E-194 || SA || Name: Flak tower is lethal || Description: If the player approaches the flak tower, communicate with a TOUGHT (T:T) that it is occupied by an overwhelming number of cultists and is effectively a suicide area. || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-195 || OL || Name: Mineshaft entrance || Description: The mineshaft entrance is visible, there is a torch outside and a pagan totem with a skull || Intended Type: N/A
+
+
+<!-- =============================================================================
+     SCENE 09 — THE MINE 7 pm
+============================================================================= -->
+
+L01E-192 || O:7:U || Title: Find Scott. || Description: N/A || Optional: F || Marker: N/A
+L01E-197 || OL || Name: Reach mine entrance || Description: The player reaches the mine entrance. here there are some props around, also some items like the lamp and 7 extra bullets for the pistol || Intended Type: N/A
+L01E-198 || OL || Name: Obtain scott's lamp, this is a cutscene that takes away control from the player, the lamp is in the floor turned on, Tracey picks it up and examines it with the sharpie mark "scott" || Description: The player obtains or activates a mining lamp. || Intended Type: N/A
+L01E-000 || D:T || Line: Scott!... || Tone: shock || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: give control back to players || Description: N/A || Intended Type: N/A
+L01E-000 || SM || Line: Flashlight || Category: N/A || Color: blue || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SM || Line: Press (up) to turn on/off the flashlight || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-199 || OL || Name: Linear mine route || Description: The mine route is mostly linear. || Intended Type: N/A
+L01E-200 || OL || Name: Cultists in the mine || Description: The player encounters and fights cultists inside the mine. || Intended Type: N/A
+L01E-000 || OL || Name: As you approach near the end of the lineal tunnel you can find on the floor Scott's bloodstains || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: oh no! || Tone: concern, anguish || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Please be ok, please be ok || Tone: concern, anguish || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-201 || OL || Name: Find Scott unconscious || Description: On the far side of the mine, Tracey finds Scott unconscious in a room with bunk beds, there is a room to the side a makeshift (ww1 style) infirmary room. Shannon is nowhere to be seen || Intended Type: N/A
+L01E-202 || OL || Name: Infirmary supplies || Description: The infirmary contains water, vodka, a stretcher, a lamp, and an Arisaka rifle. || Intended Type: N/A
+L01E-192 || O:7:E || Title: Find Scott. || Description: N/A || Optional: F || Marker: N/A
+L01E-000 || D:T || Line: SCOTT!! || Tone: shock, panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation: tracey drops to the side of scott and check him || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: Trey... hello... || Tone: pain, breathing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: oh God, you are bleeding || Tone: concern, panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation: pressing scott's gut wound || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: just a scratch... Shannon, she escaped... || Tone: pain, breathing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: I'm sorry Tracey... I'm sorry for all..... || Tone: pain, breathing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: shut up scott, you can't die now || Tone: anger (denial) || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: radio call || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: animation tracey picks up radio with left hand, while this animation is happening Movement is blocked as tracey is holding Scott wound, you are able to see around || Description: N/A || Intended Type: N/A
+L01E-000 || D:V|| Line: Kid? are you ok? I've been trying to call you for a while || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Yes, I'm ok, I found Scott, he's bleeding bad || Tone: relief, then worry || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: please mister! help me! || Tone: panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Where are you? || Tone: demanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: I'm... inside the mine, there are a lot of bunk beds || Tone: confused || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Bunk beds..... You are near an exit. That's why the radio works now || Tone: explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Listen kid, I'm far from where you are. You'll have to save him yourself. || Tone: explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Mister! I don-t... I-! || Tone: panic, fear || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Calm yourself, God has not abandoned you. || Tone: concern, understanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: There is an infirmery next to you. Vandages. Mophine. use them. Hurry || Tone: demanding, explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-203 || O:8:S || Title: Find first aid || Description: N/A || Reason: N/A
+L01E-000 || OL || Name: Tracey stows the walkie talkie, you can move now || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: Tracey enters the infirmary next room, there are ww2 japanese posters and signs || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: morphine and vandages are in a table || Description: N/A || Intended Type: N/A
+L01E-203 || O:8:U || Title: Patch up Scott || Description: N/A || Reason: N/A
+L01E-000 || OL || Name: if you try to use the vandage or morphine on yourself, prevent while the objective is active and show a (T:T) "Scott needs this" || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: once you got the items you can go back to scott and interact with him, this will trigger an animation where you candage and inject him || Description: N/A || Intended Type: N/A
+L01E-203 || O:8:E || Title: Patch up Scott || Description: N/A || Reason: N/A
+L01E-000 || D:S || Line: huh... that's the spot... I'm happy you came along to the trip after all... || Tone: pain, breathing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: shut up Scott, don't talk || Tone: anger (denial) || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: yes ma'am... || Tone: pain, breathing || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: radio call || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:V|| Line: What's up kid? || Tone: concern, impatient || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: I treated Scott, the bleading stopped. || Tone: relief, grateful, tired || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Good, good... || Tone: low voice || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: listen, you need to get outta there. It's getting real dark outside || Tone: concern, quickly || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: but Scott! he can't move! || Tone: concern, panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: you'll have to drag him, there should be a stretcher around || Tone: explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-203 || O:9:S || Title: Find the stretcher || Description: N/A || Reason: N/A
+L01E-000 || D:V|| Line: also listen this kid... sorry, Tracey right? || Tone: demanding, then understanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: yeah... || Tone: calmed, slow || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: Tracey, you gotta get somewhere safe, you can't come back, the enemy is all around here || Tone: explaining, concerned || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: But! what about the others? Shannon? || Tone: concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: save yourself first, then we'll see || Tone: blunt, explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: in the infirmery there is an exit. Head north, there is a chappel where you can hide || Tone: explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: time is running out, I'll try to meet you there || Tone: impatient || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: whatever you do, don't let them catch you, get to safety before 3 am || Tone: impatient, concern || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: 3 am? what do you mean || Tone: confused, fear || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: You'll die, anything dies... I... we'll talk later about that, you need to get the hell outta there NOW! || Tone: confused, then dismising, then impatient || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: hey... Vernon right? || Tone: empathic, slow || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: yes. || Tone: blunt || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: thank you... be careful || Tone: grateful, caring || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:V|| Line: heh, you be careful kid. you can do this, I'll meet you on the Chappel || Tone: expalining, blunt || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: you finish the radio message. Scott seems relaxed and is looking at you. || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: who's that? || Tone: relaxed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Vernon, he's Holly's uncle || Tone: explaining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: ahhh, yes, the 'boogeyman' || Tone: relaxed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Scott, I think he is our best chance of getting outta here alive || Tone: annoyed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: yeah. I'm joking, Holly can be weird sometimes too || Tone: relaxed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation: you let go of scott and stand up, movement is given back to the player || Description: N/A || Intended Type: N/A
+L01E-000 || T:T || Line: 'sometimes'? || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Now wait here || Tone: bossy || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: not going anywhere || Tone: relaxed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: the player now search for the stretcher, is close by on some bunk bed rows, near old blood stains || Description: N/A || Intended Type: N/A
+L01E-203 || O:9:U || Title: Load Scott || Description: N/A || Reason: N/A
+L01E-000 || SM || Line: press B to drag or drop the Streecher || Category: N/A || Color: white || Display Method: N/A || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: the player interacts with the streecher which disable the use of any items or weapons when you carry it, it also has an impact on your speed when you use it || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: now the player must head towards Scott and load him the "press B to drag or leave the Streecher" SM from earlier also shows again when you are next to Scott || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: once you drop the streecher near scott an automatic animation happens where you load Scott || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: haha, careful with the goods, still hurts a bit you know? haha || Tone: relaxed, funny || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: *making pantingh and effort noises while carrying scott into the streecher* Do you have any idea of how heavy you are? || Tone: complaining, effort || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: hahahaha, fat, slim, I don't care as long as I'm your type... || Tone: relaxed, funny || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Animation focus camera on scott face, who looks at us with a smirk || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: ah, so you can still blush, cute... || Tone: relaxed, admiration || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: shut up scott, read the room, you are about to die || Tone: annoyed, tsundere || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: we carry again the streecher automatically give back control to the player in that mode || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: lets get out of here || Tone: impatient || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: aye aye, you have the wheel captain || Tone: relaxed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-203 || O:9:U || Title: Find the exit in the infirmary || Description: N/A || Reason: N/A
+L01E-000 || OL || Name: the exit is a door in the infirmary with a pinup naked woman poster, this door is not interacable untill this point, if you try to exit without scott we trigger a (T:T) "I can't leave Scott here" and avoid exit if we exit it will now end scene 9 || Description: N/A || Intended Type: N/A
+
+<!-- =============================================================================
+     SCENE 10 — THE NIGHT ESCAPE 1 am
+============================================================================= -->
+
+L01E-203 || O:9:U || Title: Go North, to the Chappel || Description: N/A || Reason: N/A
+L01E-207 || OL || Name: Full darkness, the flashlight is off from start of this scene, the following is a non controlable cutscene || Description: It is now fully dark outside. || Intended Type: N/A
+L01E-000 || SFX || Name: distant wolve howlings || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:T || Line: now... to the north... can't see shit || Tone: remembering, then frustation || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation turning on the lamp || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: No! turn it off! They'll spot us! || Tone: whisper alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation, turn it off quickly || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: But! I can't even see the compass, we need to go North! || Tone: demanding, expalining || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: next, Scott will go on a monologue about the north star, Tracey will look arund in the sky to try to make sense out of scotts ramble and will interrupt him when she sees the red star || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: The north star!  || Tone: realization, confident || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: what? || Tone: confused || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: The north star!, well, look up at the sky and find Big Dipper  || Tone: explaining, a bit chatty and excited (Scott likes anything space related) || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: What's Big Dipper? || Tone: confused, ignorant || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Well, its a constelation, it looks like a kite, yeah, at this part of the year the tail is downwatrs and the kite is upwards, hmm, look at the 2 stars from the top and draw a line to the right and--  || Tone: xplaining, a bit chatty and excited (Scott likes anything space related), then shuts up abruptly interrupted || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: Hey Scott? What's that red star? || Tone: confused, alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: Red star?  || Tone: confused, alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: sounds of Scott turning around in the stretcher || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:S || Line: that's... that's the north star..  || Tone: alarm, shock, slowly || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: Give control back to player || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: I- I don't get it, it's not red.  || Tone: confused, shock || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: but that's the north? || Tone: confused, demanding || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: It should be... that's scary  || Tone: confused, alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: don't mention it... we need to move quiet now... || Tone: dissmising, whisper at the end || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: there will be some cultist spotters along the way with tochers and flashlights, its very easy to avoid them. but if they spot you you'll have to drop the stretcher to fight them (if they attack you while carrying the stretcher we show the SM of (press B to drag or drop the Streecher)) || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: for purpose of scope, in this MVP enemies won't attack scott, only the player. || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: By map design, you'll eventually see ahead the silouette of the church and before that, a fountain well with a sculture of Our Lady of Guadalupe || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: By map design, you'll eventually see ahead the silouette of the church and before that, a fountain well with a sculture of Our Lady of Guadalupe || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: you know... *smack lips* I'm a bit thirsty...  || Tone: tired, in between scott smack his lips thirsty || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:T || Line: yeah? you want anything else? || Tone: grumpy || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: hah, always grumpy huh?  || Tone: delighted, funny || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || SFX || Name: water sounds from the well || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:T || Line: well, its your lucky day, I have a canteen and there seems to be water || Tone: explaining, condescending || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation sequence, you drop scott near the well, you refill the canteen and aproach scott to water him || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: ahhh... thank you tracey. I hate being thirsty  || Tone: relief, grateful || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: in this whole sequence you are looking downwards watering scott, so the enemies that appear in circle will catch you off guard || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: oh yeah? well, I hate... - || Tone: grumpy, then stops cold || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: tracey looks up and notices enemis sorrounding everything || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: AHHHHHHHHHHHH! || Tone: frightend, panic || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || PFX || Name: fear factor shoots up || Description: N/A || Stat: N/A || Magnitude: N/A || Duration: N/A || Stacking: F || Curve: N/A
+L01E-000 || OL || Name: the cultist stand there silently, and then a humming sound starts, many humming sounds || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: FUCK || Tone: alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: a zealot cultist in the front starts yelling and makes a berserker pose, then runs towards you, but a circle of blue fire encircles the well sudenly and burns him stopping him || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: What the fuck! || Tone: frighten || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: the cultist become louder and a much more scary IDLE animation happens to them, like preparing to attack || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: ambiance music creates tension (prolly viollins) || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name: Radio call || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: tracey doesn't answer this call, Vernon just call right on || Description: N/A || Intended Type: N/A
+L01E-000 || D:V|| Line: Kid, you gotta make a run! you are nearly there. I'll get them out of your way || Tone: alarm, gasping || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: an explotion sound and distant flash in the distance is heard, then 3 flares are seen in the distance, then multiple gunshots, some cultists drop dead and the rest turn and star running twoardfs the direction of the fire || Description: N/A || Intended Type: N/A
+L01E-000 || D:V|| Line: RUN TRACEY RUN! || Tone: demanding, yelling || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+
+L01E-000 || SFX || Name: heartbeat sounds || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+
+L01E-216 || OL || Name: road to the hill || Description: during the road from the well to the start of the Chappel hill there will be just 2 zealots along the way || Intended Type: N/A
+L01E-000 || OL || Name: once you reach the hill, the following events will triggerr || Description: N/A || Intended Type: N/A
+L01E-217 || VFX:PV || Name: Sky turns red || Description: the sky will take a red tint || Execution: N/A || Duration: N/A || Intensity: N/A || Layer: N/A
+L01E-218 || SA || Name: Ground shakes || Description: The ground begins to shake. (this is just a well done camera shake) || Trigger: N/A || Target: N/A || Condition: N/A || Blocking: F || Branch: N/A
+L01E-219 || SFX || Name: Earthquake audio bed || Description: Earthquake, cracking trees, cultist whistles. || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: when the earthquake starts, a small cutscene animation where tracey falls and gets up again happens || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: What's going on?!!! || Tone: alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || D:S || Line: We need to get inside!! || Tone: alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: you drag scott to the top , right in front of the chappel Door || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: animation, you drop scott and notice a japanese turret nest (just sand bags around it) next to the door || Description: N/A || Intended Type: N/A
+L01E-000 || D:S || Line: A turret?! || Tone: confused, alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: animation, you are about to open the chappel door when a radio call sounds (the radio is distant) and you turn around to notice the radio in the begining of the stairs down bellow || Description: N/A || Intended Type: N/A
+L01E-203 || O:9:U || Title: Get the radio || Description: N/A || Reason: N/A
+L01E-000 || D:S || Line: the fucking radio! wait scott! || Tone: alarmed || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: the possibility of picking up scott is disabled (scott will now have a different idle animation), you need to get down and pick up the radio, once you are near the radio an animation starts where you drop down and pick it up, but when you stand up you notice a Furman, staring at you howling, ready to charge || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name: hyperventilating tracey noises || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || OL || Name: we give control back to the player || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: the Furman begins to charge at you, instinctltyly and if the visual storytelling worked, you should run back up to the turret. the easiest way to kill it, the player can also just shot at him alot to kill him, but the intended use is the turret. || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: if the player starts running up, the furman will charge and clash with a cross in the middle of the road, this will stun him for a bit giving you enough time to reach the top || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: if you get in time to the turret while he is stunned when you shoot at him will be scripted so the furman dies right in front of you. || Description: N/A || Intended Type: N/A
+L01E-000 || D:T || Line: JESUS! || Tone: Scared, relief || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+L01E-000 || OL || Name: the earthquake and other apocalyptic effects are tunned up || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: when we are again in the top after killing the furman (or when we leave the turret after killing him) we take control away from the player and we show an animation: tracey turn away and tries desesperatly to open the door and knock it || Description: N/A || Intended Type: N/A
+L01E-000 || OL || Name: your seiko alarm begins to sound, you turn around to see the sky, a black moon rises quickly, unatural, the music here reaches its tension climax. A door open noise is heard behind you and you quickly turn. then everything is suddenly turn to back preventing the player to see what is in the door, but we still hear the audio, from this point the gameplay is disabled || Description: N/A || Intended Type: N/A
+L01E-000 || SFX || Name: hyperventilating tracey noises || Description: N/A || Audio: N/A || Source: N/A || Volume: N/A || Loop: F || Fade: N/A
+L01E-000 || D:T || Line: AHHHHHHHHHHHH! || Tone: horror scream || Color: white || Display Method: N/A || Lipsync: F || Aftertime: 1.0 || Text effect: N/A
+
+L01E-000 || OL || Name: end of MVP. show title logo and fitting ambience music to ease the tension, roll credits. || Description: N/A || Intended Type: N/A
+
+============================	END OF LEVEL SCRIPT		===================================================
