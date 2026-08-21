@@ -5,6 +5,66 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-7 — MoonlightTunables — central constants asset + inspector pattern
+
+**BUILT**
+
+- `Assets/_Project/Code/Runtime/Data/MoonlightTunables.cs` — the `MoonlightTunables`
+  `ScriptableObject`. Sixteen fields across three `[Header]` groups, each with an XML doc
+  comment naming its owning issue: **Player Movement — MRM-9** (walk/sprint/crouch speed,
+  mouse and stick look speed, look acceleration, jump height and speed, crouch height delta,
+  crouch transition duration, slope limit, gravity — defaults per MRM-9's proposed starting
+  values where it gave one, sensible placeholders otherwise), **Pathfinding — MRM-27** (the
+  three tunables MRM-6 obliged this asset to carry: ms-per-frame budget, max concurrent
+  agents, repath interval), **Mine Lighting — MRM-60** (max real-time lights).
+- `Assets/_Project/Code/Runtime/Data/Tunables.cs` — the single access point, `Tunables.I`,
+  a lazy `Resources.Load<MoonlightTunables>("MoonlightTunables")`. The project's only
+  sanctioned singleton and only sanctioned `Resources.Load` call, per
+  `Docs/csharp-conventions.md` and `Docs/unity-conventions.md`.
+- Per-instance override pattern documented on the `MoonlightTunables` class doc comment
+  (mirrors the example already in `Docs/unity-conventions.md`): a tunables value is the
+  default, a component may carry `[SerializeField] bool overrideX` + `[SerializeField] float
+  xOverride`, and a computed property picks between them. Both fields show in the inspector,
+  not just a checkbox. Reuse this shape everywhere a value needs a shared default plus a
+  per-instance override (per-enemy cone distance, per-weapon spread, etc.) rather than
+  inventing a new one per system.
+
+**DECISIONS**
+
+- **Player-movement values seeded from MRM-9's own issue text**, not left empty. MRM-9 is
+  blocked by this issue and hasn't started, but its description already proposes
+  walk/sprint/crouch/crouch-transition defaults — using those (and sensible placeholders for
+  the rest of its listed tunables: look speed/acceleration, jump height/speed, crouch height
+  delta, slope limit, gravity) means MRM-9 lands with values to tune rather than a still-empty
+  asset. This is the one exception to "populating it is not in scope" that the issue itself
+  calls out.
+- **`JumpHeight` and `JumpSpeed` are both fields**, not one derived from the other, even
+  though a physics controller could compute takeoff velocity from height and gravity. MRM-9's
+  tunables list names them separately; keeping both lets Carlos tune the felt takeoff speed
+  without back-solving the math.
+- **Script location follows the repo's actual `Code/Runtime` / `Code/Editor` split** (from
+  MRM-6), not the `Scripts/Player`, `Scripts/Weapons`, etc. subfolders shown in
+  `Docs/unity-conventions.md` — that split doesn't exist yet in this repo. Used a `Data/`
+  subfolder under `Code/Runtime` to match the ScriptableObject-definitions intent from the
+  conventions doc.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- **Carlos:** create the `MoonlightTunables` asset instance — `Create > MrMoonlight >
+  Tunables` — and place it inside a folder literally named `Resources` so `Tunables.I`
+  resolves it (e.g. `Assets/_Project/Data/Resources/MoonlightTunables.asset`), named exactly
+  `MoonlightTunables`. Confirm a value change in the inspector takes effect in play mode
+  without a recompile, then this issue's acceptance criteria are done.
+- **Unblocks MRM-9** (player controller), which now has a tunables asset and seeded defaults
+  to build against.
+- **Feeds MRM-27** and **MRM-60** with the four tunables MRM-6's comment obliged.
+
+---
+
 ## MRM-6 — [SPIKE] WebGL viability decision + build budget
 
 **BUILT**
