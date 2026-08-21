@@ -7,11 +7,11 @@ using UnityEngine.InputSystem.Utilities;
 namespace MrMoonlight.Input
 {
     /// <summary>
-    /// Temporary on-screen readout of the last key or button pressed on any connected device,
-    /// and which named action(s) it's bound to — so Carlos can visually confirm the Input
-    /// System is capturing input and wired to the right action before a player prefab exists to
-    /// react to it (see MRM-9). Drop this on any empty GameObject in a test scene; not part of
-    /// the shipped game. Toggle with F1 (keyboard) or Select/View (gamepad), or via the
+    /// Temporary on-screen readout of the last key, button or mouse scroll on any connected
+    /// device, and which named action(s) it's bound to — so Carlos can visually confirm the
+    /// Input System is capturing input and wired to the right action before a player prefab
+    /// exists to react to it (see MRM-9). Drop this on any empty GameObject in a test scene; not
+    /// part of the shipped game. Toggle with F1 (keyboard) or Select/View (gamepad), or via the
     /// inspector checkbox. Owner: MRM-8
     /// </summary>
     public sealed class InputDebugOverlay : MonoBehaviour
@@ -48,6 +48,25 @@ namespace MrMoonlight.Input
 
             if (Gamepad.current != null && Gamepad.current.selectButton.wasPressedThisFrame)
                 visible = !visible;
+
+            CheckMouseScroll();
+        }
+
+        // Scroll doesn't fire InputSystem.onAnyButtonPress — Mouse.scroll is a Vector2Control,
+        // not a ButtonControl, so onAnyButtonPress never sees it. It reports the per-frame delta
+        // rather than a held state, so it naturally reads 0 when idle — polling it here for a
+        // non-zero Y is the whole check, no wasPressedThisFrame equivalent needed.
+        private void CheckMouseScroll()
+        {
+            if (Mouse.current == null)
+                return;
+
+            var scrollY = Mouse.current.scroll.y.ReadValue();
+            if (Mathf.Approximately(scrollY, 0f))
+                return;
+
+            var direction = scrollY > 0f ? "Scroll Wheel up" : "Scroll Wheel down";
+            _lastPress = $"{Mouse.current.displayName}: {direction} -> {FindBoundActions(Mouse.current.scroll.y)}";
         }
 
         private void OnGUI()

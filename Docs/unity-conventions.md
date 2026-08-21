@@ -11,7 +11,7 @@ Everything the project owns lives under `Assets/_Project/`. Third-party assets s
 ```
 Assets/
 ├── _Project/
-│   ├── Art/            Models, textures, materials
+│   ├── Art/            Models, textures, materials — see the breakdown below
 │   ├── Audio/          Clips, mixer assets
 │   ├── Data/           ScriptableObjects — tunables, baked CSV data
 │   ├── Prefabs/        Player, enemies, items, props, UI
@@ -31,6 +31,27 @@ Assets/
 ```
 
 **Sandbox scene.** Keep a `Sandbox` scene with a flat plane, a sparring dummy and a spawn point. Every system gets tested there before it goes near the demo scene. This is faster than loading the island every time and it is where most acceptance criteria get checked.
+
+---
+
+## Art folder breakdown
+
+Decided 2026-08-21, during MRM-9. `Art/` mirrors the category split `Prefabs/` and `Scripts/` already use, rather than a new taxonomy:
+
+```
+Art/
+├── Characters/    One subfolder per character — model, materials and textures
+│   └── Tracey/    co-located, not split into parallel Models/Materials/Textures trees
+├── Enemies/       Spotter/, Zealot/, Wolf/, Furman/
+├── Weapons/       Pickaxe/, Pistol/, Shotgun/, Turret/
+├── Items/         Pickups — Bandages, Crackers, Canteen, Flashlight, etc.
+├── Props/         One-off set-dressing — tents, coolers, the RV, the telescope
+└── Environment/   Terrain textures, foliage, rocks, skyboxes (only the 4 kept from AllSky 220)
+```
+
+**One folder per subject, everything for it in one place.** A model's materials and textures live next to it, not in a parallel `Materials/` or `Textures/` tree — same reasoning as the C# conventions' governing principle: open one place, not three. Only nest a `Textures/` subfolder under a subject if it actually accumulates enough variants to need one.
+
+**Placeholder art still uses the canonical name.** A stand-in model gets the folder name of what it represents, not what it currently is (e.g. a placeholder for Tracey goes in `Characters/Tracey/`, regardless of the source asset). This is the same reasoning `glossary.md` gives for spelling — naming for the final thing avoids a rename-everywhere pain later.
 
 ---
 
@@ -158,8 +179,9 @@ Three scenes only:
 | `EnemyHitbox` | Head / torso / limb hitboxes |
 | `Interactable` | Anything with an `Interactable` component |
 | `VisionBlocker` | Trees, buildings, terrain — things that block a vision cone |
-| `Ground` | Walkable surfaces, for waypoint Z-snapping |
+| `Ground` | Walkable surfaces, for waypoint Z-snapping **and the player's grounded/jump check (MRM-9)** |
 
+- **`Ground` is a hard requirement, not just nice-to-have.** `PlayerController`'s jump/landing logic doesn't trust `CharacterController.isGrounded` — confirmed live during MRM-9 testing that it reads `false` even at rest on flat ground, which silently blocked jumping whenever the player stood still. It's replaced with a short downward `SphereCast` against this layer specifically. **Any floor, terrain or walkable surface placed in the scene — including MRM-58's terrain blockout — must be on the `Ground` layer, or the player will never be able to jump on it.** Currently created and only assigned to the `Sandbox` scene's test `Plane`; every other floor still needs it as it's built.
 - **The vision cone occlusion check raycasts against `VisionBlocker` only.** Do not let it hit the player's own colliders or item pickups.
 - **Carlos's open question — do hitboxes need a tag?** Answer: use the **layer** plus a small `Hitbox` component carrying its multiplier type. Cleaner than tags, and it survives renaming.
 

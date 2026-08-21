@@ -5,6 +5,141 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-8 (follow-up) — Look X-axis was silently inverted
+
+**BUILT**
+
+- `InputSystem_Actions.inputactions`: the `Look` action's processor changed from
+  `invertVector2(invertY=false)` to `invertVector2(invertX=false,invertY=false)`.
+
+**DECISIONS**
+
+- **Root cause, confirmed not guessed:** `UnityEngine.InputSystem.Processors.InvertVector2Processor`
+  defaults **both** `invertX` and `invertY` to `true` (verified live by instantiating one via
+  `execute_code`). MRM-8's binding only explicitly set `invertY=false` — to make Y toggleable via
+  the `InvertYAxis` tunable — never touching `invertX`, which silently stayed at its inverted
+  default. Symptom: moving the stick or mouse right turned the camera left. Caught by Carlos
+  during MRM-9 look testing.
+- Done inline on MRM-9's branch, same deliberate exception as the mouse-scroll and sprint/jump
+  fixes earlier this session — not re-confirmed individually since the pattern was already agreed.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- **Carlos:** confirm stick/mouse right now turns the camera right in a live test.
+
+---
+
+## MRM-9 (wrap-up) — All acceptance criteria confirmed, ready to commit
+
+**BUILT**
+
+- Confirmed live on itch.io (build `7 - Player Controller`): move, look, jump, crouch (toggle,
+  smooth transition), sprint, jump-blocked-while-crouched, look-down shows placeholder body, all
+  working in an actual WebGL build. Every tunable reads `Tunables.I` live each frame by
+  construction (no caching), covering the "changes take effect in play mode" criterion by design.
+- `Player.prefab` and `Controller UI Test.prefab` — Carlos saved both so they're reusable across
+  scenes, not just live in `Sandbox`.
+- All six MRM-9 acceptance criteria ticked in Linear.
+
+**DECISIONS**
+
+- **Incidental, unexplained diff worth flagging for the commit:** `ProjectSettings.asset`'s
+  `preloadedAssets` list dropped its one entry (the Input System actions asset) to empty at some
+  point during this session's build/testing cycle. Not an intentional change, cause not
+  identified — likely a Unity-internal side effect of the build or a settings save. Everything
+  tested fine regardless (WebGL build works, input capture works), but flagged rather than
+  silently included in the commit.
+
+**NEXT**
+
+- Ready to commit and merge to `main`. See commit proposal in this session's conversation.
+- **Recommended next issue: MRM-12** (core stat framework) — fully unblocked, Sonnet-scoped,
+  doesn't need terrain/environment, and plugs directly into the `OnJumped`/`OnSprinting` hooks
+  this issue already exposed.
+
+---
+
+## MRM-9 (in progress) — Sprint-backward and stationary-jump bugs found in testing
+
+**BUILT**
+
+- **Sprint now requires a forward move component** (`moveInput.y > 0f`), not just any movement.
+  Holding Sprint while backing up or pure-strafing now walks instead. Flagged by Carlos: sprint
+  backwards felt wrong.
+- **Jump/landing no longer trusts `CharacterController.isGrounded`.** Confirmed live via the
+  Unity MCP bridge: dropped the player onto the flat `Sandbox` plane, let it settle, and
+  `isGrounded` read `false` continuously while completely at rest (not a one-frame flicker —
+  sampled twice, ~11 seconds apart, both `false`). That's why jump only worked while moving:
+  continuous horizontal collision resolution was masking the same underlying flakiness. Replaced
+  with `PlayerController.CheckGrounded()` — a short downward `SphereCast` against a new `Ground`
+  physics layer — used for both the vertical-velocity-reset check and jump eligibility. Confirmed
+  fixed the same way: same drop-and-settle test, `CheckGrounded()` now reads `true` at rest.
+- New tunable `GroundCheckDistance` (0.2, not in MRM-9's original list — added because the
+  acceptance criterion "jump works" can't be met without a reliable grounded check).
+- **New `Ground` physics layer created** (was documented in `Docs/unity-conventions.md` but never
+  actually created in the project). Assigned to the `Sandbox` scene's test `Plane`. **This is now
+  a hard requirement for every floor/terrain surface**, including MRM-58's terrain blockout — see
+  the conventions doc's updated layers table.
+
+**DECISIONS**
+
+- **Fixed the ground check at the engine-reliability level (SphereCast), not by adding a fudge
+  factor to the existing `isGrounded` reads.** `CharacterController.isGrounded` is a documented
+  Unity flakiness point, not something a tunable epsilon can paper over reliably.
+
+**FAILED**
+
+First attempt at verifying the fix via `EditorApplication.update` polling registered from within
+a single `execute_code` call showed frozen position across 114 logged "frames" — misleading, not
+an actual repro. The callback fired in a rapid synchronous burst rather than at real per-frame
+intervals, so the real Play Mode loop (and `PlayerController.Update()`) never got a chance to
+interleave. Switched to plain sequential position/state checks with real wall-clock waits between
+separate tool calls instead, which reflected genuine elapsed game time.
+
+**NEXT**
+
+- **Carlos:** re-test sprint (forward only), jump-while-stationary, and jump-while-crouched-blocked
+  in the Sandbox scene to confirm before the next WebGL build.
+- **Whoever builds MRM-58's terrain blockout must assign it to the `Ground` layer** or the player
+  won't be able to jump on it. Flagged in `Docs/unity-conventions.md` and as a comment on MRM-58
+  itself.
+- Rest of MRM-9's acceptance criteria (WebGL build test, live-tunable spot check) still open —
+  see MRM-9's own comments.
+
+---
+
+## MRM-8 (follow-up) — Mouse scroll wheel added to the input debug overlay
+
+**BUILT**
+
+- `InputDebugOverlay.cs` now also reports mouse scroll. `Mouse.scroll` is a `Vector2Control`,
+  not a `ButtonControl`, so it never fired the existing `InputSystem.onAnyButtonPress` listener
+  — that's why only key/button presses showed before. Added a `CheckMouseScroll()` poll in
+  `Update()`: `Mouse.current.scroll.y` reports the frame's scroll delta directly (0 when idle,
+  no `wasPressedThisFrame`-equivalent needed), reported through the same `FindBoundActions`
+  lookup and `_lastPress` display path as button presses.
+
+**DECISIONS**
+
+- **Done inline on MRM-9's branch, not a new issue or MRM-8's own branch.** This is MRM-8-owned
+  code (already `Done` in Linear) touched while testing MRM-9 — a deliberate, explicit exception
+  to the project's one-issue-one-branch rule, confirmed with Carlos rather than assumed. Recorded
+  here and as comments on both MRM-8 and MRM-9 for traceability.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+Nothing outstanding — this was a small, complete addition.
+
+---
+
 ## MRM-8 (wrap-up) — Two real bugs found chasing a debug overlay that "wasn't showing"
 
 **BUILT**

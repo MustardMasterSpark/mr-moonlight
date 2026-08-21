@@ -64,6 +64,15 @@ namespace MrMoonlight.Data
         /// <summary>Downward acceleration applied to the player, in metres per second squared. Owner: MRM-9</summary>
         public float Gravity = -20f;
 
+        /// <summary>How far below the capsule's base the grounded check casts, in metres. Not in MRM-9's original tunables list — added because CharacterController.isGrounded proved unreliable while stationary (confirmed live: it read false while resting motionless on flat ground), which silently blocked jumping whenever the player wasn't moving. See Docs/changelog.md. Owner: MRM-9</summary>
+        public float GroundCheckDistance = 0.2f;
+
+        /// <summary>Maximum degrees the camera can pitch downward. Set high enough that Tracey can see her own placeholder body underfoot, not just her arms, per MRM-9's look-down requirement. Not in MRM-9's original tunables list — added because the requirement can't be met without a clamp. Owner: MRM-9</summary>
+        public float LookPitchDownMax = 85f;
+
+        /// <summary>Maximum degrees the camera can pitch upward. Not in MRM-9's original tunables list, added alongside <see cref="LookPitchDownMax"/> for the same clamp. Owner: MRM-9</summary>
+        public float LookPitchUpMax = 80f;
+
         [Header("Input System — MRM-8")]
 
         /// <summary>Minimum stick displacement, as a fraction of full deflection, before gamepad stick input registers. Applied as a runtime override on the Move and Look stick bindings so a worn or drifting stick doesn't creep the player. Owner: MRM-8</summary>
