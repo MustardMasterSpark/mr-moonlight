@@ -109,7 +109,7 @@ namespace MrMoonlight.Input
                     ""type"": ""Value"",
                     ""id"": ""6b444451-8a00-4d00-a97e-f47457f736a8"",
                     ""expectedControlType"": ""Vector2"",
-                    ""processors"": ""invertVector2(invertY=false)"",
+                    ""processors"": ""invertVector2(invertX=false,invertY=false)"",
                     ""interactions"": """",
                     ""initialStateCheck"": true,
                     ""priority"": 0
