@@ -1,6 +1,8 @@
 # WebGL Constraints — read this before writing any code
 
-**Target:** Unity 6.3 LTS · URP · **WebGL** · itch.io · **under 1 GB** · 1920×1080 fullscreen · Xbox controller + keyboard/mouse.
+**Target:** Unity 6.3 LTS · URP · **WebGL** · itch.io · **under 1 GB** · **960×540, embedded in the itch.io page (not fullscreen)** · Xbox controller + keyboard/mouse.
+
+**Resolution decision (2026-08-21, supersedes MRM-6's original 1920×1080 fullscreen target):** itch.io's `Default` WebGL template shows a persistent branding/fullscreen-button bar that only fully disappears in true browser fullscreen, and true fullscreen has its own letterboxing quirks across monitor aspect ratios. Rather than fight that, the game is embedded at a fixed 960×540 (exactly half of 1920×1080 — a clean 2× divisor, so nothing built at 1080p reference scales blurrily) directly in the itch.io page, not launched fullscreen. This also cuts every full-screen post-processing pass (fear vignette, chromatic aberration, etc. — see the per-pixel cost note below) to a quarter of its 1080p fill-rate cost, and the smaller, slightly softer canvas suits the game's period setting better than a crisp full-HD window. See `Docs/changelog.md` and MRM-10.
 
 Every rule below is something that **works in the Unity editor and breaks, or silently degrades, in a browser**. That gap is where the schedule dies. A Windows build would forgive most of this. WebGL will not.
 
