@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 792632d7a39452f46923a0b2fb99bf67, type: 3}
+  m_Name: MoonlightTunables
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Data.MoonlightTunables
+  WalkSpeed: 3
+  SprintSpeed: 5.5
+  CrouchSpeed: 1.5
+  LookSpeedMouse: 0.15
+  LookSpeedStick: 180
+  LookAcceleration: 900
+  JumpHeight: 1.2
+  JumpSpeed: 6
+  CrouchHeightDelta: 0.5
+  CrouchTransitionDuration: 0.25
+  SlopeLimit: 45
+  Gravity: -20
+  PathfindingMillisecondsPerFrame: 2
+  PathfindingMaxConcurrentAgents: 10
+  PathfindingRepathInterval: 0.5
+  MineMaxRealtimeLights: 8
