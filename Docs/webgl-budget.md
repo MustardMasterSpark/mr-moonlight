@@ -90,7 +90,7 @@ every import preset below can be set *before* the content lands, rather than ret
 | PC tier renderer | `PC_Renderer`, `m_RenderingMode: 2` = **Forward+**, SSAO renderer feature enabled | Forward+ is the right mode for the mine. Not currently what WebGL uses. |
 | Compression | `webGLCompressionFormat: 0` (Brotli), `webGLDecompressionFallback: 0` | Correct default; fallback needs a verification pass at MRM-10. |
 | Memory | `webGLInitialMemorySize: 32` MB, geometric growth, max 2048 MB | 32 MB initial is far too low — every growth step is a visible hitch. |
-| Canvas | `defaultScreenWidthWeb: 960 × 600` | Spec is 1920×1080. Wrong. |
+| Canvas | `defaultScreenWidthWeb: 960 × 600` | Spec at the time was 1920×1080. **Superseded 2026-08-21: the spec itself changed to 960×540, embedded not fullscreen — see `Docs/webgl-constraints.md` and MRM-10.** Coincidentally close to this row's original wrong value, but arrived at deliberately this time. |
 | Exceptions | `webGLExceptionSupport: 1` (explicitly-thrown only) | Right for now; drop to None for the M2 build. |
 | Code stripping | `stripEngineCode: 1`, no per-platform `managedStrippingLevel` | Engine stripping on. Managed stripping needs setting. |
 | Power preference | `webGLPowerPreference: 2` (high-performance) | Correct — requests the discrete GPU. |

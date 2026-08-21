@@ -64,6 +64,14 @@ namespace MrMoonlight.Data
         /// <summary>Downward acceleration applied to the player, in metres per second squared. Owner: MRM-9</summary>
         public float Gravity = -20f;
 
+        [Header("Input System — MRM-8")]
+
+        /// <summary>Minimum stick displacement, as a fraction of full deflection, before gamepad stick input registers. Applied as a runtime override on the Move and Look stick bindings so a worn or drifting stick doesn't creep the player. Owner: MRM-8</summary>
+        public float StickDeadzone = 0.125f;
+
+        /// <summary>When true, look-Y input is inverted (stick and mouse alike). Applied as a runtime override on the Look action's invert processor. Owner: MRM-8</summary>
+        public bool InvertYAxis = false;
+
         [Header("Pathfinding — MRM-27")]
 
         /// <summary>Hard per-frame time budget for time-sliced A*, in milliseconds. WebGL is single-threaded (confirmed live on-device, MRM-6), so pathfinding cannot be offloaded and must yield within this budget. Owner: MRM-27</summary>

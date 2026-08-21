@@ -5,6 +5,223 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-8 (wrap-up) — Two real bugs found chasing a debug overlay that "wasn't showing"
+
+**BUILT**
+
+- Confirmed, live on itch.io: the 960×540 embed (see below), the `InputDebugOverlay` (MRM-8),
+  keyboard and gamepad capture, and action-name lookup all work correctly together. Console:
+  `[InputDebugOverlay] Started`, `Gamepad added 1`, zero errors.
+- **MRM-66** — a new issue capturing the full checklist of everywhere the target resolution
+  number lives (Player Settings, itch.io embed, docs, every future UI Canvas Scaler, the build
+  and zip steps), so a future swap to 1280×720 or anything else doesn't require re-discovering
+  any of what follows.
+
+**DECISIONS / FAILED — the two real bugs, for the record**
+
+What looked like one mystery ("the debug overlay never shows up in the browser, no matter what
+Unity setting we change") was actually two unrelated bugs stacked on top of each other. Neither
+was a Unity or WebGL Template problem, despite that being the leading theory for most of the
+session:
+
+1. **A stale itch.io upload flag.** The very first build ever uploaded to this project — from
+   before any of today's work — stayed flagged "This file will be played in the browser" through
+   every subsequent re-upload. Every test that session was silently re-running that original
+   build; newer uploads just sat there unused. Confirmed by noticing the served file's content
+   hash never changed across builds with genuinely different settings. **Fix:** delete stale
+   uploads rather than leaving them, and always confirm the *newest* file is the one flagged —
+   checking that flag on an already-uploaded file after the fact doesn't reliably force itch to
+   re-process it as HTML; a fresh upload with the flag set from the start is safer.
+2. **A zip tool writing invalid path separators.** PowerShell's `Compress-Archive` — and, on
+   this machine, even .NET's `ZipFile.CreateFromDirectory` — wrote literal backslash (`\`) path
+   separators into nested zip entries (e.g. `Build\...loader.js`) instead of the forward slash
+   (`/`) the ZIP spec requires. Windows tools don't care; itch's Linux servers extract a single
+   garbled flat filename instead of a real subfolder, so `Build/...loader.js` 404'd while
+   top-level files like `index.html` loaded fine. **Diagnosed by inspecting `.FullName` on the
+   zip's entries — which was itself misleading (it can normalize for display); the real proof
+   came from reading the zip's raw bytes and searching for the literal separator character.**
+   **Fix:** never use `Compress-Archive`. Build the zip entry-by-entry, explicitly replacing `\`
+   with `/` in each relative path before calling `CreateEntry`. Verify with the same raw-byte
+   check before trusting a zip, going forward — recorded in the build-process memory.
+
+**NEXT**
+
+- **MRM-66** exists for the next resolution change; nothing else to carry forward from this
+  detour — MRM-8 and MRM-10 are both otherwise complete.
+
+---
+
+## MRM-10 (in progress) — Display target changed to 960×540 embedded, not fullscreen
+
+**BUILT**
+
+- `PlayerSettings.defaultWebScreenWidth/Height` → **960×540** (was 1920×1080).
+- `Docs/webgl-constraints.md` — target line updated; decision recorded inline with rationale.
+- `Docs/webgl-budget.md` — original canvas-resolution audit row annotated as superseded, left
+  in place rather than rewritten (it's a point-in-time record of MRM-6's spike).
+- MRM-10's own Scope bullet ("itch.io embed configured: 1920x1080, fullscreen button enabled")
+  rewritten to the new 960×540/embedded spec, plus a comment documenting the full decision.
+
+**DECISIONS**
+
+- **Embedded at a fixed 960×540, not launched fullscreen.** While testing MRM-8's input debug
+  overlay in a real itch.io browser build, the persistent branding/fullscreen-button bar from
+  Unity's `Default` WebGL template only fully disappeared in true fullscreen — and true
+  fullscreen has its own letterboxing quirks across monitor aspect ratios (see the WebGL
+  Template decision below). Carlos chose to sidestep the whole problem: embed the game at a
+  fixed size in the itch.io page instead of chasing fullscreen behavior.
+- **960×540, specifically, because it's an exact 2× divisor of 1920×1080** — the resolution
+  everything was originally authored against — so nothing scales blurrily. It also quarters the
+  fill-rate cost of every full-screen post-processing pass (fear vignette, chromatic aberration,
+  etc. — the project's biggest per-pixel cost per `Docs/webgl-budget.md`), and a slightly softer
+  canvas suits a 1979-set game better than a crisp full-HD window.
+- **Superseded, not deleted:** MRM-6's original "1920×1080 fullscreen" target predates this
+  decision by one day and was a reasonable call at the time — WebGL's fullscreen/embed quirks
+  only became visible once an actual build went up against actual browsers, which is the whole
+  point of MRM-10 running early (see that issue's own "why issue four, not forty" framing).
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- ~~Carlos, itch.io account access required: switch the embed mode...~~ **Done** — itch.io embed
+  mode is now "Embed in page", manually-set viewport 960×540, fullscreen button left disabled
+  (Carlos wants fullscreen unavailable entirely, not just unused, so the game's own itch.io page
+  — title, branding — always stays visible around the embed as a recall/marketing device).
+- **A fresh build is still needed to actually ship this** — build folder `3` (`WebGL Template`
+  fix, made minutes before this decision) still has the old 1920×1080 canvas baked in.
+- **960×540 is now this project's UI reference resolution, not just a display setting.** Flagged
+  on every not-yet-built UI/HUD issue: MRM-18 (main menu), MRM-19 (pause/game over), MRM-65 (UI
+  polish — the issue that actually builds the title logo and button styling, most affected),
+  MRM-46 (difficulty modes' health/stamina bars), MRM-53 (damage feedback HUD wounds + full-
+  screen VFX, which also get cheaper at this resolution).
+- **Added a prominent line to `CLAUDE.md` itself** (not just `Docs/webgl-constraints.md`) so the
+  960×540 target is impossible to miss at the start of any future session, with an explicit note
+  that any `1920×1080` reference found elsewhere is stale.
+- **No camera or scene changes needed for the resolution itself** — 960×540 is exactly the same
+  16:9 aspect ratio as 1920×1080 (half-scale, not a different shape), and Unity cameras frame by
+  aspect ratio, not absolute pixel count. Only pixel-space UI (Canvas Scaler reference resolution,
+  hardcoded layout) needed flagging, which is what the issue comments above do.
+- Confirmed live in build 4: renders at 960×540 embedded, black page background applied, gamepad
+  detected via console (`Gamepad added 1`). Re-verify the `InputDebugOverlay` (MRM-8) is visibly
+  legible next time — it wasn't confirmed on-screen in the latest test screenshot (a DevTools
+  panel was open taking half the browser width, which may just be cropping it out of view).
+
+---
+
+## Incidental — WebGL Template switched to Minimal
+
+Found while diagnosing "the debug overlay isn't visible in the itch.io build" (MRM-8 testing).
+Not a bug: the canvas was already scaling correctly to fill the browser window (confirmed live
+against the actual itch.io page, both the direct HTML page and a fresh automated load — no
+letterboxing, no fixed-size box). The "thin bar" Carlos saw at the bottom was Unity's `Default`
+WebGL Template's own footer (branding + its built-in fullscreen button), confirmed via
+`PlayerSettings.WebGL.template == "APPLICATION:Default"`.
+
+**Changed:** `PlayerSettings.WebGL.template` → `APPLICATION:Minimal` (Carlos confirmed). Canvas
+now goes edge-to-edge with no Unity branding strip. itch.io's own "Click to launch in
+fullscreen" page setting already triggers fullscreen independently of Unity's in-canvas button,
+so nothing else needed to change. Aspect-ratio letterboxing on non-16:9 monitors is expected
+and unaffected — that's Unity preserving the 1920×1080 image rather than distorting it, not a
+bug to fix.
+
+Not logged against a specific issue — this affects whichever issue eventually owns "first WebGL
+build on itch.io" (MRM-10). No code change, no tunable, no scene touched.
+
+---
+
+## MRM-8 — Input System — Xbox and keyboard/mouse control schemes
+
+**BUILT**
+
+- `Assets/InputSystem_Actions.inputactions` — extended in place, not replaced. `Player` map
+  renamed **`Gameplay`** to match the issue's named maps. All fifteen table actions exist:
+  `Move`, `Look`, `Fire`, `Interact`, `Crouch`, `Jump`, `Sprint`, `AimDownSights`, `Reload`,
+  `SwitchWeapon`, `EquipMelee`, `FlashlightToggle`, `BootsToggle`, `InventoryScroll`, `Pause` —
+  each bound exactly to its Xbox control from the issue's table (left/right stick, both
+  triggers, both bumpers, all four face buttons, full d-pad, Start). `Crouch` moved off
+  `buttonEast`(B) onto **right-stick press** and `Interact` off `buttonNorth`(Y) onto
+  **`buttonWest`**(X) — the stock template had them on the wrong buttons relative to this
+  issue's table. Added three new, currently-empty action maps — `Turret`, `Stretcher`,
+  `Cutscene` — as switch targets for their own future issues. `UI` map kept, trimmed of
+  Touch/Joystick/XR bindings and actions (`TrackedDevicePosition`/`TrackedDeviceOrientation`)
+  not relevant to this project's WebGL + Xbox + KB/M target. Control schemes trimmed to just
+  `Keyboard&Mouse` and `Gamepad` for the same reason.
+- **C# wrapper class generation turned on** for the asset (`generateWrapperCode` in the
+  importer, was off) — the wrapper lands at
+  `Assets/_Project/Code/Runtime/Input/InputSystem_Actions.cs`, namespace `MrMoonlight.Input`,
+  auto-regenerated on every reimport. Required adding `Unity.InputSystem` to
+  `MrMoonlight.Runtime.asmdef`'s `references` (it had none before this issue).
+- `Assets/_Project/Code/Runtime/Input/InputMapController.cs` — the load-bearing piece. Owns
+  one `InputSystem_Actions` instance; `SetMode(InputMode)` disables every map and enables only
+  the target one (verified live: Gameplay → UI → Cutscene, each transition fully exclusive).
+  Not a MonoBehaviour and not a singleton — whatever needs input constructs one in `Awake` and
+  calls `Dispose()` in `OnDestroy`, per this project's "no singletons but `Tunables`" rule.
+- Two new tunables on `MoonlightTunables`, header **Input System — MRM-8**: `StickDeadzone`
+  (0.125 default) and `InvertYAxis` (false default). Verified live via `execute_code`: the
+  constructor writes `StickDeadzone` into `InputSystem.settings.defaultDeadzoneMin` (project-wide,
+  since `Gamepad`'s stick controls already fall back to that default — confirmed in
+  `Gamepad.cs`) and applies `InvertYAxis` as a runtime parameter override on the `Look` action's
+  `invertVector2` processor.
+
+**DECISIONS**
+
+- **No `PlayerInput` component, no `InputUser` pairing, no explicit control-scheme-switch
+  code.** Both control schemes stay bound and enabled simultaneously — nothing restricts the
+  asset to one device. A newly-connected gamepad therefore "just works" the instant its stick
+  or button fires, with no restart and no scheme-change plumbing needed. This satisfies the
+  issue's hot-plug acceptance criterion for free; a later HUD/prompts issue can still add
+  explicit current-scheme detection (e.g. via `InputUser`) if button-icon prompts need it —
+  that wasn't asked for here and would have been scope creep.
+- **Keyboard bindings for the nine new actions are placeholders**, not Carlos's prepared
+  template — it wasn't in the repo when this issue was picked up. Chosen conventionally (R
+  reload, Q switch weapon, V equip melee, F flashlight, B boots, Escape pause,
+  `[`/`]` + mouse wheel for inventory scroll). **Flagging this: swap these for Carlos's real
+  keyboard template as soon as he supplies it** — only the keyboard column needs touching: all
+  Xbox bindings are final, straight from the issue's table.
+- **Stick deadzone applied via `InputSystem.settings.defaultDeadzoneMin`, not a per-binding
+  processor.** `Gamepad.cs` shows the stick controls already default to `stickDeadzone` with no
+  explicit min/max, which reads project-wide settings — adding a second explicit processor on
+  top would have clamped twice for no benefit.
+- **`InventoryScroll` (d-pad left/right, `[`/`]`, mouse wheel) does double duty as both the
+  open trigger and the navigate control, confirmed with Carlos and matching MRM-42's existing
+  spec** ("Opens on D-pad left/right or mouse wheel"). No separate "open inventory" binding
+  exists or is needed — a single `InventoryScroll` read, interpreted differently depending on
+  whether the inventory panel is currently open, is MRM-42's job. Corrected from this entry's
+  first draft, which had wrongly flagged this as a missing binding.
+- **Added `InputDebugOverlay.cs`**, a throwaway `OnGUI` readout of the last button/key pressed
+  on any device, via `InputSystem.onAnyButtonPress` — the same pattern shown in Unity's own API
+  docs for this exact purpose. Requested by Carlos so he can visually confirm input capture
+  before MRM-9 lands a player to react to it. Toggle: F1 (keyboard), Select/View (gamepad), or
+  the inspector checkbox. Not wired into any scene — see NEXT.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- **Unblocks MRM-9** (player controller) — `Gameplay.Move`/`Look`/`Jump`/`Crouch`/`Sprint` are
+  ready to read from.
+- **Carlos:** confirm the Xbox scheme in an actual browser build (editor gamepad support
+  differs from WebGL's Gamepad API per `Docs/webgl-constraints.md` §7) with your Logitech
+  controller, and hand over the keyboard binding template so the nine placeholder keys above
+  can be swapped for real ones. **Also: drop `InputDebugOverlay` onto any empty GameObject** in
+  a test scene (e.g. `SampleScene`, until Sandbox exists) to try it — that wiring is yours per
+  the usual rule.
+- **Deferred:** `Turret`, `Stretcher`, `Cutscene` maps exist but are empty — each fills in when
+  its own issue lands. Current-control-scheme detection/exposure (for button-icon HUD prompts)
+  also deferred, not required by this issue's acceptance criteria.
+- **MRM-42 comment added**: which underlying actions its "open/navigate" (`InventoryScroll`),
+  "use" (`Jump`/A), and "close" (`EquipMelee`/B) mechanics read from, and a flagged open
+  question — whether the inventory stays in the `Gameplay` map or borrows the `UI` map while
+  open — left for whoever picks that issue up, since MRM-42's own "no pause, Tracey stays
+  vulnerable" design means it isn't a clean full mode-switch like Turret/Stretcher/Cutscene.
+
+---
+
 ## MRM-7 — MoonlightTunables — central constants asset + inspector pattern
 
 **BUILT**
