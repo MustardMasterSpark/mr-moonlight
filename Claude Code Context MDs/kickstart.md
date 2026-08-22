@@ -54,19 +54,22 @@ Follow this every time. It is Carlos's stated process.
 
 Those four headings are not decorative. They are how the next session picks up where this one stopped.
 
-## B.3 — Where Claude stops
+## B.3 — Scene-view and inspector work: ask, don't just hand off
 
-**Anything that requires the Unity scene view or the inspector is Carlos's.** Stop, say clearly what you need, and wait.
+**Updated 2026-08-22.** Carlos is the only person who touches this Unity project — Claude doesn't
+need to automatically default to "that's yours" on every piece of scene-view work. **When you can
+see a way to do something yourself via the UnityMCP bridge, ask him for permission before doing
+it, rather than silently handing off instructions and stopping.**
 
-That includes: placing prefabs · staging locations · wiring inspector references · placing waypoints and trigger volumes · defining hitboxes on models · picking animation keyframes · filling sound pools · tuning feel · anything requiring a saved scene.
+That covers: placing prefabs · staging locations · wiring inspector references · placing waypoints and trigger volumes · defining hitboxes on models · picking animation keyframes · filling sound pools · tuning feel · anything requiring a saved scene.
 
 **Say it like this:**
 
-> I've written the vision cone behaviour and the prefab. **I need you to attach the cone prefab to the Spotter's hierarchy and set the origin on his head bone**, then save the prefab. Tell me when it's done and I'll continue with the detection logic.
+> I've written the vision cone behaviour and the prefab. I can attach the cone prefab to the Spotter's hierarchy and set the origin on his head bone myself via the MCP bridge — want me to, or would you rather do it by hand? Either way, tell me when it's done and I'll continue with the detection logic.
 
-**Do not guess at scene state, and do not fake it in code to avoid asking.** The tandem model is the point: Claude writes systems, Carlos stages the world.
+**If he grants permission:** do it, **verify what you changed by reading the actual component/scene state back** (don't trust a tool call succeeded silently), and document it — a changelog note, plus a note on the issue if relevant. **If he'd rather do it himself, or doesn't answer:** wait. Do not guess at scene state, and do not fake it in code to avoid asking. The tandem model is still the point: Claude can now also stage the world when invited to, but Carlos always gets to say no or do it himself.
 
-**Also ask before assuming** on visual and audio work. When starting an issue, ask what Claude can do automatically. If unsure whether a task is yours, ask — especially anything involving sounds, images, or staging.
+**Still ask, not assume,** on anything visual or audio, and anything genuinely ambiguous (which prefab, which hierarchy position, which values). The shift here is "always hand off" → "offer, then follow his answer" — not "ask" → "just do it."
 
 ## B.4 — Git, and the commit proposal
 

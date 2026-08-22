@@ -65,10 +65,16 @@ Art/
 | Scenes | PascalCase | `MainMenu`, `Demo`, `Sandbox` |
 | Materials | `M_` prefix | `M_TraceyParka` |
 | Textures | `T_` prefix + suffix | `T_Wolf_Albedo` |
-| Audio clips | `SFX_` / `VO_` / `AMB_` / `MUS_` | `VO_D-08-043`, `SFX_Footstep_Leaves_Boots_01` |
+| Audio clips | `SFX_` / `VO_` / `AMB_` / `MUS_` / `ENM_` / `UI_` | `VO_D-08-043`, `SFX_Footstep_Leaves_Boots_01`, `ENM_Spotter_Pain_01`, `UI_MenuSelect` |
 | Animation clips | `A_` + subject + action | `A_Tracey_PickaxeSwing01` |
 
 **Voice-over files use the dialogue line ID** (`VO_D-08-043`). That ID already exists for all ~250 lines in `01-screenplay-demo.md`. **Agree this with Carlos before the actors deliver** — renaming 250 files afterwards is avoidable pain.
+
+**Every audio clip's prefix also drives its import preset** — the six prefixes above map to
+Unity's Preset Manager filters, which auto-apply the correct `Aud_*` preset (compression,
+sample rate, mono/stereo) on import by filename. See `Docs/audio-import-workflow.md` for the
+step-by-step and the full preset reference table; don't hand-tune an audio clip's import
+settings — per `Docs/webgl-budget.md` §9, a clip imported outside a preset is a bug.
 
 ---
 
