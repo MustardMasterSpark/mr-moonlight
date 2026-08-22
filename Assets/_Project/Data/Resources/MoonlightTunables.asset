@@ -24,7 +24,101 @@ MonoBehaviour:
   CrouchTransitionDuration: 0.25
   SlopeLimit: 45
   Gravity: -20
+  GroundCheckDistance: 0.2
+  LookPitchDownMax: 85
+  LookPitchUpMax: 80
+  StickDeadzone: 0.125
+  InvertYAxis: 0
   PathfindingMillisecondsPerFrame: 2
   PathfindingMaxConcurrentAgents: 10
   PathfindingRepathInterval: 0.5
   MineMaxRealtimeLights: 8
+  MaxHealth: 100
+  MaxStamina: 100
+  StaminaDrainCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 25
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 10
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  StaminaRegenRate: 15
+  StaminaRegenDelayAfterSprint: 1.5
+  JumpStaminaCost: 8
+  SwingStaminaCost: 12
+  StaminaTiredThreshold: 50
+  StaminaHyperventilateThreshold: 20
+  BaseMeleeMultiplier: 1
+  BaseDefenseMultiplier: 1
+  AudioPitchTransitionSpeed: 2
+  DeathFallDuration: 1.2
+  DeathHoldBeforeBlackDuration: 0.3
+  DeathRedTintCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  DeathCameraShakeAmplitude: 4
+  DeathCameraShakeFrequency: 18
+  DeathScreamTailDuration: 1
+  RedTintCeiling: 0.85
+  HealthRedTintCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 0.4
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4

@@ -42,6 +42,7 @@ namespace MrMoonlight.Player
 
         private bool _isCrouched;
         private float _crouchBlend;
+        private bool _controlDisabled;
 
         private float _pitchDegrees;
         private Vector2 _stickLookVelocity;
@@ -64,6 +65,9 @@ namespace MrMoonlight.Player
         /// Owner: MRM-9, consumed by MRM-12.
         /// </summary>
         public event Action<float> OnSprinting;
+
+        /// <summary>The pitch pivot MRM-9 built for the camera - exposed read-only so MRM-17's DeathSequence can drive its own fall tilt and shake directly once <see cref="DisableControl"/> has stopped this controller's own Update. Owner: MRM-9, exposed for MRM-17</summary>
+        public Transform CameraPivot => cameraPivot;
 
         private void Awake()
         {
@@ -93,10 +97,37 @@ namespace MrMoonlight.Player
 
         private void Update()
         {
+            if (_controlDisabled)
+            {
+                return;
+            }
+
             HandleCrouchToggle();
             UpdateCrouchTransition();
             UpdateLook();
             UpdateMove();
+        }
+
+        /// <summary>
+        /// Stops this controller's Update entirely - no more look, move, crouch or jump input is
+        /// read. Whatever crouch height/camera state was live at the moment this is called stays
+        /// frozen exactly as it was, which is what MRM-17's "keep her stance through the fall"
+        /// acceptance criterion needs for free. There is no re-enable: the only caller is the
+        /// death sequence, and death does not currently un-happen. Owner: MRM-17
+        /// </summary>
+        public void DisableControl()
+        {
+            _controlDisabled = true;
+        }
+
+        /// <summary>Snaps the camera pivot back to level, facing forward - MRM-17's "return the camera to facing forward" cleanup step, called before the death fall's own tilt takes over. Owner: MRM-17</summary>
+        public void ResetCameraPitch()
+        {
+            _pitchDegrees = 0f;
+            if (cameraPivot != null)
+            {
+                cameraPivot.localRotation = Quaternion.identity;
+            }
         }
 
         private void HandleCrouchToggle()

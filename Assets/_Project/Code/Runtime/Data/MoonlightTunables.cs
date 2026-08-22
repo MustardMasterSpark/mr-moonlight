@@ -134,5 +134,33 @@ namespace MrMoonlight.Data
 
         /// <summary>How fast the audibly-applied pitch chases its modifier-stack target, in pitch units/second. Keeps pitch changes smooth, never instant, per MRM-12. Owner: MRM-12</summary>
         public float AudioPitchTransitionSpeed = 2.0f;
+
+        [Header("Death Sequence — MRM-17")]
+
+        /// <summary>How long the fall-and-shake plays while the red tint rises to its ceiling, in seconds. Owner: MRM-17</summary>
+        public float DeathFallDuration = 1.2f;
+
+        /// <summary>How long the screen holds at full red tint before the instant cut to black, in seconds. Owner: MRM-17</summary>
+        public float DeathHoldBeforeBlackDuration = 0.3f;
+
+        /// <summary>Normalized (0-1 time over DeathFallDuration, 0-1 tint contribution) curve driving the death tint's rise. Owner: MRM-17</summary>
+        public AnimationCurve DeathRedTintCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
+
+        /// <summary>Amplitude of the death-fall camera shake, in degrees. Owner: MRM-17</summary>
+        public float DeathCameraShakeAmplitude = 4f;
+
+        /// <summary>Frequency of the death-fall camera shake's Perlin noise sampling, in Hz. Not in MRM-17's original tunables list - added because the shake needs a rate, not just an amplitude, same reasoning as MRM-9's GroundCheckDistance addition. Owner: MRM-17</summary>
+        public float DeathCameraShakeFrequency = 18f;
+
+        /// <summary>How long the death scream keeps playing into the cut-to-black silence before it too is cut, in seconds. Owner: MRM-17</summary>
+        public float DeathScreamTailDuration = 1.0f;
+
+        [Header("Screen Red Tint — shared, MRM-17 / MRM-53")]
+
+        /// <summary>Ceiling on the summed red tint from every active <see cref="MrMoonlight.VFX.ScreenTint"/> contributor (the death tint, the health damage tint below), 0-1. Keeps the additive contributors from together blowing past a sane maximum - MRM-17's acceptance criteria call this out explicitly. Owner: MRM-17, shared by MRM-53</summary>
+        public float RedTintCeiling = 0.85f;
+
+        /// <summary>Normalized (0-1 = fraction of health lost, 0-1 tint contribution) curve driving the continuous health-damage tint - clear at full health, most visible near zero. This is MRM-53's feature, not MRM-17's; built ahead of schedule on 2026-08-22 at Carlos's request since the shared tint mechanism above already existed. Caps at 0.4, deliberately below RedTintCeiling (0.85) - capping at 1.0 (DeathRedTintCurve's own shape) let the health tint alone saturate the shared ceiling by the time health reached 0, leaving the death tint's own rise with zero visible headroom to add anything (confirmed live: death was invisible, indistinguishable from the pre-existing health tint). MRM-53 should still retune this for its own feel, but must keep some headroom under the ceiling for the death tint to remain a visible escalation. Owner: MRM-53 (implemented during MRM-17)</summary>
+        public AnimationCurve HealthRedTintCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 0.4f);
     }
 }
