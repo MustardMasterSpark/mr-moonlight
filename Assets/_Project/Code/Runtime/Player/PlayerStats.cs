@@ -31,6 +31,7 @@ namespace MrMoonlight.Player
         private float _lastSprintTime = float.NegativeInfinity;
         private bool _wasTired;
         private bool _wasHyperventilating;
+        private bool _isDead;
 
         public Stat Health { get; private set; }
         public Stat Stamina { get; private set; }
@@ -47,6 +48,9 @@ namespace MrMoonlight.Player
 
         /// <summary>Fires once when stamina crosses at-or-below <see cref="MoonlightTunables.StaminaHyperventilateThreshold"/> from above. Edge-triggered, same as <see cref="OnStaminaTired"/>. Empty for now; Carlos wires the hyperventilating breathing sound pool. Owner: MRM-12</summary>
         public event Action OnStaminaHyperventilating;
+
+        /// <summary>Fires once when <see cref="Health"/> reaches 0 from above. Edge-triggered, same pattern as <see cref="OnStaminaTired"/> - consumed by MRM-17's <see cref="DeathSequence"/> to start the death sequence. Owner: MRM-17</summary>
+        public event Action OnDeath;
 
         private void Awake()
         {
@@ -83,6 +87,7 @@ namespace MrMoonlight.Player
             UpdateStaminaRegen();
             UpdateBreathingThresholds();
             UpdateAudioPitch();
+            UpdateDeathCheck();
         }
 
         /// <summary>Deducts <see cref="MoonlightTunables.SwingStaminaCost"/>. Called by the Pickaxe issue on each swing; nothing calls this yet since the Pickaxe isn't built. Owner: MRM-12</summary>
@@ -152,6 +157,16 @@ namespace MrMoonlight.Player
         private void UpdateAudioPitch()
         {
             _currentAudioPitch = Mathf.MoveTowards(_currentAudioPitch, AudioPitch.Value, Tunables.I.AudioPitchTransitionSpeed * Time.deltaTime);
+        }
+
+        private void UpdateDeathCheck()
+        {
+            bool isDead = Health.Value <= 0f;
+            if (isDead && !_isDead)
+            {
+                OnDeath?.Invoke();
+            }
+            _isDead = isDead;
         }
     }
 }

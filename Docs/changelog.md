@@ -5,6 +5,168 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-17 (wrap-up) — 5 of 6 acceptance criteria confirmed, ready to commit
+
+Carlos confirmed hands-on with screenshots (2026-08-22), on top of everything already verified
+live during the build below.
+
+**BUILT** — see the full build/decisions detail in the entry directly below; not repeated here.
+
+**NEXT**
+
+- **Confirmed by Carlos:** crouch stance preserved through the fall (capsule size and Speed
+  1.50 m/s hold, camera moves from the crouched position) · capsule falls in a varied direction
+  every time.
+- **One caveat on the direction criterion, accepted as-is for now:** only the camera tilts — the
+  `CharacterController` capsule and Tracey's placeholder body stay upright, since there's no
+  ragdoll/animation to drive a real physical fall. Logged as a follow-up on MRM-67 (Polishing
+  Details) for once a real model/rig exists.
+- **Left deliberately open, not failing:** the inventory-cleanup criterion. No inventory exists
+  yet (MRM-42/MRM-16 both Backlog) — Carlos's call is to leave this as an explicit open point on
+  the issue rather than tick it or mark it N/A, and revisit once the inventory is built.
+- 5 of 6 acceptance criteria now checked in Linear. Ready for Carlos to commit via GitHub
+  Desktop.
+
+---
+
+## MRM-17 (in progress) — Death sequence built, verified live in Sandbox, handed off for testing
+
+**BUILT**
+
+- `Assets/_Project/Code/Runtime/Player/PlayerStats.cs` — edge-triggered `event Action OnDeath`,
+  same pattern as `OnStaminaTired`, fired once when `Health.Value` reaches 0.
+- `Assets/_Project/Code/Runtime/Player/PlayerController.cs` — `DisableControl()` (permanently
+  stops `Update`, freezing crouch/camera state exactly as it was), `ResetCameraPitch()`, and a
+  public `CameraPivot` accessor for MRM-17 to drive directly.
+- `Assets/_Project/Code/Runtime/Player/DeathSequence.cs` — orchestrates the full sequence:
+  disable control, force-close HUD, camera-tilt-and-shake fall while the red tint rises, scream,
+  hold, cut to black, scream tail, game over.
+- `Assets/_Project/Code/Runtime/VFX/ScreenTint.cs` + `ScreenTintRenderer.cs` — the shared
+  additive red-tint mechanism. A static contribution registry (`SetRed`/`ClearRed` by source
+  name), agnostic of who calls it, plus the one renderer that sums contributions, clamps to the
+  new shared `MoonlightTunables.RedTintCeiling`, and draws them as a full-screen UI Image alpha.
+  Built ahead of MRM-53 specifically so its future health tint can plug into the same mechanism
+  instead of a parallel one — see the note left on that issue.
+- `Assets/_Project/Code/Runtime/UI/HudCloseRequest.cs` — narrow no-op stub event for force-closing
+  the inventory/map on death; no subscribers yet since MRM-42/MRM-16 are both Backlog.
+- `Assets/_Project/Code/Runtime/UI/GameOverPanel.cs` — minimal unstyled landing stub (`Show()`
+  only, no buttons). MRM-19 owns the real game over screen — see the note left there.
+- `Assets/_Project/Code/Runtime/Audio/SoundPool.cs` + the empty `DeathScreamPool.asset` —
+  matches the sound-pool shape already described in `Docs/unity-conventions.md`.
+- Scene: `DeathSequence` + a scream `AudioSource` added to `Player.prefab`; a `HUD Canvas`
+  (960×540 scaler) added to Sandbox with the red tint image, black-screen image and game-over
+  stub, all wired and saved.
+- `Assets/_Project/Code/Runtime/VFX/HealthRedTintSource.cs` — **MRM-53 scope, built ahead of
+  schedule at Carlos's request the same day.** Sits on the Player prefab, continuously feeds
+  current health into `ScreenTint` as a second contributor (`"HealthDamage"`) alongside the death
+  tint, using the new `HealthRedTintCurve` tunable. See the follow-up note left on MRM-53.
+- Carlos supplied `Assets/_Project/Art/HUD Textures/Veins_1.png` (a transparent veins overlay,
+  CoD-damage-vignette style) for the tint's actual art. Imported under the existing `Tex_UI`
+  preset from MRM-6 (Default texture type, no Sprite), so `ScreenTintRenderer` renders it via a
+  `RawImage` rather than `Image` — both `Red Tint` in Sandbox and the renderer code were swapped
+  accordingly.
+- Death yell audio: Carlos recorded and exported 5 clips (WAV, mono, 22050 Hz, per the export
+  guidance given this session). Renamed/reorganized from his working names
+  (`Aud_PSFX_DeathN.wav` in `Audio/PLAYER_SOUNDS/`) to `PLR_Death_01.wav`…`PLR_Death_05.wav` in
+  `Assets/_Project/Audio/Player/` — sibling to the project's existing (previously empty)
+  `Audio/SFX/` and `Audio/VO/` category folders. Added a new **`PLR_` prefix** (Tracey's own
+  non-dialogue vocalizations — death, pain, effort — as opposed to `VO_`'s spoken dialogue
+  lines) and a matching **`Aud_PlayerVox` preset** (`Aud_VO_Dialogue`'s settings under its own
+  name, so the two can diverge later without a rename), wired into the Preset Manager's
+  filename-filter list via the `Preset`/`DefaultPreset` API — not a hand-edit of
+  `ProjectSettings/PresetManager.asset`, which the running Editor won't pick up live. Documented
+  in `Docs/unity-conventions.md` and `Docs/audio-import-workflow.md` (which also had a stale
+  "ENM_/UI_ missing from the naming table" note removed — that gap had already been fixed
+  separately and the note wasn't). All 5 clips assigned to `DeathScreamPool.asset`'s `Clips`
+  array and live-verified (`TryGetRandomClip` returned a real clip and pitch in Play mode).
+
+Tunables added: DeathFallDuration, DeathHoldBeforeBlackDuration, DeathRedTintCurve,
+DeathCameraShakeAmplitude, DeathCameraShakeFrequency, DeathScreamTailDuration, RedTintCeiling
+(shared with MRM-53), HealthRedTintCurve (MRM-53 scope, see above).
+
+**DECISIONS**
+
+- Fall is a camera-pivot tilt + Perlin-noise shake, not a physically simulated capsule tip-over —
+  the player has no Rigidbody/ragdoll and building one felt out of scope. Flagged for Carlos; the
+  amplitude/frequency/duration are already tunable without code, but a hand-authored fall
+  (Cinemachine impulse/dolly, or a real Animation Clip) would replace `DeathSequence.FallAndTint()`
+  — a legitimate polish-phase follow-up, not a rewrite of the sequencing. Cinemachine isn't
+  installed in the project yet.
+- Sound mute uses `AudioListener.pause` + `AudioSource.ignoreListenerPause` on the scream source,
+  not an `AudioMixer` — none exists in the project yet, and this is a clean built-in fit.
+- Red tint renders via a full-screen `RawImage` rather than a URP Volume override, since no
+  post-processing profile exists in the project yet. `ScreenTintRenderer` is the only class that
+  would need to change if a Volume-based approach lands later.
+- `HealthRedTintCurve` defaults to the same shape as `DeathRedTintCurve` for now, per Carlos's
+  request — MRM-53 should retune it independently rather than assume the two must stay identical.
+
+**FAILED**
+
+- `HealthRedTintCurve` ramping to 1.0 (matching `DeathRedTintCurve`'s shape) let the health tint
+  alone saturate `RedTintCeiling` by the time health hit 0 — the death tint's own rise then had
+  zero headroom to add anything, so death was visually indistinguishable from "already low
+  health." Confirmed live: alpha pinned at the 0.85 ceiling through the whole death sequence
+  regardless of the death curve's value. Fixed by capping `HealthRedTintCurve` at 0.4 instead —
+  see NEXT.
+- Discovered mid-fix: `MoonlightTunables.asset` hadn't been re-serialized since MRM-12, so
+  several fields (including `HealthRedTintCurve`, moments after I'd just changed its C# default)
+  were silently running on stale in-memory values rather than picking up the new default — a
+  missing-from-YAML field only gets its C# default applied the *first* time it's ever
+  instantiated in a session; after that, Unity's domain-reload snapshot carries the live value
+  forward regardless of source changes. Fixed by explicitly setting the field on the loaded
+  asset and calling `AssetDatabase.SaveAssets()`, which re-serialized every field's current value
+  into the `.asset` file — worth remembering next time a tunable's default needs to change after
+  it's already been touched once in a running Editor session.
+
+**NEXT**
+
+- Live-verified in Play mode (Health drained to 0 via code): control disabled, tint reached
+  ceiling, instant cut to black, `AudioListener.pause` engaged, game over panel activated, no way
+  to regain control. Compiles clean, zero console errors.
+- `HealthRedTintSource`'s math verified directly (0.784 contribution at 30/100 health, matching
+  the curve) — the live on-screen alpha update in Play mode couldn't be watched frame-by-frame in
+  this session because the Editor runs heavily throttled while unfocused during MCP-driven
+  testing (2 engine frames in ~2 minutes of wall time). Not a code issue; worth a normal
+  hands-on look once Carlos is driving it directly.
+- **Not yet verified by Carlos hands-on** — acceptance criteria intentionally left unticked in
+  Linear pending his test pass and his call on the fall/game-over decisions above.
+- ~~Death scream pool is empty~~ — filled, and **Carlos confirmed the yells play correctly**
+  in-game. (An earlier note here claimed the clips were silent, based on `AudioClip.GetData()`
+  reading peak/RMS 0.0 on all 5 — that reading was a false negative, not a real problem;
+  correcting the record rather than leaving it stand. Likely `GetData()` behaving oddly on a
+  Compressed-In-Memory Vorbis clip in-editor rather than anything wrong with the files
+  themselves. Trust Carlos's hands-on ear over that specific diagnostic next time.)
+- **Death tint still wasn't visible after the HealthRedTintCurve fix above — second, deeper bug,
+  now actually fixed.** Carlos confirmed live: the veins texture intensified correctly, but the
+  centre of the screen stayed sky-blue right through death — no red wash at all. Root cause:
+  `Veins_1.png` is an edge-concentrated damage-vignette texture with a **transparent centre** —
+  no amount of alpha on that texture alone can ever redden the middle of the screen, so the
+  "extremely red before the blackout" the issue calls for was structurally impossible with a
+  single textured layer, no matter how the curves were tuned. Fixed by giving
+  `ScreenTintRenderer` a second layer: a flat, full-screen solid-red `Image` (`Red Tint Flat`,
+  Sandbox) sitting *behind* the veins `RawImage`, both driven by the same computed alpha. Verified
+  with an actual in-game screenshot at death (Health 0, Death tint at 1) — the screen genuinely
+  floods red edge-to-edge, veins visible as detail on top. This is the fix that should have
+  shipped the first time; the single-texture approach couldn't have worked as specified.
+- **Third round: Carlos caught a visible border/corner where the tint didn't reach**, screenshot
+  from the actual Game view at 16:9. Measured it precisely with `RectTransform.GetWorldCorners`
+  rather than guessing: `Red Tint`, `Red Tint Flat`, `Black Screen` and `Game Over Panel` all had
+  a **leftover non-1.0 `localScale`** (0.96–1.10 depending on the object) baked in from however
+  each was created via the MCP bridge, before their stretch anchors were applied - the anchors
+  and offsets were correct, but the scale was silently shrinking/growing the rect around the
+  screen centre on top of that, leaving (or overshooting) a border. Also confirmed in the process
+  that `offsetMin`/`offsetMax` set via the MCP `manage_components` tool's SerializedProperty path
+  don't reliably take (those are computed C# properties on `RectTransform`, not raw serialized
+  fields) - the actual fix had to go through real C# (`execute_code`) setting `anchorMin`,
+  `anchorMax`, `offsetMin`, `offsetMax` **and `localScale = Vector3.one`** together. Also re-learned
+  the hard way that Play Mode edits don't persist - the first pass of this exact fix was made
+  while in Play Mode and silently reverted the moment Play Mode stopped; redone in Edit Mode and
+  confirmed via a fresh Play session afterward. All four overlays now measure exactly
+  `(0,0)`-`(Screen.width,Screen.height)`, verified both numerically and with an in-game
+  screenshot showing full edge-to-edge red with no border.
+
+---
+
 ## MRM-12 (wrap-up) — All acceptance criteria confirmed, ready to commit
 
 **BUILT**

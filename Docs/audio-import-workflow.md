@@ -14,9 +14,9 @@ that never has to happen because someone forgot the numbers.
 
 ## 0. What's already set up (done during MRM-6 — nothing to build)
 
-- **8 `AudioImporter` presets** in `Assets/_Project/Settings/Presets/`: `Aud_VO_Dialogue`,
+- **9 `AudioImporter` presets** in `Assets/_Project/Settings/Presets/`: `Aud_VO_Dialogue`,
   `Aud_VO_Long`, `Aud_Ambient`, `Aud_Music`, `Aud_OneShot_General`, `Aud_OneShot_Short`,
-  `Aud_EnemyVox`, `Aud_UI`.
+  `Aud_EnemyVox`, `Aud_UI`, `Aud_PlayerVox` (added 2026-08-22, MRM-17).
 - **Wired into `Edit → Project Settings → Preset Manager`**, so a new clip auto-applies a preset
   based on its filename prefix the moment it's imported:
 
@@ -27,6 +27,7 @@ that never has to happen because someone forgot the numbers.
   | `AMB_` | `Aud_Ambient` |
   | `ENM_` | `Aud_EnemyVox` |
   | `UI_` | `Aud_UI` |
+  | `PLR_` | `Aud_PlayerVox` |
   | anything else (including `SFX_`) | `Aud_OneShot_General` (catch-all) |
 
 - **Project audio settings**: Real Voices 24, Virtual Voices 512, DSP Buffer Size *Best
@@ -36,19 +37,25 @@ Two presets are **not** in the auto-filter table because a filename prefix can't
 from their sibling — you decide by ear/duration (see step 3 below): `Aud_VO_Long` and
 `Aud_OneShot_Short`.
 
-**One naming gap worth reconciling with Carlos, not fixed here:** the Preset Manager filters on
-`ENM_`/`UI_`, but `Docs/unity-conventions.md`'s naming table only lists `SFX_`/`VO_`/`AMB_`/`MUS_`
-as canonical audio prefixes. Enemy vocalizations and UI sounds need one of those two extra
-prefixes to actually auto-route correctly — worth adding to that table so it's not just tribal
-knowledge in the Preset Manager.
+`Aud_PlayerVox` is `Aud_VO_Dialogue`'s settings (Compressed In Memory, Vorbis 40%, mono, 22050 Hz
+override) under a separate name, for the same reason `PLR_` is separate from `VO_`: Tracey's
+death yells/pain grunts have no dialogue line ID and aren't spoken lines, so they don't belong on
+the dialogue preset's naming path even though the settings happen to match today. If the two
+presets' settings ever need to diverge (e.g. yells wanting a different quality), they already
+have separate presets to do that from.
+
+*(The naming table in `Docs/unity-conventions.md` now lists `ENM_`/`UI_`/`PLR_` alongside the
+originals - this doc used to flag `ENM_`/`UI_` as missing from that table; that's since been
+fixed, so if you're reading this looking for a gap, there isn't one anymore.)*
 
 ---
 
 ## 1. Adding a new clip — the normal path
 
-1. **Name it with the right prefix**: `SFX_`, `VO_`, `AMB_`, `MUS_`, and (per the gap above)
-   `ENM_` for enemy vocalizations or `UI_` for interface sounds. Voice-over files use the
-   dialogue line ID per `Docs/unity-conventions.md` (`VO_D-08-043`).
+1. **Name it with the right prefix**: `SFX_`, `VO_`, `AMB_`, `MUS_`, `ENM_` for enemy
+   vocalizations, `UI_` for interface sounds, or `PLR_` for the player's own non-dialogue
+   vocalizations (death, pain, effort). Voice-over files use the dialogue line ID per
+   `Docs/unity-conventions.md` (`VO_D-08-043`).
 2. **Drop it into `Assets/_Project/Audio/`.** The matching preset auto-applies on import — check
    the top of the clip's Inspector; it should show the preset name next to the little circular
    preset icon.
@@ -92,6 +99,7 @@ one:
 | `Aud_OneShot_Short` | Footsteps, weapon fire, anything <~1s | Yes | Decompress On Load | **ADPCM** | n/a | Override 22 050 Hz |
 | `Aud_EnemyVox` | Enemy vocalizations, pain loops | Yes | Compressed In Memory | Vorbis | **35%** | Override 22 050 Hz |
 | `Aud_UI` | Menu/HUD sounds | Yes | Decompress On Load | **ADPCM** | n/a | Override 22 050 Hz |
+| `Aud_PlayerVox` | Tracey's non-dialogue vocalizations — death, pain, effort | Yes | Compressed In Memory | Vorbis | 40% | Override 22 050 Hz |
 
 **Why mono for almost everything:** stereo on a 3D-positioned source doubles the bytes for zero
 audible gain — only music, ambient beds, and (arguably) UI stay stereo, and even UI is mono here

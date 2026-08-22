@@ -65,10 +65,12 @@ Art/
 | Scenes | PascalCase | `MainMenu`, `Demo`, `Sandbox` |
 | Materials | `M_` prefix | `M_TraceyParka` |
 | Textures | `T_` prefix + suffix | `T_Wolf_Albedo` |
-| Audio clips | `SFX_` / `VO_` / `AMB_` / `MUS_` / `ENM_` / `UI_` | `VO_D-08-043`, `SFX_Footstep_Leaves_Boots_01`, `ENM_Spotter_Pain_01`, `UI_MenuSelect` |
+| Audio clips | `SFX_` / `VO_` / `AMB_` / `MUS_` / `ENM_` / `UI_` / `PLR_` | `VO_D-08-043`, `SFX_Footstep_Leaves_Boots_01`, `ENM_Spotter_Pain_01`, `UI_MenuSelect`, `PLR_Death_01` |
 | Animation clips | `A_` + subject + action | `A_Tracey_PickaxeSwing01` |
 
 **Voice-over files use the dialogue line ID** (`VO_D-08-043`). That ID already exists for all ~250 lines in `01-screenplay-demo.md`. **Agree this with Carlos before the actors deliver** — renaming 250 files afterwards is avoidable pain.
+
+**`PLR_` is for Tracey's own non-dialogue vocalizations** — death yells, pain grunts, jump/effort exertion — added 2026-08-22 (MRM-17). Deliberately separate from `VO_`, which is reserved for actual spoken dialogue lines mapped to a screenplay line ID; a death yell has no line ID and shouldn't be shoehorned into that mapping. Mirrors `ENM_` (enemy vocalizations) — same idea, player-side. Auto-routes to the `Aud_PlayerVox` preset (Compressed In Memory, Vorbis 40%, mono, 22050 Hz override) — see `Docs/audio-import-workflow.md`.
 
 **Every audio clip's prefix also drives its import preset** — the six prefixes above map to
 Unity's Preset Manager filters, which auto-apply the correct `Aud_*` preset (compression,
