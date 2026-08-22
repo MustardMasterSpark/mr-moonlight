@@ -180,6 +180,8 @@ GameObject:
   - component: {fileID: 1917331669029953601}
   - component: {fileID: 5315715615500149478}
   - component: {fileID: 8928707108124763610}
+  - component: {fileID: 1335907357598564126}
+  - component: {fileID: 313253787629446902}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -242,6 +244,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerController
   cameraPivot: {fileID: 308980248971916352}
+  stats: {fileID: 0}
+--- !u!114 &1335907357598564126
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8675351696025013920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d630bf0b2144c9e49b010756cf25177f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerStats
+  playerController: {fileID: 0}
+--- !u!114 &313253787629446902
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8675351696025013920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f4481e39c279c747a3af84ea623c47c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerStatsDebugOverlay
+  visible: 0
+  stats: {fileID: 0}
 --- !u!1001 &180365463115254334
 PrefabInstance:
   m_ObjectHideFlags: 0

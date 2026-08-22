@@ -192,6 +192,16 @@ There is no unit-test suite and there should not be one — 19 days, and this is
 - **The Sandbox scene is the test harness.** Sparring dummy, flat plane, one of each enemy.
 - **Debug visualisation is testing.** Vision cones, hearing spheres, aim cones and stat readouts are all specified as toggleable for exactly this reason. Build them when the issue says to, not later.
 
+**The narrow exception:** MRM-12 added `Assets/_Project/Code/Tests/EditMode/` (a real NUnit
+EditMode assembly, `StatModifierStackingTests.cs`) because its acceptance criteria explicitly
+demanded *"two systems modifying the same stat simultaneously produce the documented result,
+**with a test proving it**."* That's a genuine automated-test requirement, not play-mode-checkable
+— the modifier stacking math (`Stat`'s additive/multiplicative formula) is pure C# with no
+Unity runtime dependency, so it's cheap to assert directly rather than eyeballing HUD numbers.
+This does not reopen the door to a general unit-test suite — add a test only when an issue's own
+acceptance criteria explicitly ask for one, the same way this one did. Everything else still
+follows the rule above.
+
 ---
 
 ## Things not to do

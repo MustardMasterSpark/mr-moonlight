@@ -5,6 +5,156 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-12 (wrap-up) — All acceptance criteria confirmed, ready to commit
+
+**BUILT**
+
+- Confirmed live in Sandbox: Health drops on contact with `HealthTest`; Melee/Defense modifiers
+  visibly stack on the debug HUD (F2) walking into `MeleeTest`/`DefenseTest`; Audio Pitch glides
+  audibly rather than snapping walking into `PitchTest`; stamina drains on the curve while
+  sprinting and regenerates after the delay; jump/sprint both refuse at 0 stamina.
+  `StatModifierStackingTests` — 5/5 passing. Fresh recompile, zero console warnings.
+- All six MRM-12 acceptance criteria ticked in Linear.
+
+**NEXT**
+
+- Ready to commit and merge to `main`. See commit proposal in this session's conversation.
+- **Recommended next issue: MRM-11** (Event Director) — the project's own stated biggest
+  blocker, unblocks MRM-62 and the narrative critical path. Opus-scoped for the format/
+  architecture decision; start it in a fresh session rather than carrying this one's context
+  over, per the model-discipline rule in `kickstart.md` §B.5.
+- **If staying in Sonnet right now instead: MRM-17** (Death sequence) — small, unblocked,
+  consumes the `Health` stat this issue just built.
+
+---
+
+## MRM-12 (in progress) — Core stat framework built, handed off for scene wiring
+
+**BUILT**
+
+- `Assets/_Project/Code/Runtime/Player/StatModifier.cs` — `StatModifierType` (Additive /
+  Multiplicative) and the `StatModifier` struct (source, type, value).
+- `Assets/_Project/Code/Runtime/Player/Stat.cs` — the generic modifier-stacked stat. One class
+  covers all six stats, per the issue's Model note. Formula: `Value = (BaseValue + sum of
+  additive) * (product of multiplicative)`, documented on the class with a worked example.
+  Also owns `Deplete`/`Restore` (direct pool mutation, for damage/regen) and `Lock`/`Unlock`
+  (§11.6 — pins `Value`, bypasses the modifier stack, until unlocked).
+- `Assets/_Project/Code/Runtime/Player/PlayerStats.cs` — owns the six `Stat` instances (Health,
+  Stamina, Speed, MeleeDamage, Defense, AudioPitch). Subscribes to `PlayerController.OnJumped`
+  and `OnSprinting` (MRM-9's hooks) for jump/sprint stamina costs. Stamina drains on
+  `StaminaDrainCurve` (curve input: fraction of stamina remaining) while sprinting, regenerates
+  at a flat rate after `StaminaRegenDelayAfterSprint` seconds of not sprinting. `OnStaminaTired`
+  / `OnStaminaHyperventilating` fire edge-triggered at the 50%/20% thresholds — empty
+  subscriber lists, ready for Carlos's breathing sound pools. `CurrentAudioPitch` chases the
+  modifier-stack target via `Mathf.MoveTowards` at `AudioPitchTransitionSpeed`, so pitch never
+  jumps instantly. `ConsumeSwingStamina()` is public and unused, ready for the Pickaxe issue.
+- `Assets/_Project/Code/Runtime/Player/PlayerStatsDebugOverlay.cs` — same on-screen-overlay
+  shape as MRM-8's `InputDebugOverlay`, hidden by default (`visible = false`), toggled with F2 /
+  gamepad Start. Positioned below `InputDebugOverlay`'s rect so both can be on at once in
+  Sandbox.
+- `MoonlightTunables.cs` — new `Player Stats — MRM-12` header: `MaxHealth`, `MaxStamina`,
+  `StaminaDrainCurve`, `StaminaRegenRate`, `StaminaRegenDelayAfterSprint`, `JumpStaminaCost`,
+  `SwingStaminaCost`, `StaminaTiredThreshold` (50), `StaminaHyperventilateThreshold` (20),
+  `BaseMeleeMultiplier` (1.0), `BaseDefenseMultiplier` (1.0), `AudioPitchTransitionSpeed`.
+- `Assets/_Project/Code/Tests/EditMode/StatModifierStackingTests.cs` (new
+  `MrMoonlight.Tests.EditMode` asmdef, EditMode/NUnit) — 5 tests proving the stacking rule: an
+  additive + multiplicative modifier applied simultaneously produce the documented result,
+  removing one source's modifier leaves the other intact, two multiplicative modifiers multiply
+  their factors (not sum their percentages), values clamp to `MaxValue` even when modifiers would
+  exceed it, and `Lock` bypasses modifiers until `Unlock`. All 5 pass (`MrMoonlight.Tests.EditMode`
+  run via the Unity Test Runner).
+
+**DECISIONS**
+
+- **Speed unified with `PlayerController`, per Carlos's explicit call after reviewing the
+  tradeoff.** `PlayerController` now optionally links to a sibling `PlayerStats`: it writes its
+  computed base speed (walk/sprint/crouch) into `Speed.BaseValue` every frame and moves at
+  `Speed.Value` (the modifier-stacked result) instead of its own raw number, so boots/weapon/
+  substance modifiers actually affect movement. The link is optional (null-checked, falls back to
+  MRM-9's original behaviour) so prefabs without `PlayerStats` are unaffected.
+- **Same pass also gates jump and sprint on stamina**, at Carlos's request: at exactly 0 stamina,
+  jump is refused and sprint silently falls back to a walk, instead of firing for free. Melee is
+  not gated — no attack action exists yet to gate (Pickaxe issue's job).
+- Modifier stacking rule documented on `Stat`'s class doc comment (canonical, single source) per
+  the issue's "document the stacking rule" requirement, rather than a separate docs file — same
+  reasoning as the tunables override pattern being documented once on `MoonlightTunables.cs`.
+- Health/Stamina reuse the same `Stat` class as Melee/Defense/Speed/Pitch rather than a separate
+  "pool" type — `Deplete`/`Restore` mutate `BaseValue` directly, while the modifier list stays
+  available for future capacity/rate modifiers (a "difficulty" max-health boost, say), keeping
+  one mechanism for all six per the Model note instead of two.
+- Event director's `stat` verb (`op=lock`/`op=unlock`, MRM-11) isn't built yet, so there's no
+  string-keyed dispatch — `Lock`/`Unlock` live directly on each `Stat` instance
+  (`playerStats.Stamina.Lock(...)`). MRM-11 calls these directly when it exists; no premature
+  abstraction added ahead of that consumer.
+
+**FAILED**
+
+- `create_script` rejected the first version of `Stat.cs` with a false-positive "duplicate
+  method signature" on an expression-bodied `Value` property that called a private helper method
+  of the same name pattern. Fixed by inlining the computation directly into `Value`'s getter
+  instead of delegating to a separate method — not a real duplicate, just something about that
+  shape the script validator didn't like.
+
+**DECISIONS (cont.)**
+
+- **Scene-view exception, at Carlos's explicit request:** he'd already created `HealthTest`,
+  `MeleeTest`, `DefenseTest`, `PitchTest` GameObjects (each with a visualization Cube child) and
+  asked Claude to attach the debug scripts directly rather than hand off instructions — normally
+  `CLAUDE.md`'s "stop at the scene view" rule. Done via the UnityMCP bridge, verified by reading
+  the components back afterward:
+  - `HealthTest/Cube` — its existing `BoxCollider` set to `isTrigger = true`, plus
+    `StatDebugPoolZone` (Target Pool: Health, Restores: false, Amount Per Hit: 10, Re-Trigger
+    Delay: 1s).
+  - `MeleeTest` — `StatDebugModifierToggle` (Target Stat: Melee Damage, Additive, +0.5, key F3).
+  - `DefenseTest` — `StatDebugModifierToggle` (Target Stat: Defense, Additive, +0.5, key F4).
+  - `PitchTest` — new `AudioSource` (Loop + Play On Awake on, **no clip assigned — none exists in
+    the project yet**), `StatDebugAudioPitchTest`, and `StatDebugModifierToggle` (Target Stat:
+    Audio Pitch, Multiplicative, ×1.3, key F5).
+  - This surfaced a real bug fixed alongside it: `StatDebugModifierToggle` and
+    `StatDebugAudioPitchTest` originally had `[RequireComponent(typeof(PlayerStats))]`, assuming
+    they'd live on the `Player` GameObject. On a standalone object that would have cascaded into
+    Unity auto-adding a duplicate `PlayerStats` → `PlayerController` → `CharacterController`
+    stack. Fixed by dropping that attribute and having both find the scene's one `PlayerStats`
+    via `FindFirstObjectByType` at `Awake` (Awake-time lookup, not per-frame, per
+    `Docs/csharp-conventions.md`) when the serialized field is left blank.
+  - Left the scene **unsaved** — Carlos is repositioning the Cubes next and will save when done.
+
+**DECISIONS (cont. 2)**
+
+- **Two more scene-view fixes, at Carlos's explicit request** (per the updated §B.3 policy —
+  offer, get permission, act via UnityMCP, verify by reading state back):
+  - **`PitchTest`'s `AudioSource` was inaudibly flat regardless of distance** — its `Spatial
+    Blend` defaulted to `0` (2D) when added, which ignores listener distance entirely; the
+    clip's importer being "3D-capable" doesn't set that. Fixed: `spatialBlend = 1`,
+    `minDistance = 1.5`, `maxDistance = 8` — calibrated against the actual Sandbox `Plane`
+    (20×20, scale 2 on the default 10×10 primitive) and `PitchTest`'s position (9 units from
+    the Player's spawn), so it's inaudible at spawn and clear on approach rather than an
+    arbitrary guess.
+  - **`StatDebugModifierToggle` (keypress-based) replaced with `StatDebugModifierZone`
+    (trigger-based),** at Carlos's request for consistency with `HealthTest`'s walk-in
+    interaction model — deleted the old script (after removing its components from the scene
+    first, to avoid a missing-script reference) and added the new one, which applies its
+    modifier `OnTriggerEnter` and removes it `OnTriggerExit`, same shape as
+    `StatDebugPoolZone`. Moved from living on the `MeleeTest`/`DefenseTest`/`PitchTest` parent
+    objects onto their `Cube` children (set to `Is Trigger`), since that's where the collider
+    actually is. Settings preserved from the keypress version: Melee +0.5 additive, Defense
+    +0.5 additive, Pitch ×1.3 multiplicative.
+
+**NEXT**
+
+- **Carlos:** `PlayerStats`/`PlayerStatsDebugOverlay` are already on `Player`, and the four debug
+  test objects are wired (see DECISIONS above). Remaining: reposition the Cubes, assign a looping
+  test clip to `PitchTest`'s `AudioSource`, save the scene, then confirm live against the
+  acceptance criteria — Tracey's movement speed comes from `PlayerStats.Speed`, jump/sprint refuse
+  at 0 stamina, sprint falls back to a walk, stamina drains/regenerates correctly, jumping costs
+  stamina, F2 toggles the debug HUD, pitch transitions are smooth (F5 on `PitchTest`), and F3/F4
+  visibly stack on Melee/Defense via the HUD.
+- Unblocks: any future item that reads `PlayerStats.MeleeDamage`/`.Defense` in a damage
+  calculation, MRM-11's `stat` verb (lock/unlock), the Pickaxe issue (`ConsumeSwingStamina`),
+  Carlos's breathing sound pools on `OnStaminaTired`/`OnStaminaHyperventilating`.
+
+---
+
 ## MRM-8 (follow-up) — Look X-axis was silently inverted
 
 **BUILT**

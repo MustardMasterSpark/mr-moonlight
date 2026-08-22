@@ -10,6 +10,13 @@ namespace MrMoonlight.Player
     /// Tracey's first-person controller: move, look, jump, crouch (toggle) and sprint, every
     /// value read live from <see cref="Tunables"/>. Owns its own <see cref="InputMapController"/>
     /// per MRM-8's construction pattern — built in Awake, disposed in OnDestroy. Owner: MRM-9
+    ///
+    /// <para>Optionally linked to a sibling <see cref="PlayerStats"/> (MRM-12, unified per
+    /// Carlos's call on that issue): when present, this controller feeds its computed base speed
+    /// into <see cref="PlayerStats.Speed"/> and moves at the modifier-stacked result instead of
+    /// its own raw number, and refuses to jump or sprint at exactly empty stamina. Falls back to
+    /// its original MRM-9-only behaviour when no <see cref="PlayerStats"/> is attached, so this
+    /// stays optional rather than a hard requirement on every prefab using this controller.</para>
     /// </summary>
     [RequireComponent(typeof(CharacterController))]
     public sealed class PlayerController : MonoBehaviour
@@ -22,6 +29,9 @@ namespace MrMoonlight.Player
         /// near-clip plane so Tracey can see her own placeholder body — see MRM-9.
         /// </summary>
         [SerializeField] private Transform cameraPivot;
+
+        /// <summary>Optional. Auto-found via GetComponent if left unassigned and present on this GameObject. See the class doc comment — MRM-12.</summary>
+        [SerializeField] private PlayerStats stats;
 
         private CharacterController _controller;
         private InputMapController _input;
@@ -39,16 +49,19 @@ namespace MrMoonlight.Player
         private int _groundLayerMask;
 
         /// <summary>
-        /// Raised once per jump, immediately after takeoff. This controller has no notion of
-        /// stamina — MRM-12's stat framework subscribes here to apply the jump's cost.
+        /// Raised once per jump, immediately after takeoff. When a sibling <see cref="PlayerStats"/>
+        /// is present, this controller also refuses to jump at exactly empty stamina (MRM-12) —
+        /// MRM-12's stat framework subscribes here to apply the jump's actual stamina cost.
         /// Owner: MRM-9, consumed by MRM-12.
         /// </summary>
         public event Action OnJumped;
 
         /// <summary>
-        /// Raised every frame the player is actively sprinting (Sprint held, not crouched, and
-        /// moving), with deltaTime, so MRM-12 can drain stamina proportionally to time spent
-        /// sprinting. Owner: MRM-9, consumed by MRM-12.
+        /// Raised every frame the player is actively sprinting (Sprint held, not crouched, moving
+        /// forward, and — when a sibling <see cref="PlayerStats"/> is present — stamina above
+        /// zero; sprint silently falls back to a walk once stamina empties, MRM-12), with
+        /// deltaTime, so MRM-12 can drain stamina proportionally to time spent sprinting.
+        /// Owner: MRM-9, consumed by MRM-12.
         /// </summary>
         public event Action<float> OnSprinting;
 
@@ -57,6 +70,11 @@ namespace MrMoonlight.Player
             _controller = GetComponent<CharacterController>();
             _input = new InputMapController();
             _groundLayerMask = LayerMask.GetMask("Ground");
+
+            if (stats == null)
+            {
+                stats = GetComponent<PlayerStats>();
+            }
 
             if (cameraPivot == null)
             {
@@ -148,13 +166,27 @@ namespace MrMoonlight.Player
 
             Vector2 moveInput = _input.Actions.Gameplay.Move.ReadValue<Vector2>();
             bool sprintHeld = _input.Actions.Gameplay.Sprint.IsPressed();
+            // Empty stamina blocks sprint the same way it blocks jump below — falls back to a
+            // walk rather than refusing movement outright. See MRM-12.
+            bool hasStamina = stats == null || stats.Stamina.Value > 0f;
             // Sprint only applies moving forward — holding Sprint while backing up or strafing
             // just walks. Flagged by Carlos during MRM-9 testing: sprinting backwards felt wrong.
-            bool isSprinting = sprintHeld && !_isCrouched && moveInput.y > 0f;
+            bool isSprinting = sprintHeld && !_isCrouched && moveInput.y > 0f && hasStamina;
 
-            float speed = _isCrouched
+            float baseSpeed = _isCrouched
                 ? Tunables.I.CrouchSpeed
                 : isSprinting ? Tunables.I.SprintSpeed : Tunables.I.WalkSpeed;
+
+            // Feed this frame's base speed into PlayerStats.Speed and move at its modifier-stacked
+            // result instead of the raw number, so boots/weapon/substance modifiers (MRM-12)
+            // actually affect movement rather than sitting on an unread stat. See the class doc
+            // comment.
+            float speed = baseSpeed;
+            if (stats != null)
+            {
+                stats.Speed.BaseValue = baseSpeed;
+                speed = stats.Speed.Value;
+            }
 
             Vector3 moveDirection = transform.right * moveInput.x + transform.forward * moveInput.y;
             if (moveDirection.sqrMagnitude > 1f)
@@ -169,7 +201,9 @@ namespace MrMoonlight.Player
                 _verticalVelocity = 0f;
             }
 
-            if (_input.Actions.Gameplay.Jump.WasPerformedThisFrame() && grounded && !_isCrouched)
+            // hasStamina also gates jump (MRM-12) — refuses at exactly empty rather than letting
+            // OnJumped's stamina cost drain below zero.
+            if (_input.Actions.Gameplay.Jump.WasPerformedThisFrame() && grounded && !_isCrouched && hasStamina)
             {
                 _verticalVelocity = ComputeJumpVelocity();
                 OnJumped?.Invoke();

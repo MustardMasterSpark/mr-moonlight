@@ -96,5 +96,43 @@ namespace MrMoonlight.Data
 
         /// <summary>Cap on concurrent real-time lights active in the mine. Every Spotter carries a lamp, so a group of them in the mine's confined space is URP's worst case for real-time lighting. Owner: MRM-60</summary>
         public int MineMaxRealtimeLights = 8;
+
+        [Header("Player Stats — MRM-12")]
+
+        /// <summary>Health pool ceiling. Health drops from attacks (0 from a punji trap or a Zealot backstab) and is recoverable by items. Owner: MRM-12</summary>
+        public float MaxHealth = 100f;
+
+        /// <summary>Stamina pool ceiling. Owner: MRM-12</summary>
+        public float MaxStamina = 100f;
+
+        /// <summary>Stamina drain rate while sprinting, in stamina/second, as a function of the fraction of stamina remaining (X: 1 = full, 0 = empty). "Drains on a curve, slower at first, faster as it empties" per MRM-12 — the default eases from a ~10/sec drain near full up to a ~25/sec drain near empty. Owner: MRM-12</summary>
+        public AnimationCurve StaminaDrainCurve = AnimationCurve.EaseInOut(0f, 25f, 1f, 10f);
+
+        /// <summary>Flat stamina regeneration rate once regen is active, in stamina/second. Owner: MRM-12</summary>
+        public float StaminaRegenRate = 15f;
+
+        /// <summary>Seconds after sprinting stops before stamina regen begins. Owner: MRM-12</summary>
+        public float StaminaRegenDelayAfterSprint = 1.5f;
+
+        /// <summary>Flat stamina cost of a single jump, deducted once per <see cref="Player.PlayerController.OnJumped"/>. Owner: MRM-12</summary>
+        public float JumpStaminaCost = 8f;
+
+        /// <summary>Flat stamina cost of a single Pickaxe swing. Consumed by the Pickaxe issue via <see cref="Player.PlayerStats.ConsumeSwingStamina"/>; not yet called by anything since the Pickaxe isn't built. Owner: MRM-12</summary>
+        public float SwingStaminaCost = 12f;
+
+        /// <summary>Stamina percentage (0-100) at or below which tired-sprint breathing triggers. Owner: MRM-12</summary>
+        public float StaminaTiredThreshold = 50f;
+
+        /// <summary>Stamina percentage (0-100) at or below which hyperventilating breathing triggers. Owner: MRM-12</summary>
+        public float StaminaHyperventilateThreshold = 20f;
+
+        /// <summary>Melee damage multiplier with no items or statuses applied. Owner: MRM-12</summary>
+        public float BaseMeleeMultiplier = 1.0f;
+
+        /// <summary>Defense (damage reduction) multiplier with no items or statuses applied. Owner: MRM-12</summary>
+        public float BaseDefenseMultiplier = 1.0f;
+
+        /// <summary>How fast the audibly-applied pitch chases its modifier-stack target, in pitch units/second. Keeps pitch changes smooth, never instant, per MRM-12. Owner: MRM-12</summary>
+        public float AudioPitchTransitionSpeed = 2.0f;
     }
 }
