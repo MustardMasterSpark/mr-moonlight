@@ -5,6 +5,290 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-58 (in progress) — Programmatic terrain block-out from Carlos's map: both islands shaped, water carved, chapel hill raised, sea horizon added
+
+**BUILT — terrain block-out (2026-08-23)**
+
+Carlos supplied a topographic map, a grayscale heightmap, a real-world distance calibration
+image, a location map, and a gameplay-area perimeter (now at
+`Docs/Design/Island-Terrain-Reference/`, see that folder's README). Executed the plan from the
+prior session: read the grayscale pixel-by-pixel, resampled to the terrain's heightmap grid,
+pushed in with `TerrainData.SetHeights()`. Scene-view work, done via UnityMCP per standing
+permission (Carlos directed this task explicitly this session — "Model in Unity using the
+Terrain Shaper... you decide the dimensions"), verified by reading terrain/player state back
+and by Scene View screenshots (below), documented here.
+
+- **Scale derivation.** Measured Carlos's two calibration lines in `AANNIARVIK-scale-
+  calibration-lines.png` (yellow 1137.8px = 1.72km, red 1225.9px = 1.82km) → real-world
+  **~1.498 m/px**, cross-validated by both lines agreeing to within 2%. Carlos's own suggestion
+  ("a map with around double those dimensions would be cool") became the final call: **3.0 m/px
+  in-game** (~2.003× real scale — landed almost exactly on 2× by rounding to a clean number).
+  Verified this against pacing (see DECISIONS) rather than taking the 2× suggestion on faith.
+- **Elevation kept at 1:1 real meters**, not doubled with the footprint. `AANNIARVIK-height-
+  scale-legend.png` gives a linear white(0m)→black(170m) grayscale mapping, confirmed by
+  sampling the legend image's gradient bar directly (row 0 = 255 = 0m, row 1622 = 0 = 170m,
+  linear between). Doubling the footprint while holding height constant **halves the average
+  grade** — deliberately, since this is a walking/exploration game and gentler slopes read as
+  more traversable at the larger scale.
+- **Crop + buffer.** Source image is 1490×2258px, mostly empty sea. Cropped to the combined
+  land bounding box (both islands + the small decorative islet south of the second island) plus
+  a 20-40px margin: source px `x[160,1361] y[30,2225]` (1201×2195px). Added a **250m flat-sea
+  buffer ring** on all four sides so the terrain doesn't cut off right at the coastline.
+  Content: 3603×6585m. **Final `Terrain.size` = 4103 × 260 × 7085** (X × Y-height × Z),
+  `heightmapResolution` **1025** (~4.0m/cell in X, ~6.9m/cell in Z — coarse by design, this is
+  a first-pass block-out for Carlos to hand-detail, not final geometry).
+- **Water carving, via two BFS passes** over the 1025×1025 grid (source pixel → grid-cell
+  classified water via the same blue-channel test used for the land mask: `B > R+40 && B >
+  G+20`): (1) flood-fill from every water cell on the grid's outer border classifies "open sea"
+  vs. an enclosed body reachable from nowhere ("lake") — the north island's interior water
+  system (the lake + narrow channel connecting the two named location clusters) came out
+  correctly separated from the surrounding sea, no manual per-body tuning needed; (2)
+  multi-source BFS from every water cell adjacent to land gives distance-from-shore in grid
+  cells for every water cell. Depth = `min(cap, distance × rate)`, `seaLevel = 40m` (terrain-
+  local): **sea** rate 3.5m/cell, cap 35m (floor at 5m); **lake** rate 2.0m/cell, cap 22m. A
+  narrow strait/river only a few cells wide never reaches its cap and stays shallow; a wide lake
+  does — "larger bodies of water go deeper" fell out of the distance model instead of needing
+  per-body hand tuning. Also directly satisfies "stop digging past a certain distance, keep
+  flat" — once distance-from-shore clears the cap threshold (~2-3 cells past the buffer's inner
+  edge), the seafloor is already perfectly flat.
+- **Chapel hill.** Chapel marker (`AANNIARVIK-locations.png`, black box, centroid px
+  (407,422)) → world (991, 1426). Added a `Mathf.SmoothStep` boost, +25m at the chapel's
+  position tapering to 0 at 150m radius, on top of whatever the source map's own grayscale
+  already gave that spot (which sampled at ~90m elevation before the boost — the map already
+  placed the chapel partway up high ground, matching "chapel is on a hill" in the task
+  description; the boost pushes it the rest of the way to read clearly on the skyline).
+- **Small-scale roughness.** Two-octave `Mathf.PerlinNoise` (±2.5m at ~50m wavelength, ±1m at
+  ~12.5m), land cells only, added after elevation + chapel boost, before normalization.
+- **Sea/water visualization**: `M_Sea.mat` (`Assets/_Project/Art/Environment/Water/`),
+  `Universal Render Pipeline/Lit`, Transparent surface, base color `(0.04, 0.22, 0.38, 0.62)`,
+  smoothness 0.65, shadows off both ways (doesn't cast, doesn't receive) — a stock URP shader,
+  no custom shader code, itch.io-proven surface type. A single large flat quad (`Sea`
+  GameObject, no collider — purely visual, never satisfies the player's `Ground`-layer
+  ground-check, layer left at `Default`) at Y=40 (sea level), 30,000m across, centered on the
+  terrain — one quad (2 tris) handles both "water fills the carved coastline/lake basins" (since
+  the terrain's dug-out areas sit below Y=40) and "distant sea horizon" at effectively zero
+  extra render cost. `Main Camera.farClipPlane` raised **1000 → 4000** so that horizon is
+  actually visible instead of clipped — flagged in DECISIONS as a first pass, pairs well with
+  distance fog later.
+- **Player repositioned** to the campsite's world position (1006, ~79.8, 2704 — sampled from
+  the baked terrain, not guessed), facing roughly toward the glade (next script location).
+  Old position (0,0,0) was a corner of the old 1000×600×1000 terrain and would have spawned in
+  open water/void on the new one. **Not** the same thing as placing the location markers
+  themselves — Carlos still does that by hand, per his own note on `AANNIARVIK-locations.png`.
+- **Live-verified**: entered Play mode, player settled at Y≈79.79 (matches the sampled terrain
+  height, didn't fall through), zero console errors/warnings. `cc.isGrounded` read `false` at
+  rest, same known-quirk already documented on `GroundCheckDistance` in `MoonlightTunables` —
+  not a regression, `PlayerController`'s own SphereCast ground check is what actually matters
+  and the terrain collider clearly held the player up.
+- Three Scene View screenshots taken confirming shape fidelity against the source map (both
+  islands + islet, correct silhouette), the carved lake basins (visible depression with banked
+  walls), and the chapel hill (reads as a distinct raised dome). Saved under
+  `Assets/Screenshots/` (Editor default location, not attached here).
+
+**BUILT — orientation fix, beach smoothing, corrected player spawn (2026-08-23)**
+
+Carlos added `Docs/Design/Island-Terrain-Reference/Map/AANNIARVIK orientation.png` (a compass
+rose + "P" player-start marker overlaid on the same source map) and flagged two problems with
+the block-out above: the island was mirrored north/south, and every land/water edge was a
+vertical "cannon wall" instead of a beach. Full terrain regenerated from scratch via UnityMCP
+`execute_code`, same permission basis as the prior pass, verified live (top-down and oblique
+Scene View captures, Play Mode spawn check) rather than assumed.
+
+- **Root cause of the flip, confirmed not guessed.** The chapel marker's centroid (found by
+  scanning `AANNIARVIK-locations.png` for its black-square cluster: bbox x[403,411] y[414,429],
+  centroid (407, 421.5) — matches the prior session's own (407,422) almost exactly, cross-
+  validating the pixel-scan method itself) recomputes to world Z=5660.5 under a corrected
+  north-up mapping. `7085 − 1426 = 5659`, matching the *old* (flipped) Z=1426 to within a
+  meter. That is the signature of a classic Unity gotcha: `Texture2D.LoadImage` stores row 0 as
+  the *bottom* of the image (OpenGL V=0 convention), but the old sampling code evidently read
+  "row N from the top of the PNG" directly as the texture's row index without flipping it,
+  mirroring the whole island north/south. Fixed by sampling
+  `pixels[(srcHeight - 1 - rowFromTop) * srcWidth + col]` explicitly. Re-verified against the
+  reference image with a temporary top-down orthographic camera (`TempTopDownCam`, deleted after
+  use) — silhouette, compass orientation, and the lake lobe's position (west, matching the
+  reference) all line up; screenshots in `Assets/Screenshots/`.
+- **A second, unrelated bug found and fixed while rebuilding: a missing sea-level offset.** The
+  height-scale legend's 0–170m is real-world elevation *above* sea level, but the regenerated
+  land-height formula was writing that value directly as the terrain-local height instead of
+  `seaLevel + elevation`. Silent effect: any pixel with real elevation under ~47m (a large
+  fraction of a real coastal island) baked in *below* the local sea level (Y=40) regardless of
+  the beach work below — confirmed by an interim run where 54% of all land cells came out
+  underwater. Fixed by anchoring land height at `seaLevel + elevAboveSea` before boosts/
+  roughness; re-verified (0.07% of land cells sit below sea level afterward, all inside the
+  intentional beach taper's roughness noise, not a residual bug).
+- **Beach/shoreline smoothing**, applied uniformly to every land/water boundary (sea, lake, and
+  the inter-island channel alike — no per-body-type logic needed, same as the existing water
+  BFS): a third multi-source BFS (mirroring the existing water-distance BFS) computes each land
+  cell's distance-in-grid-cells from the nearest water cell. Within a 14-cell band (~55–95m,
+  anisotropic since the grid cells aren't square at this heightmap resolution — coarse by
+  design, same block-out caveat as before), height is `Lerp(seaLevel + 1m, naturalHeight,
+  smoothstep(dist/14))`: a 1m beach lip at the waterline easing up to full natural terrain,
+  replacing the old hard cliff. Beyond the band, terrain is untouched.
+- **"Lower the island as a whole"**, per Carlos's direction, rather than just re-grading the
+  coastline and having to compensate the interior afterward: land elevation *above* sea level is
+  scaled **0.75×** before boosts/roughness (was 1.0× / unscaled in the original block-out).
+  Combined with the sea-level-offset fix above, this gives gentler overall grades without
+  sinking low-lying land — max terrain height came out at 138m (vs. budget of 260m), comfortable
+  headroom.
+- **Player spawn moved to the "P" marker**, not reused from the old campsite guess. Pixel-scanned
+  the orientation image the same way as the chapel (single largest near-black cluster, isolated
+  from the compass rose's 8 letter-clusters by size: 359px vs. 50–102px each): centroid (407.1,
+  862.5) → world (991.3, 4337.5). That exact point sampled at ~26m — a real, natural low point on
+  the narrow neck of land between the lake and the strait, not a bug — well under the 40m sea
+  level. Rather than fight the surrounding beach grading (the nearest naturally-dry point was
+  170m+ away — this whole neck is legitimately low), gave it the same treatment as the chapel: a
+  small local landmark boost (`+16m within a 40m falloff radius, no beach-taper dilution inside a
+  22m core pad`), the same pattern already established for the chapel hill. Final spawn height
+  79.5m. **Flagged as a deliberate, explicit exception** to the plain distance-based beach
+  grading — worth Carlos's eyes when he does his own location-placement pass, in case he'd rather
+  move the campsite itself than rely on a boosted pad.
+- Facing set to world +X (east, roughly toward the lake/interior) since the old rotation (Y=80°)
+  was tuned for the flipped orientation and no longer means anything meaningful — a placeholder
+  for Carlos to redo once he's placed the actual campsite dressing.
+- **Live-verified**: Play Mode, player settled at Y≈79.62 (matches the sampled terrain height),
+  zero console errors/warnings, same ground-check quirk noted previously (not a regression).
+- **Build #10** — `E:\Builds\10 - Terrain Reshape - 2026-08-23\Build.zip`, WebGL, 11.84 MB,
+  0 build errors (1 informational "1 URP assets included in build" log, not an issue). Verified
+  the Unity MCP bridge was actually connected (`mcpforunity://instances`) before triggering,
+  per the note below from the interrupted build last session. Zip built entry-by-entry with
+  forward-slash paths and verified via `ZipFile` entry-name inspection (all 6 entries clean, no
+  `\` separators) — `Compress-Archive`/`ZipFile.CreateFromDirectory` still avoided per the MRM-8
+  zip-separator bug.
+
+**BUILT (prior session)**
+
+- `Assets/_Project/Scenes/Island.unity` — new scene, replaces the deleted `SampleScene`. Carlos
+  copied over the HUD Canvas and Player prefab from prior work and added a `Terrain` object.
+  Registered in Build Settings as scene 0 (Sandbox kept as scene 1).
+- **Ground layer fix (scene-view, permission granted, done via UnityMCP, verified by reading the
+  component back):** the new `Terrain` defaulted to layer `Default`, not `Ground` — jump silently
+  never worked because `PlayerController.CheckGrounded()`'s SphereCast only tests the `Ground`
+  layer (see MRM-9's own note on this requirement). Fixed: `Terrain` → layer `Ground`, scene saved.
+- **Cross-issue fix, MRM-9 scope, done on this branch (flagged, see comment on MRM-9 too):**
+  jump could "ram" up any slope regardless of `SlopeLimit`, since the ground-check only tested
+  "is there ground below," never the surface angle — `CharacterController.slopeLimit` only
+  governs the walking `Move()` resolution, so it never got a chance to reject repeated jump+land
+  hops climbing a steep slope a step at a time. Fixed with sliding instead of a jump block:
+  standing on ground steeper than `SlopeLimit` now slides Tracey back down it at a constant
+  speed, jump itself stays available on any slope (including jumping off one back to flat
+  ground). `PlayerController.CheckGrounded()` now also returns the ground hit's normal so
+  `UpdateMove()` can derive the slope angle and downhill direction.
+- **New tunable:** `SlideSpeed` (4 m/s default) on `MoonlightTunables`, next to `SlopeLimit`.
+- **New debug-only tool, not tied to any acceptance criteria:** `DebugFlyController.cs` — an
+  inspector-checkbox-toggleable free-fly/noclip mode for Carlos to visually inspect terrain shape
+  and inter-location distances from the player's own POV, no collision/gravity/stamina/slope.
+  Full 3D fly in the look direction, keyboard+mouse and gamepad both live simultaneously (same
+  "whichever device fires" philosophy as MRM-8's `InputMapController`). Reads `Keyboard`/`Mouse`/
+  `Gamepad` directly, not the shared Gameplay action map, and only ever flips
+  `PlayerController`'s and `CharacterController`'s `enabled` flags — never reaches into
+  `PlayerController`'s own fields, so normal movement is untouched. Same "debug tool, not
+  shipped" category as `InputDebugOverlay`. Not attached to the Player prefab yet.
+- Build `9 - Island Blockout - 2026-08-22` — Island + Sandbox both in Build Settings, uploaded
+  for Carlos to test on itch.io.
+
+**DECISIONS (terrain block-out, 2026-08-23)**
+
+- **Pacing math behind the 2× scale call.** Location markers on `AANNIARVIK-locations.png`,
+  converted to world meters at 3.0 m/px, give a straight-line surface route (campsite → glade →
+  cabin → Flak Tower → mine entrance, then mine exit → well → chapel; the mine itself is a
+  teleport, not surface distance) of **~1.96km straight-line**. Real walking paths around lake
+  barriers and elevation typically run 1.3-1.6× straight-line, so **~2.5-3.1km actual overland
+  route**. At `WalkSpeed` 3.0 m/s that's ~14-17 min of pure walking; blended with some
+  `SprintSpeed` (5.5 m/s) use, closer to ~12-13 min. Carlos's target is a 40-50 min full
+  playthrough with the mine (his own "~10 min section") carved out separately, leaving ~30-40
+  min for the overland leg — pure movement at ~12-17 min of that leaves comfortable room (over
+  half the budget) for the Flak Tower combat gauntlet, other encounters, backtracking, and
+  "wasting a little time," per the brief. **This is what confirmed 2× rather than something
+  larger** — a 4× scale would have pushed pure walking alone past 25-30 min, leaving too little
+  room for combat inside the 30-40 min overland budget.
+- **World orientation convention, since the source map is oriented (north = top of image) but
+  Unity has no inherent compass:** in `Island.unity`, **+X = east, -Z = north** (i.e. image row
+  0/north maps to terrain Z=0 at the buffer's inner edge, image column increasing = world +X).
+  Worth remembering before placing anything with the source map open side-by-side.
+- **Heightmap resolution 1025, not 513 (the placeholder default) or higher.** 513 was too coarse
+  for a 4.1×7.1km footprint (~8m/cell); 2049 would be 4× the memory for detail this pass doesn't
+  need, since Carlos hand-sculpts on top of this anyway. 1025 (~4-7m/cell) is the middle ground.
+- **Terrain dimensions and the sea/lake depth constants are NOT routed through
+  `MoonlightTunables`** — same reasoning as the vegetation/staging numbers below: this is
+  one-time level-design geometry set by an editor bake, not a runtime-tunable gameplay constant
+  scripts read every frame. `MoonlightTunables` stays reserved for values code actually consumes
+  live.
+- **Reference images moved to `Docs/Design/Island-Terrain-Reference/`, not `Assets/`.** They're
+  inputs to a one-time editor bake (read via `File.ReadAllBytes` from an absolute path, not a
+  Unity-imported asset), not runtime textures — same category as the existing screenplay/pitch/
+  style docs already living under `Docs/Design/`, not the `Art/Environment/` folder
+  `Docs/unity-conventions.md` reserves for actual in-game terrain textures. Renamed the 10 files
+  from cryptic/spaced names (`AANNIARVIK y1,72 r1,82.png`, `LrNUdu.jpg`) to descriptive
+  kebab-case/prefixed ones — see that folder's own README for the mapping.
+- **Mine geometry is explicitly out of scope for this pass** — "the area of the mine is not
+  represented here" per Carlos's brief, and it's still an open question in `00-INDEX.md` whether
+  it's carved into the island or a teleport to a separate space. Its own ~10-minute pacing target
+  is noted above for whenever that issue lands, but nothing about the mine was modeled.
+- **No terrain texture layers assigned.** Bare/default terrain material, matching "we're not
+  going to fill it with trees, just do the shape" — texturing and vegetation are explicitly
+  Carlos's own pass (Vegetation Spawner, per the prior session's decision), not this one's job.
+
+**DECISIONS**
+
+- **Flora Instancer dropped from this issue's scope** — Carlos only owns the free Vegetation
+  Spawner (Staggart Creations), not Flora Instancer/Renderer (a separate paid BRG-based rendering
+  engine with unconfirmed WebGL support). Vegetation Spawner drives Unity's built-in terrain
+  tree/detail instancing, which should be sufficient for this pass; revisit only if profiling
+  later shows a rendering bottleneck that combination can't solve. Noted inline in the issue
+  description.
+- **Vegetation/staging numbers deliberately NOT routed through `MoonlightTunables` yet, at
+  Carlos's explicit call.** He wants to place trees freely with the Vegetation Spawner first and
+  see how a real WebGL build actually holds up, rather than have every count/radius decision go
+  through a tunable up front. Revisit once a build shows a real frame-rate/budget problem — at
+  that point tunable-izing the numbers becomes part of the actual fix, not a process step ahead
+  of one.
+- **Slope handling: slide, not a jump block.** First pass blocked jump outright on steep ground;
+  Carlos found that felt wrong (still wanted to jump off a slope back to flat ground) and asked
+  for sliding instead — jump-climbing steep terrain is prevented by the slide itself (you can't
+  net gain height jumping onto ground that immediately pushes you back down), not by refusing the
+  jump input.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- **Carlos:** hand-detail the block-out — the eight location placements (campsite, glade,
+  cabin, Flak Tower, mine entrance, mine exit, well, chapel; final positions are his call per his
+  own note on `AANNIARVIK-locations.png`), soften/vary the lake-basin walls if the carved banks
+  read too geometric up close, add rocks/noise breakup Perlin alone won't give, and the actual
+  vegetation/texture pass (Vegetation Spawner, still deliberately un-tunable-ized — see
+  DECISIONS above). Walk the route before detailing, per the issue's own instruction — the
+  Player now spawns at the campsite specifically so that's possible immediately.
+- **Sanity-check the current numbers** now that they're chosen rather than requested: **map
+  footprint 4103×7085m** (unchanged), land elevation now **0.75× scaled + a seaLevel(40m)
+  offset** (was 1.0×/unscaled), **peak height ~138m** (was ~171m + chapel boost), beach taper
+  **14 grid cells (~55–95m)** from every shoreline, player spawn-pad boost **+16m within 40m** of
+  the "P" marker. If any of these feel wrong hands-on — too flat, beach band too wide/narrow,
+  spawn pad too obviously a bump — all re-bakeable in one script run, not hand sculpting to redo.
+- **Carlos: sanity-check the player spawn-pad boost specifically.** The "P" marker sits on a
+  genuinely low neck of land between the lake and the strait (nearest naturally-dry ground was
+  170m+ away), so it got a small deliberate raised-clearing boost rather than being moved. Worth
+  a look during the location-placement pass in case a moved campsite reads better than a bump.
+- **Sea plane and camera far-clip are a first pass**, not final. `M_Sea`'s color/alpha and the
+  4000m far clip are guesses at "simple yet pretty" — pairing the far clip with distance fog for
+  a softer horizon fade-out is a natural next step whenever lighting/atmosphere work starts.
+- **Mine section not modeled** — still needs its own space (carved-in vs. teleport, per the open
+  question in `00-INDEX.md`) and its own ~10-minute pacing pass once that issue is picked up.
+- `DebugFlyController` needs adding to the Player prefab/GameObject in the Inspector (or ask
+  Claude to do it via UnityMCP) before it's usable — not wired into any scene yet. Genuinely
+  useful now for walking/flying the new terrain at scale.
+- Watch the WebGL budget once vegetation starts going down — this is the acceptance criterion
+  most likely to need a build-and-check cycle before it's done. The terrain itself (1025²
+  heightmap, no texture layers yet) is cheap; the vegetation pass is where the real budget risk
+  is.
+- `SlideSpeed`'s constant-speed slide is flagged as a polish-pass candidate (friction/acceleration
+  curve) now that real terrain shapes (including the lake-basin banks, which are steep enough to
+  act as the "natural barrier" the brief asked for) exist to tune it against.
+
+---
+
 ## MRM-17 (wrap-up) — 5 of 6 acceptance criteria confirmed, ready to commit
 
 Carlos confirmed hands-on with screenshots (2026-08-22), on top of everything already verified

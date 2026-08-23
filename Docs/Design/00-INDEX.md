@@ -11,6 +11,7 @@ The source of truth for what gets built is **Linear** (project `MrMoonlightDemo`
 | `02-pitch-document.md` | Genre, scope, art direction, systems, full enemy/item catalogue, MVP-vs-full-game boundary | Deciding whether a feature is in scope; designing systems; naming things |
 | `03-style-guide.md` | Visual style, enemy aesthetic, 3D character rules, audio direction | Any art, shader, UI, VFX or audio decision |
 | `04-character-profiles.md` | The 8 characters: physical, voice, personality, wardrobe, spoilers | Writing dialogue, directing VO, modelling/rigging characters, animation intent |
+| `Island-Terrain-Reference/` | Carlos's island map, height-scale legend, real-world scale calibration lines, location markers, gameplay-area perimeter, and forest/water/night mood images | Terrain shaping, level layout, staging any location, water/sky art direction |
 
 ---
 
