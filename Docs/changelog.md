@@ -5,6 +5,77 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-58 (in progress) — Scene set up, pre-modeling fixes done, terrain sculpt not yet started
+
+**BUILT**
+
+- `Assets/_Project/Scenes/Island.unity` — new scene, replaces the deleted `SampleScene`. Carlos
+  copied over the HUD Canvas and Player prefab from prior work and added a `Terrain` object.
+  Registered in Build Settings as scene 0 (Sandbox kept as scene 1).
+- **Ground layer fix (scene-view, permission granted, done via UnityMCP, verified by reading the
+  component back):** the new `Terrain` defaulted to layer `Default`, not `Ground` — jump silently
+  never worked because `PlayerController.CheckGrounded()`'s SphereCast only tests the `Ground`
+  layer (see MRM-9's own note on this requirement). Fixed: `Terrain` → layer `Ground`, scene saved.
+- **Cross-issue fix, MRM-9 scope, done on this branch (flagged, see comment on MRM-9 too):**
+  jump could "ram" up any slope regardless of `SlopeLimit`, since the ground-check only tested
+  "is there ground below," never the surface angle — `CharacterController.slopeLimit` only
+  governs the walking `Move()` resolution, so it never got a chance to reject repeated jump+land
+  hops climbing a steep slope a step at a time. Fixed with sliding instead of a jump block:
+  standing on ground steeper than `SlopeLimit` now slides Tracey back down it at a constant
+  speed, jump itself stays available on any slope (including jumping off one back to flat
+  ground). `PlayerController.CheckGrounded()` now also returns the ground hit's normal so
+  `UpdateMove()` can derive the slope angle and downhill direction.
+- **New tunable:** `SlideSpeed` (4 m/s default) on `MoonlightTunables`, next to `SlopeLimit`.
+- **New debug-only tool, not tied to any acceptance criteria:** `DebugFlyController.cs` — an
+  inspector-checkbox-toggleable free-fly/noclip mode for Carlos to visually inspect terrain shape
+  and inter-location distances from the player's own POV, no collision/gravity/stamina/slope.
+  Full 3D fly in the look direction, keyboard+mouse and gamepad both live simultaneously (same
+  "whichever device fires" philosophy as MRM-8's `InputMapController`). Reads `Keyboard`/`Mouse`/
+  `Gamepad` directly, not the shared Gameplay action map, and only ever flips
+  `PlayerController`'s and `CharacterController`'s `enabled` flags — never reaches into
+  `PlayerController`'s own fields, so normal movement is untouched. Same "debug tool, not
+  shipped" category as `InputDebugOverlay`. Not attached to the Player prefab yet.
+- Build `9 - Island Blockout - 2026-08-22` — Island + Sandbox both in Build Settings, uploaded
+  for Carlos to test on itch.io.
+
+**DECISIONS**
+
+- **Flora Instancer dropped from this issue's scope** — Carlos only owns the free Vegetation
+  Spawner (Staggart Creations), not Flora Instancer/Renderer (a separate paid BRG-based rendering
+  engine with unconfirmed WebGL support). Vegetation Spawner drives Unity's built-in terrain
+  tree/detail instancing, which should be sufficient for this pass; revisit only if profiling
+  later shows a rendering bottleneck that combination can't solve. Noted inline in the issue
+  description.
+- **Vegetation/staging numbers deliberately NOT routed through `MoonlightTunables` yet, at
+  Carlos's explicit call.** He wants to place trees freely with the Vegetation Spawner first and
+  see how a real WebGL build actually holds up, rather than have every count/radius decision go
+  through a tunable up front. Revisit once a build shows a real frame-rate/budget problem — at
+  that point tunable-izing the numbers becomes part of the actual fix, not a process step ahead
+  of one.
+- **Slope handling: slide, not a jump block.** First pass blocked jump outright on steep ground;
+  Carlos found that felt wrong (still wanted to jump off a slope back to flat ground) and asked
+  for sliding instead — jump-climbing steep terrain is prevented by the slide itself (you can't
+  net gain height jumping onto ground that immediately pushes you back down), not by refusing the
+  jump input.
+
+**FAILED**
+
+Nothing to record.
+
+**NEXT**
+
+- **Carlos:** start the actual terrain sculpt and the seven-location blockout (campsite, glade,
+  cabin, mine entrance, mine exit, well, chapel). Walk the route before detailing per the issue's
+  own instruction.
+- `DebugFlyController` needs adding to the Player prefab/GameObject in the Inspector (or ask
+  Claude to do it via UnityMCP) before it's usable — not wired into any scene yet.
+- Watch the WebGL budget once vegetation starts going down — this is the acceptance criterion
+  most likely to need a build-and-check cycle before it's done.
+- `SlideSpeed`'s constant-speed slide is flagged as a polish-pass candidate (friction/acceleration
+  curve) once real terrain shapes exist to tune it against.
+
+---
+
 ## MRM-17 (wrap-up) — 5 of 6 acceptance criteria confirmed, ready to commit
 
 Carlos confirmed hands-on with screenshots (2026-08-22), on top of everything already verified
