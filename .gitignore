@@ -234,3 +234,24 @@ New Terrain.asset.meta
 # /[Aa]ssets/**/LightingData.asset.meta
 # /[Aa]ssets/**/ReflectionProbe-*.exr
 # /[Aa]ssets/**/Lightmap-*.exr
+
+# =============================================================================
+#  THIRD-PARTY / ASSET STORE PACKAGES — Assets/ThirdParty/
+# -----------------------------------------------------------------------------
+#  WHY: per Docs/unity-conventions.md, Assets/ThirdParty/ is where imported,
+#       never-edited third-party packages live (2026-08-23: Unity's official
+#       "Terrain Sample Asset Pack" — brushes, sample textures, vegetation
+#       models). These are large, freely re-downloadable from the Asset Store,
+#       and not authored content, so there's no reason to version them.
+#
+#  WARNING: this also ignores the .meta files, which carry GUIDs. If anything
+#       else in the project ends up referencing an asset from here by GUID
+#       (a material, a prefab, a Vegetation Spawner entry), a fresh clone that
+#       re-imports the package will get DIFFERENT GUIDs and that reference
+#       will silently break. Fine for "sculpting reference" use. NOT fine once
+#       something from in here is actually shipping in the game — pull that
+#       specific file out into Assets/_Project/Art/ (with proper attribution/
+#       license notes) before it's load-bearing, same as any other asset.
+# =============================================================================
+/[Aa]ssets/ThirdParty/**
+!/[Aa]ssets/ThirdParty/.gitkeep
