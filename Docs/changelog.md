@@ -5,6 +5,83 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-68 (in progress) — Stylized, animated sea shader replacing the flat placeholder
+
+**BUILT (2026-08-23)**
+
+- New hand-written URP shader, `Assets/_Project/Art/Environment/Water/Water.shader`
+  (`MrMoonlight/StylizedWater`), applied to the existing `M_Sea.mat`/`Sea` GameObject from
+  MRM-58. Built from Simon Swartout's "Simple Water Shader" Medium article (Voronoi ripples,
+  Radial Shear, Power-sharpened edges, vertex displacement) — fully procedural, **zero texture
+  maps**. A second, older Gerstner-wave/normal-map article was read for inspiration on the
+  calm-vs-aggressive split only; not implemented (see DECISIONS). Full technique writeup,
+  parameter table, and a **Shader Graph reproduction spec** (Carlos wants the option to convert
+  this to a node graph later) live in `Docs/water-shader.md` — kept out of this changelog entry
+  to avoid duplicating a large reference doc.
+- **Replaced `Sea`'s mesh.** The MRM-58 quad was 2 triangles by design (near-zero render cost) —
+  far too few vertices for any vertex-displacement technique to show. Generated `SeaGrid.mesh`
+  (64×64 grid, ~4,225 verts, still trivial GPU cost) via `execute_code` and swapped it onto the
+  `Sea` GameObject's `MeshFilter`.
+- **Distance-based calm→aggressive blend**: cell density, animation speed, edge sharpness, and
+  swell amplitude all `lerp` between Near/Far values on a single `smoothstep` of
+  distance-from-camera (XZ). One shader, one mesh — no seam between two separate materials.
+- **Found and fixed two real bugs while tuning it**, both worth remembering for future
+  procedural-noise shader work:
+  1. A screen-space-derivative (`fwidth`) anti-aliasing pass that widened the *entire* brightness
+     falloff instead of only softening the threshold crossing — washed the whole pattern out to
+     solid bright at grazing angles. Fixed by clamping the AA band to a small fraction of the
+     artistic edge width, applied only around the actual threshold.
+  2. Swell wavelength (90m) far smaller than the new grid's own cell size (~470m at this plane's
+     scale) — aliased into chaotic warped craters instead of a smooth roll. Fixed by using a much
+     larger wavelength (1200m) for the geometric swell; fine ripple detail is unaffected since it
+     lives entirely in the fragment shader, where mesh resolution isn't a constraint.
+- Verified via a temporary camera + `manage_camera` screenshots (near-shore calm cells vs.
+  distant chaotic multi-octave veins, both correctly distinct) and zero console errors after
+  each shader recompile.
+
+**DECISIONS**
+
+- **Hand-written HLSL, not Shader Graph.** The available tooling creates shader scripts, not
+  Shader Graph node graphs — hand-crafting a `.shadergraph`'s JSON directly is fragile enough to
+  likely produce a broken/uneditable graph. All parameters are still exposed as material
+  properties (Inspector sliders), so day-to-day tuning doesn't need code edits. Full reasoning
+  and the node-by-node spec for rebuilding this as an actual Shader Graph are in
+  `Docs/water-shader.md`.
+- **Gerstner waves, paired normal/height maps, and depth-texture fog/refraction/foam** (all from
+  the second article) deliberately deferred — heavier than a "not photorealistic" stylized target
+  needs, and the depth-texture sampling in particular has a real WebGL cost. Documented as
+  optional future polish in `Docs/water-shader.md`, not lost.
+- **This landed on the `mrm-58` branch** (merged to `main` as a checkpoint commit, not a real
+  finish — see below) — Carlos asked for it mid-session while that branch was still checked out.
+  Given its own issue, **MRM-68**, now that the work exists — per the project's
+  one-issue-one-branch rule this should move to its own branch before its own commit, Carlos's
+  call via GitHub Desktop.
+- **Paused here, deliberately.** Carlos wants to get back to MRM-58's blockout/vegetation pass
+  first; this issue holds the water shader as a self-contained unit to resume whenever the next
+  polish pass comes around.
+
+**FAILED**
+
+First two tuning passes on the ripple edge math (see DECISIONS/BUILT bug #1) — not a dead end,
+just iteration, recorded above since the *reasoning* (don't let AA width scale the whole falloff)
+is the reusable lesson, not just the fix.
+
+**NEXT**
+
+- **Carlos: confirm the ripples actually animate in a normal, focused Play Mode session.**
+  `Time.time` was confirmed advancing during the automated build session, but two screenshots
+  taken several seconds apart via the MCP camera tool came back pixel-identical — most likely
+  because the Game View doesn't necessarily redraw every tick while the Editor window isn't
+  OS-focused in a remote session, not a fault in the shader's `_Time.y` usage, but not proven
+  either way by automation. First acceptance criterion on MRM-68.
+- Frame cost not yet profiled in an actual WebGL build (should be cheap — no texture samples at
+  all — but not measured).
+- Visual pass once Carlos can look at it hands-on: does the near/far transition read as smooth,
+  is the aggressive-far pattern actually aggressive enough, does the near pattern read as calm.
+- Decide Shader Graph conversion — spec is ready in `Docs/water-shader.md` whenever wanted.
+
+---
+
 ## MRM-58 (in progress) — Programmatic terrain block-out from Carlos's map: both islands shaped, water carved, chapel hill raised, sea horizon added
 
 **BUILT — terrain block-out (2026-08-23)**
@@ -230,6 +307,12 @@ Scene View captures, Play Mode spawn check) rather than assumed.
 
 **DECISIONS**
 
+- **This issue got auto-closed by Linear's GitHub integration** when its linked PR (#8) merged
+  to `main`, then reopened same-session — Carlos merges to `main` as a checkpoint/safety commit
+  (his own stated habit, likely to recur on other branches too), not necessarily as "this issue
+  is finished." Worth remembering: a merged PR or a `Done` status in Linear doesn't reliably mean
+  an issue's acceptance criteria are actually met for this project — check with Carlos rather
+  than assuming.
 - **Flora Instancer dropped from this issue's scope** — Carlos only owns the free Vegetation
   Spawner (Staggart Creations), not Flora Instancer/Renderer (a separate paid BRG-based rendering
   engine with unconfirmed WebGL support). Vegetation Spawner drives Unity's built-in terrain
