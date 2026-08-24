@@ -48,6 +48,7 @@ namespace MrMoonlight.Player
         private Vector2 _stickLookVelocity;
         private float _verticalVelocity;
         private int _groundLayerMask;
+        private readonly RaycastHit[] _groundHitsBuffer = new RaycastHit[8];
 
         /// <summary>
         /// Raised once per jump, immediately after takeoff. When a sibling <see cref="PlayerStats"/>
@@ -73,7 +74,7 @@ namespace MrMoonlight.Player
         {
             _controller = GetComponent<CharacterController>();
             _input = new InputMapController();
-            _groundLayerMask = LayerMask.GetMask("Ground");
+            _groundLayerMask = Tunables.I.GroundCheckMask;
 
             if (stats == null)
             {
@@ -269,19 +270,46 @@ namespace MrMoonlight.Player
 
         // CharacterController.isGrounded is unreliable while stationary — confirmed live during
         // MRM-9 testing, it reads false even at rest on flat ground, which silently blocked
-        // jumping whenever the player wasn't moving. A short downward SphereCast against the
-        // Ground layer replaces it as the authoritative check for jump eligibility and the
-        // vertical-velocity reset. Any floor/terrain placed in the scene must be on the Ground
-        // layer for this to work — see Docs/unity-conventions.md's layers table.
+        // jumping whenever the player wasn't moving. A short downward SphereCast replaces it as
+        // the authoritative check for jump eligibility and the vertical-velocity reset. It hits
+        // any solid collider by default (Tunables.GroundCheckMask) rather than requiring objects
+        // to be tagged Ground — widened during MRM-58 once blockout props (location markers, mine
+        // obstacles) needed to be standable without per-object layer setup. Narrow GroundCheckMask
+        // in the Inspector if a specific layer misbehaves.
+        //
+        // Uses the NonAlloc/multi-hit overload and skips any hit on the player's own GameObject,
+        // rather than excluding the player's layer from the mask — the project has no dedicated
+        // Player layer set up (confirmed live during MRM-58: Player sits on Default, the same
+        // layer as ordinary level geometry, so layer-based self-exclusion silently zeroed out
+        // Default and broke jumping on anything else that shared it). Filtering by identity here
+        // is correct regardless of what layer the player or the ground ends up on.
         //
         // groundNormal is reported separately from the grounded bool so UpdateMove can derive the
         // slope angle for its own sliding logic — see SlideSpeed's doc comment on MoonlightTunables.
         private bool CheckGrounded(out Vector3 groundNormal)
         {
             var origin = transform.position + _controller.center + Vector3.down * (_controller.height * 0.5f - _controller.radius);
-            bool hitGround = Physics.SphereCast(origin, _controller.radius * 0.95f, Vector3.down, out RaycastHit hit, Tunables.I.GroundCheckDistance, _groundLayerMask, QueryTriggerInteraction.Ignore);
-            groundNormal = hitGround ? hit.normal : Vector3.up;
-            return hitGround;
+            int hitCount = Physics.SphereCastNonAlloc(origin, _controller.radius * 0.95f, Vector3.down, _groundHitsBuffer, Tunables.I.GroundCheckDistance, _groundLayerMask, QueryTriggerInteraction.Ignore);
+
+            float closestDistance = float.MaxValue;
+            RaycastHit? closestHit = null;
+            for (int i = 0; i < hitCount; i++)
+            {
+                RaycastHit candidate = _groundHitsBuffer[i];
+                if (candidate.collider.gameObject == gameObject)
+                {
+                    continue;
+                }
+
+                if (candidate.distance < closestDistance)
+                {
+                    closestDistance = candidate.distance;
+                    closestHit = candidate;
+                }
+            }
+
+            groundNormal = closestHit?.normal ?? Vector3.up;
+            return closestHit.HasValue;
         }
 
         // JumpSpeed is the applied takeoff velocity (Carlos tunes feel directly, per its own doc

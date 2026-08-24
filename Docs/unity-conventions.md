@@ -187,9 +187,9 @@ Three scenes only:
 | `EnemyHitbox` | Head / torso / limb hitboxes |
 | `Interactable` | Anything with an `Interactable` component |
 | `VisionBlocker` | Trees, buildings, terrain — things that block a vision cone |
-| `Ground` | Walkable surfaces, for waypoint Z-snapping **and the player's grounded/jump check (MRM-9)** |
+| `Ground` | Walkable surfaces, for waypoint Z-snapping |
 
-- **`Ground` is a hard requirement, not just nice-to-have.** `PlayerController`'s jump/landing logic doesn't trust `CharacterController.isGrounded` — confirmed live during MRM-9 testing that it reads `false` even at rest on flat ground, which silently blocked jumping whenever the player stood still. It's replaced with a short downward `SphereCast` against this layer specifically. **Any floor, terrain or walkable surface placed in the scene — including MRM-58's terrain blockout — must be on the `Ground` layer, or the player will never be able to jump on it.** Currently created and only assigned to the `Sandbox` scene's test `Plane`; every other floor still needs it as it's built.
+- **The player's grounded/jump check is not Ground-only.** `PlayerController`'s jump/landing logic doesn't trust `CharacterController.isGrounded` — confirmed live during MRM-9 testing that it reads `false` even at rest on flat ground, which silently blocked jumping whenever the player stood still. It's replaced with a short downward `SphereCast` against `Tunables.GroundCheckMask` (defaults to Everything, minus the player's own layer). Objects do **not** need to be on the `Ground` layer to be jumpable — widened during MRM-58 once blockout props (location markers, mine obstacles) needed to be standable without per-object layer setup. `Ground` itself is still used for waypoint Z-snapping, so keep assigning it to walkable terrain/floors for that system.
 - **The vision cone occlusion check raycasts against `VisionBlocker` only.** Do not let it hit the player's own colliders or item pickups.
 - **Carlos's open question — do hitboxes need a tag?** Answer: use the **layer** plus a small `Hitbox` component carrying its multiplier type. Cleaner than tags, and it survives renaming.
 
