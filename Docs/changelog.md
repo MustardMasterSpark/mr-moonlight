@@ -5,6 +5,112 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-47 / MRM-69 (in progress) — Skybox library, SUN prefab, Time Manager
+
+**BUILT (2026-08-24)**
+
+- **Six skyboxes extracted directly from the AllSky - 220 Sky Skybox Set** Carlos already owns,
+  without importing the full ~6 GB pack: located the cached `.unitypackage` in Unity's local
+  Asset Store cache, read its internal GUID→path index, and pulled just the flat equirectangular
+  source image behind each of the six named skies (`Fish Hoek Beach`, `FantasyClouds1_Low`,
+  `Space_Nebula_DeepBlack`, `Night Skyglow Overcast`, `Night Skyglow heavy`, `FantasySky_Fire`) —
+  found by reading each sky's own pre-authored "Equirect" material inside the pack to see which
+  texture it actually referenced, rather than guessing from filenames. Copied to
+  `Assets/_Project/Art/Environment/Skyboxes/` as `T_Sky_*.png`.
+- **Imported as `TextureShape=Cube` + `GenerateCubemap=AutoCubemap`** (Unity auto-unwraps the flat
+  panorama into a real Cubemap on import) using the project's existing `Tex_Skybox_Standard`
+  preset (1024, DXT1) — this is exactly the pipeline that preset was already built for. Built one
+  `M_Sky_*` material per sky on the built-in **Skybox/Cubemap** shader, which exposes `_Rotation`
+  for real-time spin.
+- **`SunController`, `SkyboxSwitcher`, `TimeManager`** (`Assets/_Project/Code/Runtime/World/`,
+  namespace `MrMoonlight.World`). `SunController` applies a `SunState` (elevation/azimuth — not
+  world position, which does nothing for a directional light — color, intensity, color
+  temperature) to a Light and also owns the cabin's fast indoor dim
+  (`SetIndoorDim`, inspector-boolean placeholder for a future trigger volume).
+  `SkyboxSwitcher` swaps `RenderSettings.skybox` between an inspector list of materials.
+  `TimeManager` owns both and switches between named presets — skybox instantly, Sun
+  color/intensity/rotation lerped over a duration via a plain coroutine (DOTween is referenced in
+  `Docs/csharp-conventions.md` as the project's "smooth" tool but isn't actually installed in this
+  project yet — see FAILED).
+- **The existing `Directional Light` GameObject was renamed to `SUN`** and given a
+  `SunController`, rather than creating a new light — avoids orphaning the scene's existing
+  lighting setup. All three (`SUN`, `SkyboxSwitcher`, `TimeManager`) saved as prefabs under
+  `Assets/_Project/Prefabs/World/`, instances live in the `Island` scene.
+- **Four example presets** on `TimeManager`: `Morning` (Fish Hoek Beach, soft near-white low sun),
+  `Sunset` (Fish Hoek Beach, warm orange low sun), `Night` (Night Skyglow heavy, dim cool-blue),
+  `Apocalypse` (FantasySky_Fire, red sun — ties directly into MRM-47's existing "apocalyptic red"
+  requirement). **All four are placeholders for Carlos to retune** — MRM-69 only required one
+  working example (`Morning`); built three more since the mechanism made it nearly free, and
+  because visually verifying more than one preset live was the only way to catch the bug below.
+- **Verified live in Play Mode**, not just read back: entered Play Mode, called
+  `TimeManager.ApplyPreset` through each preset, screenshotted the actual rendered result. Caught
+  a real mismatch this way — see FAILED.
+
+**DECISIONS**
+
+- **Equirect vs. cubemap, resolved as "both."** Carlos asked whether the equirect format serves
+  hand-editing (Photoshop) and real-time rotation. It does, but not as Unity's `Skybox/Panoramic`
+  shader — AllSky's own "Equirect" materials turned out to be `Skybox/Cubemap` materials whose
+  single `_Tex` slot is fed by a flat panorama that Unity's importer auto-unwraps into a cubemap
+  (`GenerateCubemap: AutoCubemap`). That gives the edit-a-flat-image and rotate-in-real-time
+  properties Carlos wanted, via the cheaper, seamless cubemap render path, with **zero custom
+  shader work** — and matches import presets already sitting in the project
+  (`Tex_Skybox_Hero`/`Tex_Skybox_Standard`), which were already configured for exactly this
+  pipeline before this session touched them.
+- **Repositioning the skybox is not possible with this or any built-in Unity skybox** — the
+  system has no position, only rotation. Flagged in MRM-47 as a future ask (a separate 3D
+  sky-dome mesh) rather than silently promising something that can't be delivered.
+- **6 imported, 4 ship.** Carlos wants 6 pulled in now for his own Photoshop compositing; the
+  shipped build still holds to the original "4 skies only" WebGL budget line
+  (`Docs/webgl-budget.md` §4.12/§10, unchanged). Which 4 make the final cut is open until his
+  combined versions exist.
+- **No "hero" (2048) skybox picked yet.** All 6 imported at the same 1024/DXT1 standard preset —
+  picking a higher-res hero before the final 4 are chosen would likely be wasted work.
+- **Worked on the `mrm-58` branch, not a new `mrm-47`/`mrm-69` branch** — Carlos's explicit call,
+  acknowledged as a one-issue-one-branch exception rather than a default.
+- **Time Manager split into its own issue, MRM-69**, related to MRM-47 and MRM-11 — Carlos's own
+  instruction ("if it needs its own issue... decide what's best and least spaghetti"); it's
+  testable standalone and will eventually be driven by the Event Director rather than MRM-47's
+  story-beat logic directly.
+
+**FAILED**
+
+- **First "Morning" preset pick was visually wrong.** Picked `Night Skyglow Overcast` for
+  "Morning" going purely off the name ("Overcast" ≈ cloudy). Live in Play Mode it rendered as a
+  dark teal dusk sky — it's a *night*-category sky, not a daytime one. Second guess,
+  `FantasyClouds1_Low`, rendered as a dramatic orange storm sky — also wrong. Settled on
+  `Fish Hoek Beach` (the one real photographic HDRI among the six), which reads as a soft
+  washed-out overcast morning and is the actual shipped placeholder now. **Worth remembering:**
+  none of these six AllSky skies is a plain naturalistic daytime cloud sky — they're all
+  stylized/dramatic — so "pick the one that sounds right" from the name alone doesn't work here;
+  a live screenshot was the only way to catch this, exactly per the project's testing rule.
+- **DOTween is referenced in the conventions docs as owned/installed but is not actually in the
+  project** (`MrMoonlight.Runtime.asmdef` only references `Unity.InputSystem`). Used a plain
+  coroutine + linear/angle lerp instead rather than adding a new package dependency mid-task
+  without asking first. Not a blocker — csharp-conventions.md's "smooth is your call" explicitly
+  sanctions a curve as the alternative — but worth fixing the docs' assumption, or actually
+  installing DOTween, before another issue hits the same surprise.
+
+**NEXT**
+
+- Carlos: pick the final 4 shipped skyboxes once his Photoshop combined versions exist; retune
+  the four preset Sun values/skybox pairings (all four are placeholders); wire a real trigger
+  volume for `SetIndoorDim` in the cabin once MRM-61 stages it; decide MRM-60 (mine geometry) —
+  MRM-47's mine-isolation notes branch on that decision.
+- Whoever picks up MRM-47's dimming curve work can reuse `TimeManager.ApplyPreset`'s coroutine
+  shape directly — same lerp-over-duration mechanism the story-beat dimming needs.
+- Event Director hookup for `TimeManager.ApplyPreset` is explicitly out of MRM-69's scope; revisit
+  once MRM-11 exists.
+
+**ADDENDUM (2026-08-24, same day)** — Added a one-click Inspector way to test presets, since the
+initial build only exposed `ApplyPreset` as a plain method with no way to trigger it by hand.
+`TimeManager` now has a `Test Preset Index` field plus a right-click **"Apply Test Preset"**
+context-menu action on the component header. `ApplyPreset` also now detects Edit Mode
+(`Application.isPlaying`) and always applies instantly there — coroutines don't run outside Play
+Mode, so the smooth lerp only ever fires during actual gameplay testing.
+
+---
+
 ## MRM-68 (in progress) — Stylized, animated sea shader replacing the flat placeholder
 
 **BUILT (2026-08-23)**
