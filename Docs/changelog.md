@@ -111,9 +111,70 @@ Mode, so the smooth lerp only ever fires during actual gameplay testing.
 
 ---
 
-## MRM-68 (in progress) — Stylized, animated sea shader replacing the flat placeholder
+## MRM-68 (done, 2026-08-24) — Stylized, animated sea shader replacing the flat placeholder
 
-**BUILT (2026-08-23)**
+**BUILT (2026-08-24) — swapped the hand-written shader for an Asset Store one**
+
+Carlos didn't like the hand-written shader's look for blockout visualization ("breaking my visual
+harmony") and asked for a free Asset Store water shader instead. Gave four candidates in
+preference order and delegated the final technical call. Full option-by-option writeup (screenshots,
+specs, why each was accepted/rejected) is in `Docs/water-shader.md`'s new "Asset Store options"
+section — summary:
+
+1. **BitGem "URP Stylized Water Shader – Proto Series"** (Carlos's #1 pick) — rejected. Store
+   screenshots showed a bright cartoon toy-pool look (thick white foam, checkered tile walls) built
+   for a "Cube World" low-poly prop pack — a hard tone mismatch for a 1979 Alaska horror game, no
+   matter the recolor.
+2. **IgniteCoders "Simple Water Shader URP"** — **chosen** (see below).
+3. **GapperGames "WaterWorks"** — rejected as too risky this close to Sept 1: real screen-space
+   reflections plus a custom underwater-fog `ScriptableRendererFeature` (full-screen blit passes,
+   exactly what `webgl-constraints.md` §4 warns against), and the store page itself carries a
+   community-pasted "Unity 6 fix" for its `WaterVolume.cs` — meaning the shipped package doesn't
+   compile against Unity 6's RenderGraph pipeline without manual patching.
+4. **Pedro Verpha "Procedural Water Shader"** — initially implemented (see superseded entry below),
+   then replaced at Carlos's request in favor of option 2.
+
+**IgniteCoders "Simple Water Shader URP" — what was imported.** Only three files pulled from the
+purchased `.unitypackage` (extracted directly via the same `tar` GUID-index technique used for the
+AllSky pack — see `allsky_asset_extraction.md`/memory — rather than a full package import, to avoid
+dragging in its demo scene, Editor readme scripts, and the tiling `WaterBlock_50m` prefab/mesh
+system the project doesn't use):
+`Assets/ThirdParty/SimpleWaterShaderURP/WaterShader.shadergraph`, and its two normal-map textures
+(`WaterSurface_atlas.tif`, `WaterSurface_single.tif`). `Assets/ThirdParty/` is gitignored project-wide,
+so none of this reaches the repo regardless.
+- **Two material presets kept as unedited vendor references**, per Carlos: `Water_mat_01_Dark.mat`
+  (dark navy, the one now live) and `Water_mat_03_Clear.mat` (bright teal/clear, sitting unused for
+  later). A third preset the package ships (`Water_mat_02`, a medium blue) was **not** kept — Carlos
+  only asked for two.
+- **`M_Sea.mat` now points at `Shader Graphs/WaterShader`** with `Water_mat_01_Dark`'s exact tuned
+  property values copied over (Deep/Shallow color, Depth, Strength, Smoothness, Displacement,
+  Normal Strength/Tiling). No scene or prefab edits needed — the `Sea` GameObject's `MeshRenderer`
+  already pointed at `M_Sea.mat`, so the shader swap alone took effect. `SeaGrid.mesh` (the 64×64
+  grid from the original build) is reused as-is.
+- **The package's "Use Reflection (Experimental)" render-texture reflection system was left off** —
+  it's a boolean toggle in the shader graph, `0` (off) in both kept materials, so the planar-reflection
+  camera prefab/script/render-texture were never imported at all; the material's reflection texture
+  slot is cleanly nulled rather than pointing at a missing asset.
+- Verified: shader + material import with **zero console errors/warnings** (checked after every
+  reimport). Live in a focused-camera Play Mode screenshot over open water: correct dark-navy body
+  color, working fresnel/specular sun-glint, visible surface ripple texture.
+- **The original hand-written `Water.shader`/custom `MrMoonlight/StylizedWater` files are left in
+  place, untouched, just no longer referenced by `M_Sea.mat`** — not deleted, in case Carlos wants
+  to return to it. See the original BUILT/DECISIONS entry below for that work.
+
+**Superseded — Pedro Verpha "Procedural Water Shader" (2026-08-24, same session)**
+
+Originally implemented as my own pick (technical case: no custom render feature, no reflection
+camera, no SSR — just standard URP Depth/Opaque textures the project's `Web_RPAsset` already
+requires project-wide, so zero new per-frame cost category). Fully wired, verified rendering
+correctly and with real Gerstner wave motion in a focused Play Mode shot over deep water. Carlos
+changed his mind mid-session and asked for IgniteCoders' shader instead — **fully rolled back**:
+`Assets/ThirdParty/ProceduralWaterShader/` deleted, `M_Sea.mat` reverted via `git checkout` to its
+pre-swap committed state before the IgniteCoders swap began. Kept in `Docs/water-shader.md`'s
+options writeup since the technical analysis (WebGL risk, why it beat WaterWorks) is still useful
+if this ever gets revisited.
+
+**BUILT (2026-08-23) — original hand-written shader**
 
 - New hand-written URP shader, `Assets/_Project/Art/Environment/Water/Water.shader`
   (`MrMoonlight/StylizedWater`), applied to the existing `M_Sea.mat`/`Sea` GameObject from
@@ -164,7 +225,9 @@ Mode, so the smooth lerp only ever fires during actual gameplay testing.
   call via GitHub Desktop.
 - **Paused here, deliberately.** Carlos wants to get back to MRM-58's blockout/vegetation pass
   first; this issue holds the water shader as a self-contained unit to resume whenever the next
-  polish pass comes around.
+  polish pass comes around. *(Superseded 2026-08-24 — see the BUILT entry above: `M_Sea.mat` now
+  points at the IgniteCoders Asset Store shader instead, not this one. This shader and its writeup
+  stay in the repo as a reference/fallback, not deleted.)*
 
 **FAILED**
 
@@ -172,19 +235,49 @@ First two tuning passes on the ripple edge math (see DECISIONS/BUILT bug #1) —
 just iteration, recorded above since the *reasoning* (don't let AA width scale the whole falloff)
 is the reusable lesson, not just the fix.
 
-**NEXT**
+**BUILT (2026-08-24, later same session) — animation confirmed, wave size tuned, scope reconciled**
 
-- **Carlos: confirm the ripples actually animate in a normal, focused Play Mode session.**
-  `Time.time` was confirmed advancing during the automated build session, but two screenshots
-  taken several seconds apart via the MCP camera tool came back pixel-identical — most likely
-  because the Game View doesn't necessarily redraw every tick while the Editor window isn't
-  OS-focused in a remote session, not a fault in the shader's `_Time.y` usage, but not proven
-  either way by automation. First acceptance criterion on MRM-68.
-- Frame cost not yet profiled in an actual WebGL build (should be cheap — no texture samples at
-  all — but not measured).
-- Visual pass once Carlos can look at it hands-on: does the near/far transition read as smooth,
-  is the aggressive-far pattern actually aggressive enough, does the near pattern read as calm.
-- Decide Shader Graph conversion — spec is ready in `Docs/water-shader.md` whenever wanted.
+- **Carlos confirmed hands-on, in a normal focused Play Mode session, that the water animates** —
+  first real confirmation across either shader, closing the acceptance criterion that automated
+  screenshots could never prove either way.
+- **Wave size tuning knob:** Carlos found the ripple pattern too large/uniform ("like a giant
+  pool"). `Normal Tiling` (material property `Vector2_4351ac2be1d74054986ec5378db9d578`) was
+  already exposed as a plain Vector2 field on `M_Sea.mat`'s Inspector by the vendor shader graph —
+  no code change needed. Bumped from the vendor default `(10, 10)` to `(40, 40)` as a first pass
+  (verified in Play Mode — finer, more varied ripples, no tiling seams); Carlos has since kept
+  tuning it himself directly in the Inspector (currently `(400, 400)`, plus his own adjustments to
+  Normal Strength, Displacement, and Shallow Color).
+- **Scope reconciled with the issue.** The original acceptance criteria were written for the
+  hand-written shader's specific near-calm/far-aggressive distance blend — the IgniteCoders shader
+  doesn't have that mechanic (uniform ripple everywhere). Rather than silently drop a stated
+  requirement, flagged it to Carlos explicitly; he confirmed he's happy with the uniform look, so
+  **the near/far blend is descoped to a future polish item**, not blocking this issue. Linear
+  MRM-68 updated accordingly (status moved to **In Progress**, acceptance criteria rewritten,
+  descope reasoning recorded in the issue itself).
+- **Build #11 ("Water Shader")** made for Carlos to test the water live on itch.io/browser — the
+  one remaining acceptance criterion (WebGL frame cost) needed his hands-on confirmation, not just
+  a successful build.
+
+**BUILT (2026-08-24, closing) — issue closed**
+
+Carlos tested Build 11 live on itch.io: ~18.5 MB, performance read as acceptable in browser. That
+closes the last open acceptance criterion. **MRM-68 marked Done in Linear.** All four criteria
+resolved: animation confirmed, frame cost confirmed, near/far blend explicitly descoped (Carlos's
+call, recorded in the issue), Shader Graph conversion moot (current shader already is one).
+
+**NEXT — future polish, not blocking, revisit whenever**
+
+- **Under this scene's current overcast/dusk sky, the dark-water material reads washed-out and
+  pale at low grazing angles** — `Smoothness` was authored at `1` (full mirror) by the vendor;
+  Carlos has already been adjusting related properties (Normal Strength, Displacement, Shallow
+  Color) but Smoothness itself wasn't touched as of this writing. From a more front-on angle over
+  open water it reads correctly.
+- Calm-near/aggressive-far distance variation (descoped above, would need either a second material
+  blended by distance or shader-graph changes to add back).
+- Decide whether to ever revisit the deferred `MrMoonlight/StylizedWater` custom shader, or the
+  Procedural Water Shader (Gerstner waves, also fully built and verified this session, rolled back
+  at Carlos's request) — both still intact/documented as fallback options, see
+  `Docs/water-shader.md`.
 
 ---
 

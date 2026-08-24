@@ -1,9 +1,103 @@
 # Water Shader — MRM-68
 
-`Assets/_Project/Art/Environment/Water/Water.shader` (`MrMoonlight/StylizedWater`), applied to
-`M_Sea.mat` on the `Sea` GameObject. Replaces the flat placeholder from MRM-58 (stock URP/Lit,
-no motion) with a stylized, animated ripple shader: calm and detailed near the player, more
-chaotic toward the horizon, blended smoothly by distance from camera.
+**Current state (2026-08-24): `M_Sea.mat` uses a purchased Asset Store shader (IgniteCoders'
+"Simple Water Shader URP"), not the hand-written one below.** Carlos found the hand-written
+shader's look was hurting visual harmony during blockout and asked for a free Asset Store
+alternative instead — see **Asset Store options (2026-08-24)** further down for the full
+evaluation, what got imported, and the two other shaders (hand-written + Procedural Water Shader)
+kept intact as fallbacks. The rest of this section, below the options writeup, is the original
+hand-written shader's documentation — still accurate for that shader, just not what's live today.
+
+**Status: MRM-68 closed 2026-08-24.** Animation confirmed hands-on by Carlos; frame cost confirmed
+live on itch.io via `E:\Builds\11 - Water Shader - 2026-08-24\Build.zip` (~18.5 MB, acceptable
+performance); the original near-calm/far-aggressive distance-blend requirement was explicitly
+descoped to future polish (the current shader doesn't have that mechanic — see Linear MRM-68 for
+the full reasoning, recorded in the issue itself, not just a comment).
+
+---
+
+## Asset Store options (2026-08-24)
+
+Carlos gave four free Asset Store candidates, ranked by his own visual preference, and asked for
+a technical read against the project's WebGL/budget constraints before implementing. All four
+confirmed FREE and URP-compatible before evaluating further.
+
+| # | Asset | Verdict |
+|---|---|---|
+| 1 | [BitGem — URP Stylized Water Shader, Proto Series](https://assetstore.unity.com/packages/vfx/shaders/urp-stylized-water-shader-proto-series-187485) | **Rejected.** Store screenshots show a bright cartoon toy-pool look — thick white foam borders, checkered tile walls, built for a low-poly "Cube World" prop pack. Technically harmless (732 KB, no depth texture, no extra passes) but a hard tone mismatch for 1979 Alaska horror no matter the recolor. |
+| 2 | [IgniteCoders — Simple Water Shader URP](https://assetstore.unity.com/packages/2d/textures-materials/water/simple-water-shader-urp-191449) | **Implemented — currently live.** See below. |
+| 3 | [GapperGames — WaterWorks](https://assetstore.unity.com/packages/3d/environments/waterworks-simple-water-ocean-river-system-for-urp-reflection-re-206909) | **Rejected.** Nicest "realistic" look of the four (rocky coastline, real waves) but real screen-space reflections plus a custom underwater-fog `ScriptableRendererFeature` (full-screen `Blit` passes) — exactly the stacked full-screen-pass cost `webgl-constraints.md` §4 warns is tightly budgeted on WebGL. The store page itself carries a community-pasted "UNITY 6 WaterVolume.cs fix," meaning the shipped package doesn't compile against Unity 6's RenderGraph pipeline without manual patching — too much unbudgeted integration risk this close to Sept 1. |
+| 4 | [Pedro Verpha — Procedural Water Shader](https://assetstore.unity.com/packages/vfx/shaders/procedural-water-shader-353486) | **Implemented, then rolled back at Carlos's request** (he wanted #2 instead once he saw both). Technical case was strong — see below — kept as a documented fallback. |
+
+### #2 — IgniteCoders "Simple Water Shader URP" (currently live)
+
+Files pulled directly from the purchased `.unitypackage` via the same `tar` GUID-index extraction
+technique as the AllSky pack (`allsky_asset_extraction.md` memory) rather than a full package
+import — avoids the package's demo scene, Editor readme scripts, and its `WaterBlock_50m`
+tiling-prefab system (the project already has its own single-huge-plane `Sea`/`SeaGrid.mesh`
+approach from MRM-58/this issue, so the vendor's own mesh/prefab weren't needed):
+
+- `Assets/ThirdParty/SimpleWaterShaderURP/WaterShader.shadergraph` — the actual shader (Shader
+  Graph asset, not hand-written HLSL this time — imported as-is, unedited, per the project's
+  "third-party assets are never edited" rule). `Assets/ThirdParty/` is gitignored project-wide, so
+  none of this reaches the repo regardless of "bloat."
+- `WaterSurface_atlas.tif` + `WaterSurface_single.tif` — the two normal-map textures the graph
+  actually samples ("Main Normal" / "Second Normal").
+- **Two material presets kept as unedited vendor references, per Carlos ("keep both"):**
+  `Water_mat_01_Dark.mat` (dark navy — the one now live) and `Water_mat_03_Clear.mat` (bright
+  teal/clear). The package actually ships a third, `Water_mat_02` (a medium blue) — **not** kept,
+  Carlos only asked for two.
+- `M_Sea.mat` now uses shader `Shader Graphs/WaterShader` with `Water_mat_01_Dark`'s exact tuned
+  values (Deep Color `{0.152, 0.209, 0.340}`, Shallow Color `{0, 0.510, 0.420}`, Smoothness `1`,
+  Normal Tiling `10×10`, full float list in the material). No scene/prefab edits needed — `Sea`'s
+  `MeshRenderer` already pointed at `M_Sea.mat`, so the shader swap alone took effect;
+  `SeaGrid.mesh` (64×64 grid) is reused as-is.
+- **The package's "Use Reflection (Experimental)" planar-reflection system was left off** — it's a
+  `Boolean` toggle in the graph, `0` in both kept materials, so the reflection camera
+  prefab/script/render-texture were never imported; the material's reflection texture slot is
+  cleanly nulled (not a dangling reference).
+- Verified: shader + material import with zero console errors. Live focused-camera Play Mode
+  screenshot over open water shows correct dark-navy color, working fresnel + sun-glint specular,
+  visible surface ripple.
+- **Known tuning issue:** at a low grazing viewing angle under this scene's current overcast/dusk
+  sky, the water reads washed-out/pale — `Smoothness = 1` (full mirror) reflects the pale sky
+  almost uniformly rather than showing the tuned deep-navy body color. From a more front-on angle
+  over open water it reads correctly. Likely fix: lower Smoothness slightly. Not touched yet —
+  flagging for Carlos's own pass rather than guessing at a value.
+- **Wave size, 2026-08-24:** Carlos confirmed the shader animates correctly (first hands-on
+  confirmation of either shader, closing that long-standing acceptance-criterion caveat) but found
+  the ripple pattern read too large/uniform — "like a giant pool." **`Normal Tiling`
+  (`Vector2_4351ac2be1d74054986ec5378db9d578`) is the knob** — it's the UV tiling fed into both
+  normal-map samples, so higher values pack more (smaller, more varied) ripple repetitions across
+  the same physical water area. It's a normal Material Inspector field on `M_Sea.mat`, already
+  exposed by the shader graph — no code or tunables asset needed, Carlos can drag it himself
+  anytime. Bumped from the vendor default `(10, 10)` to `(40, 40)` as a first pass, verified in
+  Play Mode (visibly finer/more varied ripple texture, no visible tiling seams at this value,
+  animation and sun-glint specular unaffected). Carlos said he expects to keep tweaking this
+  himself.
+- **Animation not confirmed by automation**, same limitation as the original hand-written shader
+  below — see that section's caveat, which applies identically here.
+
+### #4 — Pedro Verpha "Procedural Water Shader" (rolled back, documented as fallback)
+
+Implemented first, as the independent technical pick (no custom render feature, no reflection
+camera, no SSR — needs only URP's standard Depth Texture + Opaque Texture, both of which
+`Assets/_Project/Settings/Web_RPAsset.asset` already requires project-wide, so no new per-frame
+cost category). Verified working correctly with real Gerstner-wave motion in a focused Play Mode
+screenshot over deep water (the first grazing-angle test looked broken — a checkerboard artifact —
+but that turned out to be the water's own high transparency at shallow depth-difference letting
+MRM-58's still-unpainted terrain checker show through, not a shader bug; a deeper/more front-on
+shot confirmed correct rendering).
+
+Rolled back in full once Carlos asked for IgniteCoders' shader instead:
+`Assets/ThirdParty/ProceduralWaterShader/` deleted, `M_Sea.mat` reverted via `git checkout` to its
+pre-swap state. If this ever gets revisited, the URP-variant shader source (hand-extracted from
+the purchased package's nested `URP.unitypackage`, since the top-level shader in that package is
+actually the **Built-in RP** version — same filename, different `CGPROGRAM`/`HLSLPROGRAM` — worth
+remembering if re-attempting this) is no longer in the project, but the same extraction technique
+gets it back in a few minutes: the package's a free re-download from Carlos's Asset Store account.
+
+---
 
 Built from Simon Swartout's "Simple Water Shader" (Medium, URP Shader Graph series) — Voronoi
 ripples, Radial Shear UV warp, Power-sharpened edges, vertex displacement. Fully procedural, no
@@ -97,8 +191,8 @@ are actually crawling** — flagged as the first acceptance criterion on MRM-68.
 
 ## Branch note
 
-This work happened on the `mrm-58` branch (already merged to `main` and closed) rather than its
-own branch — MRM-58 was still checked out when Carlos asked for this mid-session. It has its own
-issue now, **MRM-68**, suggested branch `mrm-68`. Per the project's one-issue-one-branch rule,
-this should move to its own branch before commit — Carlos's call via GitHub Desktop, not done
-here.
+The original hand-written shader was first built on the `mrm-58` branch (already merged to `main`)
+rather than its own branch — MRM-58 was still checked out when Carlos asked for this mid-session.
+**Resolved 2026-08-24:** now on its own `mrm-68` branch, created off that `mrm-58` HEAD (so it
+carries the shader work forward), per the project's one-issue-one-branch rule. The Asset Store
+shader swap above also happened on this branch.
