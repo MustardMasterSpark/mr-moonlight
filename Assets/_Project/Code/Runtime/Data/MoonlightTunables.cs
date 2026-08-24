@@ -165,5 +165,15 @@ namespace MrMoonlight.Data
 
         /// <summary>Normalized (0-1 = fraction of health lost, 0-1 tint contribution) curve driving the continuous health-damage tint - clear at full health, most visible near zero. This is MRM-53's feature, not MRM-17's; built ahead of schedule on 2026-08-22 at Carlos's request since the shared tint mechanism above already existed. Caps at 0.4, deliberately below RedTintCeiling (0.85) - capping at 1.0 (DeathRedTintCurve's own shape) let the health tint alone saturate the shared ceiling by the time health reached 0, leaving the death tint's own rise with zero visible headroom to add anything (confirmed live: death was invisible, indistinguishable from the pre-existing health tint). MRM-53 should still retune this for its own feel, but must keep some headroom under the ceiling for the death tint to remain a visible escalation. Owner: MRM-53 (implemented during MRM-17)</summary>
         public AnimationCurve HealthRedTintCurve = AnimationCurve.EaseInOut(0f, 0f, 1f, 0.4f);
+
+        [Header("World Lighting — Sun — MRM-47")]
+
+        /// <summary>Default seconds the cabin's fast interior dim-out/restore takes, when SunController.SetIndoorDim() runs without a per-instance override. Deliberately separate from the slower per-story-beat dimming TimeManager drives - "step indoors" reads as fast, not a scene-wide fade. Owner: MRM-47</summary>
+        public float SunIndoorDimTransitionSeconds = 1.5f;
+
+        [Header("Time Manager — MRM-69")]
+
+        /// <summary>Default seconds a TimeManager preset switch takes when ApplyPreset() is called without an explicit duration. Owner: MRM-69</summary>
+        public float TimeManagerDefaultTransitionSeconds = 3f;
     }
 }

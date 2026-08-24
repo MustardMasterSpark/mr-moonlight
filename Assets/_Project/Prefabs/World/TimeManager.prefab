@@ -1,0 +1,86 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6636116330307279879
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4041158794539521802}
+  - component: {fileID: 2358079817714579309}
+  m_Layer: 0
+  m_Name: TimeManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4041158794539521802
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6636116330307279879}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2358079817714579309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6636116330307279879}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5076266d015dbf346b673eafbcbd1e22, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.World.TimeManager
+  skyboxSwitcher: {fileID: 0}
+  sun: {fileID: 0}
+  presets:
+  - Name: Morning
+    Skybox: {fileID: 2100000, guid: 72a81bbbeb6674d4ab13726200190f1a, type: 2}
+    Sun:
+      Elevation: 25
+      Azimuth: 330
+      Color: {r: 0.92, g: 0.94, b: 0.97, a: 1}
+      Intensity: 0.85
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+  - Name: Sunset
+    Skybox: {fileID: 2100000, guid: 72a81bbbeb6674d4ab13726200190f1a, type: 2}
+    Sun:
+      Elevation: 8
+      Azimuth: 260
+      Color: {r: 1, g: 0.55, b: 0.28, a: 1}
+      Intensity: 0.9
+      UseColorTemperature: 0
+      ColorTemperature: 3200
+  - Name: Night
+    Skybox: {fileID: 2100000, guid: 73db68d2620397a479b27a7db341dab9, type: 2}
+    Sun:
+      Elevation: 35
+      Azimuth: 90
+      Color: {r: 0.55, g: 0.65, b: 0.9, a: 1}
+      Intensity: 0.12
+      UseColorTemperature: 0
+      ColorTemperature: 12000
+  - Name: Apocalypse
+    Skybox: {fileID: 2100000, guid: 1402815d6b8998d43986ca65fc52ecf7, type: 2}
+    Sun:
+      Elevation: 15
+      Azimuth: 330
+      Color: {r: 0.85, g: 0.12, b: 0.08, a: 1}
+      Intensity: 1.2
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+  testPresetIndex: 0
