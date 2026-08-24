@@ -70,6 +70,9 @@ namespace MrMoonlight.Data
         /// <summary>How far below the capsule's base the grounded check casts, in metres. Not in MRM-9's original tunables list — added because CharacterController.isGrounded proved unreliable while stationary (confirmed live: it read false while resting motionless on flat ground), which silently blocked jumping whenever the player wasn't moving. See Docs/changelog.md. Owner: MRM-9</summary>
         public float GroundCheckDistance = 0.2f;
 
+        /// <summary>Layers the grounded SphereCast can land on. Defaults to Everything — jump/landing works on any solid collider, not just objects tagged <c>Ground</c> (that per-object tagging requirement was dropped during MRM-58 once blockout props like location markers and mine obstacles needed to be standable without manual layer setup). The player's own collider is excluded by identity, not by layer, in <see cref="MrMoonlight.Player.PlayerController"/> — the project has no dedicated Player layer, so a layer-based exclusion would risk zeroing out a layer ordinary level geometry also sits on. Narrow this mask in the Inspector if a specific layer (e.g. a trigger-only volume) turns out to cause false positives. Owner: MRM-9, widened MRM-58</summary>
+        public LayerMask GroundCheckMask = ~0;
+
         /// <summary>Maximum degrees the camera can pitch downward. Set high enough that Tracey can see her own placeholder body underfoot, not just her arms, per MRM-9's look-down requirement. Not in MRM-9's original tunables list — added because the requirement can't be met without a clamp. Owner: MRM-9</summary>
         public float LookPitchDownMax = 85f;
 

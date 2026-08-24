@@ -281,7 +281,7 @@ call, recorded in the issue), Shader Graph conversion moot (current shader alrea
 
 ---
 
-## MRM-58 (in progress) — Programmatic terrain block-out from Carlos's map: both islands shaped, water carved, chapel hill raised, sea horizon added
+## MRM-58 (done, 2026-08-24) — Programmatic terrain block-out from Carlos's map: both islands shaped, water carved, chapel hill raised, sea horizon added; 9 location markers placed and reviewed; scope split — vegetation/texturing continues as MRM-70
 
 **BUILT — terrain block-out (2026-08-23)**
 
@@ -568,6 +568,80 @@ Nothing to record.
 - `SlideSpeed`'s constant-speed slide is flagged as a polish-pass candidate (friction/acceleration
   curve) now that real terrain shapes (including the lake-basin banks, which are steep enough to
   act as the "natural barrier" the brief asked for) exist to tune it against.
+
+**BUILT — grounded/jump check widened to any collider, not just `Ground` layer (2026-08-24)**
+
+- Cross-issue fix, MRM-9 scope, surfaced while Carlos was blockout-testing MRM-58's location
+  markers: `PlayerController.CheckGrounded()`'s SphereCast only tested the `Ground` layer, so jump
+  silently failed standing on `Camp Blockout` and would have failed on every other non-`Ground`
+  prop (glade/cabin/mine markers, future obstacles) — the mirror image of the Ground-layer-missing
+  bug fixed earlier in this same issue, this time the layer existed but was too narrow. Carlos's
+  call: rather than requiring every blockout/prop object to be hand-tagged `Ground`, widened the
+  check to hit any solid collider by default.
+- New tunable `GroundCheckMask` (`LayerMask`, on `MoonlightTunables`) — defaults to Everything,
+  narrowable in the Inspector later if a specific layer (e.g. a trigger volume) causes false
+  positives.
+- **First attempt excluded the player's own *layer* from the mask** (`~(1 << gameObject.layer)`)
+  to avoid the SphereCast self-hitting the capsule. Broke immediately: `Player` sits on `Default`
+  (layer 0) — same layer as `Camp Blockout` — and per `mcpforunity://project/layers` the project
+  has no dedicated `Player` layer actually created (only `Default, TransparentFX, Ignore Raycast,
+  Water, UI, Ground` exist; the conventions doc's `Player`/`EnemyMovement`/`EnemyHitbox`/
+  `Interactable`/`VisionBlocker` rows were planned, never built). Excluding "the player's layer"
+  silently zeroed out `Default`, breaking jump on the very box it was meant to fix.
+- **Fixed by filtering hits by GameObject identity instead** (`Physics.SphereCastNonAlloc`, skip
+  any hit whose collider belongs to `gameObject`) — correct regardless of what layer the player or
+  the ground end up on, no scene/layer setup required. `Docs/unity-conventions.md`'s layers table
+  updated to drop the stale "must be on `Ground`" hard requirement; `Ground` itself is now only
+  load-bearing for waypoint Z-snapping.
+
+**DECISIONS — location layout reviewed and approved as-is (2026-08-24)**
+
+- Reviewed the 9 placed blockout markers (the 7 script locations + Flak Tower + a new Dock) against
+  `AANNIARVIK-locations.png`'s pixel positions (via a pixel scan of the reference image run through
+  the same pixel→world formula documented above, cross-validated against the chapel's own recorded
+  world position) and against `WalkSpeed` pacing. Campsite/glade/cabin cluster sits ~100-110m south
+  of the reference image's derived positions, tapering to <15m off by Flak Tower and Chapel —
+  flagged to Carlos; he's fine with it as-is, no changes made.
+- Straight-line campsite→chapel pacing (~2.48km, ~14 min at `WalkSpeed` alone, longest single legs
+  Flak Tower↔Mine Entrance at 509m and Glade↔Cabin at 455m) confirmed acceptable by Carlos —
+  vegetation will slow/distract the player further and dialogue/cutscenes add runtime on top, both
+  pushing total playtime toward the target without needing the walk itself shortened. Consistent
+  with the ~30-40 min overland budget already reasoned through in the 2026-08-23 DECISIONS entry
+  above.
+- **`Dock Blockout` is a deliberate addition**, not in the original 8-location reference image or
+  the issue's list of 7. Carlos's call: a storytelling-only marker (a boat landing near the
+  campsite) — no interaction planned, no gameplay function. Documented here since it isn't tracked
+  anywhere else.
+
+**WRAP-UP (2026-08-24) — issue closed, scope split**
+
+- **Carlos finished his manual terrain polish pass** (beach/coast detailing on the areas the player
+  actually explores; broader fine-tuning deliberately deferred to alongside vegetation, per his own
+  call — "I'll do more fine tuning once we start placing stuff into the terrain").
+- **`Terrain (original copy)` deleted.** The duplicate/safety-copy GameObject flagged earlier this
+  session (both `Terrain` and the copy active, same `New Terrain.asset`, z-fighting-consistent
+  visual artifact) is gone — Carlos deleted it once his polish pass was done. Verified via a scene
+  hierarchy read-back (16 root objects, was 17; only `Terrain` remains).
+- **Scope split.** Vegetation placement, terrain texturing (footstep terrain layers), and WebGL
+  budget validation moved to a new issue, **MRM-70** ("Island vegetation + terrain texturing
+  pass") — none of that scope had started, and Carlos expects it to be a heavier, iterative pass
+  once real props go down, worth tracking separately from the now-complete shape/placement work.
+  MRM-58 marked **Done** in Linear; closing summary posted as a comment there.
+- **Acceptance criteria, final state:** island walkable end-to-end ✅ (jump-on-any-collider fix
+  above, duplicate terrain removed), 7 locations marked ✅ (compass-findability unverifiable — no
+  compass HUD system exists in the project yet, that's a different issue's scope when it lands),
+  travel times feel right at normal walk speed ✅ (Carlos walked it, confirmed live) — the
+  stretcher-speed half of that criterion is also unverifiable yet, no stretcher speed penalty
+  mechanic exists in code. Terrain slopes/no invisible walls ✅ per Carlos's polish pass. Vegetation
+  and footstep terrain layers moved to MRM-70, were never in scope for this close.
+- **No raw-heightmap backup made.** Still an open, deferred item from earlier this session —
+  `Assets/New Terrain.asset` stays gitignored pending Git LFS (per the existing `.gitignore` plan),
+  so the terrain shape only exists in the working copy until that move happens or a `.raw`/`.r16`
+  export stopgap is made. Not blocking this close since Carlos deferred the decision on who does
+  it; worth raising again before anything riskier happens to the terrain.
+- **Not committed by Claude** — Carlos commits via GitHub Desktop per standing project policy. This
+  wrap-up entry, the MRM-58/MRM-70 Linear updates, and a prepared commit/PR description are ready
+  for him to use when he does.
 
 ---
 
