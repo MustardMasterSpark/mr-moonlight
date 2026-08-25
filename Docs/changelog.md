@@ -5,6 +5,113 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-70 (in progress) — 3D asset pipeline defined, 7 source packs prepped and built into real Unity assets; vegetation placement still to come
+
+**BUILT (2026-08-24/25) — 3D asset pipeline defined**
+
+Carlos described his process (Blender for low-poly/baking, a Substance Painter pixelation plugin
+called Pixel8r). Full pipeline documented in `Docs/3d-asset-pipeline.md`: Lane A/B/C/D by source
+quality, the uniform 3-texture map set (BaseColor/Normal/Mask, Mask = R metallic/G occlusion/A
+smoothness), 512 BaseColor default for props (Carlos's explicit override of Retro Realism's own
+256 baseline), Blender doing all baking with Painter kept as a manual escape hatch only. Pixel8r
+turned out to be a Substance Designer `.sbsar` filter graph, not a Painter plugin — reimplemented
+in Python instead (`Tools/pipeline/texture_pass.py`) since it has no mesh/UV dependency, just a 2D
+image filter. See `Docs/mrm70_3d_pipeline` memory / the doc itself for the full DECISIONS log —
+not repeated here.
+
+**BUILT (2026-08-25) — all 7 source packs prepped**
+
+Every pack Carlos listed went through the pipeline: RetroRealism, Big Poplar Tree Free, Grass
+Flowers Free, Terrain Sample Assets, Terrain Textures Pack Free, Yughues, Terrain Demo Scene URP
+(inventoried only — its trees are SpeedTree, structurally incompatible with this pipeline; its
+vegetation overlaps Terrain Sample Assets, re-prepping would've been redundant). **99 folders**
+under `E:\Props\Environment\Prepared Props\`, each with an `analysis.md` covering polycount vs.
+budget, instancing verdict, and a wind/earthquake note. Full inventory, cross-cutting findings, and
+open items in that folder's `_INVENTORY.md`. Worth remembering from this pass:
+
+- **Check materials, not filenames, before assuming one texture = one prop.** Retro Realism's
+  `Trees.tga` looked like it covered 4 trees; it actually covers 11 meshes. Terrain Sample Assets'
+  20 mesh variants share only 8 materials. Verified via the actual material/shader graph each time,
+  not filename pattern-matching.
+- **PIL silently drops a real 4th image channel on some TIFFs** (Terrain Sample Assets' MaskMaps —
+  confirmed by cross-checking with `tifffile`, which reads all channels correctly). Would have
+  written flat/wrong Smoothness data across ~36 assets if not caught.
+- **AO-baking a shared atlas from only some of its consumers reads the rest as fully-occluded
+  black, not "unbaked."** Every combined bake in this pass white-prefills the canvas first.
+- **Only `Poplar_Tree01` failed optimization assessment** (8,198–20,248 tris depending on LOD,
+  10–65x the tree budget) — excluded from the "game ready" cut, everything else passed with
+  varying degrees of flagging (heavier variants noted for sparse/accent placement, not base
+  density).
+
+**Game-ready cut**: `E:\Props\Environment\Game Ready\` — same 99 folders minus `Source/` and
+`analysis.md`, minus the excluded Poplar tree, **86.1 MB deduplicated** (many textures are shared
+atlases referenced from several per-species folders; NTFS hardlinks used instead of copies so
+shared files only cost disk space once while every folder still stays self-contained).
+
+**BUILT (2026-08-25, same day) — built into real Unity assets**
+
+Everything from the game-ready cut turned into actual usable Unity assets, directly in this
+project, via UnityMCP `execute_code` (not placed in any scene — assets only). **24 materials, 53
+prefabs, 51 TerrainLayer assets.** Full breakdown and every optimization setting applied in
+`Docs/mrm70-prefab-build-summary.md`. Headline decisions:
+
+- **RetroRealism's trees/saplings/stumps/logs consolidated onto one shared material each**
+  (`M_RF_Trees`), not their original 3 embedded submesh-slot materials (`Trees1`/`Dirt`/
+  `BranchFir`) — confirmed those slots carried no real texture references and all sample the same
+  atlas before consolidating, not assumed. Fixes the one-material-per-tree GPU-instancing rule
+  flagged during asset-prep.
+- **Terrain Sample Assets' 20 new prefabs reuse the pack's existing native Unity meshes**
+  (`Assets/ThirdParty/TerrainSampleAssets/Models/*.asset`) with our pixelated materials swapped in
+  — the pack's own original prefabs/materials (unpixelated, realistic PBR) are untouched, sitting
+  alongside as a comparison reference.
+- **Grass Flowers Free had no source mesh at all** (billboard texture cards only) — built as
+  crossed double-quads (two 0.5×0.5m planes at 90°, feet-origin, shadows off) from Unity's built-in
+  Quad primitive.
+- Materials: URP/Lit, `enableInstancing = true` on all of them, Mask assigned to both
+  `_MetallicGlossMap` and `_OcclusionMap` (project's established convention), Alpha Clip for all
+  foliage. Textures: Point filter on BaseColor (Bilinear silently undoes the whole pixelation
+  pass), Normal Map type + Bilinear on normals, linear color space on Mask. Meshes: Read/Write
+  disabled, no animation/camera/light import. All prefab roots: `BatchingStatic` +
+  `OccludeeStatic` (+`ReflectionProbeStatic` on real meshes).
+- Verified via `read_console` (zero errors/warnings from any of this work) and by reading actual
+  component/material/prefab state back after building, not just trusting the creation calls
+  succeeded.
+
+**DECISIONS**
+
+- **Pixel8r reimplemented rather than used directly** — it's an `.sbsar` (Substance Designer), not
+  a Painter plugin, and requires either the Substance Designer app or the (paid) Substance Engine
+  SDK to run outside an interactive session. A Python nearest-palette-quantize + ordered-dither
+  reimplementation matches its documented behavior without either dependency.
+- **`execute_code`'s compiler here is CodeDom (C# 6), not Roslyn.** No local functions, no tuple
+  syntax — `System.Func<>` lambdas work fine as the substitute. Cost some early failed calls before
+  this was clear; worth remembering going in next time rather than re-discovering it.
+- **Nothing placed in the `Island` scene, nothing painted onto the actual `Terrain`.** Deliberate —
+  this issue's remaining acceptance criteria (vegetation placed + frame-rate held in a WebGL build,
+  terrain layers assigned, all 7 locations still findable) are scene-view/Terrain-data work, next
+  up, not bundled into this asset-creation pass.
+
+**FAILED**
+
+Nothing to record as a dead end — the TIFF-channel and CodeDom-vs-Roslyn issues above were caught
+and worked around within this pass, not left broken.
+
+**NEXT**
+
+- **Vegetation placement itself** — the actual scene-view work: scattering the 53 prefabs across
+  the terrain (GPU-instanced where the budget calls for it), likely via Vegetation Spawner per the
+  issue's original scope, respecting the polycount flags from asset-prep (heavier variants sparse/
+  accent only) and the 1500m fog/draw-distance stress-test setting currently in place.
+- **Terrain layer painting** — the 51 TerrainLayer assets exist but aren't yet added to the actual
+  `Terrain`'s layer list or painted anywhere; footstep-sound coverage (grass/leaves/wood/concrete)
+  still needs checking against what's actually available once painted.
+- **WebGL budget/frame-rate check** — a real build, once enough vegetation is down to matter.
+- **Findability check** — once placed, verify the 7 locations aren't buried by density/sightlines.
+- Terrain Demo Scene URP's Rocks (11 prefabs), `Red_Bush`, and its few non-overlapping ground
+  textures are inventoried but unprepped — pick up later if wanted, not blocking.
+
+---
+
 ## MRM-47 / MRM-69 (in progress) — Skybox library, SUN prefab, Time Manager
 
 **BUILT (2026-08-24)**

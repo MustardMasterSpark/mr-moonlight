@@ -27,6 +27,12 @@ If an issue and a document disagree, the issue wins.
   handing off instructions. If he says yes, do it, verify by reading the actual
   component/scene state back, and document what changed. If he'd rather do it himself or doesn't
   answer, wait. See `Claude Code Context MDs/kickstart.md` §B.3.
+- **Same pattern now applies to Blender work** (extended 2026-08-24, for the MRM-70 3D asset
+  pipeline: low-poly conversion, texturing, and beyond — trees, rocks, vegetation, eventually
+  characters/staging). To save time toward the deadline, Claude helps hands-on via the Blender MCP
+  bridge, not just advises — but still **ask Carlos for permission first** on each piece of actual
+  Blender work, then do it, verify by reading the actual scene/mesh/material state back, and
+  document what changed. Same wait-if-he'd-rather-do-it-himself rule as Unity.
 - One issue, one branch, one PR.
 - Never commit or push. The developer uses GitHub Desktop.
 
