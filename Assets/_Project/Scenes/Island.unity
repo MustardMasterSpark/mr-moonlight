@@ -23,7 +23,7 @@ RenderSettings:
   m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
-  m_AmbientIntensity: 1
+  m_AmbientIntensity: 0.4
   m_AmbientMode: 0
   m_SubtractiveShadowColor: {r: 0.42, g: 0.478, b: 0.627, a: 1}
   m_SkyboxMaterial: {fileID: 2100000, guid: 72a81bbbeb6674d4ab13726200190f1a, type: 2}
@@ -35,7 +35,7 @@ RenderSettings:
   m_DefaultReflectionMode: 0
   m_DefaultReflectionResolution: 128
   m_ReflectionBounces: 1
-  m_ReflectionIntensity: 1
+  m_ReflectionIntensity: 0.25
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
   m_UseRadianceAmbientProbe: 0
@@ -227,7 +227,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &477653411
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -339,7 +339,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &477663045
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -475,7 +475,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &760406224
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -580,6 +580,7 @@ GameObject:
   - component: {fileID: 762815155}
   - component: {fileID: 762815154}
   - component: {fileID: 762815153}
+  - component: {fileID: 762815156}
   m_Layer: 8
   m_Name: Terrain
   m_TagString: Untagged
@@ -617,26 +618,26 @@ Terrain:
   m_Enabled: 1
   serializedVersion: 6
   m_TerrainData: {fileID: 15600000, guid: 3c5a48c687f110f4fb68482e84619522, type: 2}
-  m_TreeDistance: 5000
-  m_TreeBillboardDistance: 50
+  m_TreeDistance: 1500
+  m_TreeBillboardDistance: 1500
   m_TreeCrossFadeLength: 5
-  m_TreeMaximumFullLODCount: 50
+  m_TreeMaximumFullLODCount: 10000
   m_DetailObjectDistance: 80
   m_DetailObjectDensity: 1
-  m_HeightmapPixelError: 5
+  m_HeightmapPixelError: 3
   m_SplatMapDistance: 1000
   m_HeightmapMinimumLODSimplification: 0
   m_HeightmapMaximumLOD: 0
   m_ShadowCastingMode: 2
   m_DrawHeightmap: 1
   m_DrawInstanced: 0
-  m_DrawTreesAndFoliage: 1
+  m_DrawTreesAndFoliage: 0
   m_StaticShadowCaster: 0
   m_IgnoreQualitySettings: 0
   m_ReflectionProbeUsage: 1
-  m_MaterialTemplate: {fileID: 2100000, guid: 594ea882c5a793440b60ff72d896021e, type: 2}
-  m_BakeLightProbesForTrees: 1
-  m_PreserveTreePrototypeLayers: 0
+  m_MaterialTemplate: {fileID: 2100000, guid: 769021a60f6ef384380d3a3292add61f, type: 2}
+  m_BakeLightProbesForTrees: 0
+  m_PreserveTreePrototypeLayers: 1
   m_DeringLightProbesForTrees: 1
   m_ReceiveGI: 1
   m_ScaleInLightmap: 0.0256
@@ -663,6 +664,90 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &762815156
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 762815152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e73f6f562f4f140cf82e8cbc3b8e7b85, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MA.Flora::MA.Flora.FloraTerrainProvider
+--- !u!1 &888228152
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 888228154}
+  - component: {fileID: 888228153}
+  m_Layer: 0
+  m_Name: Flora Scene Settings
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &888228153
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888228152}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf2f3e29a89d4c3db3a52d78a8be300c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MA.Flora::MA.Flora.FloraSceneSettings
+  EnableRendering: 1
+  AllowDensityCulling: 1
+  AllowGPUOcclusionCulling: 1
+  AllowPerObjectMotionVectors: 0
+  AllowLegacyLightProbes: 0
+  EnableTerrainFoliage: 1
+  AutoRegisterTerrains: 1
+  AllowPerTreeMotionVectors: 0
+  AllowPerTreeLightProbes: 0
+  AllowPerDetailMotionVectors: 0
+  AllowPerDetailLightProbes: 0
+  DetailStreamingMode: 0
+  DetailStreamingResponsiveness: 0.5
+  CustomDetailPatchLayerBudgetPerFrame: 12
+  CustomDetailStructuralInstanceBudgetPerFrame: 6000
+  DetailUnloadHysteresisSeconds: 0.5
+  DetailUnloadDelayFrames: 30
+  DetailUnloadBudgetPerFrame: 0
+  DetailLoadBudgetPerFrame: 256
+  OverrideCullingPipeline: 0
+  CullingPipelineOverride: 1
+  MainLightOverride: {fileID: 0}
+  OverrideTerrainTreeDistance: 0
+  TerrainTreeDistance: 1000
+  OverrideTerrainDetailDistance: 0
+  TerrainDetailDistance: 150
+  m_NewlyCreated: 0
+  m_Version: 1
+--- !u!4 &888228154
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 888228152}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &912322419
 GameObject:
   m_ObjectHideFlags: 0
@@ -681,7 +766,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &912322420
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -793,7 +878,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &936957317
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -905,7 +990,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &951690922
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1010,6 +1095,1314 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e46caf5a33285e84090207764168c434, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.World.SkyboxSwitcher
+--- !u!1 &1237230937
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1237230939}
+  - component: {fileID: 1237230938}
+  m_Layer: 0
+  m_Name: VegetationSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1237230938
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1237230937}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f710250abab6f24a954bdf3c3c1ac64, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: sc.vegetationspawner.runtime::sc.terrain.vegetationspawner.VegetationSpawner
+  seed: 20260825
+  terrains:
+  - {fileID: 762815154}
+  visibleTerrainsOnly: 0
+  treeTypes:
+  - enabled: 1
+    name: Forest conifer
+    seed: 1103
+    probability: 92
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 32}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 2896
+    prefabs:
+    - index: 0
+      probability: 100
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    - index: 1
+      probability: 55
+      prefab: {fileID: 7516937742480820405, guid: 0c5299d5d969db94b9bef4a5e8feeab7, type: 3}
+    distance: 7.071068
+    scaleRange: {x: 0.85, y: 1.3}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Forest old growth
+    seed: 9398
+    probability: 55
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 28}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 419
+    prefabs:
+    - index: 2
+      probability: 100
+      prefab: {fileID: 959377979582320977, guid: 31679fbe4bdd89644925cc8f63afb4be, type: 3}
+    - index: 3
+      probability: 60
+      prefab: {fileID: 4809453584193375915, guid: ba7452582b882344b9481e68fd1b1674, type: 3}
+    distance: 14.849242
+    scaleRange: {x: 0.9, y: 1.15}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Forest sapling
+    seed: 6863
+    probability: 60
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 36}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 2394
+    prefabs:
+    - index: 4
+      probability: 100
+      prefab: {fileID: 418515855315271384, guid: fabf9f61405f98d41af6141b445d292d, type: 3}
+    - index: 5
+      probability: 70
+      prefab: {fileID: 2607490682370997002, guid: 85e0b8c138ff2ed4880024e45344f5ed, type: 3}
+    distance: 6.363961
+    scaleRange: {x: 0.8, y: 1.35}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Forest deadfall
+    seed: 1543
+    probability: 45
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 30}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 351
+    prefabs:
+    - index: 6
+      probability: 100
+      prefab: {fileID: 6936677262728737439, guid: 662739b611ef43b42ac8c28b0b56b465, type: 3}
+    - index: 7
+      probability: 80
+      prefab: {fileID: 1763530907246705267, guid: 024b04d859c83a0469cf9017217fe59b, type: 3}
+    - index: 8
+      probability: 60
+      prefab: {fileID: 7145892734999289953, guid: 4708a2a161d52af45b407553b67eae53, type: 3}
+    distance: 14.142136
+    scaleRange: {x: 0.9, y: 1.2}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Forest boulder
+    seed: 2211
+    probability: 40
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 34}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 238
+    prefabs:
+    - index: 9
+      probability: 100
+      prefab: {fileID: 7548353410852391869, guid: c3ec76f7402e18943bf356652b66f08b, type: 3}
+    - index: 10
+      probability: 70
+      prefab: {fileID: 8277459461435898799, guid: d5adabbf915a5914c9b773d01c952a8b, type: 3}
+    distance: 16.263456
+    scaleRange: {x: 0.8, y: 1.4}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Autumn tree
+    seed: 8737
+    probability: 88
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 32}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 2523
+    prefabs:
+    - index: 11
+      probability: 100
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    - index: 12
+      probability: 40
+      prefab: {fileID: 7516937742480820405, guid: 0c5299d5d969db94b9bef4a5e8feeab7, type: 3}
+    distance: 7.778175
+    scaleRange: {x: 0.8, y: 1.25}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Autumn sapling
+    seed: 3706
+    probability: 55
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 36}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 1892
+    prefabs:
+    - index: 13
+      probability: 100
+      prefab: {fileID: 2607490682370997002, guid: 85e0b8c138ff2ed4880024e45344f5ed, type: 3}
+    - index: 14
+      probability: 80
+      prefab: {fileID: 418515855315271384, guid: fabf9f61405f98d41af6141b445d292d, type: 3}
+    distance: 7.071068
+    scaleRange: {x: 0.8, y: 1.3}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Autumn deadfall
+    seed: 3848
+    probability: 40
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 30}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 285
+    prefabs:
+    - index: 15
+      probability: 100
+      prefab: {fileID: 1763530907246705267, guid: 024b04d859c83a0469cf9017217fe59b, type: 3}
+    - index: 16
+      probability: 70
+      prefab: {fileID: 7145892734999289953, guid: 4708a2a161d52af45b407553b67eae53, type: 3}
+    - index: 17
+      probability: 70
+      prefab: {fileID: 6936677262728737439, guid: 662739b611ef43b42ac8c28b0b56b465, type: 3}
+    distance: 15.55635
+    scaleRange: {x: 0.9, y: 1.2}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Flak pine
+    seed: 5405
+    probability: 40
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 3, y: 30}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Dry02
+      layerID: 3
+      threshold: 0.5
+    instanceCount: 17
+    prefabs:
+    - index: 18
+      probability: 100
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    distance: 16.970564
+    scaleRange: {x: 0.85, y: 1.15}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Mountain boulder
+    seed: 4087
+    probability: 80
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 45}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Rock
+      layerID: 4
+      threshold: 0.6
+    instanceCount: 11703
+    prefabs:
+    - index: 19
+      probability: 100
+      prefab: {fileID: 4596354100629449887, guid: d9178631015893b47890aa48391f4fc2, type: 3}
+    - index: 20
+      probability: 85
+      prefab: {fileID: 3623136390505872520, guid: ebf1805f9c1d2cc499598f5da3d5a905, type: 3}
+    - index: 21
+      probability: 70
+      prefab: {fileID: 8277459461435898799, guid: d5adabbf915a5914c9b773d01c952a8b, type: 3}
+    distance: 6.363961
+    scaleRange: {x: 0.7, y: 1.6}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Mountain scrub tree
+    seed: 7729
+    probability: 45
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 38}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Rock
+      layerID: 4
+      threshold: 0.6
+    instanceCount: 1429
+    prefabs:
+    - index: 22
+      probability: 100
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    - index: 23
+      probability: 90
+      prefab: {fileID: 418515855315271384, guid: fabf9f61405f98d41af6141b445d292d, type: 3}
+    distance: 13.435029
+    scaleRange: {x: 0.7, y: 1}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Eerie dead tree
+    seed: 9885
+    probability: 60
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 34}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TTP_GroundDryLeaves01
+      layerID: 7
+      threshold: 0.5
+    instanceCount: 217
+    prefabs:
+    - index: 24
+      probability: 100
+      prefab: {fileID: 959377979582320977, guid: 31679fbe4bdd89644925cc8f63afb4be, type: 3}
+    - index: 25
+      probability: 80
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    distance: 11.313708
+    scaleRange: {x: 0.9, y: 1.25}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Eerie snag
+    seed: 7958
+    probability: 45
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 34}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TTP_GroundDryLeaves01
+      layerID: 7
+      threshold: 0.5
+    instanceCount: 129
+    prefabs:
+    - index: 26
+      probability: 100
+      prefab: {fileID: 944356809346739375, guid: 8d548495cdde53145946959f7740956b, type: 3}
+    - index: 27
+      probability: 70
+      prefab: {fileID: 7145892734999289953, guid: 4708a2a161d52af45b407553b67eae53, type: 3}
+    distance: 12.727922
+    scaleRange: {x: 0.85, y: 1.3}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Beach driftwood
+    seed: 7461
+    probability: 22
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 41, y: 56}
+    slopeRange: {x: 0, y: 14}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Sand
+      layerID: 5
+      threshold: 0.6
+    instanceCount: 338
+    prefabs:
+    - index: 28
+      probability: 100
+      prefab: {fileID: 6936677262728737439, guid: 662739b611ef43b42ac8c28b0b56b465, type: 3}
+    - index: 29
+      probability: 35
+      prefab: {fileID: 1417941420853431272, guid: d6bca3476f226364bb58e79776685f4c, type: 3}
+    - index: 30
+      probability: 80
+      prefab: {fileID: 1763530907246705267, guid: 024b04d859c83a0469cf9017217fe59b, type: 3}
+    distance: 17.67767
+    scaleRange: {x: 0.85, y: 1.25}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Beach rock
+    seed: 9613
+    probability: 30
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40.5, y: 58}
+    slopeRange: {x: 0, y: 20}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Sand
+      layerID: 5
+      threshold: 0.6
+    instanceCount: 1458
+    prefabs:
+    - index: 31
+      probability: 100
+      prefab: {fileID: 5678935695941358533, guid: f5d8d5e2bf16a3f49ab6d81153b46029, type: 3}
+    - index: 32
+      probability: 75
+      prefab: {fileID: 7548353410852391869, guid: c3ec76f7402e18943bf356652b66f08b, type: 3}
+    distance: 12.020816
+    scaleRange: {x: 0.7, y: 1.3}
+    sinkAmount: 0.15
+  - enabled: 1
+    name: Hinterland tree
+    seed: 8710
+    probability: 70
+    collisionCheck: 1
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 1.5, y: 34}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.3
+    instanceCount: 9950
+    prefabs:
+    - index: 33
+      probability: 100
+      prefab: {fileID: 2959281353674670686, guid: 958a945d8c670e7449b1216217be3051, type: 3}
+    - index: 34
+      probability: 45
+      prefab: {fileID: 7516937742480820405, guid: 0c5299d5d969db94b9bef4a5e8feeab7, type: 3}
+    distance: 17.67767
+    scaleRange: {x: 0.85, y: 1.25}
+    sinkAmount: 0.15
+  grassPrefabs:
+  - enabled: 1
+    name: Forest grass
+    seed: 5818
+    probability: 95
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 9503
+    index: 0
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 5.7
+    billboard: {fileID: 2800000, guid: d142e627e9fb55946bdf952a59ab2943, type: 3}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Forest grass 2
+    seed: 2918
+    probability: 70
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 6960
+    index: 1
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 4.2
+    billboard: {fileID: 2800000, guid: 8d5fe4be5d956e04fb8a7b9ff10aee79, type: 3}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.4, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Forest fern
+    seed: 8862
+    probability: 55
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 5513
+    index: 2
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 294240384364520545, guid: 9d7120c9ecf0cad4dbfeeeaed23c4b53, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.385
+    billboard: {fileID: 0}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.7, y: 1.2}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Forest fern B
+    seed: 9889
+    probability: 45
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 4414
+    index: 3
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 3668637240179795996, guid: 814c446a8f72eac4f909ef42a2888c46, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.315
+    billboard: {fileID: 0}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.8, y: 1.3}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Forest bush
+    seed: 7642
+    probability: 35
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 3452
+    index: 4
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 9194541415682775403, guid: 75460256227e90e4fb6c07623d9506bc, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.24499999
+    billboard: {fileID: 0}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.8, y: 1.3}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Forest clump
+    seed: 7537
+    probability: 45
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.75
+    instanceCount: 4475
+    index: 5
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 9057806547396879899, guid: 34786a85e850ad24a8e3c2dbed08d981, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.315
+    billboard: {fileID: 0}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.7, y: 1.1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Autumn grass
+    seed: 4183
+    probability: 95
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 10552
+    index: 6
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 5.7
+    billboard: {fileID: 2800000, guid: d142e627e9fb55946bdf952a59ab2943, type: 3}
+    mainColor: {r: 1, g: 0.72, b: 0.34, a: 1}
+    secondaryColor: {r: 0.8, g: 0.42, b: 0.16, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 1.1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Autumn weeds
+    seed: 1959
+    probability: 70
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 7799
+    index: 7
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 7058593095901907367, guid: 5bd960f9cec887442982ec8afcb795f5, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.48999998
+    billboard: {fileID: 0}
+    mainColor: {r: 1, g: 0.72, b: 0.34, a: 1}
+    secondaryColor: {r: 0.8, g: 0.42, b: 0.16, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.6, y: 1.2}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Autumn heather
+    seed: 775
+    probability: 55
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 6107
+    index: 8
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 4254008439260798960, guid: 90bd8863a6a0a9049bde07d4735510ea, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.385
+    billboard: {fileID: 0}
+    mainColor: {r: 1, g: 0.72, b: 0.34, a: 1}
+    secondaryColor: {r: 0.8, g: 0.42, b: 0.16, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.6, y: 1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Autumn bush
+    seed: 9014
+    probability: 30
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 3313
+    index: 9
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 7498906446417551109, guid: 0b2f20ff266fe8841857d0af88bbdc39, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.21
+    billboard: {fileID: 0}
+    mainColor: {r: 1, g: 0.72, b: 0.34, a: 1}
+    secondaryColor: {r: 0.8, g: 0.42, b: 0.16, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.8, y: 1.2}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Autumn flower
+    seed: 5420
+    probability: 25
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_GrassLeafs01
+      layerID: 2
+      threshold: 0.5
+    instanceCount: 2793
+    index: 10
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 1.5
+    billboard: {fileID: 2800000, guid: 177d754434099594581ae1100a19e188, type: 3}
+    mainColor: {r: 1, g: 0.72, b: 0.34, a: 1}
+    secondaryColor: {r: 0.8, g: 0.42, b: 0.16, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Glade grass
+    seed: 4165
+    probability: 100
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Grass05
+      layerID: 1
+      threshold: 0.5
+    instanceCount: 294
+    index: 11
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 6
+    billboard: {fileID: 2800000, guid: d142e627e9fb55946bdf952a59ab2943, type: 3}
+    mainColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    secondaryColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.6, y: 1.2}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Glade flower A
+    seed: 4077
+    probability: 40
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Grass05
+      layerID: 1
+      threshold: 0.5
+    instanceCount: 122
+    index: 12
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 2.4
+    billboard: {fileID: 2800000, guid: b7ba003793024e94d88ceef4163f8388, type: 3}
+    mainColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Glade flower B
+    seed: 2193
+    probability: 30
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Grass05
+      layerID: 1
+      threshold: 0.5
+    instanceCount: 82
+    index: 13
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 1.8
+    billboard: {fileID: 2800000, guid: 3c059cd0d3662f445a386874e7c7bf20, type: 3}
+    mainColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.82, g: 0.95, b: 0.75, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Flak dry grass
+    seed: 3336
+    probability: 100
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Dry02
+      layerID: 3
+      threshold: 0.5
+    instanceCount: 1464
+    index: 14
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 6
+    billboard: {fileID: 2800000, guid: 8d5fe4be5d956e04fb8a7b9ff10aee79, type: 3}
+    mainColor: {r: 0.95, g: 0.85, b: 0.5, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.7, y: 1.3}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Flak weeds
+    seed: 7654
+    probability: 70
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Dry02
+      layerID: 3
+      threshold: 0.5
+    instanceCount: 1049
+    index: 15
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 8521114848494621586, guid: b412f80c4cb7ed545b75ce535cf093f3, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.48999998
+    billboard: {fileID: 0}
+    mainColor: {r: 0.95, g: 0.85, b: 0.5, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.7, y: 1.2}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Flak flower
+    seed: 8316
+    probability: 35
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_YFGM_Dry02
+      layerID: 3
+      threshold: 0.5
+    instanceCount: 488
+    index: 16
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 2.1
+    billboard: {fileID: 2800000, guid: c9ff5c47240ac21488548407365eed7a, type: 3}
+    mainColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.95, g: 0.85, b: 0.5, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Mountain scrub
+    seed: 6836
+    probability: 35
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 45}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Rock
+      layerID: 4
+      threshold: 0.6
+    instanceCount: 12827
+    index: 17
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 5704247195648983375, guid: c80a12156f4e47749ab7591253e56fe5, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.24499999
+    billboard: {fileID: 0}
+    mainColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Mountain plant
+    seed: 2596
+    probability: 30
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 45}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Rock
+      layerID: 4
+      threshold: 0.6
+    instanceCount: 10800
+    index: 18
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 3114411311762382464, guid: bbce140a536d29245863a8d6e04a9b86, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.21
+    billboard: {fileID: 0}
+    mainColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Oasis grass
+    seed: 3317
+    probability: 100
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_Moss
+      layerID: 6
+      threshold: 0.5
+    instanceCount: 494
+    index: 19
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 6
+    billboard: {fileID: 2800000, guid: d142e627e9fb55946bdf952a59ab2943, type: 3}
+    mainColor: {r: 0.62, g: 0.92, b: 0.8, a: 1}
+    secondaryColor: {r: 0.3, g: 0.62, b: 0.58, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.6, y: 1.1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Oasis flower A
+    seed: 1156
+    probability: 85
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_Moss
+      layerID: 6
+      threshold: 0.5
+    instanceCount: 408
+    index: 20
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 5.1
+    billboard: {fileID: 2800000, guid: 9f8b411cdac963c45ab257ba4c23548a, type: 3}
+    mainColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.62, g: 0.92, b: 0.8, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Oasis flower B
+    seed: 5114
+    probability: 75
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_Moss
+      layerID: 6
+      threshold: 0.5
+    instanceCount: 376
+    index: 21
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 4.5
+    billboard: {fileID: 2800000, guid: 0ff0269cb0692f548a8503ce7ca27ba6, type: 3}
+    mainColor: {r: 1, g: 1, b: 1, a: 1}
+    secondaryColor: {r: 0.62, g: 0.92, b: 0.8, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Oasis plant
+    seed: 1416
+    probability: 60
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_Moss
+      layerID: 6
+      threshold: 0.5
+    instanceCount: 272
+    index: 22
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 1241363571163172323, guid: e54e8129e3831bb48af95ad5949dabe2, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.42
+    billboard: {fileID: 0}
+    mainColor: {r: 0.62, g: 0.92, b: 0.8, a: 1}
+    secondaryColor: {r: 0.3, g: 0.62, b: 0.58, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.6, y: 1.1}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Eerie grass
+    seed: 3306
+    probability: 45
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TTP_GroundDryLeaves01
+      layerID: 7
+      threshold: 0.5
+    instanceCount: 1352
+    index: 23
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 2.7
+    billboard: {fileID: 2800000, guid: 8d5fe4be5d956e04fb8a7b9ff10aee79, type: 3}
+    mainColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
+    secondaryColor: {r: 0.24, g: 0.23, b: 0.26, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.4, y: 0.8}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Eerie weeds
+    seed: 7880
+    probability: 30
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TTP_GroundDryLeaves01
+      layerID: 7
+      threshold: 0.5
+    instanceCount: 926
+    index: 24
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 5893768525507759537, guid: 38c41562f08b2fc4c8d8fa8e60180d58, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.21
+    billboard: {fileID: 0}
+    mainColor: {r: 0.42, g: 0.4, b: 0.38, a: 1}
+    secondaryColor: {r: 0.24, g: 0.23, b: 0.26, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.5, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Beach tuft
+    seed: 7641
+    probability: 10
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 42, y: 58}
+    slopeRange: {x: 0, y: 18}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Sand
+      layerID: 5
+      threshold: 0.6
+    instanceCount: 3198
+    index: 25
+    type: 0
+    renderAsBillboard: 0
+    prefab: {fileID: 7058593095901907367, guid: 5bd960f9cec887442982ec8afcb795f5, type: 3}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 0.15
+    billboard: {fileID: 0}
+    mainColor: {r: 0.95, g: 0.85, b: 0.5, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.4, y: 0.8}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  - enabled: 1
+    name: Hinterland grass
+    seed: 6898
+    probability: 45
+    collisionCheck: 0
+    rejectUnderwater: 1
+    heightRange: {x: 40, y: 1000}
+    slopeRange: {x: 0, y: 40}
+    curvatureRange: {x: 0, y: 1}
+    layerMasks:
+    - name: TL_TSA_Ground_Grass_A
+      layerID: 0
+      threshold: 0.3
+    instanceCount: 127730
+    index: 26
+    type: 1
+    renderAsBillboard: 1
+    prefab: {fileID: 0}
+    gpuInstancing: 1
+    holeEdgePadding: 2
+    alignToGround: 100
+    positionJitter: 0
+    useDensityScaling: 1
+    density: 2.7
+    billboard: {fileID: 2800000, guid: d142e627e9fb55946bdf952a59ab2943, type: 3}
+    mainColor: {r: 0.55, g: 0.78, b: 0.45, a: 1}
+    secondaryColor: {r: 0.72, g: 0.6, b: 0.3, a: 1}
+    linkColors: 0
+    minMaxHeight: {x: 0.4, y: 0.9}
+    minMaxWidth: {x: 0.8, y: 1.3}
+    noiseSize: 0.12
+  terrainSettings:
+    drawTreesAndFoliage: 1
+    preservePrefabLayer: 1
+    treeLightProbes: 0
+    treeDistance: 1500
+    billboardStart: 1500
+    maxMeshTrees: 4000
+    detailScattermode: 0
+    grassDistance: 110
+    grassDensity: 1
+    windStrength: 0.15
+    windSpeed: 1
+    windFrequency: 2
+    wintTint: {r: 1, g: 1, b: 1, a: 1}
+  cellSize: 64
+  cellDivisions: 4
+  highPrecisionCollision: 1
+  collisionLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  autoRespawnTrees: 1
+  terrainMinMaxHeight: {x: 4.9990845, y: 255.00092}
+  detailResolution: 256
+  detailResolutionIndex: 0
+  grassPatchSize: 128
+  grassPatchSizeIndex: 4
+  tempColliders: []
+  waterHeight: 40
+--- !u!4 &1237230939
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1237230937}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1270267052
 GameObject:
   m_ObjectHideFlags: 0
@@ -1172,6 +2565,111 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1001 &1359955069
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_Pivot.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_Pivot.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2885545043025949052, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5999944018316904395, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_Name
+      value: FPS Counter
+      objectReference: {fileID: 0}
+    - target: {fileID: 6624451338068357069, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_AdditionalShaderChannelsFlag
+      value: 25
+      objectReference: {fileID: 0}
+    - target: {fileID: 6718415424358716110, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
+      propertyPath: m_TextStyleHashCode
+      value: -1183493901
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: a032ddd0e1b49dc4eac0485e0c0c2e18, type: 3}
 --- !u!1 &1487636258
 GameObject:
   m_ObjectHideFlags: 0
@@ -1190,7 +2688,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1487636259
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1294,7 +2792,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 883
+      value: 866
       objectReference: {fileID: 0}
     - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1302,7 +2800,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 4489
+      value: 4270
       objectReference: {fileID: 0}
     - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1347,6 +2845,10 @@ PrefabInstance:
     - target: {fileID: 5315715615500149478, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_Material
       value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 6692611687881276005, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+      propertyPath: m_RenderPostProcessing
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8675351696025013920, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
       propertyPath: m_Name
@@ -1509,7 +3011,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 960, y: 540}
+  m_ReferenceResolution: {x: 1920, y: 1080}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0
   m_PhysicalUnit: 3
@@ -1558,7 +3060,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1573891839
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1652,6 +3154,99 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1724591135
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1724591137}
+  - component: {fileID: 1724591136}
+  m_Layer: 0
+  m_Name: HAZE Explorable Area Fog
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1724591136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724591135}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b2068e50ca2faa84bbbcbdeae6918889, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Haze.Runtime::Haze.Runtime.HazeDensityVolume
+  _shape: 0
+  _weight: 1
+  _priority: 1
+  _density: 1
+  _noiseThreshold: 0.5
+  _densityMode: 0
+  _ambientColor: {r: 0.62, g: 0.63, b: 0.65, a: 1}
+  _colorGradient:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+  _gradientMapping: 0
+  _gradientLightScattering: 0.5
+  _mainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+  _heightFogFactor: 0.1
+  _maxFogHeight: 400
+  _heightFogSmoothness: 1
+  _heightFogMode: 0
+  _additionalLightContribution: 1
+  _probeVolumeContribution: 0
+  _mainLightScattering: 0.4
+  _mainLightDensityBoost: 0
+  _secondaryLightDensityBoost: 0
+--- !u!4 &1724591137
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1724591135}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1175, y: 110, z: 4850}
+  m_LocalScale: {x: 1050, y: 180, z: 2100}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1845302154
 GameObject:
   m_ObjectHideFlags: 0
@@ -1670,7 +3265,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!65 &1845302155
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1925,6 +3520,55 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2071598836}
   m_CullTransparentMesh: 1
+--- !u!1 &2101813252
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2101813254}
+  - component: {fileID: 2101813253}
+  m_Layer: 0
+  m_Name: HAZE Global Fog
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2101813253
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2101813252}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 172515602e62fb746b5d573b38a5fe58, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Core.Runtime::UnityEngine.Rendering.Volume
+  m_IsGlobal: 1
+  priority: 0
+  blendDistance: 0
+  weight: 1
+  sharedProfile: {fileID: 11400000, guid: 11abbc2b429a45440940320cf2d10b24, type: 2}
+--- !u!4 &2101813254
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2101813252}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2141972146
 GameObject:
   m_ObjectHideFlags: 0
@@ -2238,3 +3882,8 @@ SceneRoots:
   - {fileID: 951690925}
   - {fileID: 912322423}
   - {fileID: 936957320}
+  - {fileID: 1237230939}
+  - {fileID: 1359955069}
+  - {fileID: 888228154}
+  - {fileID: 2101813254}
+  - {fileID: 1724591137}

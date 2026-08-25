@@ -1,0 +1,9 @@
+<UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:VisualElement name="relationship-row" class="flora-rendering-inspector__relationship-row">
+    <ui:VisualElement name="icon" class="flora-rendering-inspector__relationship-icon" />
+    <ui:VisualElement name="labels" class="flora-rendering-inspector__relationship-labels">
+      <ui:Label name="name" class="flora-rendering-inspector__relationship-name" display-tooltip-when-elided="true" />
+    </ui:VisualElement>
+    <ui:Label name="count" class="flora-rendering-inspector__relationship-count" display-tooltip-when-elided="true" />
+  </ui:VisualElement>
+</UXML>

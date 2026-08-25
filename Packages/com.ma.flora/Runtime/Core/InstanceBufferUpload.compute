@@ -1,0 +1,392 @@
+// Copyright © Magnetic Arcade. All Rights Reserved.
+
+//--------------------------------------------------------------------------------------------------
+// Definitions
+//--------------------------------------------------------------------------------------------------
+
+#pragma kernel ScatterStaticTransforms
+#pragma kernel ScatterInitDynamicTransforms
+#pragma kernel ScatterUpdateDynamicTransforms
+#pragma kernel ScatterUpdatePrevTransforms
+#pragma kernel ScatterSH
+#pragma kernel ScatterUint
+#pragma kernel ScatterUint2
+#pragma kernel ScatterUint4
+#pragma kernel CopyComponents
+
+#pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch switch2 webgpu
+#pragma use_dxc metal vulkan
+// #pragma enable_d3d11_debug_symbols
+
+#define THREADING_BLOCK_SIZE 64
+
+//--------------------------------------------------------------------------------------------------
+// Includes
+//--------------------------------------------------------------------------------------------------
+
+#include "Packages/com.ma.flora/Runtime/Core/InstanceBufferUpload.hlsl"
+#include "Packages/com.ma.flora/Runtime/Graphics/ComputeUtility.hlsl"
+
+//--------------------------------------------------------------------------------------------------
+// Chunk Headers
+//--------------------------------------------------------------------------------------------------
+
+struct ChunkUploadHeader
+{
+    uint batchDomainIndex;
+    uint instanceStartIndex;
+    uint count;
+
+    bool IsValidIndex(uint indexInChunk)
+    {
+        return indexInChunk < count;
+    }
+};
+
+uint _ChunkUploadCount;
+StructuredBuffer<PackedChunkUploadHeader> _ChunkUploadHeaders;
+
+ChunkUploadHeader LoadChunkDataHeader(uint uploadChunkIndex)
+{
+    PackedChunkUploadHeader packedHeader = _ChunkUploadHeaders[uploadChunkIndex];
+    ChunkUploadHeader header;
+    header.batchDomainIndex   = packedHeader.batchDomainIndex;
+    header.instanceStartIndex = packedHeader.packedStartCount >> 8;
+    header.count              = packedHeader.packedStartCount & 0xff;
+    return header;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Batch Addresses
+//--------------------------------------------------------------------------------------------------
+
+static const uint kGraphicsMatrixStride = 48u;
+
+StructuredBuffer<uint> _BatchDomainAddresses;
+StructuredBuffer<BatchTransformAddresses> _BatchTransformAddresses;
+
+BatchTransformAddresses ToInstanceAddresses(BatchTransformAddresses batchAddresses, uint instanceIndex)
+{
+    BatchTransformAddresses instanceAddresses;
+    instanceAddresses.localToWorld     = batchAddresses.localToWorld     + instanceIndex * kGraphicsMatrixStride;
+    instanceAddresses.worldToLocal     = batchAddresses.worldToLocal     + instanceIndex * kGraphicsMatrixStride;
+    instanceAddresses.prevLocalToWorld = batchAddresses.prevLocalToWorld + instanceIndex * kGraphicsMatrixStride;
+    instanceAddresses.prevWorldToLocal = batchAddresses.prevWorldToLocal + instanceIndex * kGraphicsMatrixStride;
+    return instanceAddresses;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Instance Buffer
+//--------------------------------------------------------------------------------------------------
+
+RWByteAddressBuffer _InstanceBufferRW;
+
+float4x4 LoadMatrix(uint address)
+{
+    float4 p1 = asfloat(_InstanceBufferRW.Load4(address + 0 * 16));
+    float4 p2 = asfloat(_InstanceBufferRW.Load4(address + 1 * 16));
+    float4 p3 = asfloat(_InstanceBufferRW.Load4(address + 2 * 16));
+    return UnpackGraphicsMatrix(p1, p2, p3);
+}
+
+void StoreMatrix(uint address, float4x4 m)
+{
+    _InstanceBufferRW.Store4(address + 0 * 16, asuint(PackGraphicsMatrix0(m)));
+    _InstanceBufferRW.Store4(address + 1 * 16, asuint(PackGraphicsMatrix1(m)));
+    _InstanceBufferRW.Store4(address + 2 * 16, asuint(PackGraphicsMatrix2(m)));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Transforms
+//--------------------------------------------------------------------------------------------------
+
+StructuredBuffer<GraphicsMatrix> _GraphicsMatrices;
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterStaticTransforms(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    BatchTransformAddresses batchAddresses = _BatchTransformAddresses[chunkHeader.batchDomainIndex];
+    BatchTransformAddresses instanceAddresses = ToInstanceAddresses(batchAddresses, instanceIndex);
+
+    uint valueIndex = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    GraphicsMatrix packedMatrix = _GraphicsMatrices[valueIndex];
+
+    float4x4 localToWorld = UnpackGraphicsMatrix(packedMatrix);
+    float4x4 worldToLocal = AffineMatrixInverse(localToWorld);
+
+    StoreMatrix(instanceAddresses.localToWorld, localToWorld);
+    StoreMatrix(instanceAddresses.worldToLocal, worldToLocal);
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterInitDynamicTransforms(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    BatchTransformAddresses batchAddresses = _BatchTransformAddresses[chunkHeader.batchDomainIndex];
+    BatchTransformAddresses instanceAddresses = ToInstanceAddresses(batchAddresses, instanceIndex);
+
+    uint valueIndex = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    GraphicsMatrix currPackedMatrix = _GraphicsMatrices[valueIndex * 2 + 0];
+    GraphicsMatrix prevPackedMatrix = _GraphicsMatrices[valueIndex * 2 + 1];
+
+    float4x4 localToWorld = UnpackGraphicsMatrix(currPackedMatrix);
+    float4x4 worldToLocal = AffineMatrixInverse(localToWorld);
+
+    float4x4 prevLocalToWorld = UnpackGraphicsMatrix(prevPackedMatrix);
+    float4x4 prevWorldToLocal = AffineMatrixInverse(prevLocalToWorld);
+
+    StoreMatrix(instanceAddresses.localToWorld, localToWorld);
+    StoreMatrix(instanceAddresses.worldToLocal, worldToLocal);
+
+    StoreMatrix(instanceAddresses.prevLocalToWorld, prevLocalToWorld);
+    StoreMatrix(instanceAddresses.prevWorldToLocal, prevWorldToLocal);
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterUpdateDynamicTransforms(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    BatchTransformAddresses batchAddresses = _BatchTransformAddresses[chunkHeader.batchDomainIndex];
+    BatchTransformAddresses instanceAddresses = ToInstanceAddresses(batchAddresses, instanceIndex);
+
+    uint valueIndex = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    GraphicsMatrix packedMatrix = _GraphicsMatrices[valueIndex];
+
+    float4x4 localToWorld = UnpackGraphicsMatrix(packedMatrix);
+    float4x4 worldToLocal = AffineMatrixInverse(localToWorld);
+
+    float4x4 prevLocalToWorld = LoadMatrix(instanceAddresses.localToWorld);
+    float4x4 prevWorldToLocal = LoadMatrix(instanceAddresses.worldToLocal);
+
+    StoreMatrix(instanceAddresses.localToWorld, localToWorld);
+    StoreMatrix(instanceAddresses.worldToLocal, worldToLocal);
+
+    StoreMatrix(instanceAddresses.prevLocalToWorld, prevLocalToWorld);
+    StoreMatrix(instanceAddresses.prevWorldToLocal, prevWorldToLocal);
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterUpdatePrevTransforms(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    BatchTransformAddresses batchAddresses = _BatchTransformAddresses[chunkHeader.batchDomainIndex];
+    BatchTransformAddresses instanceAddresses = ToInstanceAddresses(batchAddresses, instanceIndex);
+
+    uint valueIndex = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    GraphicsMatrix packet = _GraphicsMatrices[valueIndex];
+
+    float4x4 prevLocalToWorld = UnpackGraphicsMatrix(packet);
+    float4x4 prevWorldToLocal = AffineMatrixInverse(prevLocalToWorld);
+
+    StoreMatrix(instanceAddresses.prevLocalToWorld, prevLocalToWorld);
+    StoreMatrix(instanceAddresses.prevWorldToLocal, prevWorldToLocal);
+}
+
+//--------------------------------------------------------------------------------------------------
+// SH Coefficients
+//--------------------------------------------------------------------------------------------------
+
+static const uint kShCoefficientFloat4Count = 8u;
+static const uint kShCoefficientStrideBytes = kShCoefficientFloat4Count * 16u;
+
+StructuredBuffer<SHUpdatePacket> _SHPackets;
+StructuredBuffer<float4> _Occlusion;
+
+struct SHCoefficients
+{
+    float4 SHAr;
+    float4 SHAg;
+    float4 SHAb;
+    float4 SHBr;
+    float4 SHBg;
+    float4 SHBb;
+    float4 SHC;
+};
+
+SHCoefficients UnpackShUpdate(SHUpdatePacket packet)
+{
+    SHCoefficients coefficients;
+    coefficients.SHAr = float4(packet.shr3, packet.shr1, packet.shr2, packet.shr0 - packet.shr6);
+    coefficients.SHAg = float4(packet.shg3, packet.shg1, packet.shg2, packet.shg0 - packet.shg6);
+    coefficients.SHAb = float4(packet.shb3, packet.shb1, packet.shb2, packet.shb0 - packet.shb6);
+    coefficients.SHBr = float4(packet.shr4, packet.shr5, packet.shr6 * 3.0, packet.shr7);
+    coefficients.SHBg = float4(packet.shg4, packet.shg5, packet.shg6 * 3.0, packet.shg7);
+    coefficients.SHBb = float4(packet.shb4, packet.shb5, packet.shb6 * 3.0, packet.shb7);
+    coefficients.SHC  = float4(packet.shr8, packet.shg8, packet.shb8, 1.0);
+    return coefficients;
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterSH(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint batchAddress  = _BatchDomainAddresses[chunkHeader.batchDomainIndex];
+    uint valueIndex    = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+
+    float4 occlusion = _Occlusion[valueIndex];
+    SHUpdatePacket packet = _SHPackets[valueIndex];
+
+    SHCoefficients sh = UnpackShUpdate(packet);
+    uint dstAddress = batchAddress + instanceIndex * kShCoefficientStrideBytes;
+
+    _InstanceBufferRW.Store4(dstAddress + 0 * 16, asuint(sh.SHAr));
+    _InstanceBufferRW.Store4(dstAddress + 1 * 16, asuint(sh.SHAg));
+    _InstanceBufferRW.Store4(dstAddress + 2 * 16, asuint(sh.SHAb));
+    _InstanceBufferRW.Store4(dstAddress + 3 * 16, asuint(sh.SHBr));
+    _InstanceBufferRW.Store4(dstAddress + 4 * 16, asuint(sh.SHBg));
+    _InstanceBufferRW.Store4(dstAddress + 5 * 16, asuint(sh.SHBb));
+    _InstanceBufferRW.Store4(dstAddress + 6 * 16, asuint(sh.SHC));
+    _InstanceBufferRW.Store4(dstAddress + 7 * 16, asuint(occlusion));
+}
+
+//--------------------------------------------------------------------------------------------------
+// Scatter Generic
+//--------------------------------------------------------------------------------------------------
+
+StructuredBuffer<uint>  _ValuesUint1;
+StructuredBuffer<uint2> _ValuesUint2;
+StructuredBuffer<uint4> _ValuesUint4;
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterUint(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint valueIndex    = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    uint batchAddress  = _BatchDomainAddresses[chunkHeader.batchDomainIndex];
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    uint dstAddress    = batchAddress + instanceIndex * 4u;
+
+    _InstanceBufferRW.Store(dstAddress, _ValuesUint1[valueIndex]);
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterUint2(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint valueIndex    = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    uint batchAddress  = _BatchDomainAddresses[chunkHeader.batchDomainIndex];
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    uint dstAddress    = batchAddress + instanceIndex * 8u;
+
+    _InstanceBufferRW.Store2(dstAddress, _ValuesUint2[valueIndex]);
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void ScatterUint4(Threading::Group group)
+{
+    uint uploadChunkIndex = UnwrapLinearGroupID(group);
+    if (uploadChunkIndex >= _ChunkUploadCount)
+        return;
+
+    ChunkUploadHeader chunkHeader = LoadChunkDataHeader(uploadChunkIndex);
+    if (!chunkHeader.IsValidIndex(group.groupIndex))
+        return;
+
+    uint valueIndex    = uploadChunkIndex * THREADING_BLOCK_SIZE + group.groupIndex;
+    uint batchAddress  = _BatchDomainAddresses[chunkHeader.batchDomainIndex];
+    uint instanceIndex = chunkHeader.instanceStartIndex + group.groupIndex;
+    uint dstAddress    = batchAddress + instanceIndex * 16u;
+
+    _InstanceBufferRW.Store4(dstAddress, _ValuesUint4[valueIndex]);
+}
+
+//--------------------------------------------------------------------------------------------------
+// Copy Components
+//--------------------------------------------------------------------------------------------------
+
+static const uint kBytesPerThread = 4;
+static const uint kBytesPerGroup  = THREADING_BLOCK_SIZE * kBytesPerThread;
+
+uint _CommandCount;
+StructuredBuffer<BufferCopyCommand> _CopyCommands;
+
+ByteAddressBuffer _SrcBuffer;
+RWByteAddressBuffer _DstBuffer;
+
+void ExecuteCopy(BufferCopyCommand cmd, uint groupIndex)
+{
+    uint totalBytes = cmd.stride * cmd.count;
+    uint numFullWaves = totalBytes / kBytesPerGroup;
+
+    uint srcIndex = groupIndex * kBytesPerThread;
+    uint dstIndex = groupIndex * kBytesPerThread;
+    for (uint i = 0; i < numFullWaves; i += 1)
+    {
+        uint value = _SrcBuffer.Load(srcIndex + cmd.srcAddress);
+        _DstBuffer.Store(dstIndex + cmd.dstAddress, value);
+        srcIndex += kBytesPerGroup;
+        dstIndex += kBytesPerGroup;
+    }
+
+    if (dstIndex < totalBytes)
+    {
+        uint value = _SrcBuffer.Load(srcIndex + cmd.srcAddress);
+        _DstBuffer.Store(dstIndex + cmd.dstAddress, value);
+    }
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void CopyComponents(Threading::Group group)
+{
+    int commandIndex = UnwrapLinearGroupID(group);
+    if (commandIndex >= _CommandCount)
+        return;
+
+    BufferCopyCommand cmd = _CopyCommands[commandIndex];
+    ExecuteCopy(cmd, group.groupIndex);
+}

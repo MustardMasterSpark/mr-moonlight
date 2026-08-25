@@ -5,6 +5,121 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## Rendering stack (2026-08-25) — Flora + HAZE + Retro Shaders Pro imported and wired
+
+**BUILT**
+
+Three paid assets, all extracted **lean** (demo/sample content stripped): **Flora Renderer 6**
+232 MB → **4.9 MB** (`Packages/com.ma.flora`), **HAZE** → **0.95 MB**, **Retro Shaders Pro** 95 MB →
+**2.1 MB**. Flora ships as a bootstrapper with its real 140 MB package nested inside; that was
+extracted and installed as an embedded package rather than running the in-editor installer.
+
+- **Flora** — `Flora Scene Settings` auto-registers a `FloraTerrainProvider` on the Terrain and
+  disables Unity's own tree/detail drawing. Reads existing terrain data, so **no respawn was
+  needed**; all 34,816 instances stayed put. Same measurement before/after:
+  **38,980 → 535 draw calls**, **70.4 M → 126 K triangles**; build ran **505 FPS / 2.0 ms**.
+  **Tree collision verified intact** (28/31 raycasts blocked) — undocumented by Flora and the main
+  adoption risk.
+- **HAZE** — renderer feature on `PC_Renderer`, global fog volume + a density box over the playable
+  slice. Light contribution on, which works because the PC renderer was already Forward+.
+- **Retro Shaders Pro** — `CRTEffect` feature + `CRTSettings` override. **RGB subpixels and
+  scanlines on**; point filtering, pixelation and interlacing off, per Carlos's spec.
+- **FPS counter** — `Assets/_Project/Prefabs/UI/FPS Counter.prefab`, self-contained (own Canvas at
+  1920×1080 reference, sorting order 32000), allocation-free `SetText`, unscaled time.
+
+**DECISIONS**
+
+- **Vegetation Spawner stays.** Carlos asked whether Flora could replace it. It cannot — Flora is a
+  *renderer*, not a placer; its docs have no spawning/painting/scattering pages. The two stack:
+  Spawner writes terrain data, Flora renders it. Also compared against Unity's built-in terrain
+  brush and kept the Spawner: rule-based masking, Poisson spacing and a re-runnable seeded config
+  are what make an 8-biome, 16-species island feasible at all.
+- **Terrain owns its material** (`M_IslandTerrain`) instead of URP's shared package material, after
+  Unity warned that edits to immutable package assets can be lost silently.
+
+**FAILED**
+
+- **Fog rendered in Scene view but not Game view.** Cause: `HazeRendererFeature.cs:546` returns early
+  when `!cameraData.postProcessEnabled`, and the Main Camera had post-processing off. Fixed on
+  `Player.prefab`, not the scene instance. Two rounds were wasted tuning density values that were
+  being computed and discarded before reaching the screen.
+- **First fog attempt was invisible, second was soup.** `_globalDensityMultiplier` was 0.06 on an
+  effectively unbounded parameter — but raising it alone does nothing, because `_heightFogFactor` +
+  `_maxFogHeight` decide *where* fog exists and were cancelling it out at player altitude.
+- **`VolumeProfile.Add()` does not persist a component.** It must be registered as a sub-asset via
+  `AssetDatabase.AddObjectToAsset`, or it silently comes back `null`.
+- **Editor screenshots are not a verification tool here.** Play-mode captures returned an identical
+  frame twice (same ms on the FPS counter) because the editor does not render while unfocused, so
+  toggling fog appeared to change nothing. Same class of error as the earlier `UnityStats` A/B.
+  Verification now means launching the build and capturing its window.
+
+**NEXT**
+
+- **PSX material migration** — `URP/Lit` → `RetroLit` for vertex snapping (the one PSX feature that
+  cannot come from post-processing). Verified safe for Flora: `RetroLit.shader` includes `DOTS.hlsl`.
+- **14 of 27 detail prototypes do not render under Flora** — they are `GrassType.Texture` billboards
+  on Unity's non-BRG grass shader. Rebuild as single-mesh crossed quads.
+- **Player spawns on the empty beach**, 137 m from the campsite and 35 m above ground (terrain 45.5 m,
+  player Y 80.6). The beach biome is *designed* empty, which is why test builds look barren.
+- Tree density/variety increase, pending Carlos's new low-poly models.
+
+---
+
+## PLATFORM CHANGE (2026-08-25) — WebGL dropped; target is now Windows 64-bit standalone at 1920×1080
+
+**DECISIONS**
+
+Carlos's call, made after the MRM-70 vegetation pass turned the browser ceiling from a theory into
+a measurement. The island profiled at **21,946 draw calls at 19 FPS** — roughly **10× what WebGL
+sustains** (~1,000-3,000). The cause is structural rather than a tuning error: Unity terrain trees
+do not batch (`instancedBatchedDrawCalls = 0`), and **each tree costs 3 draw calls** because its
+mesh carries three submeshes (bark / dirt / needles) on three materials.
+
+Three WebGL-only defects had already cost most of a day — invisible terrain from the GLES3
+**16-fragment-sampler** limit, mirror-finish ground, and an editor-only asmdef compiling into the
+player. A Windows build removes the ceiling and all three failure modes at once.
+
+**itch.io remains the distribution platform** — it hosts downloads natively; only the *target*
+changed. **The 1 GB ceiling still applies** as itch's upload limit, but is now only download size
+rather than runtime memory + load time + a graded time-to-play gate.
+
+**BUILT**
+
+- Target → `StandaloneWindows64`, Mono2x backend (IL2CPP deferred to the release build: it builds
+  far slower and our bottleneck is draw calls, not C#).
+- Display → **1920×1080 borderless fullscreen**, splash screen off. All Canvas Scaler reference
+  resolutions moved 960×540 → 1920×1080 (`HUD Canvas` + the `FPS Counter` prefab).
+- Quality level → `PC` / `PC_RPAsset`. Shadow distance 50 → 90 m (trees are 13-25 m tall and their
+  shadows were clipping close to the player). MSAA left off — the foliage is alpha-clipped, which
+  MSAA does not antialias without alpha-to-coverage.
+- **Terrain normal maps (8) and mask maps (4) restored** after being stripped to survive GLES3.
+  Mask `maskMapRemapMax` smoothness explicitly clamped to 0.12 and metallic to 0, so the restored
+  masks cannot reintroduce the mirror-terrain bug.
+- `detailObjectDistance` 40 → **80 m** — doubled, deliberately not quadrupled: grass area scales
+  with the square of this, so the 160 m first tried would have been 16× the ground cover.
+- Docs: `CLAUDE.md` hard rule rewritten; **`Docs/pc-build-target.md`** created and put in the
+  read-first list; `Docs/webgl-constraints.md` banner-marked **HISTORICAL**.
+
+**FAILED**
+
+- First pass set `detailObjectDistance` to 160 m and `heightmapPixelError` to 2 without measuring —
+  greedy. Reverted to 80 / 3.
+- Tried to A/B measure draw calls in the editor via `UnityEditor.UnityStats`. **It is not a usable
+  profiler here**: it includes Scene View rendering, and only updates when a frame actually draws,
+  so toggling settings from a blocking script returns identical numbers every time. Real
+  measurement belongs in a build, via the FPS counter.
+
+**NEXT**
+
+Flora Renderer 6 ($60, BRG/GPU-resident — reads terrain tree/detail data directly, supports
+LODGroup detail meshes, **requires compute shaders so it was never possible on WebGL**) and the
+tree-atlas merge, both deferred until after the Sept 1 gate. Collision behaviour with
+`TerrainCollider` is undocumented and is the first thing to verify. Density and variety increase
+waits on Carlos's new low-poly models; art direction stays low-poly/pixelated with existing
+textures — the switch buys headroom, not a style change.
+
+---
+
 ## MRM-70 (in progress) — 3D asset pipeline defined, 7 source packs prepped and built into real Unity assets; vegetation placement still to come
 
 **BUILT (2026-08-24/25) — 3D asset pipeline defined**

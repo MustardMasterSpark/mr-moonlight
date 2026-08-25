@@ -38,8 +38,12 @@ asset-prep + in-engine prefab/material/TerrainLayer build finished, before any p
 - Scene: `Assets/_Project/Scenes/Island.unity`. Terrain object is just named `Terrain`, layer
   `Ground`. Size 4103 × 260 × 7085 (X×Y-height×Z), heightmap resolution 1025 (~4-7m/cell — coarse
   block-out, Carlos hand-details on top).
-- World orientation: **+X = east, -Z = north** in this scene (source map convention, no inherent
-  Unity compass).
+- World orientation: **+X = east, +Z = north** in this scene.
+  > **Corrected 2026-08-25.** This line previously said `-Z = north`, which is wrong. Chapel
+  > (northernmost location on the map) is at Z 5668 and Camp/Dock (southernmost) at Z 4059-4273;
+  > two further marker pairs at equal Z confirm it. See
+  > `Docs/mrm70-biome-vegetation-strategy.md` §3 for the map-pixel → world transform derived from
+  > the markers.
 - 9 location blockout markers exist and are approved as-is (7 script locations + Flak Tower +
   Dock) — don't move them without asking, they're a settled decision (see changelog MRM-58 close).
 - Player spawns at the campsite; `WalkSpeed` 3.0 m/s, `SprintSpeed` 5.5 m/s (both in

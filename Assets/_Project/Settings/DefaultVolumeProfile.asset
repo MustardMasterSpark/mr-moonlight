@@ -22,6 +22,137 @@ MonoBehaviour:
   gain:
     m_OverrideState: 1
     m_Value: {x: 1, y: 1, z: 1, w: 0}
+--- !u!114 &-8551288388320032622
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25792a1c800b6f5498b76a67b3c5b765, type: 3}
+  m_Name: CRTSettings
+  m_EditorClassIdentifier: Assembly-CSharp::RetroShadersPro.URP.CRTSettings
+  active: 1
+  showInSceneView:
+    m_OverrideState: 1
+    m_Value: 1
+  enabled:
+    m_OverrideState: 1
+    m_Value: 0
+  renderPassEvent:
+    m_OverrideState: 1
+    m_Value: 1
+  useBarrelDistortion:
+    m_OverrideState: 1
+    m_Value: 0
+  distortionStrength:
+    m_OverrideState: 1
+    m_Value: 0
+  distortionSmoothing:
+    m_OverrideState: 1
+    m_Value: 0.01
+  colorRampMode:
+    m_OverrideState: 1
+    m_Value: 0
+  colorRampTex:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  redValues:
+    m_OverrideState: 1
+    m_Value: 256
+  greenValues:
+    m_OverrideState: 1
+    m_Value: 256
+  blueValues:
+    m_OverrideState: 1
+    m_Value: 256
+  useDithering:
+    m_OverrideState: 1
+    m_Value: 0
+  tintColor:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  backgroundColor:
+    m_OverrideState: 1
+    m_Value: {r: 0, g: 0, b: 0, a: 1}
+  scaleParameters:
+    m_OverrideState: 1
+    m_Value: 0
+  verticalReferenceResolution:
+    m_OverrideState: 1
+    m_Value: 1080
+  forcePointFiltering:
+    m_OverrideState: 1
+    m_Value: 0
+  rgbTex:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  rgbStrength:
+    m_OverrideState: 1
+    m_Value: 0
+  scanlineTex:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  scanlineStrength:
+    m_OverrideState: 1
+    m_Value: 0
+  scanlineSize:
+    m_OverrideState: 1
+    m_Value: 8
+  scrollSpeed:
+    m_OverrideState: 1
+    m_Value: 0
+  pixelSize:
+    m_OverrideState: 1
+    m_Value: 1
+  randomWear:
+    m_OverrideState: 1
+    m_Value: 0.2
+  aberrationStrength:
+    m_OverrideState: 1
+    m_Value: 0.5
+  useTracking:
+    m_OverrideState: 1
+    m_Value: 0
+  trackingTexture:
+    m_OverrideState: 1
+    m_Value: {fileID: 0}
+    dimension: 1
+  trackingSize:
+    m_OverrideState: 1
+    m_Value: 1
+  trackingStrength:
+    m_OverrideState: 1
+    m_Value: 0.1
+  trackingSpeed:
+    m_OverrideState: 1
+    m_Value: 0.1
+  trackingJitter:
+    m_OverrideState: 1
+    m_Value: 0.01
+  trackingColorDamage:
+    m_OverrideState: 1
+    m_Value: 0.05
+  trackingLinesThreshold:
+    m_OverrideState: 1
+    m_Value: 0.9
+  trackingLinesColor:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 0.5}
+  brightness:
+    m_OverrideState: 1
+    m_Value: 1
+  contrast:
+    m_OverrideState: 1
+    m_Value: 1
+  enableInterlacing:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &-8270506406425502121
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -239,6 +370,58 @@ MonoBehaviour:
   maxNits:
     m_OverrideState: 1
     m_Value: 1000
+--- !u!114 &-5399728293741380103
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d826a74763129a5418f79e0502eb07e5, type: 3}
+  m_Name: HazeGlobalFogVolumeComponent
+  m_EditorClassIdentifier: Haze.Runtime::Haze.Runtime.HazeGlobalFogVolumeComponent
+  active: 1
+  _globalDensityMultiplier:
+    m_OverrideState: 1
+    m_Value: 0
+  _globalDensityThreshold:
+    m_OverrideState: 1
+    m_Value: 0.2
+  _ambientColor:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  _mainLightContribution:
+    m_OverrideState: 1
+    m_Value: {r: 1, g: 1, b: 1, a: 1}
+  _heightFogFactor:
+    m_OverrideState: 1
+    m_Value: 0
+  _maxFogHeight:
+    m_OverrideState: 1
+    m_Value: 0
+  _heightFogSmoothness:
+    m_OverrideState: 1
+    m_Value: 0
+  _cameraRelativeHeightFog:
+    m_OverrideState: 1
+    m_Value: 0
+  _additionalLightContribution:
+    m_OverrideState: 1
+    m_Value: 0
+  _probeVolumeContribution:
+    m_OverrideState: 1
+    m_Value: 0
+  _mainLightScattering:
+    m_OverrideState: 1
+    m_Value: 1
+  _globalMainLightDensityBoost:
+    m_OverrideState: 1
+    m_Value: 0
+  _globalSecondaryLightDensityBoost:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &-5360449096862653589
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -299,6 +482,43 @@ MonoBehaviour:
   cropToFit:
     m_OverrideState: 1
     m_Value: 1
+--- !u!114 &-3802267380273030831
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e935d2f44fe5e4d8189a02cd3b2bbf, type: 3}
+  m_Name: HazeOverridesVolumeComponent
+  m_EditorClassIdentifier: Haze.Runtime::Haze.Runtime.HazeOverridesVolumeComponent
+  active: 1
+  _noiseTiling:
+    m_OverrideState: 1
+    m_Value: 0.001
+  _noisePanningSpeed:
+    m_OverrideState: 1
+    m_Value: {x: 0, y: 0, z: 0}
+  _noiseWeights:
+    m_OverrideState: 1
+    m_Value: {x: 1, y: 1, z: 1, w: 1}
+  _multipleScatteringIntensity:
+    m_OverrideState: 1
+    m_Value: 1
+  _multipleScatteringRadius:
+    m_OverrideState: 1
+    m_Value: 7
+  _multipleScatteringScatter:
+    m_OverrideState: 1
+    m_Value: 1
+  _multipleScatteringThreshold:
+    m_OverrideState: 1
+    m_Value: 0
+  _maxMultipleScatteringIterations:
+    m_OverrideState: 1
+    m_Value: 5
 --- !u!114 &-1410297666881709256
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -468,6 +688,11 @@ MonoBehaviour:
   - {fileID: -6288072647309666549}
   - {fileID: 7518938298396184218}
   - {fileID: -1410297666881709256}
+  - {fileID: 4249550560501113191}
+  - {fileID: 8665951104600918410}
+  - {fileID: -5399728293741380103}
+  - {fileID: -3802267380273030831}
+  - {fileID: -8551288388320032622}
 --- !u!114 &853819529557874667
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -824,6 +1049,43 @@ MonoBehaviour:
   bladeRotation:
     m_OverrideState: 1
     m_Value: 0
+--- !u!114 &4249550560501113191
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 37bbc3306c9f4578afbcb6cdbdb6a55a, type: 3}
+  m_Name: FloraRenderSettings
+  m_EditorClassIdentifier: MA.Flora::MA.Flora.FloraRenderSettings
+  active: 1
+  MaxRenderDistance:
+    m_OverrideState: 1
+    m_Value: 0
+  MaxShadowDistance:
+    m_OverrideState: 1
+    m_Value: 0
+  MinScreenSizeMode:
+    m_OverrideState: 1
+    m_Value: 1
+  MinScreenSize:
+    m_OverrideState: 1
+    m_Value: 0.005
+  MinShadowLOD:
+    m_OverrideState: 1
+    m_Value: 0
+  RandomizeLODTransition:
+    m_OverrideState: 1
+    m_Value: 0
+  CrossFadeDuration:
+    m_OverrideState: 1
+    m_Value: 0.3
+  MinScreenSizeAffectsLODGroups:
+    m_OverrideState: 1
+    m_Value: 0
 --- !u!114 &4251301726029935498
 MonoBehaviour:
   m_ObjectHideFlags: 3
@@ -925,6 +1187,62 @@ MonoBehaviour:
   scale:
     m_OverrideState: 1
     m_Value: 1
+--- !u!114 &8665951104600918410
+MonoBehaviour:
+  m_ObjectHideFlags: 3
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0a29911e74c54512bb1bb404183a58ad, type: 3}
+  m_Name: FloraDensitySettings
+  m_EditorClassIdentifier: MA.Flora::MA.Flora.FloraDensitySettings
+  active: 1
+  GlobalDensityMode:
+    m_OverrideState: 1
+    m_Value: 0
+  GlobalDensityMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  GlobalDensity:
+    m_OverrideState: 1
+    m_Value: 0.75
+  GlobalDensitySizeThreshold:
+    m_OverrideState: 1
+    m_Value: 2
+  RangeDensityMode:
+    m_OverrideState: 1
+    m_Value: 0
+  RangeDensityMask:
+    m_OverrideState: 1
+    m_Value:
+      serializedVersion: 2
+      m_Bits: 4294967295
+  RangeDensity:
+    m_OverrideState: 1
+    m_Value: 0.1
+  RangeDensityFalloff:
+    m_OverrideState: 1
+    m_Value: 0.5
+  RangeDensityScreenPercentage:
+    m_OverrideState: 1
+    m_Value: {x: 0.05, y: 0}
+  GlobalDensityEnabled:
+    m_OverrideState: 1
+    m_Value: 0
+  RangeDensityEnabled:
+    m_OverrideState: 1
+    m_Value: 0
+  RangeDensityAffectsLODGroups:
+    m_OverrideState: 1
+    m_Value: 0
+  RangeDensityFalloffPower:
+    m_OverrideState: 1
+    m_Value: 0.5
 --- !u!114 &9001657382290151224
 MonoBehaviour:
   m_ObjectHideFlags: 3

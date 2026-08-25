@@ -1,0 +1,158 @@
+// Copyright © Magnetic Arcade. All Rights Reserved.
+
+//--------------------------------------------------------------------------------------------------
+// Definitions
+//--------------------------------------------------------------------------------------------------
+
+#pragma kernel InitCullingWorkGroupArgs
+#pragma kernel InitCullingWorkGroups
+#pragma kernel CullChunks
+#pragma kernel SanitizeWorkGroupArgs
+
+#pragma only_renderers d3d11 playstation xboxone xboxseries vulkan metal switch switch2 webgpu
+#pragma use_dxc metal vulkan
+// #pragma enable_d3d11_debug_symbols
+
+// Core variations
+#pragma multi_compile_local _ USE_OCCLUSION
+#pragma multi_compile_local _ VIEW_IS_LIGHT
+
+// Development-only variations
+#pragma multi_compile_local _ DEBUG_OCCLUSION
+#pragma multi_compile_local _ DEBUG_ENABLED
+
+// Editor-only variations
+#pragma multi_compile_local _ VIEW_IS_EDITOR
+
+#define THREADING_BLOCK_SIZE 64
+
+//--------------------------------------------------------------------------------------------------
+// Includes
+//--------------------------------------------------------------------------------------------------
+
+#include "Packages/com.ma.flora/Runtime/Graphics/ComputeUtility.hlsl"
+#include "Packages/com.ma.flora/Runtime/Culling/CullingGrid.hlsl"
+#include "Packages/com.ma.flora/Runtime/Culling/IndirectCulling.hlsl"
+
+//--------------------------------------------------------------------------------------------------
+// Inputs & Outputs
+//--------------------------------------------------------------------------------------------------
+
+StructuredBuffer<IndirectDrawChunk> _DrawChunks;
+uint _MaxChunkCount;
+
+DrawChunk LoadDrawChunk(uint visibleChunkIndex)
+{
+    IndirectDrawChunk packedChunkDraw = _DrawChunks[visibleChunkIndex];
+    DrawChunk draw;
+    draw.chunkIndex = packedChunkDraw.packedChunkAndSplit >> 8u;
+    draw.splitMask = packedChunkDraw.packedChunkAndSplit & 0xffu;
+    draw.archetypeIndex = packedChunkDraw.packedArchetypeAndState >> 8u;
+    draw.supportedStateMask = packedChunkDraw.packedArchetypeAndState & 0xffu;
+    draw.drawPartitionIndex = packedChunkDraw.drawPartitionIndex;
+    return draw;
+}
+
+//--------------------------------------------------------------------------------------------------
+// Chunk Culling
+//--------------------------------------------------------------------------------------------------
+
+RWBuffer<uint> _CullingWorkGroupArgsRW;
+RWStructuredBuffer<CullingWorkGroup> _CullingWorkGroupsRW;
+
+static const uint kWorkGroupCountIndex = 3u;
+
+[numthreads(1, 1, 1)]
+void InitCullingWorkGroupArgs()
+{
+    _CullingWorkGroupArgsRW[0] = 0u;
+    _CullingWorkGroupArgsRW[1] = 1u;
+    _CullingWorkGroupArgsRW[2] = 1u;
+    _CullingWorkGroupArgsRW[kWorkGroupCountIndex] = 0u;
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void InitCullingWorkGroups(Threading::Group group)
+{
+    uint workGroupIndex = UnwrapLinearDispatchThreadID(group);
+    if (workGroupIndex >= _MaxChunkCount)
+        return;
+
+    _CullingWorkGroupsRW[workGroupIndex] = (CullingWorkGroup)0;
+}
+
+[numthreads(THREADING_BLOCK_SIZE, 1, 1)]
+void CullChunks(Threading::Group group)
+{
+    uint drawChunkIndex = UnwrapLinearDispatchThreadID(group);
+    if (drawChunkIndex >= _MaxChunkCount)
+        return;
+
+    DrawChunk drawChunk = LoadDrawChunk(drawChunkIndex);
+    uint chunkIndex = drawChunk.chunkIndex;
+    uint cellIndex = _CullingChunkCells[chunkIndex];
+    CellData cellData = LoadCellData(cellIndex);
+
+    float cellSize = cellData.blockData.cellSize;
+	float3 cellMin = cellData.blockData.position
+        + float3(cellData.localCellCoord) * cellSize
+        - (cellSize * 0.5).xxx;
+
+    CullingChunkAttributes attributes = LoadCullingChunkAttributes(chunkIndex, cellSize * 2.0);
+    float3 chunkLocalCenter = (attributes.boundsMax + attributes.boundsMin) * 0.5;
+    float3 chunkLocalExtent = (attributes.boundsMax - attributes.boundsMin) * 0.5;
+    float3 chunkWorldCenter = cellMin + chunkLocalCenter;
+    float3 chunkWorldExtent = chunkLocalExtent;
+
+    bool visible = !CullFrustum(chunkWorldCenter, chunkWorldExtent, drawChunk.splitMask);
+
+#ifdef USE_OCCLUSION
+    UNITY_BRANCH
+    if (visible)
+    {
+        float chunkWorldRadius = length(chunkWorldExtent);
+        visible = !CullOcclusion(chunkWorldCenter, chunkWorldRadius, drawChunk.splitMask);
+
+    #ifdef DEBUG_ENABLED
+        if (_DebugCounterEnabled && !visible)
+        {
+            CullingChunkBatch chunkBatch = LoadCullingChunkBatch(chunkIndex);
+            IncrementDebugDispatchCounter(kDebugCounterTypeOccluded, chunkBatch.instanceCount);
+        }
+    #endif
+    }
+#endif
+
+    UNITY_BRANCH
+    if (visible)
+    {
+        uint workGroupStartIndex = 0;
+        InterlockedAdd(_CullingWorkGroupArgsRW[kWorkGroupCountIndex], 1u, workGroupStartIndex);
+
+        if (workGroupStartIndex < _MaxChunkCount)
+        {
+            CullingWorkGroup cullingWorkGroup = (CullingWorkGroup)0;
+            cullingWorkGroup.chunkIndex = chunkIndex;
+            cullingWorkGroup.drawChunkIndexAndSplitMask = drawChunkIndex << 8u | drawChunk.splitMask;
+            cullingWorkGroup.packedChunkInfo = LoadPackedCullingChunkInfo(chunkIndex);
+            cullingWorkGroup.supportedStateMask = drawChunk.supportedStateMask;
+            cullingWorkGroup.drawPartitionIndex = drawChunk.drawPartitionIndex;
+            _CullingWorkGroupsRW[workGroupStartIndex] = cullingWorkGroup;
+        }
+    }
+}
+
+uint _MaxWorkGroupCountX;
+uint _MaxWorkGroupCountY;
+
+[numthreads(1, 1, 1)]
+void SanitizeWorkGroupArgs()
+{
+    uint workGroupTotalCount = min(_CullingWorkGroupArgsRW[kWorkGroupCountIndex], _MaxChunkCount);
+    _CullingWorkGroupArgsRW[kWorkGroupCountIndex] = workGroupTotalCount;
+
+    uint3 wrappedGroupCount = WrapGroupCount(workGroupTotalCount, _MaxWorkGroupCountX, _MaxWorkGroupCountY);
+    _CullingWorkGroupArgsRW[0] = wrappedGroupCount.x;
+    _CullingWorkGroupArgsRW[1] = wrappedGroupCount.y;
+    _CullingWorkGroupArgsRW[2] = wrappedGroupCount.z;
+}

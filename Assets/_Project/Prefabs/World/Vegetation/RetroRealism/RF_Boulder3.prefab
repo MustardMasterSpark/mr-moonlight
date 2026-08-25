@@ -9,8 +9,20 @@ PrefabInstance:
     m_TransformParent: {fileID: 0}
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalPosition.y
@@ -22,11 +34,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.7071067
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalRotation.x
-      value: -0.7071068
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalRotation.y
@@ -34,7 +46,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -56,6 +68,10 @@ PrefabInstance:
       propertyPath: 'm_Materials.Array.data[0]'
       value: 
       objectReference: {fileID: 2100000, guid: 7de3fb9b45c704f4f91fd22a50dd655f, type: 2}
+    - target: {fileID: -5754084199372789682, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+      propertyPath: m_Mesh
+      value: 
+      objectReference: {fileID: 4300000, guid: 6b1369b19b0d4c543a4e6ce70a1a056c, type: 2}
     - target: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       propertyPath: m_Name
       value: RF_Boulder3
@@ -70,15 +86,42 @@ PrefabInstance:
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 572398857172346608}
+      addedObject: {fileID: 4767221737870229241}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 8059114398276235404}
   m_SourcePrefab: {fileID: 100100000, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+--- !u!23 &7628972381745879674 stripped
+MeshRenderer:
+  m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+  m_PrefabInstance: {fileID: 9087727863739188990}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &8277459461435898799 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
   m_PrefabInstance: {fileID: 9087727863739188990}
   m_PrefabAsset: {fileID: 0}
---- !u!64 &572398857172346608
-MeshCollider:
+--- !u!205 &4767221737870229241
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8277459461435898799}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0.54739416, z: 0}
+  m_Size: 2.782076
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.015
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 7628972381745879674}
+  m_Enabled: 1
+--- !u!65 &8059114398276235404
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -95,7 +138,6 @@ MeshCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 0
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -8118202930623496704, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
+  serializedVersion: 3
+  m_Size: {x: 2.782076, y: 1.0947883, z: 2.3791237}
+  m_Center: {x: 0, y: 0.54739416, z: -0.000000059604645}

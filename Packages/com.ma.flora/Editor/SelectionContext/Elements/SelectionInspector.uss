@@ -1,0 +1,20 @@
+﻿
+.flora-instance-inspector-overlay {
+    width: 300px;
+}
+
+.flora-instance-inspector-overlay .unity-base-field .unity-base-field__input {
+    width: 70%;
+}
+
+.flora-instance-inspector-overlay__position Image {
+    background-image: resource('MoveTool');
+}
+
+.flora-instance-inspector-overlay__rotation Image {
+    background-image: resource('RotateTool');
+}
+
+.flora-instance-inspector-overlay__scale Image {
+    background-image: resource('ScaleTool');
+}

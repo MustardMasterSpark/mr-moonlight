@@ -1,0 +1,9 @@
+<UXML xmlns:ui="UnityEngine.UIElements">
+  <ui:VisualElement name="selection-strip" class="flora-rendering-inspector__selection-strip">
+    <ui:VisualElement name="icon" class="flora-rendering-inspector__details-icon" />
+    <ui:VisualElement name="labels" class="flora-rendering-inspector__selection-labels">
+      <ui:Label name="title" class="flora-rendering-inspector__selection-title" display-tooltip-when-elided="true" />
+      <ui:Label name="subtitle" class="flora-rendering-inspector__selection-subtitle" display-tooltip-when-elided="true" />
+    </ui:VisualElement>
+  </ui:VisualElement>
+</UXML>
