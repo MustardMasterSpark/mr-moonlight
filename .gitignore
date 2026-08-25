@@ -255,3 +255,18 @@ New Terrain.asset.meta
 # =============================================================================
 /[Aa]ssets/ThirdParty/**
 !/[Aa]ssets/ThirdParty/.gitkeep
+
+# -----------------------------------------------------------------------------
+#  POLICY (Carlos, 2026-08-25): track ONLY our own game content. No third-party
+#  assets or packages in the repo, regardless of size. Everything external is
+#  recorded in Docs/external-assets.md instead - exact package name, publisher
+#  and version, so it can be re-acquired and re-imported identically.
+#
+#  This is safe because a .unitypackage embeds its own .meta files, so
+#  re-importing THE SAME VERSION restores THE SAME GUIDs and every reference
+#  from our tracked assets survives. That is why the version numbers in
+#  external-assets.md are load-bearing, not documentation garnish.
+# -----------------------------------------------------------------------------
+
+# Embedded third-party UPM packages (Flora installs here, not to Assets/)
+/[Pp]ackages/com.ma.flora/
