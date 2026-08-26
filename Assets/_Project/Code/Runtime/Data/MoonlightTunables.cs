@@ -178,5 +178,34 @@ namespace MrMoonlight.Data
 
         /// <summary>Default seconds a TimeManager preset switch takes when ApplyPreset() is called without an explicit duration. Owner: MRM-69</summary>
         public float TimeManagerDefaultTransitionSeconds = 3f;
+
+        [Header("Main Menu — MRM-18")]
+
+        /// <summary>How long the opening black screen takes to reveal the staged background scenario when the menu first loads, in seconds. Owner: MRM-18</summary>
+        public float MenuOpeningFadeDuration = 1.5f;
+
+        /// <summary>Duration of every other main menu fade transition - Settings/Credits opening and closing, Start's fade to black before loading the demo scene, and Quit's fade to black. One shared value keeps every transition feeling consistent, per the issue's "every transition a fade, never a hard cut" requirement. Owner: MRM-18</summary>
+        public float MenuTransitionFadeDuration = 0.6f;
+
+        /// <summary>Scroll speed of the credits roll, in pixels per second at the menu's 1920x1080 reference resolution. Owner: MRM-18</summary>
+        public float CreditsScrollSpeed = 60f;
+
+        /// <summary>Default Master volume slider value, 0-1 linear, used the first time the game runs before any PlayerPrefs value exists. Owner: MRM-18</summary>
+        public float DefaultMasterVolume = 1f;
+
+        /// <summary>Default Voices (character dialogue only) volume slider value, 0-1 linear. Owner: MRM-18</summary>
+        public float DefaultVoicesVolume = 1f;
+
+        /// <summary>Default SFX (everything that is not character dialogue) volume slider value, 0-1 linear. Owner: MRM-18</summary>
+        public float DefaultSFXVolume = 1f;
+
+        /// <summary>Decibel value written to an AudioMixer group's exposed volume parameter when its slider sits at 0 (fully muted). Mixer volume is logarithmic and linear 0 has no finite dB equivalent, so this is the floor used instead of -infinity. Owner: MRM-18</summary>
+        public float MixerMuteDecibels = -80f;
+
+        /// <summary>How long each pre-menu splash card (studio name, then the disclaimer) takes to fade its text in or out, in seconds - the same duration is used for both the fade-in and fade-out of every card. Requested by Carlos on 2026-08-26. Owner: MRM-18</summary>
+        public float SplashCardFadeDuration = 1f;
+
+        /// <summary>How long each splash card's text stays fully visible before fading out, in seconds. Owner: MRM-18</summary>
+        public float SplashCardHoldDuration = 2f;
     }
 }
