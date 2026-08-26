@@ -1,4 +1,18 @@
-# WebGL Constraints — read this before writing any code
+# ⚠️ HISTORICAL — WebGL is no longer a target (2026-08-25)
+
+> **Do not apply anything in this document to new work.** The project moved to a **Windows 64-bit
+> standalone** build at 1920×1080 on 2026-08-25. See **`Docs/pc-build-target.md`**, which replaces
+> this file and restates the handful of rules here that still matter (build-size discipline, baking
+> spreadsheet data, capping audio voices, shipping 4 skyboxes).
+>
+> Kept because the reasoning is still useful history — particularly §6, whose *"playing within 2
+> minutes"* graded criterion did not go away, it just became "download + extract + launch".
+>
+> The 960×540 display decision below is **dead**. So is every GLES3/browser-specific rule.
+
+---
+
+# WebGL Constraints — read this before writing any code (SUPERSEDED)
 
 **Target:** Unity 6.3 LTS · URP · **WebGL** · itch.io · **under 1 GB** · **960×540, embedded in the itch.io page (not fullscreen)** · Xbox controller + keyboard/mouse.
 

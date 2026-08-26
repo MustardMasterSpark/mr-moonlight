@@ -9,8 +9,11 @@
 | `webgl-constraints.md` | **Before anything.** Every rule here is a thing that works in the editor and breaks in a browser | 🔴 **Read first** |
 | `unity-conventions.md` | Any Unity work — folders, prefabs, ScriptableObjects, scenes, the tunables pattern | 🔴 High |
 | `csharp-conventions.md` | Any C# — naming, structure, the no-hardcoded-values rule, performance patterns | 🔴 High |
+| `3d-asset-pipeline.md` | **Any 3D asset work** — the map set every asset ships, Blender baking, the pixelation pass, and the Unity import settings per prop | 🔴 High |
 | `system-architecture.md` | Understanding how systems talk to each other. Contains the dependency and interaction diagrams | 🟡 Reference |
 | `data-schemas.md` | Anything spreadsheet-driven — dialogue, system messages, objectives, the event script | 🟡 When building those systems |
+| `changelog.md` | Picking up any issue — what actually got built, decided, or failed, per issue, newest first | 🟡 Reference |
+| `webgl-budget.md` | Any asset that ships in the build — the real MB allocation per category | 🟡 Reference |
 | `glossary.md` | Naming anything. Canonical spellings and terms | 🟢 Quick lookup |
 | `input-map.md` | Need a binding without opening the `.inputactions` asset | 🟢 Quick lookup |
 
@@ -34,9 +37,7 @@ Not written yet, but each will earn its place:
 
 | File | When to create it | Why |
 |---|---|---|
-| `changelog.md` | With the first merged issue | The working agreements require a human-readable implementation and change log. Structure it as **BUILT / FAILED / NEXT / DECISIONS** — that doubles as agent memory across sessions |
 | `optimization.md` | With MRM-64 | Every optimization, with real before/after numbers. Feeds Assignment #10's cost analysis |
-| `webgl-budget.md` | Output of MRM-6 | The actual MB allocation per asset category, once measured |
 | `event-verbs.md` | After MRM-11 | The event director's verb reference — the thing Carlos will read most often while authoring the script |
 | `audio-map.md` | After MRM-38 | Which sound pools exist, which are empty, which layer each prop belongs to. This will become the single most useful "what do I still need to record" document |
 | `testing-checklist.md` | Before the Sept 1 build | The manual QA sweep from `Assignments MDs/Assignment09.md` |

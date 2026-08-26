@@ -67,6 +67,10 @@ MonoBehaviour:
       - rid: 6475530941646766093
       - rid: 6475530941646766094
       - rid: 6475530941646766095
+      - rid: 6475531390361796895
+      - rid: 6475531390361796896
+      - rid: 6475531390361796897
+      - rid: 6475531390361796898
     m_RuntimeSettings:
       m_List:
       - rid: 6852985685364965378
@@ -79,10 +83,14 @@ MonoBehaviour:
       - rid: 6852985685364965394
       - rid: 8712630790384254976
       - rid: 6475530941646766083
+      - rid: 6475530941646766087
       - rid: 6475530941646766088
       - rid: 6475530941646766089
+      - rid: 6475530941646766092
       - rid: 6475530941646766093
       - rid: 6475530941646766095
+      - rid: 6475531390361796897
+      - rid: 6475531390361796898
   m_AssetVersion: 10
   m_ObsoleteDefaultVolumeProfile: {fileID: 0}
   m_RenderingLayerNames:
@@ -281,6 +289,39 @@ MonoBehaviour:
       data:
         m_Version: 1
         m_UseBicubicLightmapSampling: 0
+    - rid: 6475531390361796895
+      type: {class: FloraRuntimeShaders, ns: MA.Flora, asm: MA.Flora}
+      data: 
+    - rid: 6475531390361796896
+      type: {class: FloraEditorSettings, ns: MA.Flora, asm: MA.Flora}
+      data:
+        m_Version: 0
+        m_DisableInstanceRenderersInEditMode: 0
+    - rid: 6475531390361796897
+      type: {class: FloraRuntimeSettings, ns: MA.Flora, asm: MA.Flora}
+      data:
+        m_Version: 1
+        m_DisableGPUOcclusionCulling: 0
+        m_DisableLegacyLightProbes: 0
+        m_DisablePerObjectMotionVectors: 0
+    - rid: 6475531390361796898
+      type: {class: FloraRuntimeResources, ns: MA.Flora, asm: MA.Flora}
+      data:
+        m_Version: 0
+        m_GraphicsBufferUtilityCS: {fileID: 7200000, guid: 3e48ad440cff4b308d5fcfe8b884a2bd, type: 3}
+        m_InstanceBufferUploadCS: {fileID: 7200000, guid: 8486472666214e908f28747f3a3f470c, type: 3}
+        m_CullingGridCS: {fileID: 7200000, guid: 9250363ac56a428980c13a9be9febfa6, type: 3}
+        m_IndirectCullingChunksCS: {fileID: 7200000, guid: aa32430336484970a03ee2cdcb9f3f46, type: 3}
+        m_IndirectCullingInstancesCS: {fileID: 7200000, guid: 670cd2a59f2c4eb5b4c0f0cdde9bcda8, type: 3}
+        m_IndirectCullingDrawsCS: {fileID: 7200000, guid: 4a33a1bf924b4770b869a00a554a3771, type: 3}
+        m_OccluderDepthPyramidKernelsCS: {fileID: 7200000, guid: 08b2b5fb307b0d249860612774a987da, type: 3}
+        m_OcclusionCullingDebugCS: {fileID: 7200000, guid: b23e766bcf50ca4438ef186b174557df, type: 3}
+        m_DebugOccluderShader: {fileID: 4800000, guid: b3c92426a88625841ab15ca6a7917248, type: 3}
+        m_DebugOcclusionTestShader: {fileID: 4800000, guid: d3f0849180c2d0944bc71060693df100, type: 3}
+        m_TerrainGrassPlaceholderPrefab: {fileID: 1684807226478898255, guid: cb4b0d2b161fe4e3fb90f9c0ae9c70aa, type: 3}
+        m_TerrainGrassMaterial: {fileID: 2100000, guid: b4f230f91ce66493480e9f26b7f30e87, type: 2}
+        m_DebugCullingGridCS: {fileID: 7200000, guid: 91c3055b3f6c4bf180a42cb151e40074, type: 3}
+        m_DebugLineShader: {fileID: 4800000, guid: 6e33a4c0295c45acbceb9980ee8aeb65, type: 3}
     - rid: 6852985685364965376
       type: {class: URPShaderStrippingSetting, ns: UnityEngine.Rendering.Universal, asm: Unity.RenderPipelines.Universal.Runtime}
       data:
