@@ -6,7 +6,9 @@
 
 | File | Read it when | Priority |
 |---|---|---|
-| `webgl-constraints.md` | **Before anything.** Every rule here is a thing that works in the editor and breaks in a browser | 🔴 **Read first** |
+| `pc-build-target.md` | **Before anything.** The Windows 64-bit / 1920×1080 target, player settings, quality settings, and the third-party rendering stack | 🔴 **Read first** |
+| `webgl-constraints.md` | ~~Before anything~~ — **HISTORICAL as of 2026-08-25.** WebGL is no longer a target; do not apply its rules to new work | ⚪ Historical |
+| `terrain-vegetation-tooling-decision.md` | Any terrain, biome, vegetation or vegetation-renderer question — which assets we use and, more usefully, which we rejected and why | 🟡 Reference |
 | `unity-conventions.md` | Any Unity work — folders, prefabs, ScriptableObjects, scenes, the tunables pattern | 🔴 High |
 | `csharp-conventions.md` | Any C# — naming, structure, the no-hardcoded-values rule, performance patterns | 🔴 High |
 | `3d-asset-pipeline.md` | **Any 3D asset work** — the map set every asset ships, Blender baking, the pixelation pass, and the Unity import settings per prop | 🔴 High |
@@ -25,8 +27,8 @@ If you read nothing else:
 
 1. **Linear is the source of truth.** Not the design docs, not these files. If a Linear issue disagrees with a document, the issue wins. If the issue is wrong, fix the issue.
 2. **No hardcoded values.** Every tunable lives in `MoonlightTunables`, commented, with the owning issue ID. This is a hard project rule.
-3. **Stop at the scene view.** Anything needing placement, staging, inspector wiring or a saved scene is a handoff to Carlos. Say so and wait.
-4. **WebGL is not desktop.** No runtime file I/O, no threading assumptions, a hard 1 GB ceiling, and a browser that will not forgive an unbounded post-processing stack.
+3. **Offer before handing off scene work.** Placement, staging, inspector wiring and saved scenes are Carlos's domain — but when you can see a way to do it yourself via the UnityMCP or Blender MCP bridge, **ask his permission first** rather than silently handing off instructions. If yes: do it, verify by reading the actual component/scene state back, and document it. If he'd rather do it himself, wait. (Superseded the old "stop at the scene view" rule; see `CLAUDE.md`.)
+4. **The target is Windows 64-bit standalone at 1920×1080.** WebGL was dropped 2026-08-25. The 1 GB ceiling is still real but it is itch.io's *upload* limit, not a runtime budget — build 21 shipped at 54 MB zipped. See `pc-build-target.md`.
 5. **Placeholders are expected.** Capsules, grey boxes, empty sound pools. Ship the behaviour; the asset arrives later.
 
 ---

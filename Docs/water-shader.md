@@ -1,5 +1,10 @@
 # Water Shader — MRM-68
 
+> **SUPERSEDED 2026-08-27 — see MRM-71.** Carlos decided to replace this shader with **Crest Water 5**. Everything below still accurately describes what is *live today* and stays current until
+> MRM-71 ships; treat it as the fallback record afterwards, not as the plan. Rationale, the
+> CRT-only look decision, the disabled Underwater Renderer, and six open gaps are in
+> `Docs/terrain-vegetation-tooling-decision.md` section 6.
+
 **Current state (2026-08-24): `M_Sea.mat` uses a purchased Asset Store shader (IgniteCoders'
 "Simple Water Shader URP"), not the hand-written one below.** Carlos found the hand-written
 shader's look was hurting visual harmony during blockout and asked for a free Asset Store

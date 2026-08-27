@@ -73,6 +73,24 @@ tracked.
 | Advanced Horror FPS Kit | Queen | reference |
 | Wolfenemu / 01 Monster Wolf Boss | AsAlex / HATOGAME | wolf enemy + boss |
 | Procedural Water Shader | Pedro Verpha | evaluated, not used (MRM-68 chose Simple Water Shader) |
+| **Gaia Pro VS** | Procedural Worlds | **Adopted 2026-08-27, editor-time tools only.** Terraform/erosion + Spawner/biome mask stacks, replacing our hand-rolled Painter/Composer. Not yet downloaded. See `Docs/terrain-vegetation-tooling-decision.md` §2 for the mandatory keep/drop boundary — **importing its Runtime, Water, Lighting or sample art is a mistake**, they collide with HAZE, Retro, Simple Water Shader and TimeManager. |
+| **Crest Water 5** | Wave Harmonic | **Adopted 2026-08-27 for MRM-71** ($240, 60.6 MB, owned). Replaces Simple Water Shader URP on `M_Sea.mat`. **Installs to `Packages/` as a UPM package** — so unlike `Assets/ThirdParty/` packages it is **not gitignored and will be committed**, same as Flora; settle that deliberately (MRM-71 risk 1). `Samples~` do not import unless requested, so no lean-extraction needed. Underwater Renderer ships **disabled** (Tracey cannot enter water in the demo). Record the exact version on install. Not yet installed. |
+
+## Evaluated and rejected — do not re-litigate
+
+Recorded so these are not re-evaluated from scratch. Full reasoning in
+`Docs/terrain-vegetation-tooling-decision.md`.
+
+| Package | Publisher | Date | Why rejected |
+|---|---|---|---|
+| **MicroWorld – Procedural Terrain Generator** | Star Twinkle | 2026-08-27 | A procedural *level generator* — builds its own terrain cells; no existing-terrain or heightmap-import path. Cannot preserve the authored island shape, which is load-bearing for the already-designed gameplay audio. Its custom foliage shader would also collide with `RetroLit`. |
+| **Nature Renderer 6・Pro** | Visual Design Cafe | 2026-08-27 | Requires shaders to support *its* procedural instancing and ships a shader patcher. `RetroLit` — the PSX look — is already BRG/DOTS-compatible, which is why Flora needed zero shader work. Adopting it means patching a paid third-party shader and re-patching on every Retro update, for a measured gain of zero over Flora. |
+| **Crest Water 4 URP** | Wave Harmonic | 2026-08-27 | Superseded by **Crest 5**, which is the same lineage but 60.6 MB instead of 1.5 GB, ships as a UPM package, covers all three pipelines, and is actively maintained (5.10.0 Aug 2026 vs 4.23.1 Jul 2026). **Not an aesthetic call** — neither version is more PSX-friendly; Crest 5's extra realism is opt-in switches. |
+| **KWS2 Dynamic Water System** | kripto289 | 2026-08-27 | Owned, and the stronger simulation (FFT ocean, flow sim, SSR, caustics, volumetric sunshafts, Snell's window) — but every one of those is a photoreal flourish that fights the PSX look, and is where its GPU cost lives. Right buy when water is a *character*; ours is scenery. Crest chosen instead. |
+| **Big Poplar Tree FREE** | ALP | (earlier) | 8,198–20,248 tris, over budget. |
+
+> **The test that decides any future vegetation renderer: does it work with `RetroLit` unmodified?**
+> If it needs the shader patched, the answer is no.
 
 ## Keeping this current
 

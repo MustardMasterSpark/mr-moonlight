@@ -5,6 +5,130 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-71 (created 2026-08-27, not started) — Water system: Crest Water 5
+
+**BUILT**
+
+Nothing in-engine. **MRM-71** created as a **sub-issue of MRM-67 (Polishing Details)**, M2
+milestone, branch `mrm-71` — the first sub-issue on MRM-67, which until now held its backlog as a
+checklist inside its own description. Carlos's preference going forward: real items become
+sub-issues, so each gets its own identifier and branch. Documented in
+`Docs/terrain-vegetation-tooling-decision.md` section 6 and `Docs/external-assets.md`.
+
+**DECISIONS**
+
+- **Crest Water 5** (Wave Harmonic, $240, 60.6 MB, owned) replaces IgniteCoders "Simple Water
+  Shader URP". Crest 4 URP was the initial pick and was superseded the same day.
+  Deciding fact: Crest's Underwater Renderer runs **between the transparent pass and
+  post-processing**, so HAZE and the Retro CRT land on top of it instead of it punching an
+  unfiltered hole through the frame.
+- **KWS2 rejected** (also owned). Stronger simulation, but its value and its cost both live in
+  photoreal flourishes that fight a PSX look.
+- **CRT only on the water — no PSX treatment.** Carlos's explicit call. No full-screen CRT
+  pixelation to "unify" it, no migration to `RetroLit`, **no editing Crest's shader graph** (third
+  party assets stay unedited). Accepted consequence: water is the smoothest thing on screen.
+- **Underwater Renderer disabled for the demo** — Tracey is being blocked from entering the water.
+  Disable the component, do not delete it.
+- Crest still earns its place without underwater: it **closes the near-calm/far-aggressive distance
+  blend that MRM-68 explicitly descoped**, and adds shoreline foam — both surface features visible
+  from land.
+- **Crest 5 over Crest 4 is a logistical call, not an aesthetic one** — 60.6 MB vs 1.5 GB, UPM
+  package (so `Samples~` never import and no lean extraction is needed), actively maintained
+  (5.10.0 Aug 2026 vs 4.23.1 Jul 2026), Unity 6 support since 5.1.0. **Neither version is more
+  PSX-friendly**; Crest 5's extra realism is opt-in switches that look like Crest 4 when left off.
+  This was explicitly misread once, so it is written into the decision doc as a callout.
+- **New consequence of Crest 5:** it installs to `Packages/`, which **is not gitignored**. Crest will
+  therefore be committed to the repo like Flora, unlike HAZE and Retro. Whether ~65 MB of paid Asset
+  Store code belongs on the GitHub remote is now a live decision (MRM-71 risk 1), not a hypothetical
+  one — and it is Carlos's call.
+
+**FAILED**
+
+Nothing. One useful finding: `PC_RPAsset` already has `m_RequireDepthTexture: 1` /
+`m_RequireOpaqueTexture: 1` / `m_OpaqueDownsampling: 1`, so **the biggest hidden cost of adopting
+any water system is already being paid** by the current shader. Crest inherits it rather than adding
+it.
+
+An earlier concern that Crest might not support Unity 6 RenderGraph (the reason WaterWorks was
+rejected in MRM-68) was **checked and disproved** — Crest's URP build *requires* Unity 6 and has
+current RenderGraph fixes plus pass merging. Unity **6.3** specifically remains unverified.
+
+**NEXT**
+
+Deferred to M2 polish. Six gaps listed in the decision doc section 6; the first is renderer-feature
+ordering on `PC_Renderer`, where HAZE's `postProcessEnabled` early-out is the known trap.
+
+---
+
+## Tooling evaluation (no issue, 2026-08-27) — Terrain/vegetation asset decisions
+
+**BUILT**
+
+Documentation only, no code or scene changes. `Docs/terrain-vegetation-tooling-decision.md` (new,
+the decision record); `Docs/external-assets.md` gained a Gaia Pro row and an
+**Evaluated and rejected** table; `Docs/00-INDEX.md` corrected — it still listed
+`webgl-constraints.md` as read-first and carried two "five rules" entries that contradicted
+`CLAUDE.md` (the old "stop at the scene view" handoff rule, and the WebGL rule).
+
+**DECISIONS**
+
+- **Gaia Pro VS — adopt, editor-time tools only.** Terraform/erosion + Spawner/biome mask stacks.
+  It is the only tool evaluated that spawns onto our *existing* terrain and takes `biomes.png` as
+  an Image Mask directly. **Decline its Runtime, Terrain Loader, Water, Lighting/skies and all
+  sample art** — they collide with HAZE, Retro Shaders Pro, Simple Water Shader and TimeManager.
+  Note the two mechanisms: art is declined at *import*; Water/Lighting/Runtime are declined at the
+  *scene* level by not running the Gaia Manager's world-creation flow. Do **not** deselect Gaia's
+  code folders at import.
+- **Scheduled after Sept 1**, folded into the new-tree respawn (pause-doc gap #2), because adopting
+  it costs a full re-verification sweep (Flora → PSX materials → tree collision → FPS) and fixes
+  none of the seven open MRM-70 gaps. Erosion-only on the heightmap is the safe early bite.
+- **MicroWorld — rejected.** Procedural level generator; cannot preserve the authored heightmap,
+  which the demo's gameplay audio is already designed against.
+- **Nature Renderer 6 Pro — rejected. Flora Renderer 6 stays.** Nature Renderer requires shaders to
+  support its own procedural instancing; `RetroLit` is already BRG/DOTS-compatible, which is why
+  Flora needed zero shader work. **The test for any future vegetation renderer: does it work with
+  `RetroLit` unmodified?**
+- **PSX / low-poly art direction is unchanged.** Gaia places, `RetroLit` renders. Confirmed
+  explicitly because adopting a terrain tool could be misread as an art-direction change.
+- **Water will move off Simple Water Shader** to a source not yet chosen — but not Gaia's.
+- **Gaia is a temporary install, not a permanent dependency.** Import -> shape -> spawn -> save the
+  recipe into `Assets/_Project/` -> strip Gaia components off the Terrain -> remove the package ->
+  re-import the *same version* when changes are wanted. Works because Gaia's output is native
+  `TerrainData`. Three conditions and the full cycle are in the decision doc section 2b.
+- **Not installed, and deliberately not linked to any Linear issue.** Carlos's call: a separate
+  triage pass will map newly-acquired Asset Store packages onto issues with per-issue setup plans.
+  **Gaia is not attached to the vegetation story.**
+- Written straight to `main` rather than an issue branch — architecture-level decisions, not issue
+  work. Carlos's explicit call; the one-issue-one-branch rule is unaffected.
+
+**FAILED**
+
+One claim in the first draft of the decision doc was **wrong and has been corrected**: it said Gaia
+consumes `biomes.png` *directly* as an Image Mask. It does not — our `biomes.png` is a **scene-view
+screenshot, not a top-down map** (which is why it had to be hand-anchored against nine landmarks
+originally). A correctly-projected orthographic mask has to be produced first; that is now a costed
+prerequisite in the decision doc, not a free step.
+
+**Seven unverified gaps are now listed in decision doc section 2c**, the highest-risk being
+**whether Gaia reorders our 8 existing TerrainLayers** — layer order drives both the vegetation
+spawn masks and the footstep surface mapping, so a silent reorder would break two systems at once
+and the footstep break would stay invisible until someone listened for it.
+
+Two verification notes worth keeping:
+
+- The Asset Store product pages are JS-rendered and return only metadata to a fetcher; the useful
+  specs came from publisher docs, support articles and the Unity forums instead.
+- Gaia's exact folder split **cannot be verified until the `.unitypackage` is in the download
+  cache.** Everything documented about its import is strategy; the file-level keep/drop list comes
+  from listing the actual archive with `tar`, as done for AllSky.
+
+**NEXT**
+
+Carlos: Package Manager → My Assets → *Gaia Pro VS* → **Download** (not Import). Then Claude lists
+the archive and produces the exact keep/drop list before anything touches `Assets/`.
+
+---
+
 ## MRM-16 / MRM-41 / MRM-42 (in progress, joint session 2026-08-26) — Interaction system, item framework, inventory UI mechanics
 
 **BUILT**
