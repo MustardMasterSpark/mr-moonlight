@@ -5,6 +5,102 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-16 / MRM-41 / MRM-42 (in progress, joint session 2026-08-26) — Interaction system, item framework, inventory UI mechanics
+
+**BUILT**
+
+Three issues built together on one branch (`mrm-41`) as a deliberate exception — Carlos's call,
+since the systems interlock (items need Interactable, inventory UI needs Input/movement-lock from
+the player controller). Compiles clean; **nothing scene-tested, no GameObjects/prefabs/
+ItemDefinition assets exist in any scene yet.**
+
+- **MRM-16** — `Interaction/Interactable.cs` (+`InteractionType` enum), `Interaction/
+  InteractionDetector.cs` (proximity+aim detection, disambiguation, shared fade, highlight via
+  `MaterialPropertyBlock` emission), `UI/InteractionPromptUI.cs` (unstyled TMP placeholder, no
+  icon art yet).
+- **MRM-41** — `Items/ItemId.cs`, `ItemDefinition.cs` (+`ItemCategory`), `ItemEffectApplier.cs`,
+  `Item.cs`, `Inventory.cs`; `UI/InventoryFeedbackUI.cs` (storage-full refusal toast);
+  `PlayerStats` gained `Drunkenness`/`WeedHigh`/`MorphineHigh` stat pools (pool only, no gameplay
+  consequence wired — future issue); `PlayerController` gained a read-only `Input` accessor
+  (shared `InputMapController` for MRM-16/42, avoids a second bound `InputSystem_Actions`
+  instance) and a reversible `SetMovementLocked()`.
+- **MRM-42** — `UI/InventoryUIController.cs`, open/close/navigate/use state machine, stays in the
+  `Gameplay` input map (confirmed correct per the MRM-8 comment thread), reversible movement lock,
+  force-closes via the existing `HudCloseRequest` hook MRM-17 already raises on death.
+- ~90 new `MoonlightTunables` fields across new Interaction/Items/Inventory UI headers.
+
+**DECISIONS**
+
+- One shared branch/PR for all three issues — Carlos's explicit, deliberate exception to the
+  normal one-issue-one-branch rule, not a default to repeat without asking.
+- Substance stat pools (Drunkenness/WeedHigh/MorphineHigh) exist now only because items need
+  somewhere to add their effect to; the gameplay consequence (screen wobble, impaired sway, etc.)
+  is scoped to a later issue on purpose.
+
+**FAILED**
+
+Nothing — no scene-testing has happened yet for any of the three systems, so no bugs have
+surfaced. Don't read the lack of a FAILED section as "verified working."
+
+**NEXT**
+
+- **Blocked on Carlos.** MRM-41's 9-item catalogue (+9 equipment types) needs his prop model
+  locations, and he's currently reconsidering the 3D asset pipeline itself before handing those
+  over — a follow-up issue for that decision is pending, not yet created. MRM-42's layout is
+  blocked on his mockup image (still unattached in Linear as of 2026-08-26).
+- Committed 2026-08-26 (`45de5df`, "Add MRM-16/41/42 interaction, inventory, and item framework")
+  on `mrm-41`. **Not yet merged to `main`** — Carlos intends to merge as a checkpoint despite the
+  catalogue/scene-wiring being unfinished; MRM-16/41/42 stay open in Linear, not closed by that
+  merge.
+- See `Docs/mrm41-resume-2026-08-26.md` for the full state dump a fresh session would need.
+
+---
+
+## MRM-18 (in review, 2026-08-26) — Main menu scene (unstyled)
+
+**BUILT**
+
+`MainMenu.unity` scene (Build Settings index 0, `Island` now index 1), `MoonlightMixer.mixer`
+built via reflection against the internal `AudioMixerController` API. Scripts: `Difficulty`,
+`GameSettings`, `AudioMixerVolume`, `FadeOverlay`, `SettingsPanel`, `CreditsController`,
+`MainMenuController`, `DifficultyDebugOverlay`. A `DifficultyDebugOverlay` GameObject was also
+dropped into `Island.unity` so the selection is provably reaching the demo scene. Pre-menu splash
+cards (`SplashSequence.cs`, studio-name then disclaimer, placeholder bracketed text) added same
+day per Carlos's request.
+
+**DECISIONS**
+
+- Scene stays named `Island`, not renamed to "Demo" — Carlos confirmed "Demo" is just his verbal
+  shorthand.
+- Two stale WebGL-era callouts in the issue text resolved per the platform switch: 960×540 →
+  built at 1920×1080; the "no loading percentage" WebGL constraint is moot on a Windows download
+  (no loading-screen UI built at all). Quit is a real `Application.Quit()`.
+- Difficulty selection is intentionally inert — persists and reaches the demo scene, but nothing
+  reads it yet since no difficulty-scaling systems exist. Placeholder-by-design, not a gap.
+
+**FAILED**
+
+- `FadeOverlay` was the first Canvas child, which Unity UI renders *behind* later siblings — the
+  opening black screen never actually covered the buttons. Fixed by making it the last sibling.
+- `RunStartGame()`'s original synchronous `SceneManager.LoadScene` froze the whole app for the
+  load duration regardless of the fade. Fixed with `LoadSceneAsync` + `allowSceneActivation =
+  false`, activating once both the fade completes and `loadOp.progress` hits 0.9.
+
+**NEXT**
+
+- Merged to `main` as a checkpoint 2026-08-26 while still unfinished — **Carlos's explicit
+  instruction was to leave MRM-18 open**, not close it. The merge's PR-linked automation flipped
+  it to Done anyway (see the Linear workflow note below); manually reopened to **In Review** the
+  same day pending Carlos's own hands-on playtest of fades/credits/click-through.
+- **Root cause fixed, same day:** Linear's Team → Workflow → "Pull request automations" had **"On
+  PR merge, move to... → Done"**, silently closing any issue whose branch merged — even a
+  checkpoint merge of unfinished work. Carlos changed that rule to **In Review**. Going forward, an
+  issue only reaches Done when Carlos explicitly says the story is finished — never inferred from
+  a merge or from Linear's status alone.
+- UI polish backlog is tracked on **MRM-67 "Polishing Details"**, not reopened here.
+
+---
+
 ## Rendering stack (2026-08-25) — Flora + HAZE + Retro Shaders Pro imported and wired
 
 **BUILT**

@@ -114,6 +114,14 @@ dark mine is NOT yet verified — flagging for when MRM-60 lands.
 
 **If he made changes by hand**, he will tell you. Then: review them, ask any question that would improve them, refactor for readability if it helps, and **update the change log and the Linear issue**. Any update, branch or new feature updates Linear — or creates a new issue.
 
+**Carlos merges to `main` as a checkpoint often, not only when an issue is truly finished** — "so
+we save progress, and in case of an emergency we can go back." **Never treat a merge, or Linear
+showing Done, as proof the work is actually complete.** An issue moves to Done only when Carlos
+explicitly says that story is finished — not inferred from a merge, a passing build, or acceptance
+criteria that merely look satisfied. (Linear's own "on PR merge → Done" automation caused this
+exact confusion repeatedly before being fixed 2026-08-26 — Team → Workflow → "Pull request
+automations" now maps merge to In Review instead.)
+
 ## B.5 — Model discipline
 
 Every issue carries a `Model/` label and a `## Model` line. **Match the model to the work.**
