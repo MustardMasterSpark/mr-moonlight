@@ -43,6 +43,7 @@ namespace MrMoonlight.Player
         private bool _isCrouched;
         private float _crouchBlend;
         private bool _controlDisabled;
+        private bool _movementLocked;
 
         private float _pitchDegrees;
         private Vector2 _stickLookVelocity;
@@ -69,6 +70,9 @@ namespace MrMoonlight.Player
 
         /// <summary>The pitch pivot MRM-9 built for the camera - exposed read-only so MRM-17's DeathSequence can drive its own fall tilt and shake directly once <see cref="DisableControl"/> has stopped this controller's own Update. Owner: MRM-9, exposed for MRM-17</summary>
         public Transform CameraPivot => cameraPivot;
+
+        /// <summary>The input map controller MRM-9 owns - exposed read-only so other player-attached systems (MRM-16's InteractionDetector, MRM-42's InventoryUIController) read Gameplay-map actions directly instead of each constructing their own <see cref="InputMapController"/> (which would bind a second, redundant InputSystem_Actions instance to the same devices). Owner: MRM-9, exposed for MRM-16/MRM-42</summary>
+        public InputMapController Input => _input;
 
         private void Awake()
         {
@@ -98,7 +102,7 @@ namespace MrMoonlight.Player
 
         private void Update()
         {
-            if (_controlDisabled)
+            if (_controlDisabled || _movementLocked)
             {
                 return;
             }
@@ -119,6 +123,20 @@ namespace MrMoonlight.Player
         public void DisableControl()
         {
             _controlDisabled = true;
+        }
+
+        /// <summary>
+        /// Reversible counterpart to <see cref="DisableControl"/>: stops this controller's Update
+        /// exactly the same way, but can be turned back off. Built for MRM-42's inventory - "Tracey
+        /// is locked in place" while it's open, by the issue's own explicit design, restored the
+        /// instant it closes. Deliberately a separate flag from <see cref="_controlDisabled"/>
+        /// rather than reusing it, since death's disable is a one-way trip by design (see that
+        /// method's doc comment) and must stay that way even if the inventory happens to be open
+        /// when death fires. Owner: MRM-9, added MRM-42
+        /// </summary>
+        public void SetMovementLocked(bool locked)
+        {
+            _movementLocked = locked;
         }
 
         /// <summary>Snaps the camera pivot back to level, facing forward - MRM-17's "return the camera to facing forward" cleanup step, called before the death fall's own tilt takes over. Owner: MRM-17</summary>
