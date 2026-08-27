@@ -207,5 +207,92 @@ namespace MrMoonlight.Data
 
         /// <summary>How long each splash card's text stays fully visible before fading out, in seconds. Owner: MRM-18</summary>
         public float SplashCardHoldDuration = 2f;
+
+        [Header("Interaction — MRM-16")]
+
+        /// <summary>How close Tracey must be to an interactable for it to register at all, in metres. Owner: MRM-16</summary>
+        public float InteractionNearbyDistance = 2.5f;
+
+        /// <summary>Maximum angle, in degrees, between the camera's forward direction and an interactable's aim point for it to count as "looked at". Owner: MRM-16</summary>
+        public float InteractionAngleTolerance = 15f;
+
+        /// <summary>Layers <see cref="Interaction.InteractionDetector"/>'s proximity query checks. Defaults to Everything, same reasoning as <see cref="GroundCheckMask"/> - confirmed live (see project memory) the "Interactable" layer named in Docs/unity-conventions.md was never actually created, so detection can't depend on it existing. Narrow this once/if that layer gets set up. Owner: MRM-16</summary>
+        public LayerMask InteractionLayerMask = ~0;
+
+        /// <summary>How long the prompt takes to fade fully in once an interactable is being looked at, in seconds. Owner: MRM-16</summary>
+        public float InteractionPromptFadeInDuration = 0.15f;
+
+        /// <summary>How long the prompt takes to fade fully out once Tracey looks away - "never a dry pop" per the issue. Owner: MRM-16</summary>
+        public float InteractionPromptFadeOutDuration = 0.25f;
+
+        /// <summary>Default emission colour for the current interactable's highlight. Per-object override available on <see cref="Interaction.Interactable"/>. Owner: MRM-16</summary>
+        public Color InteractionHighlightColor = Color.white;
+
+        /// <summary>Default emission intensity (HDR multiplier) for the current interactable's highlight at full fade-in. Per-object override available on <see cref="Interaction.Interactable"/>. Owner: MRM-16</summary>
+        public float InteractionHighlightIntensity = 1.5f;
+
+        [Header("Items — MRM-41")]
+
+        /// <summary>Distinct item types Tracey can carry before the cabin event, per the issue's "counts types, not total items" rule. Owner: MRM-41</summary>
+        public int PocketStorageCap = 4;
+
+        /// <summary>Distinct item types Tracey can carry once <see cref="Items.Inventory.UnlockBackpack"/> has run (the cabin event). Owner: MRM-41</summary>
+        public int BackpackStorageCap = 10;
+
+        /// <summary>Health restored by eating Crackers. Owner: MRM-41</summary>
+        public float CrackersHealAmount = 5f;
+
+        /// <summary>Stamina restored by eating Crackers. Owner: MRM-41</summary>
+        public float CrackersStaminaAmount = 10f;
+
+        /// <summary>Health restored by drinking a Soda. Owner: MRM-41</summary>
+        public float SodaHealAmount = 5f;
+
+        /// <summary>Stamina restored by drinking a Soda. Owner: MRM-41</summary>
+        public float SodaStaminaAmount = 10f;
+
+        /// <summary>Health restored by applying Bandages. Owner: MRM-41</summary>
+        public float BandagesHealAmount = 15f;
+
+        /// <summary>Drunkenness added by a Vodka bottle. Owner: MRM-41</summary>
+        public float VodkaDrunkennessAmount = 30f;
+
+        /// <summary>Drunkenness added by a Beer can. Owner: MRM-41</summary>
+        public float BeerDrunkennessAmount = 15f;
+
+        /// <summary>Weed-high added by a Marijuana blunt. Owner: MRM-41</summary>
+        public float WeedHighAmount = 25f;
+
+        /// <summary>Morphine-high added by a Morphine vial. Owner: MRM-41</summary>
+        public float MorphineHighAmount = 40f;
+
+        /// <summary>Ceiling for <see cref="Player.PlayerStats.Drunkenness"/>. Not in MRM-41's original tunables list - added because the pool needs a max the same way Health/Stamina do (MRM-12's MaxHealth/MaxStamina precedent). Owner: MRM-41</summary>
+        public float MaxDrunkenness = 100f;
+
+        /// <summary>Ceiling for <see cref="Player.PlayerStats.WeedHigh"/>. Owner: MRM-41</summary>
+        public float MaxWeedHigh = 100f;
+
+        /// <summary>Ceiling for <see cref="Player.PlayerStats.MorphineHigh"/>. Owner: MRM-41</summary>
+        public float MaxMorphineHigh = 100f;
+
+        /// <summary>How long the "storage full" refusal message takes to fade in/out, in seconds (used for both directions). Not in MRM-41's original tunables list - added because the "refused with clear feedback" AC needs a displayed message, not just a returned bool. Owner: MRM-41</summary>
+        public float InventoryFullFeedbackFadeDuration = 0.3f;
+
+        /// <summary>How long the "storage full" message holds fully visible before fading out, in seconds. Owner: MRM-41</summary>
+        public float InventoryFullFeedbackHoldDuration = 2f;
+
+        [Header("Inventory UI — MRM-42")]
+
+        /// <summary>How long the inventory's open entry animation takes, in seconds. Drives the model half only (MRM-42's actual animation clips are Carlos's handoff - see the issue). Owner: MRM-42</summary>
+        public float InventoryOpenAnimationDuration = 0.4f;
+
+        /// <summary>How long the inventory's close/return animation takes, in seconds. Owner: MRM-42</summary>
+        public float InventoryCloseAnimationDuration = 0.4f;
+
+        /// <summary>Spin speed of the displayed 3D item, in degrees per second. Owner: MRM-42</summary>
+        public float InventoryItemSpinSpeed = 60f;
+
+        /// <summary>Fade duration for the inventory panel itself (distinct from the open/close animation clips), in seconds. Owner: MRM-42</summary>
+        public float InventoryFadeDuration = 0.2f;
     }
 }

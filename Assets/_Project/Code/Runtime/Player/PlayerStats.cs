@@ -40,6 +40,15 @@ namespace MrMoonlight.Player
         public Stat Defense { get; private set; }
         public Stat AudioPitch { get; private set; }
 
+        /// <summary>Rises from Vodka/Beer. No gameplay consequence wired yet (screen wobble, impaired look sway, etc. are a future issue's job) - MRM-41 only needed the pool to exist so items have somewhere to add to. Owner: MRM-41</summary>
+        public Stat Drunkenness { get; private set; }
+
+        /// <summary>Rises from the Marijuana blunt. Same "pool only, no consequence yet" scope as <see cref="Drunkenness"/>. Owner: MRM-41</summary>
+        public Stat WeedHigh { get; private set; }
+
+        /// <summary>Rises from the Morphine vial. Same "pool only, no consequence yet" scope as <see cref="Drunkenness"/>. Owner: MRM-41</summary>
+        public Stat MorphineHigh { get; private set; }
+
         /// <summary>The smoothed pitch other systems should actually apply - chases <see cref="AudioPitch"/>'s modifier-stack target at <see cref="MoonlightTunables.AudioPitchTransitionSpeed"/>, never jumping instantly.</summary>
         public float CurrentAudioPitch => _currentAudioPitch;
 
@@ -66,6 +75,10 @@ namespace MrMoonlight.Player
             Defense = new Stat(Tunables.I.BaseDefenseMultiplier, 0f, float.MaxValue);
             // 1.0 is audio pitch's neutral/unmodified value - AudioSource.pitch's own default.
             AudioPitch = new Stat(1.0f, 0f, float.MaxValue);
+
+            Drunkenness = new Stat(0f, 0f, Tunables.I.MaxDrunkenness);
+            WeedHigh = new Stat(0f, 0f, Tunables.I.MaxWeedHigh);
+            MorphineHigh = new Stat(0f, 0f, Tunables.I.MaxMorphineHigh);
 
             _currentAudioPitch = AudioPitch.Value;
         }
