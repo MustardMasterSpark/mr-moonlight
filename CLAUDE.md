@@ -62,5 +62,18 @@ If an issue and a document disagree, the issue wins.
 - Never commit or push. The developer uses GitHub Desktop.
 
 ## Deadlines
-Sept 1 — playable loop, graded class gate.
-Sept 8 — polished itch.io release.
+**Updated 2026-08-27 — the real target moved.**
+
+| Date | Gate | What it actually means |
+|---|---|---|
+| **Sept 1** | M1 — playable loop, graded class gate | A **basic** loop working end to end. Not polished, not finished. Carlos's explicit clarification: do not treat this as a wall everything yields to |
+| **Sept 8** | M2 — polished itch.io release | A better, more polished version. Still the class deliverable |
+| **Before Halloween 2026** | 🎯 **The real target** | A **Kickstarter campaign launched alongside this demo.** The demo is the campaign's shop window, so October is where the quality bar actually sits |
+
+**What this changes about how to work.** Sept 1 and Sept 8 are class gates; **October is the
+product.** So: prefer choices that keep improving after Sept 8 over ones that only survive to the
+gate, and do not cut a system to nothing for Sept 1 if a slightly larger version serves October.
+
+**Scope note:** every asset in `Docs/new-asset-list.md` is chosen **for the demo**. If a full game
+gets made it starts from a clean project with better-chosen assets — so an asset having long-term
+drawbacks is not a reason to reject it here.

@@ -63,7 +63,7 @@ Sources the wizard must ask about, every time:
 | Source | What it means |
 |---|---|
 | **`E:\Props`** | The download/generation dump. Treat as raw |
-| **Playground project** (`E:\playground\test`) | A pack Carlos staged there for testing. Extract the working files out — see `Docs/dual-project-workflow.md` |
+| **Playground project** (`E:\playground\My project`) | A pack Carlos staged there for testing. Extract the working files out — see `Docs/dual-project-workflow.md` |
 | **Fresh Tripo output** | Carlos just generated it. Ask *where he put it* |
 
 ---

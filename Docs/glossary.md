@@ -31,7 +31,7 @@ Robert = *Chief* (Rylee) · William = *Will*, *Tinman* (Robert) · Vernon = *the
 | **Spotter** | | Ranged cultist. Lamp + double-barrel shotgun. Flare summons reinforcements |
 | **Zealot** | ~~seller~~ *(dictation error)* | Melee cultist. Sneak + backstab |
 | **Wolf** | | Pack behaviour. First enemy the player meets |
-| **Furman** | ~~Fureman~~ ~~Furyman~~ | The boss. Berserker charge |
+| **Wendigo** | ~~Furman~~ ~~Fureman~~ ~~Furyman~~ | The boss. Berserker charge. **RENAMED 2026-08-28 (Carlos).** Was "Furman"; the demo now refers to it simply as **the Wendigo**, matching its new form (Wendigo Forest Beast Collection). Use `Wendigo` in code, prefabs, animation states and audio folders. The screenplay still says Furman — it is background-only, this table is the ruling. See MRM-36 |
 
 **Not in the demo — do not build:** Priest · Stone Totem.
 
@@ -60,7 +60,7 @@ Robert = *Chief* (Rylee) · William = *Will*, *Tinman* (Robert) · Vernon = *the
 
 | Canonical | Also seen as | Notes |
 |---|---|---|
-| **Pickaxe** | ~~Axe~~ | The Inuit Pickaxe. `linear issues.txt` calls it "the axe" throughout. **Ruled: Pickaxe.** Mechanics unchanged |
+| **Club** | ~~Fire Axe~~ ~~Trench Club~~ ~~Pickaxe~~ ~~Axe~~ | **RULED 2026-08-28 (Carlos).** The melee weapon is the **BaseballBat** from HQ FPS Weapons — referred to in-project as **the Club**. Source FBX `BaseballBat.fbx` / `FP_Arms_BaseballBat.fbx`; pickup reference `HQFPS_Pickup_BaseballBat`. Ships **two** attack animations (`ComboAttack`, `StrongAttack`); the third vertical strike comes from `Arm_FireAxe_StrongAttack_` — see MRM-23. |
 | **Pistol** | | M1911, 7 rounds |
 | **Shotgun** | | Double barrel, 2 shells, 7 pellets each |
 | **Turret** | | Japanese Type 92, 30-round belt |
@@ -118,4 +118,5 @@ Other ID prefixes: `SYS-###` system messages · `OBJ-##` objectives · `S<scene>
 
 1. **Tracey.** It appears in class names, prefabs, animation states, audio folders and every dialogue row. Getting it wrong means a rename across the whole project. The screenplay and the character profiles both say **Tracey**.
 
-2. **Pickaxe.** The Linear issues and the design docs disagreed; Carlos ruled **Pickaxe**. Any code, prefab or animation named `Axe` should be renamed on sight.
+2. **Club.** ~~Pickaxe~~ ~~Trench Club~~ ~~Fire Axe~~ — **ruled 2026-08-28**, see the item table. It is the BaseballBat asset, called *the Club* in dialogue, code and prefabs. Rename any `Pickaxe` / `Axe` / `BaseballBat` identifier on sight. MRM-23 carries the change and its knock-ons (MRM-25, MRM-41, MRM-49, MRM-59).
+3. **Wendigo.** ~~Furman~~ — **renamed 2026-08-28.** Every code, prefab, animation-state and audio-folder use of `Furman` becomes `Wendigo`. MRM-36 carries it.

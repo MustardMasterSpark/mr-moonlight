@@ -18,7 +18,8 @@
 | `data-schemas.md` | Anything spreadsheet-driven — dialogue, system messages, objectives, the event script | 🟡 When building those systems |
 | `changelog.md` | Picking up any issue — what actually got built, decided, or failed, per issue, newest first | 🟡 Reference |
 | `external-assets.md` | **Before proposing any Asset Store package** — what is owned, installed, and explicitly rejected, plus how to restore a clean machine | 🟡 Reference |
-| `dual-project-workflow.md` | Working with Playground (`E:\playground\test`), the sandbox project for testing new/bulk-imported assets before they enter Mr. Moonlight — how the two MCP bridges are kept separate, and how assets actually move between the two | 🟡 Reference |
+| `new-asset-list.md` | **Before starting any issue that names an asset.** The 2026-08-27 triage of the 47-package batch: take/park/reject per asset with reasoning, the three cross-cutting conflicts (camera shake, post-process order, navigation fork), and a **per-asset integration brief** written to be read cold | 🔴 **Read first for assets** |
+| `dual-project-workflow.md` | Working with Playground (`E:\playground\My project`), the sandbox project for testing new/bulk-imported assets before they enter Mr. Moonlight — how the two MCP bridges are kept separate, and how assets actually move between the two | 🟡 Reference |
 | `webgl-budget.md` | ⚠️ **Partially historical** (banner added 2026-08-27). Its *verdict and size ceilings are void* — build 21 was 54 MB zipped against 1 GB. Still cite it for the **audio import presets (§9)** and **"ship 4 skyboxes, not 220" (§4.12/§10)** | ⚪ Use with care |
 | `glossary.md` | Naming anything. Canonical spellings and terms | 🟢 Quick lookup |
 | `input-map.md` | Need a binding without opening the `.inputactions` asset | 🟢 Quick lookup |

@@ -76,6 +76,60 @@ tracked.
 | **Gaia Pro VS** | Procedural Worlds | **Adopted 2026-08-27, editor-time tools only.** Terraform/erosion + Spawner/biome mask stacks, replacing our hand-rolled Painter/Composer. Not yet downloaded. See `Docs/terrain-vegetation-tooling-decision.md` §2 for the mandatory keep/drop boundary — **importing its Runtime, Water, Lighting or sample art is a mistake**, they collide with HAZE, Retro, Simple Water Shader and TimeManager. |
 | **Crest Water 5** | Wave Harmonic | **Adopted 2026-08-27 for MRM-71** ($240, 60.6 MB, owned). Replaces Simple Water Shader URP on `M_Sea.mat`. **Installs to `Packages/` as a UPM package** — so unlike `Assets/ThirdParty/` packages it is **not gitignored and will be committed**, same as Flora; settle that deliberately (MRM-71 risk 1). `Samples~` do not import unless requested, so no lean-extraction needed. Underwater Renderer ships **disabled** (Tracey cannot enter water in the demo). Record the exact version on install. Not yet installed. |
 
+## Adopted in the 2026-08-27 triage — owned, not yet installed
+
+Full reasoning and a per-asset integration brief: **`Docs/new-asset-list.md`**. Listed here so this
+file stays the single register of what the project depends on. **None is installed yet.** Record the
+exact version in the tables above when each one lands.
+
+| Package | Publisher | For | Milestone |
+|---|---|---|---|
+| **A* Pathfinding Project Pro** | Aron Granberg | MRM-27 — resolves the NavMesh-vs-A* decision. Bound the Recast graph to the walkable area | **M1** |
+| **HQ FPS Weapons 2.0** | — | MRM-22/23/24/25/34/52 — models + weapon/hand animations. **Art only; import no scripts** | **M1** |
+| **Sounds Good** | Melenitas Dev | MRM-38 — playback/pool backend. Our layer + distance gating stays on top | **M1** |
+| **Spice Up: Bodycam** | Fronkon Games | MRM-49 — telescope aperture | **M1** |
+| **Gaia Pro VS** | Procedural Worlds | MRM-70 — editor-time only, temporary, **after Sept 1** | M2 |
+| **Crest Water 5** | Wave Harmonic | MRM-71 — multiple Water Bodies confirmed (sea/shore/rivers/lake) | M2 |
+| **Wendigo Forest Beast Collection** | — | MRM-36 — the boss model. Name stays "Furman" | M2 |
+| **Ultimate Animation Collection** | — | MRM-31/29/35/37 — humanoid mocap. ⚠️ import selectively | M2 |
+| **Cult Animations · Knife MocapAnimPack · AnimSet 2-Handed Melee** | — | MRM-59 · MRM-35 · MRM-23 | M2 |
+| **Gore Simulator + Blood Factory** | — | MRM-32, MRM-36 — dismemberment + spatter | M2 |
+| **Spice Up: Rain / Stoned / Ghost Vision** | Fronkon Games | MRM-53 · MRM-55 (weed) · MRM-55 (morphine) | M2 |
+| **Artistic Radial Blur** | Fronkon Games | MRM-54 fear + MRM-53 low health — **one shared channel** | M2 |
+| **Drunk Color Pulse** | — | MRM-55 (drunk) | M2 |
+| **Procedural Lightning** | Digital Ruby | MRM-57, MRM-36 — bolt only | M2 |
+| **HQ Realistic Explosions · Ian's Fire Pack · Northern Lights · Insect VFX · Fly Particle System · Birds (Fab)** | — | MRM-57 · MRM-61 · MRM-47 · MRM-60/61 · MRM-60 · MRM-59 | M2 |
+| **Bullet Impact VFX + Decals** | — | MRM-22/24 — impacts + decals. Shares a surface lookup with MRM-39 | M2 |
+| **Realistic Gun VFX** *(or Shots VFX URP)* | — | Muzzle flashes only. **Both owned — pick one visually, ship one** | M2 |
+| **Sewer Underground Modular · Abandoned Hospital v2 · Shipping Containers** | — | MRM-60 (the infirmary is inside the mine) | M2 |
+| **Aged Medieval PBR Tools** | — | MRM-35 — the sickle only | M2 |
+| **Outdoor / Underground Atmospheres SFX** | — | MRM-38 sound layers. ⚠️ import compressed, never WAV | M2 |
+| **URP Wet Shaders** | — | MRM-18 main-menu staging | M2 |
+| **Body Poser** | — | MRM-59 staging. **Editor-only, zero runtime footprint** | M2 |
+| **Asset Cleaner Pro** | — | MRM-64. ⚠️ **find-references ONLY, never bulk-delete** | M2 |
+
+### Parked — owned, conditional, do not install yet
+
+| Package | Blocked on |
+|---|---|
+| **Blaze AI Engine** | NavMesh-based, so mutually exclusive with A* PP. Only reopens if its manual documents an A* PP integration |
+| **Altos Volumetric Clouds** | Does it render *over* a skybox, or *is* it the skybox? If the latter it collides with AllSky + `SkyboxSwitcher` + `TimeManager` at once. ✅ Usable on the main menu either way |
+| **Volumetric Light Beam** | Test HAZE alone on the flashlight first — two volumetric systems may overlap |
+| **Skybox Blender** | MRM-47 deliberately chose instant, story-hidden skybox swaps. Solves a problem the design removed |
+| **Shots VFX URP** | The alternative to Realistic Gun VFX. Keep whichever looks better; ship one |
+
+### Rejected in the 2026-08-27 triage
+
+| Package | Why |
+|---|---|
+| **FPS Engine** (cowsins) | Would reopen MRM-8/9/12/16/17/41/42 (five already Done) and, decisively, **fights the "Tracey must see her own feet" requirement** — every FPS template is built around an arms-only viewmodel. Staged in Playground as a **read-only reference and parts donor**; none of its code enters the project. **FPS Animation Baker Toolkit therefore stays.** |
+| **Crystal Save** | The demo needs in-session respawn checkpoints, not serialization. Revisit post-demo |
+| **Evo Localization** / **I2 Localization** | Our text is already spreadsheet + ID keyed with `text_en`/`text_es`/`text_ru` columns — the data layer already *is* a localization system. Adopting either adds a second data model. (I2 is the better of the two if ever needed) |
+| **Event Manager** / **Game Event Hub** | A string-keyed bus would *reduce* readability in a 55-file codebase whose call graph is currently greppable, and neither helps MRM-11, which is a sequencer not a pub/sub bus |
+| **Ambient Sounds** (Procedural Worlds) | MRM-38's sound-layer system already is a zone system. **The design idea was adopted; the asset was not** |
+
+---
+
 ## Evaluated and rejected — do not re-litigate
 
 Recorded so these are not re-evaluated from scratch. Full reasoning in

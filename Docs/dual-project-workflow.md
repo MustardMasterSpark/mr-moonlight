@@ -5,7 +5,8 @@
 | Project | Path | Role |
 |---|---|---|
 | **Mr. Moonlight** | `E:\MrMoonlight` (this repo) | The shipping game. Git-tracked. Nothing untested lands here. |
-| **Playground** | `E:\playground\test` | Sandbox. Not this repo, not git-tracked by it. Where new/bulk-imported assets get opened, checked, and proven out *before* anything moves into Mr. Moonlight. |
+| **Playground** | `E:\playground\My project` | Sandbox. Not this repo, not git-tracked by it. Where new/bulk-imported assets get opened, checked, and proven out *before* anything moves into Mr. Moonlight. |
+| **Weapons** | `E:\playground\weapon` | **Third project, added 2026-08-28.** HQ FPS Weapons 2.0 in isolation. It ships `ProjectSettings` overrides that clobber a host project, so it gets its own. MCP port **8082**. This is where weapon models/animations are pulled from when MRM-22/23/24/25/52 are worked. |
 
 Why: Carlos is about to bring in a batch of new assets (scope described in a later prompt — no
 Linear issue yet). Testing them in an isolated project first, instead of importing straight into
