@@ -51,7 +51,7 @@ set from `Tunables.I.StickDeadzone` — not a per-binding processor. See `InputM
 ## UI map
 
 Unity's default UI navigation actions, trimmed of Touch/Joystick/XR bindings (not relevant to
-WebGL + Xbox + KB/M). Not hand-tuned per this project's design — the defaults:
+Windows + Xbox + KB/M). Not hand-tuned per this project's design — the defaults:
 
 | Action | Keyboard & Mouse | Gamepad |
 |---|---|---|
@@ -77,4 +77,4 @@ sequence, cutscene lockout).
 ## Control schemes
 
 `Keyboard&Mouse` and `Gamepad` only — trimmed from Unity's default template (which also includes
-Touch, Joystick, XR) since none of those apply to this project's WebGL + Xbox + KB/M target.
+Touch, Joystick, XR) since none of those apply to this project's Windows + Xbox + KB/M target.

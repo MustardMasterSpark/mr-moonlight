@@ -1,3 +1,32 @@
+# ⚠️ PARTIALLY HISTORICAL — WebGL is no longer a target (banner added 2026-08-27)
+
+> **The verdict in this document is void. Most of its numbers are not.**
+>
+> The project moved to a **Windows 64-bit standalone** build at 1920×1080 on **2026-08-25** — see
+> **`Docs/pc-build-target.md`**, which is the current authority on the platform and its limits.
+>
+> **What is now WRONG here:**
+> - The **"GO for WebGL"** verdict below, and the claim that *"the number that governs the project
+>   is not 1 GB, it is a ~300 MB built size, because the graded gate is load time"*. Measured
+>   reality on 2026-08-27: **build 21 was 54 MB zipped / 178 MB raw** against a 1 GB limit. The
+>   ~300 MB working ceiling no longer binds anything.
+> - **1 GB is itch.io's *upload* limit**, i.e. download size only — not runtime memory, not load
+>   time, not a graded time-to-play gate.
+> - Any per-category allocation justified by *wasm/JS overhead, browser memory or first-load time*.
+> - The 960×540 display target. Everything is **1920×1080**.
+>
+> **What is still USEFUL here, and still cited by other docs:**
+> - **§9's import-preset rule** — a clip imported outside a preset is a bug. Unchanged, and
+>   `Docs/audio-import-workflow.md` still depends on it.
+> - **§4.12 / §10's "ship 4 skyboxes, not 220"** — still the single largest size win available.
+> - The per-category *discipline* (strip demo content, cap simultaneous voices, bake spreadsheet
+>   data), restated in `pc-build-target.md` §2.
+> - The audio compression maths, which is about codecs, not about browsers.
+>
+> **Do not cite this document for a limit.** Cite it for a preset or a technique.
+
+---
+
 # WebGL Budget — the viability decision and the MB allocation
 
 **Owner issue:** MRM-6 · **Status:** awaiting Carlos's sign-off · **Written:** 2026-08-20

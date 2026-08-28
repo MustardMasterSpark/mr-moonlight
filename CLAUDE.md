@@ -28,6 +28,17 @@ resolution, HUD layout, menus — targets **1920×1080**.
 3. `Docs/unity-conventions.md` and `Docs/csharp-conventions.md`
 4. `Docs/glossary.md` — canonical names (Tracey, Pickaxe, Furman)
 
+## Making a 3D asset — fire the wizard
+Any prop, character, or weapon work: **`/prop`**, or read
+`Docs/3d-prop-pipeline-wizard.md` (MRM-72) and run its intake. It is an executable
+instruction set, not a reference — it asks the path, the source, and the texture
+resolution, automates every step it can, and **writes its own lessons back after each
+prop** so the next one is faster. Per-prop history lives in `Docs/prop-log.md`.
+
+Two rules from it that are easy to get wrong: **RetroLit samples only BaseColor +
+Normal** (no mask, no metallic, no emission — AO is multiplied into the albedo), and
+**glowing objects get a real Light on the prefab**, never an emission map.
+
 ## Source of truth
 **Linear**, project `MrMoonlightDemo`, team `MRM`.
 Design docs in `Docs/Design/` are background only.

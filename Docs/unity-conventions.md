@@ -1,6 +1,11 @@
 # Unity Conventions — Mr. Moonlight
 
-Unity 6.3 LTS · URP · WebGL target.
+Unity 6.3 LTS · URP · **Windows 64-bit standalone, 1920×1080**.
+
+> **Corrected 2026-08-27.** This line read *"WebGL target"* until now. **WebGL was dropped on
+> 2026-08-25** — see `Docs/pc-build-target.md`. Everything else in this document still applies;
+> where a rule below justifies itself with a browser constraint, the **rule stands and the reasoning
+> has moved** — the replacement reasoning is in `pc-build-target.md`.
 
 ---
 
@@ -76,7 +81,8 @@ Art/
 Unity's Preset Manager filters, which auto-apply the correct `Aud_*` preset (compression,
 sample rate, mono/stereo) on import by filename. See `Docs/audio-import-workflow.md` for the
 step-by-step and the full preset reference table; don't hand-tune an audio clip's import
-settings — per `Docs/webgl-budget.md` §9, a clip imported outside a preset is a bug.
+settings — per `Docs/webgl-budget.md` §9, a clip imported outside a preset is a bug. *(That doc is
+WebGL-era; the preset rule itself is unchanged on the PC target.)*
 
 ---
 
@@ -143,7 +149,7 @@ The tunables value is the default; the component may override it; **the inspecto
 
 Use them for:
 - **Tunables** (above)
-- **Baked CSV data** — dialogue, system messages, objectives, the event script. Authored as CSV, converted by an editor script, **never parsed at runtime** (see `webgl-constraints.md`)
+- **Baked CSV data** — dialogue, system messages, objectives, the event script. Authored as CSV, converted by an editor script, **never parsed at runtime** (see `pc-build-target.md` §2 — still correct on PC: runtime CSV parsing is fragile regardless of platform)
 - **Sound pools** — a pool is a ScriptableObject holding clips + pitch range + volume, so the same pool can be shared across props
 - **Item definitions** — one asset per item type
 
@@ -167,10 +173,17 @@ Three scenes only:
 | Scene | Contents |
 |---|---|
 | `MainMenu` | The staged background scenario, menu UI, settings, credits |
-| `Demo` | The island, all locations, the event director, the player |
-| `Sandbox` | Flat plane, sparring dummy, one of each enemy. Development only — **excluded from the build** |
+| `Island` | The island, all locations, the event director, the player. **Build index 1.** |
+| `Sandbox` | Development only — **not in Build Settings**. Since 2026-08-26 this is where core mechanics and character animation are built, so it holds more than the original flat-plane/dummy description: `DefenseTest`, `HealthTest`, `MeleeTest`, `PitchTest`, `Controller UI Test`. |
 
-**One demo scene, not one per location.** Scene loading mid-play in WebGL is a stall the player will see, and the demo is a continuous journey. Use the audible-distance and sound-layer systems for separation instead of scene boundaries. *(The mine may be an exception if MRM-60 chooses the teleport option — but it teleports within the same scene.)*
+> **The demo scene is called `Island`, not `Demo`.** "Demo" is Carlos's verbal shorthand only —
+> confirmed 2026-08-26, MRM-18. `MainMenu` is **build index 0**, `Island` is **index 1**, and those
+> are the only two scenes in `ProjectSettings/EditorBuildSettings.asset`.
+>
+> **Anything built in `Sandbox` must be a drag-and-drop prefab** with no Sandbox-specific
+> hardcoding, so moving it into `Island` later is trivial.
+
+**One demo scene, not one per location.** The demo is a continuous journey, and a mid-play scene load is a stall the player will see. Use the audible-distance and sound-layer systems for separation instead of scene boundaries. *(The mine may be an exception if MRM-60 chooses the teleport option — but it teleports within the same scene.)*
 
 ---
 

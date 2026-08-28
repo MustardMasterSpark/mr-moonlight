@@ -71,7 +71,7 @@ tracked.
 | Package | Publisher | Intended use |
 |---|---|---|
 | Advanced Horror FPS Kit | Queen | reference |
-| Wolfenemu / 01 Monster Wolf Boss | AsAlex / HATOGAME | wolf enemy + boss |
+| Wolfenemu / 01 Monster Wolf Boss | AsAlex / HATOGAME | wolf enemy + boss — **staged in Playground 2026-08-28** at `Assets/Wolf_enemu/` and `Assets/Hatogame_new/BossMonsterPack1/Wolfboss/`; not yet evaluated or moved into Mr. Moonlight. See `Docs/dual-project-workflow.md`. |
 | Procedural Water Shader | Pedro Verpha | evaluated, not used (MRM-68 chose Simple Water Shader) |
 | **Gaia Pro VS** | Procedural Worlds | **Adopted 2026-08-27, editor-time tools only.** Terraform/erosion + Spawner/biome mask stacks, replacing our hand-rolled Painter/Composer. Not yet downloaded. See `Docs/terrain-vegetation-tooling-decision.md` §2 for the mandatory keep/drop boundary — **importing its Runtime, Water, Lighting or sample art is a mistake**, they collide with HAZE, Retro, Simple Water Shader and TimeManager. |
 | **Crest Water 5** | Wave Harmonic | **Adopted 2026-08-27 for MRM-71** ($240, 60.6 MB, owned). Replaces Simple Water Shader URP on `M_Sea.mat`. **Installs to `Packages/` as a UPM package** — so unlike `Assets/ThirdParty/` packages it is **not gitignored and will be committed**, same as Flora; settle that deliberately (MRM-71 risk 1). `Samples~` do not import unless requested, so no lean-extraction needed. Underwater Renderer ships **disabled** (Tracey cannot enter water in the demo). Record the exact version on install. Not yet installed. |

@@ -68,4 +68,20 @@ When a Linear issue could be cut, cut it toward Sept 1 and restore it for Sept 8
 
 ## Hard technical constraint
 
-Target is **Unity WebGL, playable in the browser on itch.io, total upload under 1 GB, 1920×1080 in fullscreen**, Xbox controller plus keyboard/mouse. Every art, audio and system decision is subordinate to this. Unity 6.3 LTS, URP.
+> ### ⚠️ CORRECTED 2026-08-27 — this section was written before the platform change
+>
+> **WebGL was dropped on 2026-08-25.** The target is a **Windows 64-bit standalone** build,
+> distributed as a downloadable zip on itch.io. The reason was measured, not stylistic: the island
+> profiled at **21,946 draw calls at 19 FPS**, roughly **10× what a browser sustains**, because
+> Unity terrain trees do not batch and each tree costs 3 draw calls. See `Docs/pc-build-target.md`,
+> which is the authority on the platform and supersedes this paragraph.
+>
+> **What survived the change:** itch.io, the **1 GB** figure, **1920×1080 fullscreen**, Xbox
+> controller plus keyboard/mouse, Unity 6.3 LTS + URP.
+>
+> **What changed:** 1 GB is now itch.io's **upload limit** — download size only — not a runtime
+> memory or load-time budget. It is no longer the binding constraint: build 21 shipped at **54 MB
+> zipped / 178 MB raw**. Art, audio and system decisions are still subordinate to the deadline; they
+> are no longer subordinate to a browser.
+
+Target is ~~**Unity WebGL, playable in the browser on itch.io**~~ **Windows 64-bit standalone, downloaded from itch.io**, total upload under 1 GB, 1920×1080 in fullscreen, Xbox controller plus keyboard/mouse. Unity 6.3 LTS, URP.

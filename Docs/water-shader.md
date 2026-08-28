@@ -1,5 +1,30 @@
 # Water Shader — MRM-68
 
+> ## ⚠️ Superseded direction — banner added 2026-08-27
+>
+> **The water is moving to Crest Water 5** under **MRM-71** (sub-issue of MRM-67, M2 milestone).
+> This document remains the record of everything that came before, and the **fallback options are
+> deliberately kept, not deleted** — `MrMoonlight/StylizedWater` (hand-written) and the Procedural
+> Water Shader analysis are both still valid if Crest is ever backed out.
+>
+> **What is stale below:**
+> - Every WebGL cost argument. WebGL was dropped 2026-08-25; see `Docs/pc-build-target.md`.
+>   Specifically, the **WaterWorks** rejection leaned on WebGL full-screen-pass budget — its *real*
+>   remaining objection is the Unity 6 RenderGraph compile patch, which still stands.
+> - The `_CameraDepthTexture` cost note. `PC_RPAsset` already has `m_RequireDepthTexture: 1` and
+>   `m_RequireOpaqueTexture: 1`, so **that cost is already being paid** and Crest inherits it rather
+>   than adding it.
+>
+> **What is still live:** the **near-calm / far-aggressive distance blend was descoped** from MRM-68
+> because the IgniteCoders shader has no such mechanic — **Crest brings it back for free**, plus
+> shoreline foam. **Do not delete `SeaGrid.mesh` or `M_Sea.mat`**; the old path stays as a
+> documented fallback.
+>
+> **Look decision, Carlos 2026-08-27: the water gets the CRT pass and nothing else.** No PSX
+> treatment, no `RetroLit` migration, no editing Crest's shader graph. See
+> `Docs/terrain-vegetation-tooling-decision.md` §6.
+
+
 > **SUPERSEDED 2026-08-27 — see MRM-71.** Carlos decided to replace this shader with **Crest Water 5**. Everything below still accurately describes what is *live today* and stays current until
 > MRM-71 ships; treat it as the fallback record afterwards, not as the plan. Rationale, the
 > CRT-only look decision, the disabled Underwater Renderer, and six open gaps are in

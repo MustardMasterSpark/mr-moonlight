@@ -2,6 +2,20 @@
 
 **Owner issue:** MRM-70 · **Written:** 2026-08-24 · **Status:** pipeline definition, pre-first-asset
 
+> **Platform note, 2026-08-27.** This document was written against a WebGL target that was **dropped
+> on 2026-08-25** (see `Docs/pc-build-target.md`). Every rule here survived the change — the
+> constraints that shaped it (draw calls, one material per tree, three LODs, Point filtering on
+> BaseColor) are hardware facts, not browser facts. §6 and §6.2 have been re-grounded in place;
+> **§6.2's numbers have since been superseded by measurement**, noted inline.
+>
+> ✅ **That gap is closed.** The texture reduction + pixelation pass for imported third-party 3D
+> assets — which §4 did not cover — is now **MRM-72**, `Docs/3d-prop-pipeline-wizard.md`.
+> `MoonlightTextureImporter.cs` was extended rather than replaced, as required.
+>
+> ⚠️ **Read the wizard first for any new prop.** This document remains authoritative for Blender
+> export conventions, baking mechanics, UVs, poly reduction, Unity mesh/texture import settings,
+> LOD rules and the vegetation budget — but **§2's map set is superseded** (see the banner there).
+
 How every 3D asset in Mr. Moonlight gets from wherever it came from to a prefab in the scene,
 with the same look. This is the reusable recipe — trees, rocks, props, and eventually characters
 all run through it.
@@ -125,6 +139,23 @@ visibly fails. Carlos calls it per asset — Claude does not silently escalate i
 ---
 
 ## 2. The map set — what every asset ships
+
+> ## ⚠️ SUPERSEDED 2026-08-27 — see `Docs/3d-prop-pipeline-wizard.md` §2 (MRM-72)
+>
+> **This section is wrong for anything on `RetroLit`, which is everything.** It mandates a third
+> packed **Mask** texture. `RetroLit.shader` exposes only `_BaseMap`, `_NormalMap`,
+> `_NormalStrength`, scalar `_Glossiness` and `_ReflectionCubemap` — there is **no
+> `_MetallicGlossMap`, no `_OcclusionMap`, and no emission map anywhere in Retro Shaders Pro.**
+> A Mask built to the table below would be shipped, compressed, loaded into memory and **sampled
+> by nothing.**
+>
+> **The live standard is two maps:** `T_<Prop>_BaseColor` (with **AO multiplied in**) and
+> `T_<Prop>_Normal`. Metallic and smoothness are the material's scalar `_Glossiness`. Emissive
+> objects get a **real Light on the prefab**, not a map.
+>
+> The rest of this document — Blender export conventions, baking mechanics, UVs, poly reduction,
+> Unity mesh/texture import settings, LOD rules and the vegetation budget — **is still current.**
+> Only this section's map set is replaced.
 
 This is the standard. It does not vary per asset, so nobody has to decide per prop.
 
@@ -387,7 +418,7 @@ That allows roughly **230 unique prop map-sets** inside the environment budget. 
 covers four trees, `Boulders.tga` covers five boulders. Regenerate maps **per atlas**, not per prop.
 The whole forest set is roughly 15 atlases ≈ 10 MB, which is a fraction of the budget.
 
-**Triangle guidance** (starting points, to be confirmed against a real WebGL build):
+**Triangle guidance** (starting points, to be confirmed against a real build):
 
 | Asset | LOD0 |
 |---|---|
@@ -396,8 +427,9 @@ The whole forest set is roughly 15 atlases ≈ 10 MB, which is a fraction of the
 | Small prop | 50–200 tris |
 | Character | 3 000–6 000 tris |
 
-The WebGL quality tier already caps terrain trees: `terrainMaxTrees 25`, tree distance 1500,
-billboard start 30 m. Per MRM-70, vegetation counts are deliberately **not** routed through
+~~The WebGL quality tier already caps terrain trees~~ — **corrected 2026-08-27:** the live tier is
+**`PC` / `PC_RPAsset`**, tree distance **1500 m**, `detailObjectDistance` **80 m**,
+`heightmapPixelError` 3, `drawInstanced` **false**. See `Docs/pc-build-target.md` §5. Per MRM-70, vegetation counts are deliberately **not** routed through
 `MoonlightTunables` yet — place freely, measure a real build, tunable-ise only if a problem appears.
 
 ### 6.1 ⚠ Do not bulk-import the Retro Realism pack
@@ -418,12 +450,19 @@ all without going through the audio import presets and a deliberate decision.
 ## 6.2 Vegetation at scale — the rules that make thousands of trees possible
 
 The island is **4103 × 260 × 7085 m**. Densely populating the walkable area means thousands of
-trees. That is achievable in WebGL, **but only if the assets are authored for it.** These are
+trees. That is achievable, **but only if the assets are authored for it.** These are
 pipeline requirements, not placement settings — getting them wrong means re-exporting every tree.
 
-**Triangles are not the constraint. Draw calls are.** WebGL 2.0 has high per-draw-call overhead.
-15 000 trees drawn as instanced terrain trees is a handful of draw calls; the same 15 000 as
-individual GameObjects is 15 000 draw calls and the build dies. Everything below serves that.
+**Triangles are not the constraint. Draw calls are.** This was written about WebGL's per-draw-call
+overhead, and **the platform changed on 2026-08-25 without changing the conclusion** — it is still
+the governing fact, just with roughly 10× more headroom. 15 000 trees drawn as instanced terrain
+trees is a handful of draw calls; the same 15 000 as individual GameObjects is 15 000 draw calls.
+
+> **Measured since this was written.** The island hit **21,946 draw calls at 19 FPS** doing exactly
+> the wrong thing — Unity terrain trees do not batch, and each tree cost **3 draw calls** because its
+> mesh carried three submeshes on three materials. **Flora Renderer 6** now draws the vegetation:
+> **38,980 → 535 draw calls, 70.4 M → 126 K triangles, ~505 FPS in build.** Rule 1 below (one
+> material per tree) is what made that possible and is still mandatory for new assets.
 
 ### Rule 1 — every tree shares ONE material
 
@@ -461,10 +500,15 @@ prefab.
 This is a **night** horror game with fog. The player cannot see 150 m with a flashlight, so we do
 not need to draw trees at 1500 m.
 
-`webgl-budget.md` §8 step 3 currently sets tree distance **1500** on the Web tier. That was a
-placeholder from before the vegetation pass. **Match tree draw distance to the fog end distance
-(~150–250 m) instead.** This is the single largest performance win available, and it costs nothing
-visually because the fog already hides what it culls.
+Tree draw distance is **still 1500 m** on the live `PC` tier. The advice below was written when
+that was expensive; **it is no longer urgent** — Flora culls on *screen coverage* rather than
+distance (`MaxRenderDistance = 0`, i.e. unlimited; `MinScreenSize = 0.005`), so a hard distance clamp
+is not what governs cost any more.
+
+**It is still worth doing eventually:** match tree draw distance to the fog end distance and it costs
+nothing visually, because the fog already hides what it culls. **But do not set it before checking
+MRM-49** — the telescope sequence depends on distant trees *appearing* as the FOV narrows, which is a
+property of Flora's screen-coverage culling and would be broken by a hard distance clamp.
 
 ### Rule 4 — density follows the walkable area
 
@@ -494,7 +538,7 @@ own) supports density masks, so the green zone can be painted directly.
 | Draw calls from vegetation | **A handful**, if Rules 1 and 2 hold |
 
 **None of this is measured yet.** Per MRM-70 these numbers stay out of `MoonlightTunables` until a
-real WebGL build says otherwise — place freely, build, measure, then tune.
+real build says otherwise — place freely, build, measure, then tune.
 
 ---
 

@@ -7,19 +7,25 @@ No Claude, no Substance, no Unity. Just point it at a folder.
 
     python texture_pass.py run <folder>
 
+TWO-MAP STANDARD (MRM-72, 2026-08-27). RetroLit.shader samples only _BaseMap
+and _NormalMap — there is no _MetallicGlossMap, no _OcclusionMap and no
+emission map anywhere in Retro Shaders Pro. So by default this writes exactly
+two files per asset, and AO is multiplied INTO the BaseColor — the only way
+RetroLit will ever show it, and what PSX-era art actually did.
+
 Naming convention (case-insensitive suffix before the extension):
 
-    Rock_BaseColor.png   -> pixelated  (quantise + Bayer dither)
+    Rock_BaseColor.png   -> AO multiplied in, then pixelated (quantise + dither)
     Rock_Emission.png    -> pixelated
-    Rock_Normal.png      -> passed through untouched
-    Rock_AO.png          \
-    Rock_Rough.png        >  packed into Rock_Mask.png
-    Rock_Metal.png       /
-    Rock_Mask.png        -> passed through untouched (already packed)
+    Rock_Normal.png      -> passed through, resampled to --map-size
+    Rock_AO.png          -> multiplied into the matching BaseColor
+    Rock_Rough.png           Rock_Metal.png        >  unused unless --mask; reported, never mangled
+    Rock_Mask.png        /
 
-Mask layout is R=metallic, G=occlusion, B=0, A=smoothness, per the pipeline doc.
-Missing inputs fall back to constants (metallic 0, AO white, smoothness 0.1),
-so an asset with only an AO bake still produces a valid Mask.
+Pass --mask to restore the old three-map behaviour and pack
+R=metallic, G=occlusion, B=0, A=smoothness. Only worth it for an asset headed
+for URP/Lit rather than RetroLit; metallic and smoothness are otherwise the
+material's scalar _Glossiness, set once per material rather than per texel.
 
 Outputs land in <folder>/_out/ — nothing is overwritten in place.
 """
@@ -57,6 +63,13 @@ DEFAULT_DITHER = 1.0
 CONST_METALLIC = 0.0
 CONST_OCCLUSION = 1.0
 CONST_SMOOTHNESS = 0.1
+
+# Extensions Pillow reads out of the box.
+READABLE = (".png", ".tga", ".tif", ".tiff", ".jpg", ".jpeg", ".bmp")
+
+# Image formats we knowingly cannot read without extra plugins. Listed so they
+# can be reported rather than silently filtered out of existence.
+UNREADABLE_IMAGE = (".exr", ".hdr", ".psd", ".dds")
 
 PIXELATE = ("basecolor", "bc", "albedo", "emission", "e")
 PASSTHROUGH = ("normal", "n", "mask", "m")
@@ -113,6 +126,35 @@ def pixelate(img: Image.Image, levels: int, dither: float, size: int | None) -> 
     return out
 
 
+def multiply_ao(img: Image.Image, ao_path: Path) -> Image.Image:
+    """Multiply an AO map into an image's RGB, leaving alpha untouched.
+
+    This is the two-map standard's occlusion step: RetroLit has no
+    _OcclusionMap slot, so baked AO either goes into the albedo here or it is
+    thrown away. Applied at native resolution *before* pixelation, so the
+    quantiser sees the final colour instead of quantising twice.
+    """
+    has_alpha = "A" in img.getbands()
+    alpha = img.getchannel("A") if has_alpha else None
+
+    rgb = np.asarray(img.convert("RGB"), dtype=np.float32) / 255.0
+    h, w = rgb.shape[:2]
+
+    with Image.open(ao_path) as ao_im:
+        ao = ao_im.convert("L")
+        if ao.size != (w, h):
+            ao = ao.resize((w, h), Image.LANCZOS)
+        ao_a = np.asarray(ao, dtype=np.float32) / 255.0
+
+    out = Image.fromarray(
+        (np.clip(rgb * ao_a[:, :, None], 0.0, 1.0) * 255.0 + 0.5).astype(np.uint8), "RGB"
+    )
+    if has_alpha:
+        out = out.convert("RGBA")
+        out.putalpha(alpha)
+    return out
+
+
 def build_mask(parts: dict[str, Path], size: int | None) -> Image.Image | None:
     """Pack R=metallic, G=occlusion, B=0, A=smoothness.
 
@@ -154,38 +196,77 @@ def build_mask(parts: dict[str, Path], size: int | None) -> Image.Image | None:
     return Image.fromarray((stack * 255.0 + 0.5).astype(np.uint8), "RGBA")
 
 
-def run(folder: Path, levels: int, dither: float, size: int | None, map_size: int | None) -> int:
+def run(
+    folder: Path,
+    levels: int,
+    dither: float,
+    size: int | None,
+    map_size: int | None,
+    want_mask: bool = False,
+) -> int:
     out_dir = folder / "_out"
     out_dir.mkdir(exist_ok=True)
 
-    images = [
-        p
-        for p in sorted(folder.iterdir())
-        if p.is_file() and p.suffix.lower() in (".png", ".tga", ".tif", ".tiff", ".jpg")
-    ]
+    files = [p for p in sorted(folder.iterdir()) if p.is_file()]
+    images = [p for p in files if p.suffix.lower() in READABLE]
+
+    # Anything image-shaped we cannot read must be REPORTED, never silently
+    # dropped. Sources really do ship .exr normals (E:/Props/Props/RV), and a
+    # map that vanishes without a word is the quietest possible failure.
+    unreadable = [p for p in files if p.suffix.lower() in UNREADABLE_IMAGE]
+    if unreadable:
+        print("  CANNOT READ - convert these to PNG first:")
+        for p in unreadable:
+            print(f"    {p.name}")
+        print()
+
     if not images:
-        print(f"No images in {folder}")
+        print(f"No readable images in {folder}")
         return 1
 
+    # Index AO up front: it has to be multiplied into the BaseColor, which means
+    # knowing about it before we reach the BaseColor in the sorted file list.
+    ao_for: dict[str, Path] = {}
+    for path in images:
+        if suffix_of(path) in ("ao", "occlusion"):
+            ao_for[base_of(path)] = path
+
+    consumed_ao: set[str] = set()
     mask_groups: dict[str, dict[str, Path]] = {}
+    unused: list[str] = []
     written = 0
 
     for path in images:
         sfx = suffix_of(path)
 
         if sfx in PIXELATE:
+            base = base_of(path)
             with Image.open(path) as im:
+                im.load()
+                ao = ao_for.get(base)
+                note = ""
+                # Emission is self-lit - occluding it makes no physical sense.
+                if ao is not None and not want_mask and sfx not in ("emission", "e"):
+                    im = multiply_ao(im, ao)
+                    consumed_ao.add(base)
+                    note = f"  (AO {ao.name} multiplied in)"
                 result = pixelate(im, levels, dither, size)
             dest = out_dir / f"{path.stem}.png"
             result.save(dest)
-            print(f"  pixelated  {path.name}  ->  {dest.name}")
+            print(f"  pixelated  {path.name}  ->  {dest.name}{note}")
             written += 1
 
         elif sfx in MASK_INPUTS:
-            key = "smooth" if sfx == "smooth" else sfx
-            mask_groups.setdefault(base_of(path), {})[key] = path
+            if want_mask:
+                key = "smooth" if sfx == "smooth" else sfx
+                mask_groups.setdefault(base_of(path), {})[key] = path
+            elif sfx not in ("ao", "occlusion"):
+                unused.append(path.name)
 
         elif sfx in PASSTHROUGH:
+            if sfx in ("mask", "m") and not want_mask:
+                unused.append(path.name)
+                continue
             dest = out_dir / f"{path.stem}.png"
             with Image.open(path) as im:
                 if map_size and im.size != (map_size, map_size):
@@ -206,7 +287,23 @@ def run(folder: Path, levels: int, dither: float, size: int | None, map_size: in
         print(f"  packed     {base}_Mask.png  from {sorted(parts)}")
         written += 1
 
-    print(f"\n{written} file(s) -> {out_dir}")
+    if unused:
+        print()
+        print("  NOT WRITTEN - two-map standard, RetroLit samples no mask.")
+        print("  Pass --mask only if this asset is headed for URP/Lit:")
+        for name in unused:
+            print(f"    {name}")
+
+    # An AO with no BaseColor to fold into is silently lost work - say so.
+    orphans = sorted(set(ao_for) - consumed_ao) if not want_mask else []
+    if orphans:
+        print()
+        print("  WARNING: AO present with no matching BaseColor, so it was dropped:")
+        for name in orphans:
+            print(f"    {ao_for[name].name}")
+
+    print()
+    print(f"{written} file(s) -> {out_dir}")
     return 0
 
 
@@ -225,6 +322,11 @@ def main() -> int:
     r.add_argument("--map-size", type=int, default=None,
                    help="Normal/Mask target, Lanczos resample (default: leave alone). "
                         "Pipeline doc default is half of --size.")
+    r.add_argument("--mask", action="store_true",
+                   help="Also pack a Mask (R=metallic, G=occlusion, B=0, "
+                        "A=smoothness). Off by default: RetroLit samples no mask "
+                        "and AO is folded into the BaseColor instead. Only for "
+                        "assets headed for URP/Lit.")
 
     args = ap.parse_args()
     if not args.folder.is_dir():
@@ -232,8 +334,9 @@ def main() -> int:
         return 1
 
     print(f"levels={args.levels} dither={args.dither} "
-          f"size={args.size or 'unchanged'} map_size={args.map_size or 'unchanged'}\n")
-    return run(args.folder, args.levels, args.dither, args.size, args.map_size)
+          f"size={args.size or 'unchanged'} map_size={args.map_size or 'unchanged'} " 
+          f"maps={'3 (mask)' if args.mask else '2 (AO into BaseColor)'}\n")
+    return run(args.folder, args.levels, args.dither, args.size, args.map_size, args.mask)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,11 @@
 # C# Conventions — Mr. Moonlight
 
-Written for a **solo developer with an AI pair, a 19-day deadline, and a WebGL build**. Optimised for readability and for Carlos being able to change things without asking. Not for architectural elegance.
+Written for a **solo developer with an AI pair, a short deadline, and a Windows 64-bit standalone build**. Optimised for readability and for Carlos being able to change things without asking. Not for architectural elegance.
+
+> **Corrected 2026-08-27.** This document was written against a WebGL target that was **dropped on
+> 2026-08-25** (see `Docs/pc-build-target.md`). Every convention below still stands — but several
+> justified themselves with browser constraints that no longer apply, and those have been re-grounded
+> in place. The two that genuinely changed are marked **CHANGED**.
 
 ---
 
@@ -105,9 +110,12 @@ if (health < Tunables.I.FearLowHealthThreshold)
 
 ---
 
-## Performance patterns that matter in WebGL
+## Performance patterns that still matter
 
-WebGL is single-threaded and garbage collection stalls are visible. These are not micro-optimizations; they are the difference between smooth and stuttery.
+Garbage-collection stalls are visible in a Mono build too, and this project's measured bottleneck is
+**draw calls (GPU/driver), not C#** — which is exactly why the scripting backend is Mono2x rather than
+IL2CPP for day-to-day builds. None of the patterns below became optional when WebGL was dropped; they
+just stopped being existential. They remain the difference between smooth and stuttery.
 
 **Cache component references. Never `GetComponent` in `Update`.**
 
@@ -150,18 +158,25 @@ public static class GameEvents
 }
 ```
 
-**Always unsubscribe in `OnDisable`.** A leaked subscription in WebGL is a leak that survives scene reloads and will eventually crash the tab.
+**Always unsubscribe in `OnDisable`.** A leaked subscription survives scene reloads and accumulates — on PC it leaks memory and fires callbacks into dead objects rather than crashing a tab, which is quieter and therefore worse to diagnose.
 
-**Do not build a general message bus.** Typed events are traceable — Carlos can find every subscriber with a right-click. A string-keyed bus is not, and in 19 days traceability beats flexibility.
+**Do not build a general message bus.** Typed events are traceable — Carlos can find every subscriber with a right-click. A string-keyed bus is not, and on this schedule traceability beats flexibility.
 
 ---
 
 ## Async and coroutines
 
 - **Coroutines for anything tied to a GameObject's lifetime** — animations, sequences, timed effects. They die with the object, which is what you want.
-- **DOTween for tweening** — it is owned and it is the project's answer to "smooth". Always `SetLink(gameObject)` so the tween dies with its target. An orphaned tween on a destroyed object is a classic WebGL crash.
+- ⚠️ **CHANGED — DOTween is NOT installed.** This document previously said it was owned and was the
+  project's answer to "smooth". **It is not in the project** — `MrMoonlight.Runtime.asmdef` references
+  only `Unity.InputSystem`. Discovered 2026-08-24 while building `TimeManager`, which uses a plain
+  **coroutine + lerp over a duration** instead; reuse that shape (`TimeManager.ApplyPreset`) rather
+  than adding a package dependency mid-issue. If DOTween is ever actually installed, the old rule
+  applies again: always `SetLink(gameObject)` so the tween dies with its target.
 - **Avoid `async void`.** If async is genuinely needed, `async Task` with a cancellation token.
-- **No `Task.Run`.** WebGL is single-threaded.
+- ⚠️ **CHANGED — `Task.Run` is no longer forbidden by the platform.** The Windows player is not
+  single-threaded. It is still discouraged: Unity APIs remain main-thread-only, and nothing in this
+  project currently needs a worker thread. Do not reach for it without a measured reason.
 
 ---
 
@@ -173,11 +188,11 @@ public static class GameEvents
 if (dialogueData == null)
 {
     Debug.LogError($"[Dialogue] Missing data asset on {name}. See MRM-13.");
-    return;  // do not throw — a thrown exception in WebGL can kill the frame loop
+    return;  // do not throw — an exception in a Unity callback aborts the rest of that callback
 }
 ```
 
-- **Prefix log messages with the system:** `[Dialogue]`, `[EventDirector]`, `[Spotter]`. Filtering the browser console is otherwise miserable.
+- **Prefix log messages with the system:** `[Dialogue]`, `[EventDirector]`, `[Spotter]`. There is no browser console any more — diagnostics come from `%USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Player.log`, which is a flat text file, so prefixes are the only filter you get.
 - **Strip or gate logging for release builds.** `Debug.Log` is not free.
 - **Null-check data assets on `Awake`** and say which issue owns them. Half the bugs in a data-driven project are a missing reference.
 

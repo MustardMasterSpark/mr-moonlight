@@ -1,5 +1,31 @@
 # MRM-70 — Biome painting + vegetation spawning strategy
 
+> ## ⚠️ Platform note — banner added 2026-08-27
+>
+> This document predates the **2026-08-25 platform change**: WebGL was dropped for a **Windows
+> 64-bit standalone** build at **1920×1080**. See `Docs/pc-build-target.md`.
+>
+> **The strategy is unaffected** — biomes, species, masks, densities and run order are all
+> placement decisions, and placement did not change. What *is* stale:
+>
+> - Any mention of **960×540** — the target is 1920×1080.
+> - **§6d "WebGL reality check"** is a **historical session record** of builds 12–14. Kept as
+>   history; do not action it. The GLES3 sampler limit and the browser console it describes no
+>   longer exist.
+> - Density and LOD numbers described as *"to be tuned against a real WebGL build"* should be tuned
+>   against a real **Windows** build — and per `pc-build-target.md` §6, editor `UnityStats` and
+>   editor screenshots have both given false readings on this project. **Launch the .exe.**
+> - The vegetation is now drawn by **Flora Renderer 6**, not Unity's native tree/detail path
+>   (**38,980 → 535 draw calls, ~505 FPS**). The perf risk this doc worries about was real and has
+>   been addressed.
+>
+> **Still binding, and still the two easiest things to get wrong:** terrain smoothness comes from
+> the diffuse texture's **alpha channel**, and **terrain trees silently reject MeshColliders** —
+> use a CapsuleCollider at the trunk.
+>
+> **Current open gaps live in `Docs/mrm70-pause-2026-08-26.md`, not here.**
+
+
 Written 2026-08-25, branch `mrm-70`. Inputs: `Docs/Design/Island-Terrain-Reference/Map/biomes.png`,
 the 20 `Vibe/` reference images, `Vegetation Spawner Documentation.pdf`, and the live `Island`
 scene / `Terrain` state read back through UnityMCP.

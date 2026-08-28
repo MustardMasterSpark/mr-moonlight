@@ -2,6 +2,22 @@
 
 How the systems relate, what depends on what, and where the real bottlenecks are.
 
+> ## ⚠️ Partially superseded 2026-08-27
+>
+> **WebGL was dropped on 2026-08-25** in favour of a **Windows 64-bit standalone** build at
+> 1920×1080 — see `Docs/pc-build-target.md`. Three things in this document are now stale, and are
+> corrected inline below rather than deleted, because the dependency structure they describe is
+> still right:
+>
+> 1. The §1 graph node **"MRM-10 First WebGL build"** — MRM-10 as written is void (its scope, its
+>    acceptance criteria and its 960×540 embed decision are all browser-specific). The *dependency*
+>    it encodes — a controller must exist before there is anything to put in a build — still holds.
+> 2. The §1 node **"MRM-6 WebGL spike"** — the spike ran and its answer ("GO for WebGL") was
+>    **reversed** by measurement. Kept as history.
+> 3. The §5 **"WebGL bundle"** build step and its rationale — see the correction in that section.
+>
+> **The §6 risk table has also moved on**; corrections are inline there.
+
 ---
 
 ## 1. The dependency graph
@@ -17,8 +33,8 @@ graph TD
     Input[MRM-8 Input System] --> Ctrl
 
     Ctrl --> Aim[MRM-21 Aim cone + ADS]
-    Ctrl --> Build[MRM-10 First WebGL build]
-    WebGL[MRM-6 WebGL spike] --> Build
+    Ctrl --> Build[MRM-10 First playable build<br/>⚠ issue still says WebGL]
+    WebGL[MRM-6 platform spike<br/>⚠ answer reversed 2026-08-25] --> Build
 
     Aim --> Pistol[MRM-22 Pistol]
     Aim --> Shotgun[MRM-24 Shotgun]
@@ -235,7 +251,7 @@ graph LR
 
     Bake --> SO[ScriptableObject assets]
     SO --> BuildStep[Unity build]
-    BuildStep --> WebGL[WebGL bundle]
+    BuildStep --> WebGL[Windows player]
     WebGL --> Runtime[Runtime lookup by ID]
 
     style Bake fill:#4CB782
@@ -244,7 +260,11 @@ graph LR
 
 **The rule this diagram encodes: CSV never reaches the build.** It is authoring format only. The baker converts it to ScriptableObjects at edit time, and the build ships those.
 
-This is not a preference — WebGL has no filesystem, and runtime CSV parsing will either fail or stall. It is also faster and it catches malformed rows in the editor where they can be fixed, rather than in the browser where they cannot.
+This is not a preference. The original reason was that **WebGL has no filesystem**, so runtime CSV
+parsing would either fail or stall. *(Corrected 2026-08-27: the Windows player does have a
+filesystem, so that specific failure mode is gone.)* **The rule stands on its remaining reasons,
+which were always the better ones:** baking is faster at runtime, and it catches malformed rows in
+the editor where they can be fixed rather than in a shipped build where they cannot.
 
 **Also note:** this is exactly the integration story Assignment #10 wants described, and *"output lands in the engine and functions without manual reformatting"* is worth 2 points. Building the baker early is worth marks as well as time.
 
@@ -256,7 +276,9 @@ This is not a preference — WebGL has no filesystem, and runtime CSV parsing wi
 |---|---|---|
 | **Terrain blockout slips** | Blocks A*, which blocks every enemy | It is in M0 for this reason. Ugly is fine. Boxes are fine. |
 | **Event director schema is wrong** | Every scene is authored against it; changing it means re-authoring | Opus designs it, Carlos approves it **before** implementation |
-| **WebGL build discovered late** | Every failure mode is browser-only | MRM-10 in M0. Build this week. |
+| ~~**WebGL build discovered late**~~ | ~~Every failure mode is browser-only~~ | **Retired 2026-08-27** — WebGL is not a target. This risk was real and it fired: the browser draw-call ceiling is what forced the platform change on 2026-08-25. |
+| **Nothing on `main` has been in a build** | Editor verification has repeatedly given false readings here (`UnityStats` includes Scene View; the editor does not render unfocused) | **Build and launch the .exe.** Latest build is 21, dated 2026-08-25; the main menu and the whole interaction/item/inventory framework have never run in one |
+| **`RetroTerrainLit` fails to compile on Direct3D11** | Graphics API is "D3D12, D3D11 (auto)", so a player machine can fall back onto a broken **terrain** shader variant | Third-party bug in Retro Shaders Pro; no material setting fixes it. Untracked — needs an issue |
 | **Mocap for the cabin scene** | Longest cutscene, 3 characters, heaviest animation load | Dummy characters are explicitly allowed — do not let modelling block it |
-| **Audio blows the 1 GB budget** | 250 VO lines + pools on every prop | Budget per category in MRM-6; compression presets set once |
+| **Audio blows the 1 GB budget** | 250 VO lines + pools on every prop | Budget per category in MRM-6; compression presets set once. *(2026-08-27: far less acute than when written — build 21 was **54 MB zipped** against 1 GB, and 1 GB is now itch.io's upload limit rather than a runtime budget.)* |
 | **Event script deadlocks** | A stranger gets stuck and the Assignment #10 gate fails | Every `wait_for` gets a timeout or a written justification |

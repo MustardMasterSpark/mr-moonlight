@@ -5,6 +5,12 @@ quality. **This doc is the "how"; `Docs/webgl-budget.md` §3.1 and §6 are the "
 budget math, the 13× size gap, and the per-category rationale live there. Don't duplicate that
 reasoning here; read it once if you want the full story.
 
+> **Note added 2026-08-27.** `webgl-budget.md` is **partially historical** — WebGL was dropped on
+> 2026-08-25. **This workflow is unaffected:** the prefix → preset routing, the compression settings
+> and the "a clip imported outside a preset is a bug" rule are all about codecs and discipline, not
+> about browsers. Only the *size ceiling* framing over there has changed. See
+> `Docs/pc-build-target.md`.
+
 **The one rule that matters more than any setting below:** every clip enters the game through
 one of the presets in `Assets/_Project/Settings/Presets/` (`Aud_*.preset`). If a clip's import
 settings were hand-tweaked instead, that's a bug — per `webgl-budget.md` §9. This doc exists so

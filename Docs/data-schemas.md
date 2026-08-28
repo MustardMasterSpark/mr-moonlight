@@ -8,7 +8,12 @@ These are the templates. **Claude provides them empty, or pre-populated where th
 
 **Every sheet ships with empty `text_es` and `text_ru` columns from day one.** The demo is English only, but retrofitting a localization column into a populated sheet is worse than carrying two empty columns.
 
-**All of these are baked to ScriptableObjects at build time.** CSV never ships. See `webgl-constraints.md`.
+**All of these are baked to ScriptableObjects at build time.** CSV never ships.
+
+> **Citation corrected 2026-08-27.** This line used to cite `webgl-constraints.md`, which is
+> **historical** — WebGL was dropped on 2026-08-25. **The rule itself is unchanged**: runtime CSV
+> parsing is fragile regardless of platform, and baking catches malformed rows in the editor where
+> they can be fixed. Current reasoning lives in `Docs/pc-build-target.md` §2.
 
 ---
 

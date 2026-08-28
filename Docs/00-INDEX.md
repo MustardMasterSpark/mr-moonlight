@@ -11,11 +11,15 @@
 | `terrain-vegetation-tooling-decision.md` | Any terrain, biome, vegetation or vegetation-renderer question — which assets we use and, more usefully, which we rejected and why | 🟡 Reference |
 | `unity-conventions.md` | Any Unity work — folders, prefabs, ScriptableObjects, scenes, the tunables pattern | 🔴 High |
 | `csharp-conventions.md` | Any C# — naming, structure, the no-hardcoded-values rule, performance patterns | 🔴 High |
-| `3d-asset-pipeline.md` | **Any 3D asset work** — the map set every asset ships, Blender baking, the pixelation pass, and the Unity import settings per prop | 🔴 High |
+| `3d-prop-pipeline-wizard.md` | **Any prop, character or weapon work — read this first.** The executable wizard (`/prop`): four paths, the two-map RetroLit standard, the Unity finish, and the write-back protocol that makes each prop faster than the last | 🔴 **Read first for assets** |
+| `prop-log.md` | One entry per finished prop — what it cost, what was learned. Glance at it before starting a prop | 🟡 Reference |
+| `3d-asset-pipeline.md` | Blender export conventions, baking mechanics, UVs, poly reduction, Unity mesh/texture import settings, LOD rules, vegetation budget. ⚠️ **Its §2 map set is superseded** by the wizard's §2 | 🔴 High |
 | `system-architecture.md` | Understanding how systems talk to each other. Contains the dependency and interaction diagrams | 🟡 Reference |
 | `data-schemas.md` | Anything spreadsheet-driven — dialogue, system messages, objectives, the event script | 🟡 When building those systems |
 | `changelog.md` | Picking up any issue — what actually got built, decided, or failed, per issue, newest first | 🟡 Reference |
-| `webgl-budget.md` | Any asset that ships in the build — the real MB allocation per category | 🟡 Reference |
+| `external-assets.md` | **Before proposing any Asset Store package** — what is owned, installed, and explicitly rejected, plus how to restore a clean machine | 🟡 Reference |
+| `dual-project-workflow.md` | Working with Playground (`E:\playground\test`), the sandbox project for testing new/bulk-imported assets before they enter Mr. Moonlight — how the two MCP bridges are kept separate, and how assets actually move between the two | 🟡 Reference |
+| `webgl-budget.md` | ⚠️ **Partially historical** (banner added 2026-08-27). Its *verdict and size ceilings are void* — build 21 was 54 MB zipped against 1 GB. Still cite it for the **audio import presets (§9)** and **"ship 4 skyboxes, not 220" (§4.12/§10)** | ⚪ Use with care |
 | `glossary.md` | Naming anything. Canonical spellings and terms | 🟢 Quick lookup |
 | `input-map.md` | Need a binding without opening the `.inputactions` asset | 🟢 Quick lookup |
 

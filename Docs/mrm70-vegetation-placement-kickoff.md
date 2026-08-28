@@ -1,5 +1,22 @@
 # MRM-70 vegetation placement — kickoff prompt
 
+> ## ⚠️ Historical kickoff — banner added 2026-08-27
+>
+> **This pass already ran.** Its first placement pass completed on 2026-08-25 (biomes painted,
+> 17,350 trees spawned; later 34,816 instances). Read it for intent, not for current state.
+>
+> Two things in it are now wrong:
+>
+> - **WebGL was dropped on 2026-08-25.** Any reference below to a *"1 GB total WebGL ceiling"*,
+>   a *"960×540 embedded display target"*, or *"frame rate holds in a WebGL build"* is stale. The
+>   target is a **Windows 64-bit standalone** build at **1920×1080**; see `Docs/pc-build-target.md`.
+>   Note that **MRM-70's Linear acceptance criteria still carry the same stale WebGL wording** and
+>   need rewriting.
+> - **Vegetation is drawn by Flora Renderer 6 now**, not Unity's native tree/detail path.
+>
+> **Current state and the seven open gaps live in `Docs/mrm70-pause-2026-08-26.md`.** Start there.
+
+
 Paste this to start a new session picking up vegetation placement. Written 2026-08-25, after the
 asset-prep + in-engine prefab/material/TerrainLayer build finished, before any placement started.
 
