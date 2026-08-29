@@ -39,7 +39,12 @@ While a path is in shakedown:
 
 1. **Which path?** character · static prop · weapon · special case
 2. **Which prop, and where is it?** `E:\Props` (a *dump* — nothing in it is game-ready by
-   default) · the Playground project (`E:\playground\test`) · fresh Tripo output
+   default) · the Playground project (`E:\playground\My project` — moved 2026-08-28, not
+   `E:\playground\test`) · fresh Tripo output. **If it's in Playground**, it is likely a
+   pre-built asset-pack mesh (already textured, possibly already low-poly) rather than a raw
+   Tripo source — copy it into Mr. Moonlight per `Docs/dual-project-workflow.md` (folder +
+   `.meta` files, verify the import landed) *before* step 1 of the hot path below, and expect
+   step 2's "already in style, don't re-quantise" branch to apply more often than not
 3. **Has Tripo already run?** Always ask, never assume. If not, stop and wait
 4. **Is this a high-poly source?** Default is **no**. Carlos flags high-poly by hand
 5. **Texture resolution?** **Always ask before generating any texture.**
@@ -67,6 +72,22 @@ touching anything. Extract/convert `.zip` or `.glb` first and say so.
 
 Poly guidance: small prop 50–200 tris, rock 100–300. **If it's already in range, do nothing.**
 Never decimate a mesh that doesn't need it — that's how UVs get lost for no reason.
+
+**Vegetation from a top-down-authored pack** (Topdown Nature Library, Low Poly Plant
+Collections): these are built to be seen from above. **Check the silhouette at first-person eye
+height in Playground before adopting the whole set** — undersides and side profiles are often
+unfinished or flat billboards. One bad angle caught here saves re-checking every species later
+(`Docs/new-asset-list.md`'s Topdown Nature row).
+
+⚠ **Check the mesh's submesh count against how many materials the source actually assigns it.**
+A tree (or any prop) with a separate trunk + canopy/leaf-card material is a **multi-submesh
+mesh** — `mf.sharedMesh.subMeshCount` will be 2 or 3, and the source's `MeshRenderer.m_Materials`
+array has one entry per submesh, in order. Capturing only the first material and assigning it to
+the whole renderer silently paints the wrong submesh with the wrong texture — easy to miss when
+that submesh happens to render as a similar color, but it can go fully invisible once alpha-clip
+is involved (the mismatched UVs sample into a transparent region). This cost a 51-species rebuild
+in the MRM-70 vegetation batch (2026-08-29). Always resolve **every** material slot, not just the
+first, and assign `mr.sharedMaterials` as a full array matching submesh order.
 
 ### 2. 🤖 Texture pass
 
@@ -114,17 +135,31 @@ Mesh import: **Scale Factor 1 · Materials = None · Tangents Calculate Mikktspa
 | `_AffineTextureStrength` | `1.0` |
 | `_LightMode` | `1` — TexelLit |
 | `_DitherMode` | `0` — Screen |
-| `_ResolutionLimit` / `_ColorBitDepth` | Off |
+| `_ResolutionLimit` / `_ColorBitDepth` | Off — in practice this means a high value (8192 /
+256), matching the shader's own math (`log2(_ResolutionLimit)`, `max(2, _ColorBitDepth)`); there
+is no literal "off" state. Copy from an existing material (e.g. `M_RF_Trees.mat`) rather than
+guessing |
 | `_Glossiness` | `5`; raise to `10–20` for metal |
 | `_AlphaClip` | only for cutout foliage/cloth. **Never** Surface Type = Transparent |
 
 ⚠ **`SetInteger`, not `SetFloat`**, on the Integer-typed retro properties — `SetFloat` silently
 fails to persist.
 
+⚠ **Setting `_AlphaClip` to 1 via script does nothing on its own.** The shader's actual cutout
+(`clip(baseColor.a - _Cutoff)`) is gated behind `#ifdef _ALPHATEST_ON` — a shader_feature
+**keyword**, which the Inspector's custom material GUI toggles automatically when you click the
+checkbox by hand, but a plain `mat.SetFloat("_AlphaClip", 1f)` from script never touches. Building
+materials via `execute_code`/script? Also call `mat.EnableKeyword("_ALPHATEST_ON")` (and
+`DisableKeyword` when `_AlphaClip` is 0) or the mesh renders as a solid opaque quad with the alpha
+silently ignored — this bit an entire 137-prop batch at once (MRM-70 vegetation, 2026-08-29)
+before being caught by comparing against an Editor-built reference material's `m_ValidKeywords`.
+
 ### 5. 🔧 Prefab — `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`
 
 - Material **assigned on the prefab**, not left for later
-- Collider: **Box or Capsule by default**; Mesh Collider only when the silhouette matters
+- Collider: **Box or Capsule by default**; Mesh Collider only when the silhouette matters —
+  **except anything meant to be spawned via Gaia as a Terrain Tree instance, which must stay
+  Capsule/Box/Sphere: Unity terrain trees silently reject Mesh Colliders, no exception**
 - **Occluder + Occludee static** if it doesn't move
 - **If it glows** — lamp, LED, wolf eyes — **add a real Light child here.** There are no emission
   maps in this project
@@ -170,5 +205,12 @@ that stop earning their place.
 
 ## Bulk runs
 
-Carlos may hand over a list. Run end to end, stopping only where a prop genuinely needs a
-decision. Batch questions — one resolution answer can cover a whole set. Log each one.
+**Blocked while the static-prop path is in shakedown (see the banner at the top of this file).**
+`Docs/3d-prop-pipeline-wizard.md` §0.5/G10 are explicit: **never batch, one prop only**, until a
+path has cleared shakedown end to end with Carlos's sign-off. A vegetation list from Carlos is a
+bulk run by nature — the first species through this pipeline is still a **shakedown run**: narrate
+each step, stop at every boundary, one prop only. Only once that one prop clears review does the
+rest of the list run end to end as described below.
+
+Once unblocked: run end to end, stopping only where a prop genuinely needs a decision. Batch
+questions — one resolution answer can cover a whole set. Log each one.

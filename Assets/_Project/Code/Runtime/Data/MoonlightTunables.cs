@@ -58,11 +58,8 @@ namespace MrMoonlight.Data
         /// <summary>Duration of the crouch/stand transition, in seconds. Owner: MRM-9</summary>
         public float CrouchTransitionDuration = 0.25f;
 
-        /// <summary>Steepest ground angle the player can climb, in degrees. Owner: MRM-9</summary>
+        /// <summary>Steepest ground angle the player can climb, in degrees — fed straight into <see cref="CharacterController.slopeLimit"/>, no custom slide/stick logic on top. Owner: MRM-9</summary>
         public float SlopeLimit = 45f;
-
-        /// <summary>Speed Tracey slides downhill at while standing on ground steeper than <see cref="SlopeLimit"/>, in metres per second. Not in MRM-9's original tunables list — added during MRM-58 terrain blockout because SlopeLimit alone only blocks CharacterController's walking Move() resolution, not repeated jump+land hops that "ram" up a steep slope a step at a time. Basic constant-speed slide for now; flagged for a friction/acceleration curve as a polish pass. Owner: MRM-9</summary>
-        public float SlideSpeed = 4f;
 
         /// <summary>Downward acceleration applied to the player, in metres per second squared. Owner: MRM-9</summary>
         public float Gravity = -20f;

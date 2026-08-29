@@ -836,7 +836,13 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   webEnableSubmoduleStrippingCompatibility: 0
-  scriptingDefineSymbols: {}
+  scriptingDefineSymbols:
+    Android: 
+    Server: 
+    Standalone: GAIA_2023;GAIA_2023_PRO;GAIA_MESH_PRESENT;GAIA_INPUT_SYSTEM;UPPipeline
+    VisionOS: 
+    iPhone: 
+    tvOS: 
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:

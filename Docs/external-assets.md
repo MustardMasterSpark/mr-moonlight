@@ -74,7 +74,7 @@ tracked.
 | Wolfenemu / 01 Monster Wolf Boss | AsAlex / HATOGAME | wolf enemy + boss — **staged in Playground 2026-08-28** at `Assets/Wolf_enemu/` and `Assets/Hatogame_new/BossMonsterPack1/Wolfboss/`; not yet evaluated or moved into Mr. Moonlight. See `Docs/dual-project-workflow.md`. |
 | Procedural Water Shader | Pedro Verpha | evaluated, not used (MRM-68 chose Simple Water Shader) |
 | **Gaia Pro VS** | Procedural Worlds | **Adopted 2026-08-27, editor-time tools only.** Terraform/erosion + Spawner/biome mask stacks, replacing our hand-rolled Painter/Composer. Not yet downloaded. See `Docs/terrain-vegetation-tooling-decision.md` §2 for the mandatory keep/drop boundary — **importing its Runtime, Water, Lighting or sample art is a mistake**, they collide with HAZE, Retro, Simple Water Shader and TimeManager. |
-| **Crest Water 5** | Wave Harmonic | **Adopted 2026-08-27 for MRM-71** ($240, 60.6 MB, owned). Replaces Simple Water Shader URP on `M_Sea.mat`. **Installs to `Packages/` as a UPM package** — so unlike `Assets/ThirdParty/` packages it is **not gitignored and will be committed**, same as Flora; settle that deliberately (MRM-71 risk 1). `Samples~` do not import unless requested, so no lean-extraction needed. Underwater Renderer ships **disabled** (Tracey cannot enter water in the demo). Record the exact version on install. Not yet installed. |
+| **Crest Water 5** | Wave Harmonic | **Installed 2026-08-29 for MRM-71** ($240, 60.6 MB, owned), package `com.waveharmonic.crest` **v5.9.2**. Replaces Simple Water Shader URP on `M_Sea.mat`. Installed **embedded** at `Packages/com.waveharmonic.crest/` (same mechanism as Flora — files copied in directly, no `manifest.json` entry needed, auto-discovered) — **not gitignored, will be committed**, same as Flora. Acquired via Playground (Carlos's Asset Store account) then file-copied over, since the paid UPM package can't be pulled by an automated agent. `Samples~` were not imported, per plan. Underwater Renderer explicitly set **disabled** (Crest ships it enabled by default — Tracey cannot enter water in the demo). **No renderer feature needed on `PC_Renderer`** — Crest 5 has no `ScriptableRendererFeature` class at all, it injects via `RenderPipelineManager` callbacks, so MRM-71 risk/gap #2 (renderer feature ordering) doesn't apply. |
 
 ## Adopted in the 2026-08-27 triage — owned, not yet installed
 
@@ -88,7 +88,7 @@ exact version in the tables above when each one lands.
 | **HQ FPS Weapons 2.0** | — | MRM-22/23/24/25/34/52 — models + weapon/hand animations. **Art only; import no scripts** | **M1** |
 | **Sounds Good** | Melenitas Dev | MRM-38 — playback/pool backend. Our layer + distance gating stays on top | **M1** |
 | **Spice Up: Bodycam** | Fronkon Games | MRM-49 — telescope aperture | **M1** |
-| **Gaia Pro VS** | Procedural Worlds | MRM-70 — editor-time only, temporary, **after Sept 1** | M2 |
+| **Gaia Pro VS** | Procedural Worlds | MRM-70 — editor-time only, temporary, **after Sept 1**. Core `Gaia.unitypackage` only (no Stamps — no new landmass needed) moved into `Assets/ThirdParty/Gaia Pro VS/` 2026-08-28, not yet imported. Exact version TBD — check Package Manager → My Assets and record here. See `Docs/mrm70-gaia-kickoff.md` | M2 |
 | **Crest Water 5** | Wave Harmonic | MRM-71 — multiple Water Bodies confirmed (sea/shore/rivers/lake) | M2 |
 | **Wendigo Forest Beast Collection** | — | MRM-36 — the boss model. Name stays "Furman" | M2 |
 | **Ultimate Animation Collection** | — | MRM-31/29/35/37 — humanoid mocap. ⚠️ import selectively | M2 |

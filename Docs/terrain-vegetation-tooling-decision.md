@@ -102,6 +102,25 @@ Gaia, by contrast:
 | Resource import from existing terrain | Gaia Lighting / skies / weather |
 | | All sample biomes, demo scenes, sample art |
 
+> **Correction, 2026-08-28.** Carlos confirmed the goal precisely: *"add a better realistic
+> terrain without changing the shape."* That descopes **`Gaia/Stamps.unitypackage`** (393 MB) —
+> its own package description says it's only for adding new landmass shapes ("without
+> stamps you cannot create mountains or valleys, etc."). We aren't creating new landmass, we're
+> refining our existing one, so **only `Gaia/Gaia.unitypackage` (5.4 MB core) was moved into Mr.
+> Moonlight**, not Stamps. The Stamper tool itself (in the core package) still works on our
+> existing terrain via its **Shape Input = existing terrain** mode; it just doesn't need the
+> pre-made mountain/valley image library to do erosion/effects passes.
+>
+> **Also confirmed 2026-08-28: our own textures, our own props.** Gaia's auto-texturing (its
+> biome "Textures" spawner) and its sample/Gaia Pro prefab content (`Asset Samples`, `Asset
+> Samples - Synty Studios`, `Gaia Pro Assets and Biomes`) were already declined above for style
+> reasons — this confirms that stands. Gaia's *Spawner* is still the tool for Phase 2 (it places
+> **our** Retro Realism prefabs by rule; it doesn't ship them). Worth a look purely for variety,
+> not for adoption as-is: some of Gaia's stock stamp/sample trees (pines, etc.) *could* be
+> cherry-picked later if a specific species is missing from our own asset list — but the sample
+> packs are explicitly "wrong style" (low-poly PSX vs. Gaia's more realistic defaults), so the
+> default is **no**, don't pull them in without a specific gap to fill.
+
 Everything on the right would fight something already built and tuned: **HAZE** for fog, **Retro
 Shaders Pro** for the CRT/PSX look, **Simple Water Shader** for the sea, our own `TimeManager` +
 AllSky setup for lighting.
