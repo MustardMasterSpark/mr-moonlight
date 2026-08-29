@@ -50,3 +50,5 @@ Not written yet, but each will earn its place:
 | `testing-checklist.md` | Before the Sept 1 build | The manual QA sweep from `Assignments MDs/Assignment09.md` |
 
 **Do not create these speculatively.** An empty document is worse than no document — it reads as done.
+- `mrm9-burntwax-integration.md` — MRM-9 Burntwax FPS Engine controller swap: what was taken/changed/dropped, the prefab architecture, the project-wide pause contract, bug history.
+- `mrm9-resume-2026-08-29.md` — MRM-9 pickup point: state, settled decisions, the traps that cost time, open items.

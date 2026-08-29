@@ -40,11 +40,11 @@ namespace MrMoonlight.UI
     /// doesn't exist yet. This is the model half of MRM-42; the view half is blocked on Carlos.</para>
     /// Owner: MRM-42
     /// </summary>
-    [RequireComponent(typeof(PlayerController))]
+    [RequireComponent(typeof(BurntwaxPlayerBridge))]
     [RequireComponent(typeof(Inventory))]
     public sealed class InventoryUIController : MonoBehaviour
     {
-        private PlayerController _playerController;
+        private BurntwaxPlayerBridge _playerController;
         private Inventory _inventory;
         private float _previousScrollValue;
 
@@ -57,7 +57,7 @@ namespace MrMoonlight.UI
 
         private void Awake()
         {
-            _playerController = GetComponent<PlayerController>();
+            _playerController = GetComponent<BurntwaxPlayerBridge>();
             _inventory = GetComponent<Inventory>();
         }
 

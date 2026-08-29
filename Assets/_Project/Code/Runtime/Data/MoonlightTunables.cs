@@ -76,6 +76,15 @@ namespace MrMoonlight.Data
         /// <summary>Maximum degrees the camera can pitch upward. Not in MRM-9's original tunables list, added alongside <see cref="LookPitchDownMax"/> for the same clamp. Owner: MRM-9</summary>
         public float LookPitchUpMax = 80f;
 
+        /// <summary>Field of view for the hip-fire camera. The Burntwax engine expresses aim-down-sights as a blend between two Cinemachine cameras rather than a single lerped FOV, so both ends live here. Owner: MRM-9</summary>
+        public float CameraFovDefault = 60f;
+
+        /// <summary>Field of view for the aim-down-sights camera. Lower than <see cref="CameraFovDefault"/>; the difference is the zoom amount. Owner: MRM-9</summary>
+        public float CameraFovAimDownSights = 40f;
+
+        /// <summary>Seconds the Cinemachine blend takes between hip-fire and aim-down-sights. Owner: MRM-9</summary>
+        public float CameraAimBlendDuration = 0.15f;
+
         [Header("Input System — MRM-8")]
 
         /// <summary>Minimum stick displacement, as a fraction of full deflection, before gamepad stick input registers. Applied as a runtime override on the Move and Look stick bindings so a worn or drifting stick doesn't creep the player. Owner: MRM-8</summary>

@@ -17,7 +17,7 @@ namespace MrMoonlight.Interaction
     /// <see cref="MrMoonlight.Input.InputMapController"/>, so it doesn't bind a second, redundant
     /// instance to the same devices. Owner: MRM-16
     /// </summary>
-    [RequireComponent(typeof(PlayerController))]
+    [RequireComponent(typeof(BurntwaxPlayerBridge))]
     public sealed class InteractionDetector : MonoBehaviour
     {
         private const int MaxCandidates = 16;
@@ -26,7 +26,7 @@ namespace MrMoonlight.Interaction
         [SerializeField] private Camera playerCamera;
         [SerializeField] private InteractionPromptUI promptUI;
 
-        private PlayerController _playerController;
+        private BurntwaxPlayerBridge _playerController;
         private readonly Collider[] _candidateBuffer = new Collider[MaxCandidates];
 
         private Interactable _currentTarget;
@@ -34,7 +34,7 @@ namespace MrMoonlight.Interaction
 
         private void Awake()
         {
-            _playerController = GetComponent<PlayerController>();
+            _playerController = GetComponent<BurntwaxPlayerBridge>();
 
             if (playerCamera == null)
             {

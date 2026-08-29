@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 792632d7a39452f46923a0b2fb99bf67, type: 3}
   m_Name: MoonlightTunables
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Data.MoonlightTunables
-  WalkSpeed: 3
-  SprintSpeed: 5.5
-  CrouchSpeed: 1.5
+  WalkSpeed: 4
+  SprintSpeed: 6
+  CrouchSpeed: 2
   LookSpeedMouse: 0.15
   LookSpeedStick: 180
   LookAcceleration: 900
@@ -25,6 +25,9 @@ MonoBehaviour:
   SlopeLimit: 45
   Gravity: -20
   GroundCheckDistance: 0.2
+  GroundCheckMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
   LookPitchDownMax: 85
   LookPitchUpMax: 80
   StickDeadzone: 0.125
@@ -122,3 +125,43 @@ MonoBehaviour:
     m_PreInfinity: 2
     m_PostInfinity: 2
     m_RotationOrder: 4
+  SunIndoorDimTransitionSeconds: 1.5
+  TimeManagerDefaultTransitionSeconds: 3
+  MenuOpeningFadeDuration: 1.5
+  MenuTransitionFadeDuration: 0.6
+  CreditsScrollSpeed: 60
+  DefaultMasterVolume: 1
+  DefaultVoicesVolume: 1
+  DefaultSFXVolume: 1
+  MixerMuteDecibels: -80
+  SplashCardFadeDuration: 1
+  SplashCardHoldDuration: 2
+  InteractionNearbyDistance: 2.5
+  InteractionAngleTolerance: 15
+  InteractionLayerMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  InteractionPromptFadeInDuration: 0.15
+  InteractionPromptFadeOutDuration: 0.25
+  InteractionHighlightColor: {r: 1, g: 1, b: 1, a: 1}
+  InteractionHighlightIntensity: 1.5
+  PocketStorageCap: 4
+  BackpackStorageCap: 10
+  CrackersHealAmount: 5
+  CrackersStaminaAmount: 10
+  SodaHealAmount: 5
+  SodaStaminaAmount: 10
+  BandagesHealAmount: 15
+  VodkaDrunkennessAmount: 30
+  BeerDrunkennessAmount: 15
+  WeedHighAmount: 25
+  MorphineHighAmount: 40
+  MaxDrunkenness: 100
+  MaxWeedHigh: 100
+  MaxMorphineHigh: 100
+  InventoryFullFeedbackFadeDuration: 0.3
+  InventoryFullFeedbackHoldDuration: 2
+  InventoryOpenAnimationDuration: 0.4
+  InventoryCloseAnimationDuration: 0.4
+  InventoryItemSpinSpeed: 60
+  InventoryFadeDuration: 0.2
