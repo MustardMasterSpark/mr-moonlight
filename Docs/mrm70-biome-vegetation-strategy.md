@@ -22,8 +22,46 @@
 > **Still binding, and still the two easiest things to get wrong:** terrain smoothness comes from
 > the diffuse texture's **alpha channel**, and **terrain trees silently reject MeshColliders** —
 > use a CapsuleCollider at the trunk.
+
+> ## ⚠️ Terrain regenerated twice since this was written — banner added 2026-08-29
 >
-> **Current open gaps live in `Docs/mrm70-pause-2026-08-26.md`, not here.**
+> The terrain this document was written against **no longer exists**. Between then and now: a full
+> landmass regeneration via Gaia Stamps (2026-08-28, see `mrm70-gaia-kickoff.md` "MAJOR PIVOT"),
+> then a second pivot to Gaia **World Designer** (2026-08-29, see that doc's "SECOND PIVOT"
+> section) where Carlos hand-shaped a fresh island and explicitly settled on it. **The new terrain
+> is a different footprint, size, and shape** — currently centered on world origin, roughly
+> 1024×1024m (World Size "Medium"), not the old 4103×7085 non-square terrain this doc's coordinates
+> assume.
+>
+> **What that breaks:**
+> - **§3 "Biome regions in world coordinates" is entirely invalid.** Every X/Z range in that table
+>   is measured against blockout markers on the old terrain footprint. The 9 MRM-58 location
+>   blockouts (Camp/Dock/Glade/Cabin/Mine Entrance/Flak Tower/Mine Exit/Well/Chapel) were already
+>   flagged orphaned after the *first* regen and are now doubly stale — not repositioned for either
+>   of the two terrains since. Biome regions need re-anchoring from scratch against the current
+>   shape, not adjusted from these old numbers.
+> - **The custom tools §6b describes building — `BiomeGrassSetup.cs` and `BiomeVegetationSetup.cs`
+>   under `Assets/_Project/Code/Editor/`, menu `Tools/Mr. Moonlight/Vegetation/` — no longer exist
+>   in the repo** (confirmed via `git status`, both show deleted). Don't assume they're available;
+>   confirm before referencing them, and if vegetation work resumes, decide whether to rebuild them
+>   or use a different path (see below).
+>
+> **What's still genuinely reusable:** §2 (terrain layers *are* the biome masks — a strategy
+> decision, not a coordinate), §4 (per-biome content plan / species palette / colour-coding), §5
+> (the technical fixes needed — no LODGroups, GFF grass can't be detail meshes, MeshCollider vs
+> CapsuleCollider). These don't depend on where the terrain's edges are.
+>
+> **A path not evaluated when this doc was written, worth considering now:** Gaia itself has a
+> native rule-based Spawner system (`Spawner`/`SpawnRule`) that can paint textures, spawn terrain
+> trees, terrain details, *and* arbitrary GameObjects/props from one rule set — masked by painted
+> terrain texture layer, slope, height, noise, or a hand-drawn `PolyMask` region — with rule
+> resolution modes (`Fittest`/`WeightedFittest`) that directly address the old Vegetation Spawner's
+> hard-cutoff/overlap limitations. Not proven out hands-on yet (no cross-species spacing guarantee
+> confirmed). Full research write-up in `Docs/mrm70-biome-vegetation-kickoff.md`.
+>
+> **Current open gaps and the actual next-session starting point live in
+> `Docs/mrm70-biome-vegetation-kickoff.md`** (2026-08-29) — supersedes `mrm70-pause-2026-08-26.md`
+> for this purpose, which is now historical only (also written against the pre-regen terrain).
 
 
 Written 2026-08-25, branch `mrm-70`. Inputs: `Docs/Design/Island-Terrain-Reference/Map/biomes.png`,

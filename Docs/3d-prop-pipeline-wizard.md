@@ -686,6 +686,44 @@ where uncompressed would be smaller *and* cleaner. **Pre-existing** — the old 
 the same bug. Fixing it needs source dimensions at preprocess time, which no public API exposes.
 Revisit only if a small texture visibly bands.
 
+### G12 — Bulk runs and shakedown contradicted each other in `SKILL.md`
+
+The hot-path skill file had a "Bulk runs" section telling Claude to "run end to end" over a list,
+sitting below its own shakedown banner saying "never batch." Nothing had cleared shakedown yet
+(`prop-log.md` is empty), so the first real bulk request — a vegetation list from Carlos, sourced
+from Playground — would have hit that contradiction directly. **Fixed 2026-08-29**: bulk runs are
+now explicitly gated on shakedown clearing in `SKILL.md`.
+
+### G13 — Playground-sourced assets aren't quite the same intake as `E:\Props` or Tripo
+
+`SKILL.md`'s intake already named Playground as a source option, but didn't say Playground
+sources are typically **pre-built asset-pack meshes** (already textured, sometimes already
+low-poly) rather than raw geometry needing the full Tripo-style treatment, nor that
+`Docs/dual-project-workflow.md`'s folder+`.meta` copy has to happen *before* the wizard's own
+step 1. Also caught: `SKILL.md` still named the pre-move Playground path
+(`E:\playground\test`) — stale since the 2026-08-28 move to `E:\playground\My project`. **Fixed
+2026-08-29.**
+
+### G14 — The Topdown-pack eye-height check was promised but never written down
+
+`Docs/new-asset-list.md`'s Topdown Nature Library row says "**Add this check to the prop
+wizard**" — checking a top-down-authored mesh's silhouette at first-person eye height in
+Playground before adopting the whole set, since undersides/sides are often unfinished or flat
+billboards on that kind of pack. It was never actually added anywhere in this doc or `SKILL.md`.
+**Fixed 2026-08-29**, added to `SKILL.md`'s hot path step 1. Applies to Low Poly Plant
+Collections too, same reasoning.
+
+### G15 — The MeshCollider exception doesn't hold for Gaia-spawned vegetation
+
+§3.3's collider rule allows Mesh Collider "when the silhouette genuinely matters." For anything
+meant to be spawned as a Gaia **Terrain Tree** instance, that exception doesn't apply — Unity
+terrain trees silently reject Mesh Colliders outright, a trap already paid for once (see
+`mrm70-flora-phase-kickoff.md`'s trap table). A vegetation piece with a complex enough silhouette
+to want a Mesh Collider still has to make do with Capsule/Box/Sphere if it's going in as a
+terrain tree, or be spawned as a real GameObject instead (see
+`mrm70-vegetation-3d-pipeline-kickoff.md`'s Terrain-Tree-vs-GameObject table for that tradeoff).
+**Fixed 2026-08-29**, noted in `SKILL.md`'s prefab step.
+
 ### Closed gaps
 
 Moved here with the date and what closed them, rather than deleted — knowing a gap existed is

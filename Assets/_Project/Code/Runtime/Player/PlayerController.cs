@@ -244,8 +244,7 @@ namespace MrMoonlight.Player
                 moveDirection.Normalize();
             }
 
-            bool grounded = CheckGrounded(out Vector3 groundNormal);
-            bool onSteepSlope = grounded && Vector3.Angle(groundNormal, Vector3.up) > _controller.slopeLimit;
+            bool grounded = CheckGrounded();
 
             if (grounded && _verticalVelocity < 0f)
             {
@@ -253,9 +252,7 @@ namespace MrMoonlight.Player
             }
 
             // hasStamina also gates jump (MRM-12) — refuses at exactly empty rather than letting
-            // OnJumped's stamina cost drain below zero. Jump is not blocked on steep ground —
-            // sliding below stops the jump-climb instead, while still letting Tracey jump off a
-            // slope back toward flat ground.
+            // OnJumped's stamina cost drain below zero.
             if (_input.Actions.Gameplay.Jump.WasPerformedThisFrame() && grounded && !_isCrouched && hasStamina)
             {
                 _verticalVelocity = ComputeJumpVelocity();
@@ -265,18 +262,6 @@ namespace MrMoonlight.Player
             _verticalVelocity += Tunables.I.Gravity * Time.deltaTime;
 
             Vector3 velocity = moveDirection * speed + Vector3.up * _verticalVelocity;
-
-            // Ground steeper than SlopeLimit slides Tracey back down it instead of just refusing
-            // to climb — CharacterController.slopeLimit alone only blocks the walking Move()
-            // resolution, not repeated jump+land hops that "ram" up a slope a step at a time
-            // (found live during MRM-58 terrain blockout). Basic constant-speed slide per Carlos's
-            // call; no friction/acceleration curve yet — flagged for polish, see SlideSpeed's doc
-            // comment on MoonlightTunables.
-            if (onSteepSlope)
-            {
-                Vector3 slideDirection = Vector3.ProjectOnPlane(Vector3.down, groundNormal).normalized;
-                velocity += slideDirection * Tunables.I.SlideSpeed;
-            }
 
             _controller.Move(velocity * Time.deltaTime);
 
@@ -301,33 +286,20 @@ namespace MrMoonlight.Player
         // layer as ordinary level geometry, so layer-based self-exclusion silently zeroed out
         // Default and broke jumping on anything else that shared it). Filtering by identity here
         // is correct regardless of what layer the player or the ground ends up on.
-        //
-        // groundNormal is reported separately from the grounded bool so UpdateMove can derive the
-        // slope angle for its own sliding logic — see SlideSpeed's doc comment on MoonlightTunables.
-        private bool CheckGrounded(out Vector3 groundNormal)
+        private bool CheckGrounded()
         {
             var origin = transform.position + _controller.center + Vector3.down * (_controller.height * 0.5f - _controller.radius);
             int hitCount = Physics.SphereCastNonAlloc(origin, _controller.radius * 0.95f, Vector3.down, _groundHitsBuffer, Tunables.I.GroundCheckDistance, _groundLayerMask, QueryTriggerInteraction.Ignore);
 
-            float closestDistance = float.MaxValue;
-            RaycastHit? closestHit = null;
             for (int i = 0; i < hitCount; i++)
             {
-                RaycastHit candidate = _groundHitsBuffer[i];
-                if (candidate.collider.gameObject == gameObject)
+                if (_groundHitsBuffer[i].collider.gameObject != gameObject)
                 {
-                    continue;
-                }
-
-                if (candidate.distance < closestDistance)
-                {
-                    closestDistance = candidate.distance;
-                    closestHit = candidate;
+                    return true;
                 }
             }
 
-            groundNormal = closestHit?.normal ?? Vector3.up;
-            return closestHit.HasValue;
+            return false;
         }
 
         // JumpSpeed is the applied takeoff velocity (Carlos tunes feel directly, per its own doc
