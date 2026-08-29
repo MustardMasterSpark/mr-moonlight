@@ -17,14 +17,14 @@ namespace MrMoonlight.Player
     /// punji-specific event. Owner: MRM-17
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
-    [RequireComponent(typeof(PlayerController))]
+    [RequireComponent(typeof(BurntwaxPlayerBridge))]
     public sealed class DeathSequence : MonoBehaviour
     {
         private const string RedTintSourceName = "Death";
 
         [Header("References")]
         [SerializeField] private PlayerStats playerStats;
-        [SerializeField] private PlayerController playerController;
+        [SerializeField] private BurntwaxPlayerBridge playerController;
 
         [Header("Placeholder — Carlos fills this in")]
 
@@ -45,7 +45,7 @@ namespace MrMoonlight.Player
 
             if (playerController == null)
             {
-                playerController = GetComponent<PlayerController>();
+                playerController = GetComponent<BurntwaxPlayerBridge>();
             }
 
             if (screamAudioSource != null)

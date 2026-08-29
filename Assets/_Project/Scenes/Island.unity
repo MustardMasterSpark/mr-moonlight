@@ -119,30 +119,6 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
---- !u!114 &32490203
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GaiaCore::Gaia.NoiseSettings
-  transformSettings:
-    translation: {x: 500, y: 200, z: 350}
-    scale: {x: 3.90625, y: 1, z: 3.90625}
-    rotation: {x: 0, y: 0, z: 0}
-    flipScaleX: 0
-    flipScaleY: 0
-    flipScaleZ: 0
-  domainSettings:
-    noiseTypeName: Perlin
-    fractalTypeName: Fbm
-    noiseTypeParams: 
-    fractalTypeParams: '{"warpOffsets":{"x":0.0,"y":0.0,"z":0.0,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.30000001192092898,"frequency":1.0,"persistence":0.5,"lacunarity":1.5,"warpIterations":0.0,"warpStrength":1.0,"warpEnabled":false,"warpExpanded":true}'
 --- !u!1 &34607794
 GameObject:
   m_ObjectHideFlags: 0
@@ -5071,142 +5047,6 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!114 &651946083
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a03e9604ee0545145921e9e3872312ba, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GaiaCore::Gaia.GaiaSceneCullingProfile
-  m_applyToEditorCamera: 0
-  m_realtimeUpdate: 0
-  m_layerDistances:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  m_layerNames:
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  m_shadowLayerDistances:
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  - 0
-  m_additionalCullingDistance: 0
---- !u!1 &671996925 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 176977356509104966, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-  m_PrefabInstance: {fileID: 1510719625}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &671996930
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 671996925}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f2189c0bafe64f942beb09bd4969353b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: GaiaCore::Gaia.SimpleCameraLayerCulling
-  m_profile: {fileID: 651946083}
-  m_applyToGameCamera: 1
-  m_directionalLight: {fileID: 996523452}
-  m_moonLight: {fileID: 0}
-  m_applyToSceneCamera: 1
 --- !u!114 &701155724
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7768,11 +7608,6 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!108 &996523452 stripped
-Light:
-  m_CorrespondingSourceObject: {fileID: 442630334588094770, guid: 1d8ccec03a2709f46a8541b1c2235cee, type: 3}
-  m_PrefabInstance: {fileID: 1649754441590628843}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1079031325
 GameObject:
   m_ObjectHideFlags: 0
@@ -12036,6 +11871,30 @@ MonoBehaviour:
   m_highlightLoadingSettingsStartedTimeStamp: 0
   m_loadTerrainMode: 0
   m_impostorLoadingRange: 0
+--- !u!114 &1469195247
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cba17d399ab86974c8ef9551f6e8f8d4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: GaiaCore::Gaia.NoiseSettings
+  transformSettings:
+    translation: {x: 500, y: 200, z: 350}
+    scale: {x: 3.90625, y: 1, z: 3.90625}
+    rotation: {x: 0, y: 0, z: 0}
+    flipScaleX: 0
+    flipScaleY: 0
+    flipScaleZ: 0
+  domainSettings:
+    noiseTypeName: Perlin
+    fractalTypeName: Fbm
+    noiseTypeParams: 
+    fractalTypeParams: '{"warpOffsets":{"x":0.0,"y":0.0,"z":0.0,"w":0.0},"octavesMinMax":{"x":0.0,"y":16.0},"amplitudeMinMax":{"x":0.0,"y":1.0},"frequencyMinMax":{"x":0.0,"y":2.0},"lacunarityMinMax":{"x":0.0,"y":4.0},"persistenceMinMax":{"x":0.0,"y":1.0},"warpIterationsMinMax":{"x":0.0,"y":8.0},"warpStrengthMinMax":{"x":-2.0,"y":2.0},"octaves":8.0,"amplitude":0.30000001192092898,"frequency":1.0,"persistence":0.5,"lacunarity":1.5,"warpIterations":0.0,"warpStrength":1.0,"warpEnabled":false,"warpExpanded":true}'
 --- !u!1 &1487636258
 GameObject:
   m_ObjectHideFlags: 0
@@ -12620,7 +12479,7 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!1001 &1510719625
+--- !u!1001 &1517789493
 PrefabInstance:
   m_ObjectHideFlags: 0
   serializedVersion: 2
@@ -12628,81 +12487,55 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 988803277166744411, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
+      propertyPath: m_Name
+      value: Player
+      objectReference: {fileID: 0}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.x
       value: -107.7
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.y
       value: 56.3
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.z
       value: 402.9
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalRotation.w
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalRotation.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalRotation.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalRotation.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 1917331669029953601, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    - target: {fileID: 7934387394486810015, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2732533364445831346, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: gameOverPanel
-      value: 
-      objectReference: {fileID: 2141972147}
-    - target: {fileID: 2732533364445831346, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: blackScreenImage
-      value: 
-      objectReference: {fileID: 1329406541}
-    - target: {fileID: 3292340062534474332, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: far clip plane
-      value: 4000
-      objectReference: {fileID: 0}
-    - target: {fileID: 5315715615500149478, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: m_Material
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 6692611687881276005, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: m_RenderPostProcessing
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8675351696025013920, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      propertyPath: m_Name
-      value: Player
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 8675351696025013920, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      insertIndex: 2
-      addedObject: {fileID: 1911954726}
-    - targetCorrespondingSourceObject: {fileID: 176977356509104966, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 671996930}
-  m_SourcePrefab: {fileID: 100100000, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
 --- !u!1 &1539634504
 GameObject:
   m_ObjectHideFlags: 0
@@ -17205,30 +17038,6 @@ MonoBehaviour:
     m_selectedWorldBiomeMaskGUID: 
     m_growAndShrinkValue: 0
     m_globalSpawnerMaskStackRT: {fileID: 0}
---- !u!1 &1911954718 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 8675351696025013920, guid: f7d1d8eab3b21ca4fb9e26c2dda1ed05, type: 3}
-  m_PrefabInstance: {fileID: 1510719625}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1911954726
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1911954718}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 376320908abe44a4c8999e8c74e64cd5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.DebugFlyController
-  flyModeEnabled: 0
-  cameraPivot: {fileID: 0}
-  flySpeed: 6
-  flySpeedFast: 18
-  lookSpeed: 0.15
-  stickLookSpeed: 180
-  stickLookAcceleration: 900
 --- !u!1 &1919093558
 GameObject:
   m_ObjectHideFlags: 0
@@ -18949,7 +18758,7 @@ MonoBehaviour:
       m_warpIterations: 0
       m_warpStrength: 1
       m_warpOffset: {x: 0, y: 0, z: 0, w: 0}
-    m_noiseSettings: {fileID: 32490203}
+    m_noiseSettings: {fileID: 1469195247}
     m_noiseToolSettings:
       worldHeightRemap: {x: 0, y: 0}
       coordSpace: 0
@@ -20144,7 +19953,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1649754441590628843}
   - {fileID: 1567835300}
-  - {fileID: 1510719625}
   - {fileID: 5388649221313975039}
   - {fileID: 2077578735149915558}
   - {fileID: 477653414}
@@ -20168,3 +19976,4 @@ SceneRoots:
   - {fileID: 1592929606}
   - {fileID: 1279043075}
   - {fileID: 1393910374}
+  - {fileID: 1517789493}

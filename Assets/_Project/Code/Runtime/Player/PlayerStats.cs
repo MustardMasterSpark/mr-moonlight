@@ -21,11 +21,11 @@ namespace MrMoonlight.Player
     /// boots/weapon/substance modifiers attached here actually affect movement. See
     /// <see cref="PlayerController"/>'s class doc comment.</para>
     /// </summary>
-    [RequireComponent(typeof(PlayerController))]
+    [RequireComponent(typeof(BurntwaxPlayerBridge))]
     public sealed class PlayerStats : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private PlayerController playerController;
+        [SerializeField] private BurntwaxPlayerBridge playerController;
 
         private float _currentAudioPitch;
         private float _lastSprintTime = float.NegativeInfinity;
@@ -65,7 +65,7 @@ namespace MrMoonlight.Player
         {
             if (playerController == null)
             {
-                playerController = GetComponent<PlayerController>();
+                playerController = GetComponent<BurntwaxPlayerBridge>();
             }
 
             Health = new Stat(Tunables.I.MaxHealth, 0f, Tunables.I.MaxHealth);

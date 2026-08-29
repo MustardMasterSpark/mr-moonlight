@@ -36,6 +36,7 @@ These are referenced by GUID from tracked assets. **Without them the project doe
 | **Vegetation Spawner FREE** | Staggart Creations | (free) | `Assets/ThirdParty/VegetationSpawner/` | `Island.unity` — guid `1f710250abab6f24a954bdf3c3c1ac64` |
 | **Simple Water Shader URP** | IgniteCoders | (free) | `Assets/ThirdParty/SimpleWaterShaderURP/` | `Island.unity` (Sea) |
 | **Terrain Sample Asset Pack** | Unity Technologies | (free) | `Assets/ThirdParty/TerrainSampleAssets/` | MRM-70 TSA vegetation prefabs reference meshes in `Models/` |
+| **Burntwax FPS Engine** | Burntwax Collective | (as of 2026-08-29) | `Assets/ThirdParty/Burntwax Collective/` | `Player.prefab` — the whole player controller, weapon, pickup and pause stack (MRM-9) |
 
 ### Extraction notes
 
@@ -47,6 +48,14 @@ These are referenced by GUID from tracked assets. **Without them the project doe
   Decline the "install the additional Shader Graph package" popup unless authoring custom PSX shaders.
 - **Vegetation Spawner FREE** — 3.5 MB full, **212 KB** installed. Keep `Runtime/`, `Editor/`,
   asmdefs; drop `_Demo/`.
+- **Burntwax FPS Engine** — 103 MB download, **73 MB** installed. ⚠️ **This is a Complete Project
+  export, not a systems package: it ships all 19 `ProjectSettings/*.asset` files plus
+  `Packages/manifest.json`.** Importing it through the normal dialog would clobber the URP renderer
+  assignment, physics, and the tag/layer table. **Extract only the `Assets/` subtree** — read the
+  `.unitypackage` out of the Asset Store cache and pull the paths you want, rather than using the
+  import dialog at all (same technique as AllSky). It also requires **Cinemachine 3.1.7** and
+  **Animation Rigging 1.4.1**, both installed via Package Manager. Wall-running, the save system and
+  its menus were stripped; see `Docs/mrm9-burntwax-integration.md`.
 - **Terrain Sample Asset Pack** — **1.9 GB**. This is the one genuinely large dependency.
   ⚠️ The MRM-70 TSA prefabs reference meshes *inside* it, which is fragile. Anything from it that
   actually ships should be copied into `Assets/_Project/Art/` with attribution.
