@@ -11,28 +11,42 @@ Unity 6.3 LTS · URP · **Windows 64-bit standalone, 1920×1080**.
 
 ## Folder structure
 
-Everything the project owns lives under `Assets/_Project/`. Third-party assets stay in `Assets/ThirdParty/` and are **never edited** — if a package needs changing, wrap it, do not fork it. (This split already exists in the repo. Keep it.)
+Everything the project owns lives under `Assets/_Project/`. `Assets/ThirdParty/` is git-ignored
+project-wide (`.gitignore`, keeps large vendor packages out of the repo) — anything that needs to
+survive a re-clone cannot live there.
+
+**Updated 2026-08-30, Carlos's call.** That used to mean "never edit third-party assets, wrap
+instead" as a blanket rule. In practice, engines like the Burntwax FPS Engine (MRM-9) need direct
+in-place edits to their own logic — wrapping every gameplay tweak isn't realistic. The actual
+split now: a vendor package's **3D/binary content** (models, textures, materials, animations,
+prefabs referencing them) stays in `Assets/ThirdParty/<Package>/`, untouched and untracked, same
+as before. A vendor package's **script logic** — anything with a heavy asmdef/code surface we're
+likely to edit — gets **moved into `Assets/_Project/Code/Vendor/<Package>/`** (same relative
+folder structure, moved via `AssetDatabase.MoveAsset` so GUIDs/references survive) so it's tracked
+and diffable like the rest of the project, and can be edited directly rather than wrapped. Done for
+Burntwax's `Scripts/` folder this way 2026-08-30 (`Burntwax.Core.asmdef` and all 62 scripts, e.g.
+`PlayerStateMachine.cs` is now at `Assets/_Project/Code/Vendor/Burntwax FPS Engine/Scripts/Player/
+Movement/PlayerStateMachine.cs`). **Not retroactively applied to every other already-integrated
+package** — only do this for a package when its logic is actually being edited enough to be worth
+tracking, same trigger as Burntwax.
 
 ```
 Assets/
 ├── _Project/
 │   ├── Art/            Models, textures, materials — see the breakdown below
 │   ├── Audio/          Clips, mixer assets
+│   ├── Code/
+│   │   ├── Runtime/     Player, weapons, enemies, systems, audio, UI, VFX, data, world
+│   │   ├── Editor/      Editor tools, CSV bakers, custom inspectors
+│   │   ├── Tests/       EditMode tests
+│   │   └── Vendor/      Tracked, editable copies of third-party packages' SCRIPT logic only
+│   │                    (e.g. Burntwax FPS Engine/Scripts/) — see note above. The package's own
+│   │                    3D/binary assets stay behind in Assets/ThirdParty/.
 │   ├── Data/           ScriptableObjects — tunables, baked CSV data
 │   ├── Prefabs/        Player, enemies, items, props, UI
 │   ├── Scenes/         MainMenu, Demo, Sandbox
-│   ├── Scripts/
-│   │   ├── Player/     Controller, stats, modes
-│   │   ├── Weapons/    Aiming, weapons, drops
-│   │   ├── Enemies/    Behaviours, detection, specific enemies
-│   │   ├── Systems/    Event director, dialogue, checkpoints, cutscenes
-│   │   ├── Audio/      Pools, layers, footsteps
-│   │   ├── UI/         Menus, HUD, inventory, prompts
-│   │   ├── VFX/        Post-processing profiles, particles
-│   │   ├── Data/       ScriptableObject definitions
-│   │   └── Editor/     Editor tools, CSV bakers, custom inspectors
 │   └── Settings/       URP assets, input actions, quality settings
-└── ThirdParty/
+└── ThirdParty/         Vendor 3D/binary content — git-ignored, never committed
 ```
 
 **Sandbox scene.** Keep a `Sandbox` scene with a flat plane, a sparring dummy and a spawn point. Every system gets tested there before it goes near the demo scene. This is faster than loading the island every time and it is where most acceptance criteria get checked.

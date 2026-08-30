@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7476915070078391282}
+  - component: {fileID: 8436523997582755017}
   m_Layer: 0
   m_Name: AP_Tree_04_M01_02_SM
   m_TagString: Untagged
@@ -32,6 +33,29 @@ Transform:
   - {fileID: 870834194664687461}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &8436523997582755017
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1176514208683605785}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.3429664
+  m_Height: 38.040737
+  m_Direction: 1
+  m_Center: {x: -0.10738222, y: 18.620935, z: -0.27023637}
 --- !u!1 &4692490409750748647
 GameObject:
   m_ObjectHideFlags: 0

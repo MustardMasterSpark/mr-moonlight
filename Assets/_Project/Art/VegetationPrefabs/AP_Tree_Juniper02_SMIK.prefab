@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 5395783350350806725}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.12, z: 0}
+  m_LocalScale: {x: 4.7428746, y: 5.699038, z: 4.7428746}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 8514171866770476801}
@@ -100,6 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 8514171866770476801}
+  - component: {fileID: 4297773502887932585}
   m_Layer: 0
   m_Name: AP_Tree_Juniper02_SMIK
   m_TagString: Untagged
@@ -123,3 +124,26 @@ Transform:
   - {fileID: 5723224452017251899}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &4297773502887932585
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6385863154402251517}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6812594
+  m_Height: 11.21499
+  m_Direction: 1
+  m_Center: {x: -0.21826924, y: 5.014858, z: 0.03527673}

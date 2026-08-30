@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 539773593044885080}
+  - component: {fileID: 9039965609877680012}
   m_Layer: 0
   m_Name: AP_Tree_WNT_M01_01_SM_3
   m_TagString: Untagged
@@ -32,6 +33,29 @@ Transform:
   - {fileID: 3411485044261076351}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &9039965609877680012
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 922836594835007947}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.88293624
+  m_Height: 21.70612
+  m_Direction: 1
+  m_Center: {x: 0.058046818, y: 8.889593, z: 0.111852884}
 --- !u!1 &6931786215687871082
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,8 +83,8 @@ Transform:
   m_GameObject: {fileID: 6931786215687871082}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.27, z: 0}
+  m_LocalScale: {x: 2.2270782, y: 2.9960883, z: 2.2270782}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 539773593044885080}

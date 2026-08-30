@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2140689626905300804}
-  - component: {fileID: 2966134667460595106}
+  - component: {fileID: 5527346564200835642}
   m_Layer: 0
   m_Name: RF_Boulder3
   m_TagString: Untagged
@@ -33,8 +33,8 @@ Transform:
   - {fileID: 2820649434757191897}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &2966134667460595106
-BoxCollider:
+--- !u!136 &5527346564200835642
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -51,9 +51,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.782076, y: 1.0947883, z: 2.3791237}
-  m_Center: {x: 0, y: 0.54739416, z: -0.000000059604645}
+  serializedVersion: 2
+  m_Radius: 1.08
+  m_Height: 2.87
+  m_Direction: 0
+  m_Center: {x: 0, y: 0.11, z: 0}
 --- !u!1001 &2354904085966536498
 PrefabInstance:
   m_ObjectHideFlags: 0

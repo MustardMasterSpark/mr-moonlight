@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 6623247338018730960}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.13, z: 0}
+  m_LocalScale: {x: 2.184913, y: 2.184913, z: 2.184913}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 3977073227987576273}
@@ -99,6 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3977073227987576273}
+  - component: {fileID: 7208231913068440040}
   m_Layer: 0
   m_Name: AP_GraveKeepers_B07
   m_TagString: Untagged
@@ -122,3 +123,26 @@ Transform:
   - {fileID: 8547054521712188194}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7208231913068440040
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7770645983109151578}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 2
+  m_Height: 17.333176
+  m_Direction: 1
+  m_Center: {x: 0.744741, y: 8.481812, z: -0.59687847}

@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 3859285242867504886}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.34, z: 0}
+  m_LocalScale: {x: 1.1909715, y: 1.3593749, z: 1.1909715}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5964055593199704059}
@@ -99,6 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5964055593199704059}
+  - component: {fileID: 8476772272582806908}
   m_Layer: 0
   m_Name: AP_Tree_Lake_RoundTree_01_SM
   m_TagString: Untagged
@@ -122,3 +123,26 @@ Transform:
   - {fileID: 5950123329275078210}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &8476772272582806908
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8042002515684615818}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.3449461
+  m_Height: 15.703863
+  m_Direction: 1
+  m_Center: {x: 0.3006095, y: 7.485957, z: -0.094304375}

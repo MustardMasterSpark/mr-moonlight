@@ -27,8 +27,8 @@ Transform:
   m_GameObject: {fileID: 1810067250914088934}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.04, z: 0}
+  m_LocalScale: {x: 3.2402914, y: 3.2402914, z: 3.2402914}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 4359311395099050789}
@@ -100,6 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4359311395099050789}
+  - component: {fileID: 5045715347737499822}
   m_Layer: 0
   m_Name: AP_Tree_10_ArgassTree_SM
   m_TagString: Untagged
@@ -123,3 +124,26 @@ Transform:
   - {fileID: 5900186254687057169}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &5045715347737499822
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7493876948270804728}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.7231984
+  m_Height: 8.186714
+  m_Direction: 1
+  m_Center: {x: -0.05325657, y: 4.001951, z: 0.06876765}

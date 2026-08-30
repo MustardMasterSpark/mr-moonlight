@@ -99,6 +99,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6420889992133634571}
+  - component: {fileID: 7483319614066317714}
   m_Layer: 0
   m_Name: AP_GraveKeepers_B04
   m_TagString: Untagged
@@ -122,3 +123,26 @@ Transform:
   - {fileID: 2234307413941176088}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7483319614066317714
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8010740334823376334}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.33314198
+  m_Height: 6.071984
+  m_Direction: 1
+  m_Center: {x: 0.051716097, y: 3.0077584, z: 0.066705}
