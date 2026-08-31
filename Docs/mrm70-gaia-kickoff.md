@@ -64,6 +64,21 @@ longer strategy; it is a file list:
 | | `Gaia Pro/Gaia Pro Assets and Biomes` — sample biomes |
 | | `Gaia/Controller Support` — we have MRM-8 |
 
+> **⚠️ PARTIAL REVERSAL, 2026-08-31 — `Gaia Pro Assets and Biomes` is no longer a blanket decline.**
+> The package is still **not installed** and the decline stands as a *package* decision: it is 3.7 GB
+> of realistic art in the wrong style, and running its installer would drag in biomes, spawners and
+> materials we do not want.
+>
+> But it is now a **source we extract single files from**, the same way AllSky was. On 2026-08-31,
+> 14 files were pulled out of it by GUID (10 grass detail FBX + 2 texture atlases + 2 normals) for
+> the terrain-detail grass tier, pixelated through `Tools/pipeline/texture_pass.py` and rebuilt as
+> `GRASS_Gaia_*` prefabs under our own art direction. Nothing from the package ships as-is.
+>
+> **Rule going forward:** do not install it; *do* treat it as a library to extract from when it holds
+> something we would otherwise have to make. Still available and unextracted: 11 more `PW_LawnGrass`
+> meshes and 16 legacy grass billboard cards.
+> See `Docs/mrm70-unused-vegetation-inventory.md` §6.4.
+
 **Moved into Mr. Moonlight 2026-08-28**, from Playground's installer cache, at
 `Assets/ThirdParty/Gaia Pro VS/` — file+meta copy of *only* `Gaia.unitypackage` (+ its `.asset`
 descriptor) plus the Quick Start PDF. Nothing else from the cache was copied over, so Gaia's own

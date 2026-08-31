@@ -120,6 +120,12 @@ Gaia, by contrast:
 > cherry-picked later if a specific species is missing from our own asset list — but the sample
 > packs are explicitly "wrong style" (low-poly PSX vs. Gaia's more realistic defaults), so the
 > default is **no**, don't pull them in without a specific gap to fill.
+>
+> **First invocation of that clause, 2026-08-31.** The specific gap was ground-detail grass: Mr.
+> Moonlight's Gaia install ships zero grass art, and `Gaia Pro Assets and Biomes` holds 21 detail
+> meshes and 16 billboard cards. 14 files were extracted by GUID (never installed), pixelated
+> through our own texture pass, and rebuilt as `GRASS_Gaia_*` prefabs. The package stays declined;
+> the cherry-pick clause is what was used. See `Docs/mrm70-unused-vegetation-inventory.md` §6.4.
 
 Everything on the right would fight something already built and tuned: **HAZE** for fog, **Retro
 Shaders Pro** for the CRT/PSX look, **Simple Water Shader** for the sea, our own `TimeManager` +

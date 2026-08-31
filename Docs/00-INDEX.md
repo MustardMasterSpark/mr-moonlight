@@ -53,3 +53,6 @@ Not written yet, but each will earn its place:
 **Do not create these speculatively.** An empty document is worse than no document — it reads as done.
 - `mrm9-burntwax-integration.md` — MRM-9 Burntwax FPS Engine controller swap: what was taken/changed/dropped, the prefab architecture, the project-wide pause contract, bug history.
 - `mrm9-resume-2026-08-29.md` — MRM-9 pickup point: state, settled decisions, the traps that cost time, open items.
+- `mrm70-unused-vegetation-inventory.md` — MRM-70: what vegetation the project owns but does not spawn, the 30 `GRASS_*` detail prefabs built from it, and why grass is a Gaia spawner rule rather than a separate tool.
+- `vegetation-distribution-brief.md` — the self-contained brief handed to ChatGPT for the biome distribution pass: player scale, Gaia placement mechanics, the live 78-rule configuration, and all 95 in-scope prefabs with measured sizes.
+- `mrm70-resume-2026-08-31-night.md` — MRM-70 pickup point: the two-tier prefab split, the three unfixed problems in the live spawn config (slope caps first), and what is waiting on ChatGPT.

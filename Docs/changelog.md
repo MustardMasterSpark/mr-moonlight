@@ -5,6 +5,62 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-70 (in progress, 2026-08-31) — Grass/ground-detail tier built; slope caps found to be choking every spawn rule
+
+**BUILT**
+
+- **30 `GRASS_*` detail prefabs** at `Assets/_Project/Art/VegetationPrefabs/GRASS PREFABS/` —
+  20 `GRASS_TSA_*` (Unity TerrainSampleAssets) + 10 `GRASS_Gaia_*` (5 LawnGrass, 5 WildGrass).
+  All verified as 1 MeshFilter / 1 MeshRenderer / 0 LODGroup / 0 Collider, which is what Unity's
+  terrain detail system requires. Carlos then moved 42 further no-collider prefabs (flowers, ferns,
+  mushrooms, small plants) into the same folder, so the grass tier now holds 72.
+- Source art at `Art/Environment/Vegetation/GrassDetail/{TSA,Gaia}/` — 10 FBX, 12 pixelated
+  textures, 10 RetroLit materials.
+- `Docs/mrm70-unused-vegetation-inventory.md` — what the project owns but never spawns; identified
+  the 53 first-island prefabs sitting in `Prefabs/World/Vegetation/` that the Gaia spawn never saw.
+- `Docs/vegetation-distribution-brief.md` — the ChatGPT brief: player scale, Gaia placement
+  mechanics, the live 78-rule config, and all 95 in-scope prefabs with measured sizes.
+- `Tools/vegetation/current_spawn_setup.csv` — the live spawner configuration dumped from the scene,
+  so the original numbers survive any retune.
+
+**DECISIONS**
+
+- **Grass is a Gaia spawner rule, not a separate tool.** `SpawnerResourceType.TerrainDetail` is
+  native, and `ResourceProtoDetail` carries mesh-or-texture prototype, min/max size, density,
+  coverage, colour and the same spawn criteria the tree rules use. The deleted `BiomeGrassSetup`
+  (commit `f306acc`) is **not** being rebuilt. Rules survive a regeneration; hand-painted detail
+  does not, so Unity's Paint Details brush is a last-step touch-up only.
+- **`Gaia Pro Assets and Biomes` stays declined as a package but is now a cherry-pick source.**
+  Invokes the clause already written into `terrain-vegetation-tooling-decision.md`. 14 files
+  extracted by GUID, never installed, pixelated through our own pass.
+- **Gaia atlases go to 1024, not our usual 512.** `PW_LawnGrass_00_D` packs 12 meshes' UV islands;
+  512 would leave each around 128 px. Single-object textures stay at 512.
+- **The grass tier is out of scope for the ChatGPT distribution pass** — it is a coverage/density
+  problem, not per-species spawn weights, and it has no colliders.
+
+**FAILED**
+
+- Nothing failed, but an audit of the live spawners found three problems, all unfixed pending
+  ChatGPT's pass:
+  - **Every one of the 78 rules caps max slope at 5-10°.** Measured against the terrain, that
+    confines each species to 10-29% of the land; 42% of the island is 10-20° hillside and is
+    effectively bare. This is the likeliest cause of the island reading dull — bigger than any
+    weight choice. Proposed fix (not applied): 32° for trees, 30° for dead trees, 50° for rocks,
+    which takes the plantable area from ~29% to ~91% without touching the terrain.
+  - **44 of the 95 in-scope prefabs are never spawned**, including the entire GraveKeepers family,
+    all Curse/Heretic trees, `AP_S_Tree_01` (33.8 m) and `AP_GangshiTree_2` (34.8 m).
+  - **Every species is locked at scale 1.00-1.00**, so each instance of a tree is dimensionally
+    identical to every other one.
+
+**NEXT**
+
+- ChatGPT returns the per-biome distribution; apply it along with the slope-cap fix.
+- Register the 72 grass prefabs as `TerrainDetail` rules in the 9 biome spawners.
+- Remove the 5 ground plants still spawning as GameObjects in the Glade spawner — they moved to the
+  detail tier.
+
+---
+
 ## MRM-70 (in progress, 2026-08-30) — Biome vegetation distribution rebuilt from measured geometry; live terrain found to be 1024 m, not 4000 m
 
 **BUILT**
