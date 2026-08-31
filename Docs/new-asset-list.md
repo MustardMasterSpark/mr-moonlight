@@ -204,8 +204,9 @@ it as a **read-only reference and parts donor**. Specifically worth studying or 
 field taxonomy as the template for our own `WeaponDefinition` ScriptableObject. Reading a
 well-structured paid implementation before writing ours is cheap and legitimate.
 
-**Consequence for the toolkit:** **FPS Animation Baker Toolkit stays.** Carlos asked whether FPS
-Engine replaces it — it does not, and under this call it never enters the project as runtime code.
+**Consequence for the toolkit:** ~~**FPS Animation Baker Toolkit stays.**~~ **⚠️ SUPERSEDED 2026-08-31 —
+see R4.** The Baker Toolkit is now **rejected**: the animations it was meant to author are already
+owned. The FPS-Engine ruling itself is unchanged — it does not enter the project as runtime code.
 
 **Nothing is reopened by this call.** MRM-9, MRM-12, MRM-17, MRM-8 stay **Done**.
 
@@ -1425,6 +1426,77 @@ conditional on HAZE alone proving insufficient anyway (MRM-44).
 | **Ambient Sounds** | Rejected — MRM-38's layers already are a zone system |
 | **Asset Cleaner Pro** | Editor-only; run it *in Playground*, never point its delete at Mr. Moonlight |
 | **Skybox Blender** | MRM-47 chose instant, story-hidden swaps |
+
+---
+
+# R4 — Animation tooling, ruled 2026-08-31. **Full detail: `Docs/retarget-pro-strategy.md`**
+
+Carlos asked which of two animation assets to buy. Both were read against the real files in
+Playground, not the store pages. **Verdict: Retarget Pro V5 in, FPS Animation Baker Toolkit out** —
+but the reasoning inverted along the way, so read R4.1 before R4.2.
+
+## R4.1 — ⚠️ The premise for buying *any* FPS animation tool is dead
+
+Both `Toolkit.md` and this document justify the Baker Toolkit with *"roughly 15 hand animations
+across the demo"* that Claude cannot author. **Those 15 animations are already owned.** Enumerated
+from the FBXs on 2026-08-31 — every clip below is on the one shared `FP_Arms` skeleton (R3.1):
+
+| Issue | Weapon in the issue | Clips already shipped |
+|---|---|---|
+| **MRM-22** Pistol | **M1911** | 8 — AimFire, Equip, Fire, Hold, Idle, Reload, ReloadEmpty, Unequip |
+| **MRM-24** Shotgun | **DoubleBarrelShotgun** | 8 — AimFire, Equip, Fire, Hold, Holster, Idle, Reload, ReloadEmpty |
+| **MRM-23** Club | BaseballBat + FireAxe | 6 + 5 — the three swings, already ruled in R3.2 |
+| **MRM-25** Switching | every weapon | Equip / Unequip / Holster |
+| **MRM-21** ADS | every gun | Aim / AimFire |
+| **MRM-43** Map + compass | Flashlight, Syringe | Equip / Hold / Idle / Switch / Use |
+
+HQ FPS Weapons ships 19 weapons in total (AKM, Crossbow, F1, FlareGun, FragGrenade, HuntingRifle,
+M1A, MP5, MolotovCocktail, R870, Revolver + the above). **MRM-21/22/23/24/25/43 need no new
+animation and no animation tool.** They need the migration in MRM-23 and our own gameplay code.
+
+## R4.2 — ❌ FPS Animation Baker Toolkit — rejected
+
+Primary reason: R4.1. Secondary: CatRabbit, **v1.0**, May 2026, **zero reviews**, no feature list on
+the store page, no public documentation (it is inside the package), no forum or search footprint. A
+bet that cannot be de-risked before buying, 1 day before an M1 gate. **This reverses `Toolkit.md`'s
+"✅ Buy — the clearest buy on the list" verdict**, which was written before HQ FPS Weapons was inventoried.
+
+## R4.3 — ✅ Retarget Pro V5 (KINEMATION) — adopted, Playground-only
+
+Not for weapons. For the three things we genuinely cannot do today:
+
+1. **The wolf (MRM-33) is a quadruped.** Unity Humanoid retargeting cannot target a quadruped at
+   all — there is no workaround. This is the one hard capability gap, and only this tool fills it.
+2. **The Wendigo (MRM-36)** is `animationType = Human` on a **UE mannequin skeleton** (`root/pelvis/
+   spine_01/clavicle_l/upperarm_l/...`, plus `ik_hand_gun`). Unity's retargeting *works*, but on a
+   creature with deliberately non-human proportions it is exactly the case that produces sliding feet
+   and rubbery spines. Retarget Pro maps per bone-chain with IK correction, and ships `A_TPose_UE4` /
+   `A_TPose_UE5` presets that match this skeleton exactly.
+3. **Tracey's full body** — MRM-9's *"looking straight down shows body geometry"* criterion is
+   recorded as **not met** and owed back once a real Tracey model exists.
+
+**Plus a direct hit on a documented build-size risk.** This document flags Ultimate Animation
+Collection as *"one of the three real build-size risks — import only the clips actually used."* It
+holds **3,068 clips across 3,121 models**. Retarget Pro's batch bake turns that warning into a
+procedure: bake the ~20 clips we want in Playground, migrate only those, never import the library.
+
+**The adoption rule: it never enters Mr. Moonlight.** It is an editor tool; its `.Editor` asmdefs are
+Editor-platform-only and the runtime component is never placed on anything. Clips are baked in
+Playground and only the resulting `.anim`/`.fbx` cross over → **zero build footprint**, and the baked
+clips keep working even if the tool never opens again. Same shape as the Gaia Pro *editor-tools-only*
+adoption.
+
+**⛔ Do not let this pull in KINEMATION's FPS Animation Framework.** That is the *runtime* sibling and
+would reopen MRM-9/12/21/22/25 exactly as FPS Engine (cowsins) would (§1). Retarget Pro is the
+editor-only half.
+
+## R4.4 — Correction to R3.1
+
+R3.1 states: *"Unity retargeting only works between Humanoid avatars, so no third-person full-body
+animation can be retargeted onto these arms."* **True of Unity; no longer true of the project.**
+`RetargetProfile` has no `HumanBodyBones` dependency — it composes rig data from the model hierarchy,
+so Humanoid → Generic and arms-only targets are supported. It is **moot for MRM-23**, which R3.2
+already solved with owned clips, but it is no longer a structural wall for any future weapon.
 
 ---
 

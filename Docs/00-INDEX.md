@@ -13,6 +13,7 @@
 | `unity-conventions.md` | Any Unity work — folders, prefabs, ScriptableObjects, scenes, the tunables pattern | 🔴 High |
 | `csharp-conventions.md` | Any C# — naming, structure, the no-hardcoded-values rule, performance patterns | 🔴 High |
 | `3d-prop-pipeline-wizard.md` | **Any prop, character or weapon work — read this first.** The executable wizard (`/prop`): four paths, the two-map RetroLit standard, the Unity finish, and the write-back protocol that makes each prop faster than the last | 🔴 **Read first for assets** |
+| `retarget-pro-strategy.md` | **Before any character, enemy or weapon *animation* work.** The 2026-08-31 ruling: Retarget Pro V5 adopted (Playground-only, zero build footprint), FPS Animation Baker Toolkit rejected, and the verified proof that every FP weapon animation the demo needs is **already owned** | 🔴 **Read first for animation** |
 | `prop-log.md` | One entry per finished prop — what it cost, what was learned. Glance at it before starting a prop | 🟡 Reference |
 | `3d-asset-pipeline.md` | Blender export conventions, baking mechanics, UVs, poly reduction, Unity mesh/texture import settings, LOD rules, vegetation budget. ⚠️ **Its §2 map set is superseded** by the wizard's §2 | 🔴 High |
 | `system-architecture.md` | Understanding how systems talk to each other. Contains the dependency and interaction diagrams | 🟡 Reference |
@@ -56,3 +57,4 @@ Not written yet, but each will earn its place:
 - `mrm70-unused-vegetation-inventory.md` — MRM-70: what vegetation the project owns but does not spawn, the 30 `GRASS_*` detail prefabs built from it, and why grass is a Gaia spawner rule rather than a separate tool.
 - `vegetation-distribution-brief.md` — the self-contained brief handed to ChatGPT for the biome distribution pass: player scale, Gaia placement mechanics, the live 78-rule configuration, and all 95 in-scope prefabs with measured sizes.
 - `mrm70-resume-2026-08-31-night.md` — MRM-70 pickup point: the two-tier prefab split, the three unfixed problems in the live spawn config (slope caps first), and what is waiting on ChatGPT.
+- `retarget-pro-strategy.md` — the animation-tooling ruling: what Retarget Pro is for (Wendigo, the quadruped wolf, Tracey's body), what it is *not* for (weapons — already covered), the bake-in-Playground-migrate-clips-only rule, and the diagnosis of the Playground Crest console error.

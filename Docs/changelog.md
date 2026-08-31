@@ -5,6 +5,75 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## Animation tooling ruling (2026-08-31) — Retarget Pro V5 adopted, FPS Animation Baker Toolkit rejected
+
+Not an issue — an asset decision Carlos asked for, with the package read in Playground rather than
+judged from store pages. Full ruling and procedure: **`Docs/retarget-pro-strategy.md`**.
+
+**BUILT**
+
+- `Docs/retarget-pro-strategy.md` — the adoption ruling, the verified clip inventory, the
+  bake-in-Playground/migrate-clips-only rule, a step-by-step Sonnet-facing procedure, and the
+  Playground console-error diagnosis.
+- `Docs/new-asset-list.md` **R4** — the ruling in the asset-triage document, plus a correction to R3.1.
+- `Docs/external-assets.md` — new *Adopted — Playground-only* section; Baker Toolkit and FPS
+  Animation Framework added to *Rejected*.
+- `Docs/dual-project-workflow.md` — the two permanent Playground console errors, and Playground's
+  new role as the animation bench.
+- `Docs/00-INDEX.md` — new row, 🔴 *Read first for animation*.
+
+**DECISIONS**
+
+- **Retarget Pro V5 (KINEMATION) adopted — but it never enters Mr. Moonlight.** Editor bake tool;
+  clips are baked in Playground and only `.anim`/`.fbx` migrate. **Zero build footprint.**
+- **It is not for weapons.** It is for the **quadruped wolf** (MRM-33 — the one thing Unity's
+  retargeting cannot do at all), the **Wendigo** (MRM-36 — quality on non-human proportions;
+  it is a UE-mannequin Humanoid, so Unity *works*, just badly), **Tracey's full body** (MRM-9's
+  unmet look-down criterion), and taking ~20 clips out of Ultimate Animation Collection's **3,068**
+  without importing the library — a documented build-size risk.
+- **FPS Animation Baker Toolkit rejected**, reversing `Toolkit.md`'s "clearest buy on the list".
+  Primary reason is not the publisher — it is that **the job no longer exists**.
+- **⛔ KINEMATION's FPS Animation Framework stays out.** Runtime system; would reopen MRM-9/12/21/22/25
+  exactly as FPS Engine would.
+
+**FOUND** — verified from the real FBXs, not remembered
+
+- **Every FP weapon animation the demo needs is already owned.** HQ FPS Weapons 2.0 ships 19 weapons
+  on one shared `FP_Arms` skeleton, including the **M1911** (8 clips) and **DoubleBarrelShotgun**
+  (8 clips) — the exact weapons MRM-22 and MRM-24 name. MRM-21/22/23/24/25/43 need no animation tool.
+- `FP_Arms` is `Generic`, 54 transforms, `UpperArm → Forearm → Hand` + 5×3 finger bones per side,
+  `ForearmTwist.1-4` chains, and **no weapon bone** — HQ drives the weapon off `Hand.R`.
+- The **Wendigo is `animationType = Human` on an Unreal mannequin skeleton** (`root/pelvis/spine_01/
+  clavicle_l/...` with `ik_hand_gun`, `ik_foot_l/r`). Retarget Pro ships matching `A_TPose_UE4/UE5`.
+- Owned Humanoid clip libraries: Ultimate Animation Collection **3,068**, Knife MocapAnimPack **206**,
+  Cult Animations **29**.
+- Retarget Pro's public docs claim *"does not support baking Humanoid rigs"* — **out of date for v5**;
+  `HumanoidAnimationBaker` delegates straight to `GenericAnimationBaker`.
+
+**FAILED / NOT A BUG**
+
+- **The Playground console error is not Retarget Pro's.** Retarget Pro compiles clean — 0 errors,
+  11 cosmetic `CS0618` Unity-6.3 deprecation warnings. The `DirectoryNotFoundException` on
+  `Packages\com.waveharmonic.crest\...\Settings.Crest.iOS.hlsl` is caused by **Crest Water 5 being
+  folder-copied into `Assets/PLAYGROUND/` instead of installed at `Packages/com.waveharmonic.crest/`**;
+  its C# hardcodes that path in nine `[GenerateHLSL(sourcePath = ...)]` attributes. Importing any
+  package triggers a recompile that re-runs the shader generator, which is why it looked new.
+  The second error (main-toolbar deprecation) is HQ FPS Weapons' bundled EditorToolbox, present
+  since May. **Neither affects Mr. Moonlight.**
+
+**NEXT**
+
+- **~30 min validation, not yet done:** bake **one** clip from Ultimate Animation Collection onto the
+  Wendigo in Playground and look at it before any issue schedules work around this tool
+  (`retarget-pro-strategy.md` §6.1).
+- Decide the Playground Crest fix: move it to `Packages/`, or delete it. Needs Carlos.
+- **Stale asset claim found:** MRM-33 says a wolf pack is *"already staged in Playground at
+  `Assets/Wolf_enemu/`"* — **that folder does not exist**, and nothing matching `*wolf*` is under
+  Playground's `Assets/`. Flagged on the issue; MRM-33's quadruped case cannot be tested until a
+  model actually exists.
+
+---
+
 ## MRM-70 (in progress, 2026-08-31) — Grass/ground-detail tier built; slope caps found to be choking every spawn rule
 
 **BUILT**

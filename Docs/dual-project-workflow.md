@@ -100,3 +100,29 @@ matches the PSX look, into the Lane B/C pipeline once it's in Mr. Moonlight.
 - **The Mr. Moonlight/Playground port assignment lives only in this doc and in memory, not in
   Linear anywhere.** If the bridge setup ever needs redoing on a different machine, this file is the
   only record — keep it current if the ports change again.
+
+---
+
+## Known Playground-only console errors (2026-08-31) — do not chase these
+
+Playground is deliberately polluted, and two errors are permanent residents. **Neither exists in
+Mr. Moonlight, and neither is caused by whatever package you just imported.** Importing anything
+triggers a recompile, the recompile re-runs both, and they look new. They are not.
+
+| Error | Real cause | Do |
+|---|---|---|
+| `DirectoryNotFoundException: ...\Packages\com.waveharmonic.crest\...\Settings.Crest.iOS.hlsl` | **Crest Water 5 is folder-copied into `Assets/PLAYGROUND/` instead of `Packages/com.waveharmonic.crest/`.** Its C# hardcodes that package path in nine `[GenerateHLSL(sourcePath = "Packages/com.waveharmonic.crest/...")]` attributes; URP's `CSharpToHLSL` generator tries to write there on every recompile and the folder does not exist | Ignore, or fix properly: **move** the folder to `Packages/com.waveharmonic.crest/` (it has a `package.json`, so it is a straight move and matches Mr. Moonlight) **or delete it** (Crest already migrated). **Never** create an empty folder under `Packages/` to satisfy the path — no `package.json` makes Package Manager error instead |
+| `custom elements added to the Unity Editor's main toolbar using unsupported methods` | `HQ FPS Weapons 2.0/FPSCore/3rdParty/EditorToolbox/Editor/ToolboxEditorToolbar.cs:89` — a Unity 6.3 deprecation in a bundled third-party toolbar, present since the pack was staged in May | Ignore. It cannot follow us over: MRM-23's migration list takes FBXs and textures only, never `FPSCore/` |
+
+**The general lesson.** A vendor package that hardcodes `Packages/<name>/` paths **must be installed
+as an embedded package, not copied into `Assets/`.** Crest is the second time this has bitten
+(see `mrm71-crest-water-kickoff.md`); check for hardcoded `Packages/` strings before folder-copying
+any future package into Playground.
+
+## Playground is also the animation bench (2026-08-31)
+
+Everything needed to retarget animation is co-located in Playground and **stays there**:
+Retarget Pro V5, HQ FPS Weapons 2.0 (`FP_Arms`), Ultimate Animation Collection (3,068 clips),
+Cult Animations, Knife MocapAnimPack, and the Wendigo. Clips are baked here; **only the baked
+`.anim`/`.fbx` files migrate** into `Assets/_Project/Art/Animations/<Character>/`. The tool itself
+never enters Mr. Moonlight. See `Docs/retarget-pro-strategy.md` §5.
