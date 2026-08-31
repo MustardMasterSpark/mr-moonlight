@@ -8,6 +8,7 @@
 |---|---|---|
 | `pc-build-target.md` | **Before anything.** The Windows 64-bit / 1920×1080 target, player settings, quality settings, and the third-party rendering stack | 🔴 **Read first** |
 | `webgl-constraints.md` | ~~Before anything~~ — **HISTORICAL as of 2026-08-25.** WebGL is no longer a target; do not apply its rules to new work | ⚪ Historical |
+| `mrm70-biome-distribution-measured.md` | **Before any Gaia vegetation spawn.** Measured per-biome species distribution for all 9 biomes — spacing, weights, slope/altitude rules, clustering, and a Gaia field-by-field execution guide. Supersedes the GPT biome report's numbers and `mrm70-biome-vegetation-strategy.md` §3-4 | 🔴 **Read first for vegetation** |
 | `terrain-vegetation-tooling-decision.md` | Any terrain, biome, vegetation or vegetation-renderer question — which assets we use and, more usefully, which we rejected and why | 🟡 Reference |
 | `unity-conventions.md` | Any Unity work — folders, prefabs, ScriptableObjects, scenes, the tunables pattern | 🔴 High |
 | `csharp-conventions.md` | Any C# — naming, structure, the no-hardcoded-values rule, performance patterns | 🔴 High |
