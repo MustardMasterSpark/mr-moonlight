@@ -5,6 +5,72 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-70 (in progress, 2026-08-30) — Biome vegetation distribution rebuilt from measured geometry; live terrain found to be 1024 m, not 4000 m
+
+**BUILT**
+
+- `Docs/mrm70-biome-distribution-measured.md` — 1,574 lines. Per-biome species distribution for all
+  9 biomes (incl. Heretic Forest), derived from **measured prefab geometry** rather than estimates.
+  Replaces the numbers in `Docs/Design/Island-Terrain-Reference/Vibe/GPT biome analysis.md`, which
+  stays valid as art intent only.
+- `Tools/vegetation/` — the generator behind it: `measure_prefabs.cs` (UnityMCP snippet measuring
+  all 190 prefabs), `veg_sizes.csv`, `gen.py`, `biomes.py` (the 9 biome specs — the file to edit
+  when retuning), `appendix.py`, `build.sh`. Re-running `build.sh` regenerates the document, so the
+  numbers cannot drift out of sync with the assets.
+- Measured all 190 vegetation prefabs: visual-mesh bounds, footprint, burial depth, visible height,
+  collider blocking radius, triangle count.
+
+**DECISIONS**
+
+- **Size reference is the `Visual` child's renderer bounds, never colliders.** Carlos's explicit
+  correction — the MRM-70 batch capsules span full mesh height including below-ground root, so
+  collider height is not a size signal. Colliders are used only for blocking width.
+- **Spacing is derived, not absolute: `spacing = k x footprint`.** Five density tiers
+  (D/M/S/A/H) map to k multipliers. Retune tiers, never metres. Counts follow
+  `instances/ha ~= 8000 / spacing^2`.
+- **Density comes from stacking 4-7 strata per biome, not from crown overlap.** Forest reaches
+  ~1,345 instances/ha with no layer interpenetrating itself.
+- **Grass stays out of the per-biome budget** and returns to the terrain detail layer — Carlos's
+  call, and confirmed correct: the old build's grass was 27 detail prototypes, not prefabs.
+- **All 154 curated prefabs are in the distribution.** Verified programmatically; 8 added. Carlos
+  was explicit that the curated set is curated.
+- **Trees do not align to normal; rocks, logs and root formations do.** The buried tree pivots are
+  what make vertical placement work on slope — they are load-bearing, not a bug.
+
+**FAILED**
+
+- First pass put the GraveKeepers/Curse trees on accent tier, whose 67-200 m minimum spacing
+  silently overrode the density they were given — `AP_GraveKeepers_B03_2` came out at **3 instances
+  in the whole of Eerie Forest**. Caught by Carlos asking whether anything had been dropped. Fixed
+  (sparse tier, now 12-22 each) and the tables now carry a computed **count column** =
+  min(density target, spacing ceiling) so the contradiction cannot hide again.
+- First pass also used the old survey's biome areas, which summed to ~116 ha — more land than the
+  island has. Absolute counts were ~2x too high. Re-anchored.
+
+**FOUND — terrain state, unrelated to vegetation but blocking it**
+
+- **The live terrain is `Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/
+  Terrain_0_0-20260829 - 035828.asset` — 1024 x 1024 m at origin (-512, 0, -512).** Not
+  `Island_TerrainData.asset` (4000 m, essentially flat, max height 20 m) and not the
+  4103 x 7085 m backup. **64.2 ha of land above sea level Y=8; max height ~60 m above sea.**
+- **It has 0 terrain layers, 0 detail prototypes, 0 tree prototypes, 0 tree instances.** Terrain
+  layers are the biome masks, so no biome-masked spawn can run until they are rebuilt. The previous
+  8-layer / 27-detail-prototype configuration survives in
+  `Island_Original_TerrainData_Backup.asset`.
+- **Every biome coordinate in `mrm70-biome-vegetation-strategy.md` §3 is dead** — it refers to the
+  4103 x 7085 m terrain. Landmarks and the player spawn need re-anchoring to the -512...+512 frame.
+- Slope measured on the live terrain: 25% under 9 deg, 40% at 9-18, 33% over 18, steepest ~70 deg.
+
+**NEXT**
+
+1. Carlos defines the biome map (§6.3) — the hard blocker.
+2. Rebuild terrain layers + the 27-prototype grass detail pass (biome-independent, can start now).
+3. Mountain needs a terrain decision: max height is ~60 m and the tallest rock we own is 4.03 m
+   visible, so "Mountain" is currently a hill with knee-high rocks.
+4. 8 trip-wall props block 2.5-8.6x wider than their visible height (Appendix A) — fix at the
+   prefab before scattering thousands.
+5. Gaia execution mapping is written up in §10 with real `GaiaCore` field names.
+
 ## MRM-71 (created 2026-08-27, not started) — Water system: Crest Water 5
 
 **BUILT**

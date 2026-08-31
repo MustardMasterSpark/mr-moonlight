@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7918092196013880058}
+  - component: {fileID: 8611503759573440653}
   m_Layer: 0
   m_Name: AP_FallTree_02_SM
   m_TagString: Untagged
@@ -32,6 +33,29 @@ Transform:
   - {fileID: 7023215036550623979}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &8611503759573440653
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2169640831840985868}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.20218062
+  m_Height: 17.04693
+  m_Direction: 1
+  m_Center: {x: -0.0076522827, y: 7.35238, z: -0.0064427853}
 --- !u!1 &8950760015503472774
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,7 +83,7 @@ Transform:
   m_GameObject: {fileID: 8950760015503472774}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0.86, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

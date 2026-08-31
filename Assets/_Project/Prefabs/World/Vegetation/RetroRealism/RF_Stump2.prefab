@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4336182321755999641}
-  - component: {fileID: 8969089769836453093}
+  - component: {fileID: 3152413097786640691}
   m_Layer: 0
   m_Name: RF_Stump2
   m_TagString: Untagged
@@ -33,8 +33,8 @@ Transform:
   - {fileID: 2876535136277436131}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!65 &8969089769836453093
-BoxCollider:
+--- !u!136 &3152413097786640691
+CapsuleCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -51,9 +51,11 @@ BoxCollider:
   m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
-  serializedVersion: 3
-  m_Size: {x: 2.6612296, y: 4.3758326, z: 2.7152}
-  m_Center: {x: -0.000000059604645, y: 2.1879163, z: 0.000000059604645}
+  serializedVersion: 2
+  m_Radius: 0.69
+  m_Height: 4.13
+  m_Direction: 1
+  m_Center: {x: 0, y: 1.28, z: 0}
 --- !u!1001 &2333207698545471752
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -80,7 +82,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63bd4552326d1ec4dad78307f230b7ac, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.98
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: 63bd4552326d1ec4dad78307f230b7ac, type: 3}
       propertyPath: m_LocalPosition.z

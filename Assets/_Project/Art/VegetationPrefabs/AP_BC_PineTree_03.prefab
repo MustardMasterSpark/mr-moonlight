@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3814210411181191726}
+  - component: {fileID: 7419793143363640740}
   m_Layer: 0
   m_Name: AP_BC_PineTree_03
   m_TagString: Untagged
@@ -32,6 +33,29 @@ Transform:
   - {fileID: 5180693249035158431}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7419793143363640740
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2211139441376217841}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.390686
+  m_Height: 12.617866
+  m_Direction: 1
+  m_Center: {x: -0.06491323, y: 5.2662034, z: -0.0059854826}
 --- !u!1 &8330692597335498247
 GameObject:
   m_ObjectHideFlags: 0

@@ -232,6 +232,189 @@ call returned success."
   rescaling). Carlos's own plan was to walk the gallery and correct proportions — nothing here
   pre-empts that.
 
+## Update — 2026-08-30: foliage-card materials were single-sided (invisible from behind)
+
+Carlos found it in the gallery: many trees use a low-poly "card" trick — a flat plane or two
+standing in for a full leaf canopy, cheaper than real geometry. Rotate around one and the card
+vanishes entirely from the back — not faded, not different, just gone, background showing through
+the plane's own selection outline. Root cause: every `Retro Shaders Pro/Retro Lit` material had
+`_Cull = 2` (Back), the shader/GPU default — a plane only has one set of front-facing triangles, so
+backface culling makes it disappear completely once you're behind it, unlike a closed solid mesh
+where you'd never notice (there's always a front face pointed at you somewhere).
+
+**Fix:** `_Cull` is a real property on this shader (confirmed via `MaterialEditor.GetMaterialProperties`),
+set to `0` (Off = both sides render) directly on the **shared material assets**, not per-prefab —
+every prefab referencing one of these materials picks it up automatically, no per-prefab edits
+needed. Scoped by scanning every `Retro Shaders Pro/Retro Lit` material under `Assets/_Project/Art`
+that was still `Cull = Back`, and skipping anything name-matched as a solid prop (rock, stump,
+grave, nest, root, building, real bark trunk — 12 materials, e.g.
+`M_AP_TurtleLake_Rock_TurtleRock04_SM`, `M_AP_Tree_WNT_03_Bark_01_SM_2`) since a closed mesh doesn't
+need this and it's a real (if modest) GPU fill-rate cost to turn on everywhere indiscriminately.
+**96 materials** changed to `Cull = Off`, including all 29 tree `_extraN` leaf-card materials (the
+`M_<TreeName>_extraNN.mat` pattern — the canopy-card submaterial paired with each tree's main trunk
+material, confirmed via `M_AP_S_Tree_01_extra11.mat`, Carlos's original repro) and the LowPolyPlants
+pack (ferns/flowers/grass — always single/crossed card geometry in this kind of pack).
+
+**Not yet covered:** roughly 55 other `TopDownNature` tree/plant materials that also use alpha-cutout
+textures (so they *could* be cards too) but weren't blanket-toggled without visual confirmation.
+If any of those show the same vanish-from-behind symptom, they're template `_Cull = 2` and the
+mutation code above (same file scan, same property) applies directly — flag which ones and this
+gets fast to finish.
+
+## Update — 2026-08-30 (correction): the batch was broader than described, and reverted where wrong
+
+Carlos flagged a second case (`AP_GraveKeepers_B04`, hanging fabric strips on a dead tree, some
+invisible from behind) and asked me to check whether the card geometry was on its own submesh/
+material before touching it — if the "card" shares a submesh with solid geometry, flipping
+`_Cull` for the whole material needlessly doubles render cost on everything else sharing it.
+Checking that surfaced two real problems with the first pass:
+
+1. **The mutation script above was broader than what got described the first time.** It flipped
+   every `Retro Shaders Pro/Retro Lit` material under `Assets/_Project/Art` that wasn't
+   name-matched to the solid-prop keyword list — not just the 29 `_extraN` + 6 LowPolyPlants
+   materials as reported. That included several **solid single-submesh tree/trunk meshes with no
+   card geometry at all** that my keyword list didn't catch (no "Rock/Grave/Stump/etc." in the
+   name): `M_AP_Tree_Curse_J07` (13,461 tris), `M_AP_Tree_Curse_K01` (18,270), `M_AP_Tree_Heretic_A01_2`
+   (7,780), `M_AP_Tree_Lake_RoundTree_01_SM` (7,253), `M_AP_M6_Tree_MonsterTreeBark_SM_PHJ_2` (9,304),
+   `M_AP_Tree_Burnt_04_SM`, `M_AP_Tree_Dry_D01`/`_N02`, `M_AP_Tree_Break_02_SM`,
+   `M_AP_Tree_Break_MushroomTrunk_01_SM`, `M_AP_TurtleLake_Tree_BrokenTree01_SM`,
+   `M_AP_GR_003GR_002_D`, `M_AP_Mushroom_A01_2` — all single-submesh, 100% of their mesh's
+   triangles, genuinely solid. Also two clearly-named trunk materials shared across species,
+   `M_TrunkA_PTree` and `M_TrunkB_PineBody` (their paired canopy submeshes, `M_AP_Tree_04_PTree_01_SM_2`
+   and `M_AP_BC_PineTree_02`, correctly stayed flipped). **All 16 reverted to `_Cull = 2`.**
+
+2. **The `_extraN` suffix does not reliably mean "the small card."** Checking `M_AP_S_Tree_01`
+   (the tree from the *original* bug report) properly this time: its main, un-suffixed material
+   (`M_AP_S_Tree_01`) is only **34 of the mesh's 2,530 triangles (1%)** — that's the handful of
+   flat kite-shaped canopy planes actually reported as invisible. `M_AP_S_Tree_01_extra11`, which
+   the first pass assumed was the card because of its suffix, is **2,496 triangles (99%)** — the
+   dense, detailed twisted branch geometry visibly rendering fine in Carlos's own screenshot. The
+   naming convention runs backwards for this species. **Reverted `M_AP_S_Tree_01_extra11` to
+   `_Cull = 2`; `M_AP_S_Tree_01` (the real card) stays at `_Cull = 0`, correctly fixing the
+   original report.**
+
+Attempted a more rigorous per-submesh check (clustering triangle face-normal directions — a flat
+card should show very few distinct directions, an organic branch surface many) across the other 18
+`_extraN` pairs to see if any more were backwards, but the signal wasn't clean enough at any
+sampling depth tried to trust over what's already there — solid organic meshes and multi-facet
+leaf-spray card clusters both produce noisy, similarly-high cluster counts at usable tolerances.
+**Those 18 pairs are left exactly as the original batch set them** (both submesh materials at
+`_Cull = 0`) since there's no confirmed problem with them and no reliable way found to re-verify
+each without a visual pass. If Carlos spots the same backwards-card symptom on any of them
+(solid-looking geometry disappearing from one angle, or a card staying invisible from behind
+despite being flipped), name it and it's a two-line fix — same pattern as this correction.
+
+**`AP_GraveKeepers_B04` (Carlos's second report) — confirmed NOT detached, left untouched.** Its
+hanging fabric is part of the same single submesh/material (`M_AP_GraveKeepers_B01`, 17,378 tris)
+as the entire solid tree — there's no way to flip just the fabric without doubling render cost on
+the whole trunk, so per Carlos's own instruction this was left as `_Cull = 2`. (This material was
+already correctly protected by the original "Grave" keyword exclusion, independent of this
+investigation.) Isolating just the fabric strips into their own submesh/material would require
+actual mesh editing (Blender, needs Carlos's permission per the CLAUDE.md hard rule) — not
+attempted, flagged only as a possible future option if this specific tree's look matters enough to
+be worth it.
+
+## Update — 2026-08-30: capsule/box colliders added to 81 resized species
+
+Carlos manually resized and re-pivoted a batch of 81 species in `VegetationGallery` (pivot at feet,
+`Visual` scale set to look right against the player) and asked for colliders added fast, sized off
+the player's own capsule (`CapsuleCollider` on `Body`: height 1.8, radius 0.4) — trunk-height, not
+full-tree-height, and "don't fine-tune, I'll inspect manually."
+
+**Method:** for each named prefab, read the actual mesh vertices (via `Visual`'s `MeshFilter`,
+transformed into the prefab root's local space through the real transform chain — robust to
+whatever scale Carlos applied during the resize), then:
+- **Capsule** (74 of 81, the default): height = `min(1.8, visible mesh height above Y=0)`, bottom
+  anchored at the root's own Y=0 (his pivot fix = ground level — **not** the mesh's lowest vertex,
+  which can dip below zero into buried-root/base-flare geometry that was never meant to be the
+  ground reference). Radius sampled from actual trunk vertices in a Y-band roughly a quarter to
+  half of the capsule's height up from the ground (90th-percentile radial distance from that
+  band's own centroid, not the whole mesh's bounding-box center), clamped to [0.08, 2.0]. Applied
+  to every tree/grave-tree regardless of how wide the canopy silhouette is — the canopy above head
+  height is walk-under-able, only the trunk needs to physically block the player.
+- **Box** (7 of 81): the 4 real rocks (`M6_Rock_*`) and 3 short stubby pieces with no meaningful
+  standing trunk (`AP_TurtleLake_Tree_Stump02_SM`, `AP_Tree_Break_Root_02_SM`,
+  `AP_Tree_Break_MushroomTrunk_01_SM` — all under ~1.5 units of visible height). Tight-fit to the
+  actual local AABB.
+
+**Two mistakes made and corrected before finishing, worth knowing if this technique gets reused:**
+1. First pass anchored the capsule at the mesh's `minY` instead of the root's Y=0 — for species
+   with buried-root geometry below the pivot, this put much of the collider underground (e.g.
+   `AP_Tree_Oak01_SM` centered at Y=-0.51, mostly buried). Fixed by anchoring at Y=0 per Carlos's
+   own pivot-fix convention.
+2. First pass centered the capsule's XZ position on the *whole mesh's* bounding-box center — for
+   trees with an asymmetric or one-sided canopy, this could drag the collider meters away from the
+   actual trunk (e.g. `AP_Tree_04_GTree01_06_SM` offset 5.57 units sideways, nowhere near the
+   visible trunk). Fixed by centering on the centroid of the sampled trunk Y-band itself.
+3. First pass used an aspect-ratio test (tall+narrow → capsule, else → box) to choose collider
+   type, which routed every wide/round-canopied tree to a giant bounding box (`AP_GangshiTree_2`:
+   24×37×29 units) instead of a small trunk capsule — wrong per Carlos's actual intent (canopy
+   width shouldn't matter; only rocks/stubs need a box). Fixed with an explicit exception list
+   instead of a geometric heuristic (see Method above).
+
+All corrected before saving anything Carlos was told was final — the numbers in his gallery now
+reflect the third, corrected pass only. A handful of very thick/ancient-trunk species hit the 2.0
+radius clamp (`AP_Tree_Juniper03_SMIK`, `AP_Tree_Deadtree06_SM`, `AP_Tree_Curse_H01_2`,
+`AP_M6_Tree_MonsterTreeBark_SM_PHJ_2`, `AP_GraveKeepers_B07`/`B03_2`/`B01`, `AP_GangshiTree_2`,
+`AP_Tree_DeadTree04`) — worth a first look in the manual pass, since the clamp may be hiding a
+genuinely-thick trunk or may be masking a bad sample.
+
+### Update — same day, follow-up: extend all 74 capsules to full prop height + below-ground root
+
+Carlos's next request: keep the radius (he confirmed it's fine), but stop capping capsule height at
+player height — extend it to the mesh's **full** vertical extent, from the lowest vertex (below
+ground, capturing buried root/base geometry) to the highest (full canopy top), not just a
+player-height trunk zone anchored at the surface. Applied to all 74 capsule species: `height =
+maxY - minY` (real per-species mesh extent, now ranging ~3 to ~43 units depending on the tree),
+`center.y = (minY + maxY) / 2`; `center.x`/`center.z` and `radius` left untouched from the previous
+pass. The 7 box species already spanned their full local AABB (including below-ground root
+geometry) and needed no change.
+
+**Worth knowing:** a `CapsuleCollider` has one constant radius along its entire height — it can't
+taper. So for a tall tree this is now, physically, a thin pole the trunk's radius running the
+entire height of the tree, including through the (much wider) canopy above head height — it will
+*not* block canopy-width collisions, since Unity can't approximate a widening/narrowing profile
+with a single capsule. That matches what's been established as the intent all along (canopy is
+walk-under/through, only the trunk needs to physically stop the player) — flagging only so it's
+not mistaken for a bug if the canopy doesn't feel solid when Carlos inspects by hand.
+
+### Update — same day, follow-up: lighting/fog/CRT preview systems added to the gallery
+
+Carlos wanted to see the resized/collided trees under real lighting/fog/CRT conditions, not flat
+ambient light. Brought the Island scene's atmosphere systems into `VegetationGallery` — **not**
+Island's terrain or Crest water, explicitly declined (the gallery keeps its own simple `Ground`
+plane):
+
+- **`SkyboxSwitcher`** and **`TimeManager`** prefabs (`Assets/_Project/Prefabs/World/`), instantiated
+  fresh — both already ship with their full default data (4 time-of-day presets, 6 skyboxes) baked
+  into the prefab itself, no per-instance config needed for that part. Only wired the two
+  scene-local references that can't live on a prefab: `TimeManager.sun` → the gallery's own `SUN`
+  (`SunController`), `TimeManager.skyboxSwitcher` → the new `SkyboxSwitcher` instance.
+- **`HAZE Global Fog`** and **`HAZE Explorable Area Fog`** — these are *not* prefabs (scene-only
+  GameObjects in Island: a `Volume` referencing the shared `VP_HazeGlobalFog` profile, and a
+  `HazeDensityVolume`). Cloned from Island's live instances (`Object.Instantiate` +
+  `SceneManager.MoveGameObjectToScene`, preserves every serialized value including the profile
+  reference) rather than rebuilt by hand. `HAZE Explorable Area Fog`'s transform was then
+  **re-sized to the gallery's own footprint** instead of Island's terrain-scaled one — gallery
+  `Ground` bounds are center (231, 0, 0), extents (250, 0, 15); set the fog volume to position
+  (231, 25, 0), scale (520, 80, 60) to comfortably cover the row of trees plus the tallest
+  collider's ~43-unit height and the buried-root colliders down to about Y=-2.
+- **`Scene Effects Toggle`** prefab (`Assets/_Project/Prefabs/DevTools/`) — the fog/CRT on-off
+  switch Carlos asked for by description. Wired `targetVolume` → the gallery's own cloned `HAZE
+  Global Fog`. Left at ship defaults (`fogEnabled=true`, `crtEnabled=true`) — verified, not toggled
+  off and forgotten.
+
+**Read `SceneEffectsToggle.cs`'s own doc comment before using it, there's a real shared-state
+gotcha:** its checkboxes edit the **shared `VP_HazeGlobalFog` profile asset** directly, not a
+scene-local override — the same profile Island uses. Toggling fog off in the gallery to inspect a
+tree without fog will also turn it off in Island until "Restore Ship Defaults" (its context menu)
+is run. Don't leave it off between sessions.
+
+Verified: additively loaded Island only to read/clone from it, closed without saving afterward
+(`git diff --stat` on `Island.unity` unchanged before/after — same pre-existing 124-line diff noted
+elsewhere, not something this touched). Confirmed live in the gallery: no `Terrain`/`Gaia`/`Water`/
+`Crest`-named object present, `Ground` plane intact, all five new objects present and wired. Saved.
+
 ## What's still open (unchanged from the kickoff doc)
 
 - Biome region boundaries and the 9 location blockouts — not touched this session.

@@ -28,7 +28,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.458061, y: 1.458061, z: 1.458061}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1262563388723354297}
@@ -100,6 +100,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1262563388723354297}
+  - component: {fileID: 3001244541249368382}
   m_Layer: 0
   m_Name: AP_Tree_04_M01_05_SM
   m_TagString: Untagged
@@ -123,3 +124,26 @@ Transform:
   - {fileID: 7273690469240261060}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &3001244541249368382
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7342612921571865191}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.2170093
+  m_Height: 23.124216
+  m_Direction: 1
+  m_Center: {x: -0.12978415, y: 11.475881, z: 0.17406005}

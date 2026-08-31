@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7204020097768325094}
+  - component: {fileID: 5966508549669418202}
   m_Layer: 0
   m_Name: AP_Tree_Heretic_B03
   m_TagString: Untagged
@@ -32,6 +33,27 @@ Transform:
   - {fileID: 6959885465380034383}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5966508549669418202
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 314402390776071394}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.90997314, y: 5.4865975, z: 3.89653}
+  m_Center: {x: -0.30639648, y: 2.2432997, z: 0.052163243}
 --- !u!1 &2388159468942796912
 GameObject:
   m_ObjectHideFlags: 0
@@ -58,13 +80,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2388159468942796912}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: -0, y: -0.031260632, z: -0, w: 0.9995113}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.327, y: 1.4826572, z: 1.1753372}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 7204020097768325094}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: -3.583, z: 0}
 --- !u!33 &3122216528542034897
 MeshFilter:
   m_ObjectHideFlags: 0

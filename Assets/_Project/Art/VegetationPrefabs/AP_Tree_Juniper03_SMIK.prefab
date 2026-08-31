@@ -9,6 +9,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1866286264580764797}
+  - component: {fileID: 7515835070324731708}
+  - component: {fileID: 5224472728388839740}
   m_Layer: 0
   m_Name: AP_Tree_Juniper03_SMIK
   m_TagString: Untagged
@@ -32,6 +34,52 @@ Transform:
   - {fileID: 6063424812545392472}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &7515835070324731708
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540905044257156934}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.0193207
+  m_Height: 11.789643
+  m_Direction: 1
+  m_Center: {x: -0.2371825, y: 4.8335996, z: -0.12226227}
+--- !u!136 &5224472728388839740
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 540905044257156934}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.6902789
+  m_Height: 4.1732326
+  m_Direction: 1
+  m_Center: {x: 1.806839, y: 0.621681, z: 1.0810422}
 --- !u!1 &3710832566696333240
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,8 +107,8 @@ Transform:
   m_GameObject: {fileID: 3710832566696333240}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.17, z: 0}
+  m_LocalScale: {x: 9.30098, y: 9.30098, z: 9.30098}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1866286264580764797}

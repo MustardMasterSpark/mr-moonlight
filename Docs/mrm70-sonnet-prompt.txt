@@ -1,0 +1,45 @@
+We're continuing **MRM-70** on branch `mrm-70` — populating the Aanniarvik Island terrain with
+vegetation using **Gaia**. I've already done the analysis pass with Opus; your job is execution.
+
+**Read these first, in order:**
+1. `Docs/mrm70-biome-distribution-measured.md` — **the plan.** All 9 biomes, measured spacing and
+   weights, slope/altitude rules, clustering settings, and a Gaia field-by-field execution guide
+   in §10. Read §6 (terrain state and the biome-map blocker) and §10 carefully.
+2. `Docs/mrm70-resume-2026-08-30.md` — where the asset-prep work left off.
+3. `Docs/mrm70-biome-vegetation-strategy.md` — **numbers and coordinates are superseded**, but §2
+   (terrain layers *are* the biome masks) and §5 are still the plan.
+
+**Do not use** `Docs/Design/Island-Terrain-Reference/Vibe/GPT biome analysis.md` for any number.
+It's art intent only — its spacing was written from screenshots with no prefab access.
+
+**Five things that will trip you up if you don't know them:**
+
+- **The live terrain is `Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/
+  Terrain_0_0-20260829 - 035828.asset`** — 1024 × 1024 m at origin (−512, 0, −512), 64.2 ha of
+  land above sea level Y=8. `Island_TerrainData.asset` is a 4000 m **decoy** — flat, unused,
+  editing it changes nothing visible.
+- **The terrain has 0 layers, 0 detail prototypes, 0 trees.** Terrain layers *are* the biome
+  masks, so nothing can be biome-masked until they're rebuilt. The old 8-layer / 27-detail-
+  prototype config survives in `Island_Original_TerrainData_Backup.asset`.
+- **Prefab size = the `Visual` child's renderer bounds, never the collider.** The colliders span
+  full mesh height including below-ground root, so collider height is not a size signal.
+- **Trees must NOT align to normal; rocks, logs and root formations must.** The buried tree pivots
+  are what make vertical placement work on slope — don't "fix" them.
+- **All 154 curated prefabs must appear in the game.** Carlos was explicit. If you retune, change
+  **tiers**, not metres, and re-run `sh Tools/vegetation/build.sh` — it prints a warning if a
+  spacing rule has started silently starving its stratum target.
+
+**If the first generation looks sparse, patchy, or bald:** the slope and height filters are not
+baked in — they're per-rule `ImageMask` entries and can be relaxed or deleted freely. §3.5 has a
+table of what's safe to open up (grass, ground cover, and trees — that's where the coverage is)
+and the ~12 assets that genuinely need their cap (logs and the wide flat root formations, which
+tear through sloped terrain). Carlos's stated preference: he wants vegetation on those areas more
+than he wants ecological realism. Don't compensate by turning align-to-normal on for trees.
+
+**Where to start:** the biome map doesn't exist yet and is Carlos's call (§6.3). Ask him for it.
+Meanwhile the biome-independent groundwork can start: rebuilding the terrain layers and the
+27-prototype grass detail pass (§4).
+
+**Project rules:** never commit or push (Carlos uses GitHub Desktop). Ask permission before any
+Unity scene/inspector work via the UnityMCP bridge, then verify by reading state back and document
+what changed. Read `CLAUDE.md` and `Claude Code Context MDs/kickstart.md`.

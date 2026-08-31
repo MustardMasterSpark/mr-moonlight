@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4945075154597040176}
+  - component: {fileID: 4471425859762246780}
   m_Layer: 0
   m_Name: AP_M6_Rock_SeashoreWallStone01_SM
   m_TagString: Untagged
@@ -32,6 +33,29 @@ Transform:
   - {fileID: 3524168020118455897}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!136 &4471425859762246780
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7045075855624831954}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.9708405
+  m_Height: 4.6320486
+  m_Direction: 1
+  m_Center: {x: -0.30410767, y: 1.8160243, z: 0}
 --- !u!1 &7046297520035776570
 GameObject:
   m_ObjectHideFlags: 0

@@ -1,5 +1,19 @@
 # MRM-70 — Biome painting + vegetation spawning strategy
 
+> ## ⛔ SUPERSEDED FOR ALL NUMBERS — 2026-08-30
+>
+> **Species palettes, densities and spacing:** use
+> **`Docs/mrm70-biome-distribution-measured.md`** instead. It is built from measured prefab
+> geometry; this document's §4 numbers were estimates made before the assets were sized.
+>
+> **§3 "Biome regions in world coordinates" is dead, not just stale.** It describes a
+> 4103 × 7085 m terrain. The live terrain is **1024 × 1024 m at origin (−512, 0, −512)**, a
+> different shape — the coordinates cannot be scaled across. Landmarks and the player spawn need
+> re-anchoring from scratch.
+>
+> **Still valid and still the plan:** §2 (terrain layers *are* the biome masks), §5 (material
+> variants), and the overall run order. Read those; ignore every number.
+
 > ## ⚠️ Platform note — banner added 2026-08-27
 >
 > This document predates the **2026-08-25 platform change**: WebGL was dropped for a **Windows

@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6645936988281288448}
+  - component: {fileID: 3217740616884622467}
   m_Layer: 0
   m_Name: AP_TurtleLake_Tree_Stump02_SM
   m_TagString: Untagged
@@ -32,6 +33,27 @@ Transform:
   - {fileID: 6512818886717937854}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &3217740616884622467
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2550847758658224861}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.5923462, y: 1.9732404, z: 0.7286248}
+  m_Center: {x: -0.16271973, y: 0.2829988, z: -0.23730671}
 --- !u!1 &4188618714716713268
 GameObject:
   m_ObjectHideFlags: 0
@@ -59,8 +81,8 @@ Transform:
   m_GameObject: {fileID: 4188618714716713268}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalPosition: {x: 0, y: -0.138, z: 0}
+  m_LocalScale: {x: 2.3435, y: 2.3435, z: 2.3435}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 6645936988281288448}

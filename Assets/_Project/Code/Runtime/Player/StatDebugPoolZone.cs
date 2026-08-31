@@ -41,7 +41,11 @@ namespace MrMoonlight.Player
 
         private void TryApply(Collider other)
         {
-            var stats = other.GetComponentInParent<PlayerStats>();
+            // MRM-70 (2026-08-31): PlayerStats lives on the "MrMoonlight Systems" child, not on
+            // an ancestor of the collider, so GetComponentInParent could never find it - look up
+            // from the root instead, same pattern the bridges use. See
+            // Docs/mrm9-burntwax-integration.md §3, "Our code sits on one child, deliberately".
+            var stats = other.transform.root.GetComponentInChildren<PlayerStats>(true);
             if (stats == null)
             {
                 return;
