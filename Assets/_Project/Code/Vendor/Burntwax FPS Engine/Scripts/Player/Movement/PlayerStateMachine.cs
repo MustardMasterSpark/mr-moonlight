@@ -273,15 +273,37 @@ namespace Burntwax
         private void SpeedControl()
         {
 
-            if (currentState == states.Slope())
-            {
-                if (rb.linearVelocity.magnitude > playerVelocity)
-                {
-                    rb.linearVelocity = rb.linearVelocity.normalized * playerVelocity;
-                }
-            }
-
-            else
+            // MRM-70 (2026-08-31): was `rb.linearVelocity.magnitude > playerVelocity`, clamping
+            // the FULL 3D speed (horizontal + vertical) while sloped, instead of horizontal only
+            // like the non-slope branch below. Looked harmless on the hand-built flat Sandbox
+            // plane, but broke badly on the real island terrain: PlayerSlopeCheck() (below) treats
+            // ANY angle over 0.03 degrees as "sloped", and a heightmap terrain has micro-bumps
+            // everywhere, so the player is in Slope state almost all the time on real ground, not
+            // just on hills. The floating-capsule ride spring (ApplyFloatingForce) is constantly
+            // making small vertical corrections to hold ride height over that uneven ground, and
+            // those corrections ate into the same speed budget as horizontal movement under the
+            // old full-magnitude clamp - so sprint (and walk) quietly lost speed on almost any real
+            // terrain, while feeling completely normal on a flat test plane. Diagnosed live with
+            // Carlos while testing sprint distance between MRM-70 blockout waypoints; the terrain
+            // itself was never the bug, this clamp was.
+            //
+            // Fix: clamp horizontal speed only here too, matching the non-slope branch. Contained
+            // - doesn't touch jump, ride height, crouch, or state transitions, only how fast you
+            // can move while grounded-on-a-slope. Side effect: walking on slopes also picks up a
+            // little speed now, not sprint-only, since this clamp isn't sprint-specific.
+            //
+            // IF MOVEMENT FEELS OFF LATER (too fast on steep terrain, sliding, slope traversal
+            // feeling floaty) - THIS IS THE FIRST PLACE TO CHECK. Revert to the commented block
+            // below to go back to the original Burntwax full-magnitude clamp.
+            //
+            // if (currentState == states.Slope())
+            // {
+            //     if (rb.linearVelocity.magnitude > playerVelocity)
+            //     {
+            //         rb.linearVelocity = rb.linearVelocity.normalized * playerVelocity;
+            //     }
+            // }
+            // else
             {
                 Vector3 flatVel = new Vector3(rb.linearVelocity.x, 0f, rb.linearVelocity.z);
                 if (flatVel.magnitude > playerVelocity)

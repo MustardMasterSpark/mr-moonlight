@@ -9,6 +9,24 @@ Unity 6.3 LTS · URP · **Windows 64-bit standalone, 1920×1080**.
 
 ---
 
+## Unity 6.3 Editor UI — toolbar changes from older tutorials/docs
+
+**Read this before following any older Unity tutorial, screenshot, or doc for in-editor steps.**
+Unity 6.3 restructured several inspector toolbars into fewer grouped icons with dropdown modes
+inside them, so an older guide's icon layout is not reliable.
+
+**Terrain inspector, specifically:** there are only **5 toolbar icons** — Create Neighbor Terrains,
+Paint Terrain, Paint Trees, Paint Details, Terrain Settings. There is **no standalone "Paint
+Texture" icon.** Texture painting (and terrain layer creation) is a **mode inside "Paint Terrain"**
+(the 2nd icon): click it, then use the dropdown that appears below the toolbar (defaults to
+"Raise or Lower Terrain") and pick **"Paint Texture"** from the list — that's where **Edit Terrain
+Layers → Create Layer...** lives. Confirmed 2026-08-30 during MRM-70 biome-layer painting.
+
+General rule: verify toolbar icons against what Carlos actually sees in his inspector before
+giving in-editor instructions — don't assume an older screenshot or doc's layout still applies.
+
+---
+
 ## Folder structure
 
 Everything the project owns lives under `Assets/_Project/`. `Assets/ThirdParty/` is git-ignored

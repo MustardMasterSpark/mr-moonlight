@@ -298,6 +298,54 @@ Mode raises Unity's *"Risk of unwanted modifications"* warning, because Animatio
 **Exit Prefab Mode**, not Ignore — Ignore lets `RigBuilder` write hand-IK changes into the prefab
 asset during play.
 
+**Bug 6 (2026-08-31, fixed) — sprint (and walk) quietly lost speed on real terrain, fine on a flat
+plane.** `PlayerStateMachine.PlayerSlopeCheck()` treats **any angle over 0.03°** as "sloped" — a
+threshold so tight that a Gaia heightmap terrain's ordinary vertex-level micro-bumps put the player
+in `PlayerSlopeState` almost permanently, not just on visible hills. `SpeedControl()`'s Slope branch
+then clamped **total 3D velocity** (horizontal + vertical) to `playerVelocity`, instead of horizontal
+only like every other branch. The floating-capsule ride spring (`ApplyFloatingForce`) is constantly
+making small vertical corrections to hold ride height over that uneven ground, and those corrections
+ate into the same speed budget as horizontal movement — so speed silently dropped on almost any real
+terrain while feeling completely normal on the hand-built flat Sandbox plane. Diagnosed live with
+Carlos while testing sprint distance between MRM-70 blockout waypoints.
+
+**Fix:** `SpeedControl()` now clamps horizontal speed only in the Slope branch too, matching the
+non-slope branch — see the commented-out original block left in place at the fix site
+(`PlayerStateMachine.cs`, `SpeedControl()`) for an exact revert. Contained to that one clamp — does
+not touch jump, ride height, crouch, or state transitions. Side effect: walking on slopes also gets
+marginally faster now, not sprint-only, since the clamp isn't sprint-specific. **If movement ever
+feels too fast on steep terrain, or slope traversal starts feeling floaty/sliding, this is the first
+place to check** — swap back to the commented original block to restore the old (buggy-on-real-terrain,
+correct-on-flat-planes) behavior.
+
+**Bug 7 (2026-08-31, fixed) — a stray duplicate `PlayerStats` + `BurntwaxPlayerBridge` pair sat on
+the `Player` root, disconnected from everything.** §3's architecture diagram is explicit that these
+two belong on `MrMoonlight Systems` only — `Player` root should carry nothing but Burntwax's own
+unmodified components. In practice both had drifted onto `Player` root too at some point, as an
+inert, silently-unused second copy. This bit hard while testing the infinite-stamina debug toggle
+above: the toggle got attached to the wrong (Player-root) copy, so it visibly showed "locked" while
+the *real* copy — the one `BurntwaxInputBridge` actually gates sprint against — kept draining
+normally. Diagnosed live by reading both instances' `Stamina.Value`/`IsLocked` side by side mid-Play.
+
+**Fix:** removed both stray components from `Player` root, so there is exactly one
+`PlayerStats`/`BurntwaxPlayerBridge` pair in the whole hierarchy, matching §3's diagram exactly.
+Two consumers had to change to survive this: `StatDebugPoolZone` and `StatDebugModifierZone` used
+`other.GetComponentInParent<PlayerStats>()`, which can only walk *up* the hierarchy — since the real
+`PlayerStats` lives on a **child** (`MrMoonlight Systems`), that call could never have found it even
+before this cleanup, so those two debug zones were silently doing nothing against the real stats the
+whole time. Both now use `other.transform.root.GetComponentInChildren<PlayerStats>(true)`, the same
+root-then-down pattern the bridges already use.
+
+**Removing the pair required a temporary detour:** `PlayerStats` and `BurntwaxPlayerBridge` each
+`[RequireComponent]` the other, so neither can be removed — by the Editor's Remove Component command
+*or* `Object.DestroyImmediate` — while the other is still present on the same GameObject. Had to
+comment out both `[RequireComponent]` attributes, remove the stray pair, then restore both
+attributes. If this ever needs doing again, that's the only way through.
+
+**If a future symptom looks like "a debug/stat tool works on one code path but not another," check
+for a second `PlayerStats` or `BurntwaxPlayerBridge` before assuming a logic bug** — this is now the
+second time a duplicate got found this way.
+
 ---
 
 ## 8. Answering Carlos's question about animations

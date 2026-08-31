@@ -419,10 +419,30 @@ Read off the live `Island.unity` scene, not from any document:
 | Actual height used | 0 – **68.4 m** |
 | Sea level (Crest) | **Y = 8** |
 | Land above sea | **64.2 ha** (61.2% of the terrain) |
-| Terrain layers | **0** |
+| Terrain layers | **10**, one already painted (Beach) — see below, added 2026-08-31 |
 | Detail prototypes | **0** |
 | Tree prototypes / instances | **0 / 0** |
 | Gaia spawner in scene | `World Designer`, 7 rules |
+
+**Terrain layers, added 2026-08-31.** 10 `TerrainLayer` assets exist and are wired to the live
+terrain's `terrainLayers` array (one per biome + a dedicated `Path` layer for roads, per §3's
+"give roads their own layer" guidance): `TL_Biome_<Name>.terrainlayer` under
+`Assets/_Project/Art/Environment/Terrain/ISLAND_TERRAIN_TEXTURES/Layers/`. Diffuse+Normal source
+textures are `T_Terrain_<NN>_<Biome>_Diffuse/Normal.png` in the same pack folder — Carlos's own
+curated per-biome source images, 512×512, run through the project's Pixel8r-matching quantiser
+(diffuse only; normals kept clean, never quantised), tile size 5×5m. Note this is a *different*
+source than the Retro Realism `GroundDirt/Moss/Rock/Soil` textures explored earlier in the same
+session — those never made it into the project; superseded by this per-biome set.
+
+**Beach is painted, programmatically, by height.** Everywhere at or below **sea level + 5m**
+(`Y ≤ 13`, sea level read live off the `Water` GameObject's Y, currently 8) got the Beach layer at
+full weight — **47.0% of the terrain** (493,022 of 1,048,576 alphamap cells), which lines up with
+the 38.8% underwater + a land band, both independently measured. Anywhere else defaults to
+whichever layer is index 0 in the array (`TL_Biome_Forest`) until painted — **that's Unity's own
+unpainted-terrain fallback, not real data**, worth knowing before trusting how the island looks
+today. **The other 8 biomes + Path are still unpainted** — that's the next work. The 27-prototype
+grass **detail** pass (separate from these diffuse layers) is still not rebuilt — 0 detail
+prototypes, unchanged.
 
 > **Two traps for anyone picking this up.**
 >

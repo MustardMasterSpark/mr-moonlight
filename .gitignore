@@ -270,3 +270,7 @@ New Terrain.asset.meta
 
 # Embedded third-party UPM packages (Flora installs here, not to Assets/)
 /[Pp]ackages/com.ma.flora/
+
+# Python bytecode cache from Tools/ scripts (texture_pass.py, terrain_texture_pass.py, etc.)
+__pycache__/
+*.pyc
