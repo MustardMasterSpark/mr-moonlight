@@ -117,6 +117,17 @@ exact version in the tables above when each one lands.
 | **Body Poser** | — | MRM-59 staging. **Editor-only, zero runtime footprint** | M2 |
 | **Asset Cleaner Pro** | — | MRM-64. ⚠️ **find-references ONLY, never bulk-delete** | M2 |
 
+### Adopted 2026-08-31 — Playground-only, never installed into Mr. Moonlight
+
+| Package | Publisher | Version | Lives at | Why it never crosses over |
+|---|---|---|---|---|
+| **Retarget Pro V5** | KINEMATION | 5.2.1 | `E:\playground\My project\Assets\PLAYGROUND\Retarget Pro V5\` | It is an **editor bake tool**. Clips are baked in Playground and only the resulting `.anim`/`.fbx` files are migrated, so Mr. Moonlight's footprint is **zero bytes**. Full ruling and procedure: `Docs/retarget-pro-strategy.md` |
+
+**What it is for:** the Wendigo (MRM-36), the wolf — a **quadruped**, which Unity's Humanoid
+retargeting cannot do at all (MRM-33), Tracey's full body (MRM-9's unmet look-down criterion), and
+taking a handful of clips out of Ultimate Animation Collection's 3,068 without importing the library.
+**It is NOT for weapons** — see the rejected Baker Toolkit row.
+
 ### Parked — owned, conditional, do not install yet
 
 | Package | Blocked on |
@@ -131,7 +142,9 @@ exact version in the tables above when each one lands.
 
 | Package | Why |
 |---|---|
-| **FPS Engine** (cowsins) | Would reopen MRM-8/9/12/16/17/41/42 (five already Done) and, decisively, **fights the "Tracey must see her own feet" requirement** — every FPS template is built around an arms-only viewmodel. Staged in Playground as a **read-only reference and parts donor**; none of its code enters the project. **FPS Animation Baker Toolkit therefore stays.** |
+| **FPS Engine** (cowsins) | Would reopen MRM-8/9/12/16/17/41/42 (five already Done) and, decisively, **fights the "Tracey must see her own feet" requirement** — every FPS template is built around an arms-only viewmodel. Staged in Playground as a **read-only reference and parts donor**; none of its code enters the project. ~~FPS Animation Baker Toolkit therefore stays.~~ — **superseded 2026-08-31: the Baker Toolkit is now rejected too.** See below and `Docs/retarget-pro-strategy.md`. |
+| **FPS Animation Baker Toolkit** (CatRabbit) | **Rejected 2026-08-31.** The ~15 first-person hand animations it was bought for are **already owned** — HQ FPS Weapons 2.0 ships M1911, DoubleBarrelShotgun, BaseballBat, FireAxe and 15 more, all on one shared `FP_Arms` skeleton (inventory in `Docs/retarget-pro-strategy.md` §2). Secondarily: v1.0, zero reviews, no public feature list or documentation. **Reverses the "Buy" verdict in `Claude Code Context MDs/Assets MDs/Toolkit.md`** |
+| **FPS Animation Framework** (KINEMATION) | A *runtime* FPS system — rejected for the same reason as FPS Engine. Its editor-only sibling, **Retarget Pro**, is the half we adopted |
 | **Crystal Save** | The demo needs in-session respawn checkpoints, not serialization. Revisit post-demo |
 | **Evo Localization** / **I2 Localization** | Our text is already spreadsheet + ID keyed with `text_en`/`text_es`/`text_ru` columns — the data layer already *is* a localization system. Adopting either adds a second data model. (I2 is the better of the two if ever needed) |
 | **Event Manager** / **Game Event Hub** | A string-keyed bus would *reduce* readability in a 55-file codebase whose call graph is currently greppable, and neither helps MRM-11, which is a sequencer not a pub/sub bus |

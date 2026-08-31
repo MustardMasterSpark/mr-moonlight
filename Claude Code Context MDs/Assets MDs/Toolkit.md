@@ -1,3 +1,16 @@
+> # ⚠️ SUPERSEDED IN ONE PLACE — 2026-08-31
+>
+> **The "✅ Buy the FPS Animation Baker Toolkit" verdict in this document is REVERSED.** It was
+> written before HQ FPS Weapons 2.0 was inventoried. The ~15 hand animations it is justified by
+> (see the table below) are **already owned**, on one shared `FP_Arms` skeleton: the M1911 and the
+> DoubleBarrelShotgun named in MRM-22/MRM-24 ship with 8 clips each, and every weapon ships
+> Equip/Unequip/Aim/Idle. **Do not buy an FPS animation tool for the weapons.**
+>
+> The asset we *did* adopt is **Retarget Pro V5** — for enemies and Tracey's body, not weapons, and
+> it lives in Playground and never enters Mr. Moonlight. **Read `Docs/retarget-pro-strategy.md`.**
+>
+> The rest of this document (shake, blur, the three rejected toolkits) still stands.
+
 # Mr. Moonlight — Asset Toolkit
 
 **What this is.** An evaluation of every asset in `Linear context/assets.txt`: what it does, whether it earns its place, which Linear issues it touches, and a buy / skip / defer call with the reasoning shown.
@@ -18,7 +31,7 @@
 |---|---|---|
 | **Smooth Shake Free** | ✅ **Buy (free)** | Free, used by 4 issues, zero risk |
 | **Vegetation Spawner Free** | ✅ **Buy (free)** | Free, and you cannot hand-place a forest in 19 days |
-| **FPS Animation Baker Toolkit** | ✅ **Buy** | Weapon-hand animation is the one thing Claude genuinely cannot do for you |
+| **FPS Animation Baker Toolkit** | ❌ **REVERSED 2026-08-31 — skip** | ~~Weapon-hand animation is the one thing Claude genuinely cannot do for you~~ — the animations are already owned. See the banner |
 | **Blur Shaders 2 for URP** | ✅ **Buy** | The opening scene depends on it and it is already named in your spec |
 | **Flora** | 🟡 **Defer** | Overlaps Vegetation Spawner. Try the free one first, buy only if it fails |
 | **Haze Volumetric Fog for URP** | 🟡 **Defer to M2** | Beautiful, and the most likely single thing to blow your WebGL frame budget |
