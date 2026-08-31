@@ -1367,6 +1367,21 @@ Copy `Gaia Pro VS/Packages - Cache/`, run the Gaia Manager, and **install only:*
 ⚠️ **GTS is the dangerous one** — a complete terrain-shader system that would fight
 `RetroTerrainLit`. It was not visible from the store page.
 
+> **⚠️ PARTIAL REVERSAL, 2026-08-31 — `Gaia Pro Assets and Biomes` is no longer a blanket decline.**
+> The package is still **not installed** and the decline stands as a *package* decision: it is 3.7 GB
+> of realistic art in the wrong style, and running its installer would drag in biomes, spawners and
+> materials we do not want.
+>
+> But it is now a **source we extract single files from**, the same way AllSky was. On 2026-08-31,
+> 14 files were pulled out of it by GUID (10 grass detail FBX + 2 texture atlases + 2 normals) for
+> the terrain-detail grass tier, pixelated through `Tools/pipeline/texture_pass.py` and rebuilt as
+> `GRASS_Gaia_*` prefabs under our own art direction. Nothing from the package ships as-is.
+>
+> **Rule going forward:** do not install it; *do* treat it as a library to extract from when it holds
+> something we would otherwise have to make. Still available and unextracted: 11 more `PW_LawnGrass`
+> meshes and 16 legacy grass billboard cards.
+> See `Docs/mrm70-unused-vegetation-inventory.md` §6.4.
+
 **Save spawn/biome recipes into `Assets/_Project/`**, strip Gaia components off the Terrain before
 removing the package, and pin the version.
 

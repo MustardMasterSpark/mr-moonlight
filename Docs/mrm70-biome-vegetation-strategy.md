@@ -347,6 +347,15 @@ the same as shortening the fog distance.** Fog stays at 1500 m as the stress tes
 setting a cull threshold silently — it needs a decision (§7).
 
 ### 5.2 The GFF grass prefabs cannot be used as detail meshes
+
+> **⛔ SUPERSEDED 2026-08-31 for the tooling, not the facts.** The GFF single-MeshRenderer
+> constraint below is still true and still binding. What changed is who does the work:
+> `BiomeGrassSetup` was deleted in commit `f306acc` and is **not being rebuilt**. Grass is a native
+> Gaia spawner type (`SpawnerResourceType.TerrainDetail`), so detail prototypes and density become
+> rules inside the existing biome spawners — which means they survive a "generate new Gaia" instead
+> of being wiped by it. 30 `GRASS_*` prefabs are built and waiting.
+> See `Docs/mrm70-unused-vegetation-inventory.md` §6-7.
+
 Documentation: *"The terrain system does not support grass prefabs with a LOD Group component. You
 must use a prefab that consists out of a single Mesh Renderer."*
 
