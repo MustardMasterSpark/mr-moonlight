@@ -346,6 +346,32 @@ attributes. If this ever needs doing again, that's the only way through.
 for a second `PlayerStats` or `BurntwaxPlayerBridge` before assuming a logic bug** — this is now the
 second time a duplicate got found this way.
 
+**Bug 8 (2026-08-31, fixed) — HAZE volumetric fog silently never rendered, CRT looked fine.** Not a
+Gaia/terrain-bounds issue despite the timing looking that way. The Player prefab's Main Camera had
+**no `UniversalAdditionalCameraData` component at all**, so it silently fell back to URP's factory
+default — `renderPostProcessing = false`. `pc-build-target.md` §7 already documents that
+`HazeRendererFeature` bails out entirely when a camera's post-processing flag is off; `CRTEffect`
+(Retro Shaders Pro) doesn't check that same flag, so CRT kept rendering scanlines while fog stayed
+completely invisible — exactly the symptom Carlos saw. The original fix for this exact flag lived on
+the **pre-Burntwax** camera setup ("Fixed on Player.prefab, not the scene instance" per that same
+doc) and never carried over when Burntwax's own `Player.prefab` supplied a brand new Main Camera
+during the MRM-9 controller swap — a quiet regression, not something the terrain work touched.
+
+**Fix:** added `UniversalAdditionalCameraData` with `renderPostProcessing = true` to the Main Camera
+on `Player.prefab` itself (not just the scene instance, per the standing warning above), and
+corrected the already-placed `Island.unity` instance's own copy of that component, which had drifted
+to an explicit `false` override. All of `HAZE Global Fog`'s Volume override, the
+`HazeDensityVolume`'s bounds/density values (global 3, box 1, heightFogFactor 0.1, maxFogHeight
+400), and the `PC_Renderer` feature list order (`HazeRendererFeature` before `CRTEffect`, correct —
+fog renders, then CRT's scanline pass goes on top of everything) were checked and are all still
+correct and untouched by the terrain switch, exactly as Carlos suspected they might be — the terrain
+change was a red herring here, the camera prefab was the actual cause.
+
+**Any scene with its own placed `Player` instance predating this fix may still carry a stale
+`renderPostProcessing = false` override** — the prefab fix only helps fresh instances or ones with
+no override on this specific field. Worth a quick check in `Sandbox` and `MainMenu` if fog ever
+looks wrong there too.
+
 ---
 
 ## 8. Answering Carlos's question about animations

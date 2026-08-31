@@ -2011,7 +2011,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 486977377}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: b2068e50ca2faa84bbbcbdeae6918889, type: 3}
   m_Name: 
@@ -2496,15 +2496,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4658128333016968141, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -395.80005
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4658128333016968141, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 55.724
+      value: 0.674
       objectReference: {fileID: 0}
     - target: {fileID: 4658128333016968141, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -98.50006
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4658128333016968141, guid: 8ae16c0711712fc4c931a9bf805f7005, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10163,6 +10163,14 @@ PrefabInstance:
     - target: {fileID: 541310734880703330, guid: 7d14faff65947b746bdc186ce0c712b8, type: 3}
       propertyPath: m_Name
       value: Scene Effects Toggle
+      objectReference: {fileID: 0}
+    - target: {fileID: 3571383496552034205, guid: 7d14faff65947b746bdc186ce0c712b8, type: 3}
+      propertyPath: crtEnabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3571383496552034205, guid: 7d14faff65947b746bdc186ce0c712b8, type: 3}
+      propertyPath: fogEnabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3571383496552034205, guid: 7d14faff65947b746bdc186ce0c712b8, type: 3}
       propertyPath: targetVolume
