@@ -93,7 +93,7 @@ exact version in the tables above when each one lands.
 
 | Package | Publisher | For | Milestone |
 |---|---|---|---|
-| **A* Pathfinding Project Pro** | Aron Granberg | MRM-27 — resolves the NavMesh-vs-A* decision. Bound the Recast graph to the walkable area | **M1** |
+| **Blaze AI Engine** | — | MRM-27/MRM-34 — NavMesh-based enemy AI (patrol/chase/attack + `CoverShooterBehaviour` for ranged enemies like the Spotter). Adopted over A* Pathfinding Project Pro in the 2026-08-28 Round 2 triage; A* row removed. Staged in Playground (`Assets/PLAYGROUND/Blaze AI Engine/`), not yet transferred into Mr. Moonlight | **M1** |
 | **HQ FPS Weapons 2.0** | — | MRM-22/23/24/25/34/52 — models + weapon/hand animations. **Art only; import no scripts** | **M1** |
 | **Sounds Good** | Melenitas Dev | MRM-38 — playback/pool backend. Our layer + distance gating stays on top | **M1** |
 | **Spice Up: Bodycam** | Fronkon Games | MRM-49 — telescope aperture | **M1** |
@@ -132,7 +132,6 @@ taking a handful of clips out of Ultimate Animation Collection's 3,068 without i
 
 | Package | Blocked on |
 |---|---|
-| **Blaze AI Engine** | NavMesh-based, so mutually exclusive with A* PP. Only reopens if its manual documents an A* PP integration |
 | **Altos Volumetric Clouds** | Does it render *over* a skybox, or *is* it the skybox? If the latter it collides with AllSky + `SkyboxSwitcher` + `TimeManager` at once. ✅ Usable on the main menu either way |
 | **Volumetric Light Beam** | Test HAZE alone on the flashlight first — two volumetric systems may overlap |
 | **Skybox Blender** | MRM-47 deliberately chose instant, story-hidden skybox swaps. Solves a problem the design removed |
