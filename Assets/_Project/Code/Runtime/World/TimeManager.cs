@@ -35,6 +35,22 @@ namespace MrMoonlight.World
 
         private Coroutine _transition;
 
+        /// <summary>How many presets are authored. Owner: MRM-69</summary>
+        public int PresetCount => presets.Count;
+
+        /// <summary>
+        /// Index of the last preset applied, or -1 if none has been applied this session.
+        ///
+        /// <para>-1 rather than 0 on purpose: "nothing has been applied yet" and "Morning is
+        /// showing" are different states, and a cycler that assumed 0 would skip the first preset
+        /// on its first press. Added for MRM-11's F8 debug cycle.</para>
+        /// </summary>
+        public int CurrentPresetIndex { get; private set; } = -1;
+
+        /// <summary>Name of a preset, for debug readouts. Empty string for an out-of-range index. Owner: MRM-69</summary>
+        public string GetPresetName(int index) =>
+            index >= 0 && index < presets.Count ? presets[index].Name : string.Empty;
+
         /// <summary>Applies Presets[testPresetIndex] — hook this up to the component's context menu ("Apply Test Preset") for one-click testing in the Inspector. Owner: MRM-69</summary>
         [ContextMenu("Apply Test Preset")]
         private void ApplyTestPreset() => ApplyPreset(testPresetIndex);
@@ -50,6 +66,7 @@ namespace MrMoonlight.World
         {
             if (!TryGetPreset(index, out Preset preset)) return;
 
+            CurrentPresetIndex = index;
             skyboxSwitcher.SetSkybox(preset.Skybox);
 
             if (_transition != null) StopCoroutine(_transition);

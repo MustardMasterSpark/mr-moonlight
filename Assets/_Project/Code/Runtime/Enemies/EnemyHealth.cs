@@ -1,3 +1,4 @@
+using System;
 using MrMoonlight.Combat;
 using MrMoonlight.Data;
 using UnityEngine;
@@ -49,6 +50,21 @@ namespace MrMoonlight.Enemies
 
         [Tooltip("Fires once when health hits zero, before Blaze's own death handling runs.")]
         public UnityEvent Died;
+
+        /// <summary>
+        /// Every enemy death in the scene, whoever it was. Owner: MRM-11.
+        ///
+        /// <para>Static because the objective tracker has to count enemies that <i>did not exist</i>
+        /// when it woke up — a reinforcement wave has no inspector to wire <see cref="Died"/> in,
+        /// and asking Carlos to remember to hook up each newly placed Spotter is a bug waiting to
+        /// happen. Narrow and typed, per <c>Docs/csharp-conventions.md</c>: one signal, one payload,
+        /// every subscriber findable by right-click.</para>
+        ///
+        /// <para>Subscribers must unsubscribe in <c>OnDisable</c>. The reset below covers the
+        /// remaining case — Enter Play Mode with domain reload switched off, where a stale
+        /// subscriber would otherwise survive into the next session.</para>
+        /// </summary>
+        public static event Action<EnemyHealth> AnyDied;
 
         private BlazeAI _blaze;
         private bool _lowHealthRaised;
@@ -116,9 +132,13 @@ namespace MrMoonlight.Enemies
             // Our own listeners run first so the lamp and shotgun detach while the body is still
             // upright — Blaze's death handling may hand the body to a ragdoll on the same frame.
             Died?.Invoke();
+            AnyDied?.Invoke(this);
 
             if (_blaze != null) _blaze.Death(callAlliesOnDeath, LastAttacker);
         }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ClearStaticSubscribers() => AnyDied = null;
 
         /// <summary>
         /// Walk a hit's source up to the object Blaze will actually accept as an enemy.

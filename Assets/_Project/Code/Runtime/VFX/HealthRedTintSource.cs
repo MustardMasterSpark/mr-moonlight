@@ -17,7 +17,8 @@ namespace MrMoonlight.VFX
     [RequireComponent(typeof(PlayerStats))]
     public sealed class HealthRedTintSource : MonoBehaviour
     {
-        private const string RedTintSourceName = "HealthDamage";
+        /// <summary>The name this source registers under in <see cref="ScreenTint"/>. Public so the event director can clear it when the level is won (MRM-11).</summary>
+        public const string SourceName = "HealthDamage";
 
         [SerializeField] private PlayerStats playerStats;
 
@@ -33,7 +34,7 @@ namespace MrMoonlight.VFX
         {
             float maxHealth = playerStats.Health.MaxValue;
             float healthLostFraction = maxHealth > 0f ? 1f - playerStats.Health.Value / maxHealth : 0f;
-            ScreenTint.SetRed(RedTintSourceName, Tunables.I.HealthRedTintCurve.Evaluate(healthLostFraction));
+            ScreenTint.SetRed(SourceName, Tunables.I.HealthRedTintCurve.Evaluate(healthLostFraction));
         }
     }
 }

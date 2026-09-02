@@ -1,0 +1,73 @@
+# =============================================================================
+#  MR. MOONLIGHT — ISLAND EVENT SCRIPT
+#  Read by the Event Director (MRM-11). Edit this file in any text editor and
+#  press play; nothing has to be rebuilt and no C# has to be touched.
+#
+#  THE ONE RULE: every line fires and the director moves straight to the next.
+#  The only line that ever blocks is `wait`. Scan the left column for it and you
+#  know exactly where the level pauses.
+#
+#  Full verb reference: Docs/event-director.md
+# =============================================================================
+
+
+[main]
+
+# A beat before the first message, so it does not land in the middle of the
+# scene-load hitch.
+wait  seconds=1
+
+# Sets the objective AND announces it centre-bottom, in one line, so the words
+# the player reads and the words the pause menu will hold can never drift apart.
+# 20 is the real demo target (Carlos, 2026-09-02). 51 Spotters are placed on the
+# island, so there is comfortable slack. If you change this number, change the
+# wording in the same line — nothing keeps them in sync for you.
+objective  kill_spotters  text="Homework: Kill 20 old timers"  kills=20  kind=Spotter  for=8
+
+# Waits forever on purpose. This is a player-progress wait: it resolves when the
+# twenty are dead and never otherwise, and timing it out would hand out a win
+# nobody earned. See WaitVerb's class doc for the full timeout policy.
+wait  objective=kill_spotters
+
+win  "Good boy"
+
+
+# =============================================================================
+#  NOT WIRED UP YET — reference examples, left commented on purpose.
+#
+#  These are the shapes the rest of the level will be written in. Uncomment one
+#  once the scene has the object it names: `spawn` needs an Enemy Spawn Point
+#  component with that name, `wait zone=` needs an Event Zone collider with that
+#  name, `signal` needs an Event Signal Receiver.
+# =============================================================================
+
+# [glade_ambush]
+#
+# # Hold until the player walks into the Event Zone named "glade_edge".
+# wait   zone=glade_edge
+#
+# message "Something moved in the trees."  for=4
+#
+# # Four Spotters at the spawn point named "glade_ambush_point", already hunting.
+# # `group=` names the wave so the next line can wait for all of them to die.
+# spawn  Spotter  at=glade_ambush_point  count=4  group=glade_wave
+#
+# wait   group=glade_wave
+#
+# message "Quiet again."  for=3
+
+
+# [radio_scene]
+#
+# # `signal` fires anything wired to an Event Signal Receiver of the same name —
+# # no code needed for pure scene wiring (enable an object, play a sound, open a door).
+# signal radio_static_on
+#
+# objective answer_radio  text="Answer the radio"
+#
+# # Not a kill objective, so the script decides when it is done. The zone around
+# # the radio raises this signal; `complete` closes the objective out.
+# wait     zone=radio_reached
+# complete answer_radio
+#
+# signal   radio_static_off

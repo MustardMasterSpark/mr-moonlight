@@ -34,12 +34,50 @@ namespace FlyingBirds
         private float birdSizeRandomiser;
         public Vector3 rotationCentre;
 
+        // ---------------------------------------------------------------------------------
+        // MR. MOONLIGHT EDIT — MRM-11, 2026-09-02. Hierarchy hygiene, no behaviour change.
+        //
+        // The vendor spawned every bird straight into the scene root, so a flock dropped a
+        // row of loose "Bird_Flap_Mesh(Clone)" objects in among the terrain, the player and
+        // the event director. They now go into a container under the spawner instead.
+        //
+        // Behaviourally neutral, and it has to stay that way: the Instantiate overload used
+        // below takes a world position and rotation, so each bird appears exactly where it
+        // did before; the spawner has identity rotation and unit scale and never moves; and
+        // BirdMovement drives transform.position and RotateAround, both world-space. If any
+        // of those three stops being true, re-check this.
+        //
+        // To revert: delete _birdContainer and EnsureContainer(), and drop the last argument
+        // from the Instantiate call in Update().
+        // ---------------------------------------------------------------------------------
+        private const string BirdContainerName = "Birds";
+
+        private Transform _birdContainer;
+
+        private void EnsureContainer()
+        {
+            if (_birdContainer != null) return;
+
+            Transform existing = transform.Find(BirdContainerName);
+            if (existing != null)
+            {
+                _birdContainer = existing;
+                return;
+            }
+
+            var container = new GameObject(BirdContainerName);
+            container.transform.SetParent(transform, false);
+            _birdContainer = container.transform;
+        }
+
 
         // Start is called before the first frame update
         void Start()
         {
 
             transform.localRotation = Quaternion.Euler(0, 0, 0);
+
+            EnsureContainer();
 
             birdCount = 0;
 
@@ -69,7 +107,9 @@ namespace FlyingBirds
             if (birdCount < birdNumberMax)
             {
 
-                clonebird = Instantiate(ObjectToSpawn, rndBirdPosition, transform.rotation) as GameObject;
+                // MR. MOONLIGHT EDIT (MRM-11): parented — see EnsureContainer above.
+                EnsureContainer();
+                clonebird = Instantiate(ObjectToSpawn, rndBirdPosition, transform.rotation, _birdContainer) as GameObject;
                 birdSizeRandomiser = Random.Range(birdSizeMin, birdSizeMax);
                 clonebird.transform.localScale = new Vector3(birdSizeRandomiser, birdSizeRandomiser, birdSizeRandomiser);
 

@@ -1,0 +1,233 @@
+You are continuing MRM-11 in Mr. Moonlight. The Event Director is BUILT, VERIFIED LIVE, and working.
+This session is refinement and scene tuning, not a rebuild. Branch: `mrm-11` (already checked out,
+uncommitted — Carlos commits in GitHub Desktop, never you).
+
+Carlos's own framing when handing this over on 2026-09-02: "probably tweaks more than the event
+script itself."
+
+
+READ THESE FIRST, IN THIS ORDER
+
+  1. `Docs/event-director.md` — the full format and verb reference. This is the source of truth for
+     the syntax. Read it before writing a single line of event script.
+  2. `Assets/_Project/Data/Events/IslandEvents.txt` — the live script. Four active lines plus two
+     commented reference blocks.
+  3. MRM-11 in Linear — two long comments from 2026-09-02 record the design and the follow-up work.
+  4. CLAUDE.md and `Docs/csharp-conventions.md` — house rules. The two that bite hardest here:
+     no hardcoded values (MoonlightTunables), and ASK CARLOS BEFORE ANY UNITY SCENE WORK, then do it
+     via UnityMCP, verify by reading real state back, and document it.
+
+
+DO NOT START IMPLEMENTING ON SESSION OPEN. This file is context to read, not a go-ahead. Wait for
+Carlos to say what he wants tuned.
+
+
+=============================================================================
+WHAT EXISTS AND WORKS — DO NOT REBUILD ANY OF THIS
+=============================================================================
+
+The whole demo loop is four authored lines:
+
+    wait       seconds=1
+    objective  kill_spotters  text="Homework: Kill 20 old timers"  kills=20  kind=Spotter  for=8
+    wait       objective=kill_spotters
+    win        "Good boy"
+
+THE ONE RULE OF THE FORMAT: every line fires and the director moves straight to the next one. The
+only line that ever blocks is `wait`. Do not add hidden blocking behaviour to any other verb — that
+rule is the entire reason the format is readable, and it is the deliberate correction to the
+deprecated SLDD that Carlos abandoned for being unreadable.
+
+Code: `Assets/_Project/Code/Runtime/Events/` (director, parser, objective tracker, scene components)
+      `Assets/_Project/Code/Runtime/Events/Verbs/` (one class per verb)
+      `Assets/_Project/Code/Runtime/UI/SystemMessageUI.cs`
+      `Assets/_Project/Code/Runtime/UI/GameOverPanel.cs` (serves BOTH endings despite the name)
+      `Assets/_Project/Code/Editor/EventDirectorInspector.cs` + `EventScriptValidator.cs`
+
+Scene (`Island.unity`, saved):
+      `Event Director`            — EventDirector + ObjectiveTracker, script asset assigned
+      `EventSystem`               — added this session; the scene had NONE, so UI buttons were dead
+      `HUD Canvas/System Message` — centre-bottom subtitle channel, Special Elite font
+      `HUD Canvas/Game Over Panel`— headline + RESTART + MAIN MENU buttons
+      `Enemies`                   — holder with 51 Enemy_Spotter prefab instances
+      `Scene Effects Toggle`      — + SceneEffectsDebugToggle (F6 fog, F7 CRT)
+      `TimeManager`               — + TimeOfDayDebugCycle (F8 cycles the 4 sky presets)
+
+Verified live: objective announces, kills tick 1/20 upward, win screen pauses and shows both buttons,
+death lands on the same panel, Restart reloads Island, Main Menu loads MainMenu.
+
+Working verbs: wait / run / stop / log / message / objective / complete / spawn / signal / win / lose.
+Reserved verbs that warn once naming their owner: dialogue, sound, music, vfx, lighting, cutscene,
+checkpoint, grant, stat.
+
+BUILT AND UNIT-TESTED BUT NOT YET USED IN THE LEVEL: `spawn at=<point>`, `wait zone=`, `wait group=`,
+`signal`. No Enemy Spawn Points and no Event Zones are placed in the scene yet. Commented reference
+examples for both sit at the bottom of IslandEvents.txt.
+
+
+=============================================================================
+THE AUTHORING LOOP — USE IT, IT IS FAST
+=============================================================================
+
+  1. Edit `IslandEvents.txt` in a text editor. No rebuild, no C# change.
+  2. Tools -> Mr. Moonlight -> Validate Event Scripts. Parses every script and reports grammar
+     errors, unknown verbs, missing required arguments and dangling sequence names WITHOUT entering
+     play mode. Use this before every play test; it is much cheaper than opening Island.
+  3. Tools -> Mr. Moonlight -> Print Event Verb Reference. Always accurate even if the doc drifts.
+  4. Press play. The Event Director inspector shows running sequences and live objective progress.
+
+
+=============================================================================
+DEBUG KEYS — F1..F8, all documented in Docs/debug-tools.md
+=============================================================================
+
+  F1 input overlay · F2 stat overlay · F3 infinite stamina · F4 invulnerable · F5 health regen
+  F6 fog on/off · F7 CRT on/off · F8 next time-of-day preset (wraps through 4)
+
+F6/F7 RESTORE THEMSELVES ON PLAY-MODE EXIT AND MUST KEEP DOING SO. `SceneEffectsToggle` writes to
+the shared Volume PROFILE ASSET by design, and an asset edited during play mode is NOT rolled back
+the way a scene object is — so without the restore, one cheat-key press would quietly change the
+project's shipping look. `SceneEffectsDebugToggle` snapshots the state in Awake and puts it back in
+OnDisable, only if a key was actually pressed. F8 needs no equivalent because `TimeManager` drives
+scene objects, which play mode rolls back on its own.
+
+Note: HAZE fog is currently OFF in the shared profile (pre-existing, not from this work).
+`SceneEffectsToggle` has a "Restore Ship Defaults (Fog + CRT On)" context menu.
+
+
+=============================================================================
+LIKELY WORK THIS SESSION — Carlos will pick
+=============================================================================
+
+TUNING (all data, no code):
+  - Message timings. `SystemMessageDefaultDuration` (5s), `ObjectiveAnnounceDuration` (6s),
+    `SystemMessageFadeDuration` (0.4s) in MoonlightTunables. The `for=8` on the objective line
+    overrides the announce default for that one line.
+  - Message look. `SystemMessageFontSize` (34) and `SystemMessageColor` (pale cold blue) in
+    MoonlightTunables; position is the RectTransform on `HUD Canvas/System Message` (bottom-centre,
+    y=90, 1400x220). Carlos has not seen this on a real monitor yet — expect a pass on size and
+    height.
+  - Kill target. `kills=20` in the script. IMPORTANT: the wording and the number are in the SAME
+    LINE and nothing keeps them in sync — change both together.
+  - Spotter density and placement. 51 is the current count; see the placement section below.
+
+LIKELY NEXT FEATURES:
+  - Place Enemy Spawn Points and Event Zones and actually exercise `spawn` / `wait zone=`. This is
+    the biggest untested area of the system.
+  - Write more of the level as `[sequence]` blocks.
+  - A custom `!verb` for a specific moment Carlos describes. One class in Verbs/ + one line in
+    `EventVerbRegistry.cs`. BUT CHECK `signal` FIRST — an EventSignalReceiver turns
+    `signal <name>` into any inspector-wired UnityEvent with zero code, and that covers most
+    "very localized" asks.
+
+
+=============================================================================
+KNOWN GAPS AND TRAPS — read these, they will save you a session
+=============================================================================
+
+  - URP LOGS ONE ERROR EVERY PLAY SESSION, and it is expected: "Too many additional punctual lights
+    shadows to look good, URP removed 50 shadow maps." Cause is the 51 Spotter hand lamps, each a
+    shadow-casting point light. URP handles it and the scene runs at 152-156 FPS, but a standing red
+    line will eventually hide a real one. The one-field fix is `Lamp Light` -> Shadow Type ->
+    No Shadows on `Enemy_Spotter.prefab` (or Soft -> Hard to halve the atlas cost). LEFT ALONE ON
+    PURPOSE: which lamps cast shadows is an art decision and 50 of the 51 already effectively don't.
+    Ask Carlos before changing it.
+
+  - A FLARE ON TOP OF 51 SPOTTERS IS UNTESTED. `SpotterFlareCall` summons a wave when a Spotter is
+    isolated; `SpotterPanicCall` summons another when one is hurt. The reinforcement maths has never
+    run at this population. Watch the live enemy count during a real playthrough before assuming it
+    is fine. This is MRM-34 tuning territory, not a director bug.
+
+  - THE PLAYER TAG IS ON THE `Body` CHILD, NOT THE PLAYER ROOT. Both are tagged, and
+    `FindGameObjectWithTag` returns `Body`. That is CORRECT for Blaze (physics reads the collider's
+    own tag), so it is the right chase target — but `GetComponentInChildren` from it finds nothing,
+    because `BurntwaxPlayerBridge` lives on `Player/MrMoonlight Systems`, a sibling branch. Search
+    from `transform.root`.
+
+  - NEVER NULL A STATIC EVENT FROM Awake/OnEnable. Scene wake order is undefined, so it silently
+    deletes subscribers that woke first. `EventSignals` was fixed for exactly this. Use
+    `[RuntimeInitializeOnLoadMethod(SubsystemRegistration)]`, which runs before any scene object.
+
+  - THE MCP SCREENSHOT TOOL SOMETIMES FALLS BACK TO DIRECT CAMERA RENDER, which excludes every
+    Screen Space - Overlay canvas — so the HUD, the FPS counter and the whole end panel vanish from
+    the capture even though they render fine. It did this consistently while `Time.timeScale == 0`.
+    Do NOT read a missing HUD in a screenshot as a bug. Confirm component state first, and if you
+    need a real capture set `timeScale = 1` in a SEPARATE tool call before shooting (a same-call
+    change does not get a rendered frame in time).
+
+  - `execute_code` runs as a METHOD BODY. No `using` directives — fully qualify everything. And
+    write `UnityEngine.Object.FindObjectsByType`, never bare `Object`, or you get an ambiguous
+    reference against `object` and a cascade of bogus StringBuilder errors.
+
+  - SIGNALS LATCH. Once raised, a signal stays raised for the level, and a `wait` on an
+    already-raised signal returns immediately. This is deliberate deadlock protection. The cost is
+    that a signal cannot be waited on twice — raise a second, differently-named one.
+
+  - DEADLOCK POLICY IS PER-CONDITION AND DELIBERATE. World waits (zone/signal/sequence) time out
+    after `EventWaitDefaultTimeout` (180s). Progress waits (objective/kills/group) wait FOREVER on
+    purpose — timing them out would hand the player a win they did not earn. Do not "fix" the latter
+    by adding a timeout.
+
+
+=============================================================================
+HOW THE 51 SPOTTERS WERE PLACED — reproduce this if you re-scatter them
+=============================================================================
+
+Under the `Enemies` holder: 50 placed by script plus the one that was already hand-placed (moved in).
+All are real prefab instances of `Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab`.
+
+Rules enforced at generation:
+  - REACHABILITY-GATED. Every point had to return `PathComplete` from `NavMesh.CalculatePath`
+    starting at the player spawn. This single test does two jobs: it keeps them all on the main
+    island (the small island and the other disconnected NavMesh components are excluded
+    automatically, with no hardcoded geometry), AND it guarantees the kill objective is completable.
+    KEEP THIS RULE if you re-scatter. 72 candidates were rejected on it alone.
+  - 90m clear zone around the player spawn (attack-state sight range is 40m). Closest is 106m,
+    farthest 481m.
+  - 30m minimum spacing between Spotters.
+  - `Random.InitState(11)` so the layout is reproducible.
+
+`EnemyPatrolRoute` is in wander-radius mode with no waypoints, so each wanders around its own spawn
+point — no extra wiring needed per Spotter.
+
+Measured 152-156 FPS with all 51 alive, both at spawn and in the densest cluster. Not a perf problem.
+Note that each Spotter carries a shadow-casting point light (the hand lamp), 52 in the scene; URP
+culls by distance, but "Reduced additional punctual light shadows resolution..." warnings are now
+more frequent. That is URP fitting its shadow atlas, not an error.
+
+
+=============================================================================
+VENDOR EDITS MADE THIS SESSION
+=============================================================================
+
+`Assets/_Project/Code/Vendor/Flying Birds VFX/Scripts/BirdSpawner.cs` — the vendor spawned all 50
+birds into the SCENE ROOT, which buried the hierarchy. They now go into a `Birds` container created
+under the spawner at runtime. Marked in place with a full comment block and revert instructions, per
+the vendor-edit policy in `Docs/unity-conventions.md`.
+
+It is behaviourally neutral ONLY because three things hold: the Instantiate overload takes a world
+position/rotation, the spawner has identity rotation and unit scale and never moves, and
+BirdMovement drives world-space `transform.position` / `RotateAround`. If any of those changes,
+re-check it.
+
+
+=============================================================================
+ADJACENT ISSUES — DO NOT SILENTLY ABSORB THEM
+=============================================================================
+
+MRM-14 (system messages + objectives) and MRM-19 (pause menu + game over) are both partly built by
+this work. Both issues carry a 2026-09-02 comment listing exactly what is done and what is still
+owed. Read those comments before touching either area, and if Carlos asks for something that belongs
+to one of them, flag the overlap rather than quietly widening MRM-11.
+
+MRM-45 (checkpoints) is designed in but not built: `RunningSequence.Index` is public and
+`JumpTo(int)` rewinds a running sequence. Objectives do NOT currently survive a scene restart.
+
+
+=============================================================================
+MODEL NOTE
+=============================================================================
+
+Sonnet is right for this: the system exists, and the work is tuning, authoring content in an existing
+format, and small additive verbs. Escalate to Opus only if Carlos asks for something that changes the
+FORMAT itself (branching, conditionals, parallel-wait semantics) — that is architecture, not tuning.

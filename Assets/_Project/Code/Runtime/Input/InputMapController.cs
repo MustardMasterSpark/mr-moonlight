@@ -76,8 +76,26 @@ namespace MrMoonlight.Input
             CurrentMode = mode;
         }
 
+        /// <summary>
+        /// Disables every map, then destroys the asset.
+        ///
+        /// <para>The <c>Disable()</c> is load-bearing and easy to miss: the <i>generated</i>
+        /// <c>InputSystem_Actions.Dispose()</c> only calls <c>Object.Destroy(asset)</c> — it does
+        /// not turn the maps off. Its finalizer then asserts on any map still enabled, which is
+        /// the console line <i>"This will cause a leak and performance issues,
+        /// InputSystem_Actions.Gameplay.Disable() has not been called."</i> Because that assert
+        /// fires from the GC thread, it appears minutes after the object it is about was
+        /// destroyed, with a stack trace pointing only at the generated file — so it reads like a
+        /// vendor problem rather than ours. It is ours: this class is what enables the maps, so it
+        /// is what has to disable them.</para>
+        ///
+        /// <para>Found 2026-09-02 (MRM-11), surfaced by the new game-over Restart button reloading
+        /// the scene and destroying the player mid-session. It was always leaking on scene change;
+        /// nothing had reloaded a scene often enough to make it obvious. Owner: MRM-8</para>
+        /// </summary>
         public void Dispose()
         {
+            _actions.Disable();
             _actions.Dispose();
         }
 
