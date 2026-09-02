@@ -89,25 +89,37 @@ namespace MrMoonlight.VFX
         }
 
         /// <summary>
-        /// Fire the flare along <paramref name="aimDirection"/>, pitched up by the tunable launch
-        /// angle. A flare is a signal, so it arcs — firing it flat would read as a tracer round.
+        /// Fire the flare along <paramref name="aimDirection"/>. The launch itself is a straight-up
+        /// cheat, not a pitched version of the aim: Carlos, 2026-09-02 (MRM-76), twice — the arc
+        /// kept reading as "shot sideways" rather than "shot up." A real 90°-from-ground launch plus
+        /// a small, separate forward drift (see <see cref="MoonlightTunables.FlareForwardDrift"/>)
+        /// reads as vertical at the moment it leaves the gun — which is what a signal flare should
+        /// do — while the drift still carries it into a mortar-style curve as gravity bleeds off the
+        /// vertical speed near the top. Vertical launch speed is derived from
+        /// <see cref="MoonlightTunables.FlareApexHeight"/> and the same reduced gravity
+        /// (<see cref="MoonlightTunables.FlareGravityScale"/>) that also keeps the whole flight
+        /// slow and floaty rather than falling like a dropped rock.
+        ///
+        /// <paramref name="aimDirection"/>'s own vertical component is discarded entirely — only
+        /// its horizontal facing decides which way the drift carries the flare. The muzzle's actual
+        /// tilt is animation-driven and not reliable enough to read as "fired straight up."
         /// </summary>
         public void Launch(Vector3 aimDirection)
         {
             if (_body == null) _body = GetComponent<Rigidbody>();
 
-            aimDirection.Normalize();
-            if (aimDirection.sqrMagnitude < 0.0001f) aimDirection = transform.forward;
+            Vector3 horizontalAim = new Vector3(aimDirection.x, 0f, aimDirection.z);
+            if (horizontalAim.sqrMagnitude < 0.0001f)
+            {
+                horizontalAim = new Vector3(transform.forward.x, 0f, transform.forward.z);
+            }
+            horizontalAim.Normalize();
 
-            // Pitch around the axis perpendicular to the aim, so the arc rises regardless of which
-            // way the shooter is facing.
-            Vector3 right = Vector3.Cross(Vector3.up, aimDirection);
-            if (right.sqrMagnitude < 0.0001f) right = Vector3.right;
-
-            Vector3 launchDirection = Quaternion.AngleAxis(-Tunables.I.FlareLaunchPitch, right.normalized) * aimDirection;
+            float effectiveGravity = Mathf.Abs(Physics.gravity.y) * Tunables.I.FlareGravityScale;
+            float verticalLaunchSpeed = Mathf.Sqrt(2f * effectiveGravity * Tunables.I.FlareApexHeight);
 
             _body.useGravity = false; // gravity is applied manually so FlareGravityScale can slow the fall
-            _body.linearVelocity = launchDirection * Tunables.I.FlareLaunchSpeed;
+            _body.linearVelocity = Vector3.up * verticalLaunchSpeed + horizontalAim * Tunables.I.FlareForwardDrift;
             _body.angularVelocity = Random.onUnitSphere * (launchSpin * Mathf.Deg2Rad);
         }
 

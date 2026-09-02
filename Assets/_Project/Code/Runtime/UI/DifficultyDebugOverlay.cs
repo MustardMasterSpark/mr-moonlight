@@ -15,9 +15,15 @@ namespace MrMoonlight.UI
     {
         [SerializeField] private Rect screenRect = new Rect(10f, 10f, 260f, 24f);
 
+        [Tooltip("Debug overlay font, so it doesn't read as generic default-Unity text. Carlos, 2026-09-02 (MRM-76).")]
+        [SerializeField] private Font font;
+
+        private GUIStyle _style;
+
         private void OnGUI()
         {
-            GUI.Label(screenRect, $"Difficulty: {GameSettings.Difficulty}");
+            _style ??= new GUIStyle(GUI.skin.label) { font = font };
+            GUI.Label(screenRect, $"Difficulty: {GameSettings.Difficulty}", _style);
         }
     }
 }

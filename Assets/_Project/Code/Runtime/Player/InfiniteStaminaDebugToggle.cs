@@ -23,6 +23,9 @@ namespace MrMoonlight.Player
         [SerializeField] private bool infiniteStamina = false;
         [SerializeField] private PlayerStats stats;
 
+        [Tooltip("Debug overlay font, so it doesn't read as generic default-Unity text. Carlos, 2026-09-02 (MRM-76).")]
+        [SerializeField] private Font font;
+
         private bool _appliedState;
         private GUIStyle _style;
 
@@ -70,6 +73,7 @@ namespace MrMoonlight.Player
 
             _style ??= new GUIStyle(GUI.skin.label)
             {
+                font = font,
                 fontSize = 20,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperCenter,

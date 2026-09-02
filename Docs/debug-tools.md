@@ -22,6 +22,18 @@ All five follow the same shape: a `[SerializeField] private bool` toggle, an `Up
 against `Keyboard.current`, and an `OnGUI()` label only while active. Copy that pattern for the
 next one rather than inventing a new shape.
 
+**Font (2026-09-02):** every live debug overlay (all five above, plus `DifficultyDebugOverlay`)
+renders in `Punktype.ttf` (`Assets/_Project/Art/UI/Fonts/Punktype.ttf`) instead of Unity's default
+GUI font, via a `[SerializeField] private Font font` added to each script and wired on the scene
+instance. First pick was `HitMePunk.ttf` (same folder, same wiring) — Carlos swapped it for
+Punktype same day; the Hit Me Punk files are still in the project, just unreferenced, in case he
+wants them back. A matching TMP Font Asset (`Punktype SDF.asset`, Dynamic atlas) drives the same
+swap on the 3 TextMeshPro HUD elements (Game Over text, FPS counter, ammo counter) — set via the
+real `TMP_Text.font` setter, not just the serialized field, so the matching generated material
+follows; that material has to be persisted as a saved sub-asset by hand
+(`AssetDatabase.AddObjectToAsset`) since `TMP_FontAsset.CreateFontAsset` doesn't save its default
+material on its own.
+
 ## Context-menu tools (not keybound)
 
 | Component | Where | What it does |
@@ -47,6 +59,30 @@ shortcut) doesn't resolve in this project — `Light.DOIntensity` and other modu
 fine, just not that one. Workaround, used in `LampFireEffect`: call
 `DOTween.To(() => source.volume, v => source.volume = v, target, duration)` directly — it's
 exactly what the shortcut does internally, so nothing is lost.
+
+## Text Animator for Unity
+
+Installed 2026-09-02 (Febucci) — Carlos already owned it; the Asset Store cache had it as a
+UPM-format `.unitypackage` (`.../Febucci/ScriptingGUI/Text Animator for Unity UI Toolkit and Text
+Mesh Pro.unitypackage`), which imports as an embedded local package at
+`Packages/com.febucci.text-animator-unity/` rather than a loose `Assets/` folder — modern Febucci
+ships as real UPM now. Five assemblies (Runtime, TMP integration, UI Toolkit integration, Input
+System integration, Attributes).
+
+**One import gotcha, already hit once:** the package's own first-run "Setup" window
+(`Tools > Febucci > TextAnimator > About Window` to reopen it) has "Install Default Content" /
+"Install Built In Effects" buttons that can silently no-op if the Editor loses focus right after
+clicking — same class of problem as the general "background work stalls unfocused" trap below.
+If clicking them does nothing, the fix is `AssetDatabase.ImportPackage` on
+`Packages/com.febucci.text-animator-unity/Data~/BuiltIn.unitypackage` (an absolute disk path, not
+a virtual `Packages/...` asset path — `Data~` is tilde-hidden from Unity's own AssetDatabase) —
+that's confirmed to land the same content the buttons install
+(`Assets/Plugins/Febucci/Text Animator for Unity/...`: Settings, 13 built-in effects, curves,
+playbacks, timing presets).
+
+**Not wired to any text yet** — installed and content-populated only. Carlos's plan is to drive
+some future display text (dialogue/subtitle-style, not decided which) through it, likely alongside
+TextMesh Pro rather than replacing it.
 
 ## Known gaps
 

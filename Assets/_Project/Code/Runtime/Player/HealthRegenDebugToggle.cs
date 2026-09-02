@@ -38,6 +38,9 @@ namespace MrMoonlight.Player
         [Tooltip("Health recovered per second once regen kicks in.")]
         [SerializeField] private float regenPerSecond = 25f;
 
+        [Tooltip("Debug overlay font, so it doesn't read as generic default-Unity text. Carlos, 2026-09-02 (MRM-76).")]
+        [SerializeField] private Font font;
+
         private Tween _regenTween;
         private GUIStyle _style;
 
@@ -102,6 +105,7 @@ namespace MrMoonlight.Player
 
             _style ??= new GUIStyle(GUI.skin.label)
             {
+                font = font,
                 fontSize = 20,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperCenter,

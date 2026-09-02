@@ -31,6 +31,9 @@ namespace MrMoonlight.Player
         [Tooltip("Seconds the last-hit flash stays on screen after a blocked shot.")]
         [SerializeField] private float hitFlashDuration = 0.6f;
 
+        [Tooltip("Debug overlay font, so it doesn't read as generic default-Unity text. Carlos, 2026-09-02 (MRM-76).")]
+        [SerializeField] private Font font;
+
         private float _blockedTotal;
         private int _blockedHits;
         private float _lastBlockedAt = -99f;
@@ -87,6 +90,7 @@ namespace MrMoonlight.Player
 
             _style ??= new GUIStyle(GUI.skin.label)
             {
+                font = font,
                 fontSize = 20,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperCenter,
@@ -101,6 +105,7 @@ namespace MrMoonlight.Player
 
             _flashStyle ??= new GUIStyle(GUI.skin.label)
             {
+                font = font,
                 fontSize = 26,
                 fontStyle = FontStyle.Bold,
                 alignment = TextAnchor.UpperCenter,
