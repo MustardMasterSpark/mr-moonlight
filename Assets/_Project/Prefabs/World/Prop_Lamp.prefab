@@ -107,6 +107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5716699279587599320}
   - component: {fileID: 1278645421667846619}
+  - component: {fileID: 7532811812581404418}
   m_Layer: 0
   m_Name: Prop_Lamp
   m_TagString: Untagged
@@ -152,6 +153,23 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 0.07676978, y: 0.31691018, z: 0.13528144}
   m_Center: {x: 0, y: 0, z: -0.0000000037252903}
+--- !u!114 &7532811812581404418
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5733412940241278052}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ec99d0a20630c94e8549813f97f622c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.LampFireEffect
+  lampLight: {fileID: 0}
+  fireVfxPrefab: {fileID: 110962, guid: cc74f1b5eb71b4ea7b7b2908395a9997, type: 3}
+  fireSpawnPoint: {fileID: 0}
+  glassBreakClip: {fileID: 8300000, guid: c09039013fec7684396a4b070e672b41, type: 3}
+  impactAudioSource: {fileID: 0}
 --- !u!1 &7590952421954344914
 GameObject:
   m_ObjectHideFlags: 0

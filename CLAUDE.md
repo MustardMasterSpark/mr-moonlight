@@ -77,3 +77,24 @@ gate, and do not cut a system to nothing for Sept 1 if a slightly larger version
 **Scope note:** every asset in `Docs/new-asset-list.md` is chosen **for the demo**. If a full game
 gets made it starts from a clean project with better-chosen assets — so an asset having long-term
 drawbacks is not a reason to reject it here.
+
+## Session hygiene
+
+Carlos budgets tokens across sessions. **Proactively suggest a fresh session** at natural stopping
+points — don't wait to be asked. There's no precise token-remaining readout to threshold against;
+judge it qualitatively instead:
+- A chunk of work just finished, got tested, and got logged (Linear comment, doc update) — the
+  state is clean, which is exactly when a handoff costs the least.
+- A lot of unrelated ground got covered in one sitting (several separate fixes/features, not one
+  continuous task) and the next ask looks like its own separate thing.
+- The conversation itself has gotten long enough that re-deriving context from scratch would be
+  cheaper than carrying it forward.
+
+**How to hand off, when it's time:** write a context prompt to a new `Docs/*-sonnet-prompt.txt` (or
+`*-opus-prompt.txt`) file — same precedent as `mrm34-sonnet-prompt.txt` / `mrm70-sonnet-prompt.txt`
+— covering what's done, what's next, and any traps already found. A fresh session reads that file,
+not chat scrollback, so the handoff has to live in the repo, not just in a verbal summary. Also flag
+if the *next* piece of work suits a different model — Opus for building a new system from scratch,
+Sonnet for tuning/polish/bug-fixing on one that already exists (the MRM-34 build → tune split is the
+precedent). Never commit or push as part of this — Carlos does that in GitHub Desktop; offer a
+summary of what changed and a suggested commit message instead.

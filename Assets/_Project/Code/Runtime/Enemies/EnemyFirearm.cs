@@ -122,13 +122,20 @@ namespace MrMoonlight.Enemies
                                 * baseDirection;
             }
 
+            // One roll per shell, shared by every pellet in it — MRM-76: Carlos wants shot-to-shot
+            // damage variance ("a little bit more fair"), not pellet-to-pellet noise. Rolling per
+            // pellet would average out across all seven and the variance would vanish.
+            float shotDamageMultiplier = Random.Range(
+                Tunables.I.EnemyDamageVarianceMultiplierMin,
+                Tunables.I.EnemyDamageVarianceMultiplierMax);
+
             for (int i = 0; i < PelletCount; i++)
             {
-                FirePellet(origin, ConeDirection(baseDirection, SpreadAngle));
+                FirePellet(origin, ConeDirection(baseDirection, SpreadAngle), shotDamageMultiplier);
             }
         }
 
-        private void FirePellet(Vector3 origin, Vector3 direction)
+        private void FirePellet(Vector3 origin, Vector3 direction, float shotDamageMultiplier)
         {
             Vector3 endPoint = origin + direction * Range;
 
@@ -139,7 +146,8 @@ namespace MrMoonlight.Enemies
 
                 if (hit.collider.GetComponentInParent<IDamageable>() is { IsDead: false } target)
                 {
-                    target.TakeDamage(new DamageInfo(DamageAtDistance(hit.distance), hit.point, direction, _owner));
+                    target.TakeDamage(new DamageInfo(
+                        DamageAtDistance(hit.distance) * shotDamageMultiplier, hit.point, direction, _owner));
                 }
             }
 

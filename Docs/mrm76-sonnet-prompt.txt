@@ -1,0 +1,90 @@
+You are continuing MRM-76 (gameplay balance tuning) and general polish on Mr. Moonlight, picking
+up from a single long session on 2026-09-02 that covered a lot of separate ground. Branch: mrm-75
+(same branch-scope exception as MRM-34 — see memory mrm75_branch_scope_exception).
+
+
+READ THESE FIRST, IN THIS ORDER
+
+  1. Linear MRM-76 ("Gameplay balance tuning log") — every comment on it, in order. That is the
+     as-built record for everything below: exact numbers, reasoning, and what Carlos said about
+     each. Don't re-derive any of it from the code alone.
+  2. CLAUDE.md's new "Session hygiene" section — why this handoff file exists at all.
+  3. Docs/debug-tools.md — F1-F5 and the DOTween adoption notes.
+  4. Docs/csharp-conventions.md's "Async and coroutines" section — DOTween is installed now
+     (corrected back from an earlier "not installed" note); it's the standard for new smooth
+     transitions.
+
+
+THE STATE IT IS IN — NOTHING BELOW HAS BEEN PLAYTESTED BY CARLOS YET
+
+Everything in this list compiles clean and was smoke-tested (component wiring verified, a couple
+of scripted damage/kill calls checked for exceptions) but **none of it has been watched running by
+a human**. That is FIRST TASK for whoever picks this up: sit with Carlos through a real fight and
+confirm each of these actually reads the way the numbers say they should.
+
+  - Game Over sequence: was fully broken (DeathSequence had blackScreenImage/gameOverPanel
+    unassigned in the scene — silent audio cutout, no black screen, no text). Fixed by wiring both
+    references. Needs a real death (F4 off) to confirm.
+  - Per-body-part hitboxes: NEW system, not previously built. EnemyHitbox rewritten with two modes
+    — HeightBands (on the Spotter's existing root capsule, classifies by hit height against the
+    Animator's Head/Hips bones) and FixedZone (two new SphereColliders on the forearm bones, the
+    one part of "limb" the capsule doesn't cover). Multipliers: limb x1, torso x2, head x4.0
+    (Tunables.EnemyHitboxHeadMultiplier — deliberately off MRM-32's documented x3; read MRM-76's
+    comments for why).
+  - Pistol damage: was a flat 9, now 24-33 (TwoConstants mode on Pistol.asset's DamageConfig,
+    ±20%/+10% variance). Enemy shotgun got the same per-shot variance treatment in EnemyFirearm.
+  - Reinforcement spawn distance: was a 0-20m disc from the flaring Spotter (spawned right next to
+    the player), now a 45-55m annulus (EnemyReinforcementSpawner + two new Tunables).
+  - Spotter size/speed/fire-rate: scaled x1.25 (four-fields-together rescale — root scale, capsule,
+    NavMeshAgent, BlazeAI vision position), Blaze move speeds raised on Normal/Alert/Attack state
+    behaviours (NOT Tunables-routed — direct fields on the prefab, matches existing precedent),
+    SpotterAimDelay/InterShotDelay/ReloadDuration shortened.
+  - Dropped lamp fire (LampFireEffect, new component on Prop_Lamp.prefab): ignites when the
+    dropped lamp's rigidbody settles (not just first contact), scaled to the lamp's own size,
+    burns 15s, then fades over 2.5s (fire) / 5s (the lamp's own gameplay Light) via DOTween. A
+    separate one-shot glass-break sound plays on the lamp's FIRST ground impact (OnCollisionEnter),
+    deliberately earlier than the fire.
+  - F5 debug toggle (HealthRegenDebugToggle, new): Call-of-Duty-style regen, 2s after last hit then
+    ramps at 25 HP/s via a DOTween tween with SetDelay. See Docs/debug-tools.md for the full F1-F5
+    table.
+  - DOTween Pro: newly installed this session (Assets/Plugins/Demigiant/), no asmdef needed
+    (Plugins-folder assemblies auto-visible everywhere — unlike Ian's Fire Pack, which DID need
+    one). AudioSource.DOFade doesn't resolve for reasons not chased down; use raw
+    DOTween.To(() => source.volume, v => source.volume = v, target, duration) instead.
+  - Player was accidentally moved to (488, 0, 0) and PlayerUI's canvas got dragged to a bad local
+    offset during Carlos's own scene editing — both fixed (Player now sits 24m behind the Spotter,
+    ground-snapped, outside its sight range, for testing; PlayerUI reset to (0,0)). If Carlos wants
+    the player somewhere else for the next test, that's a one-line position edit, not a bug.
+
+
+TRAPS THAT ALREADY COST TIME TODAY (all in MRM-76's comments in more detail)
+
+  - Editing ANY script while Unity is in Play Mode forces a domain reload that nulls out runtime
+    wiring (GunStateMachine and similar threw NullReferenceException floods, twice). Always
+    manage_editor stop before editing code, even mid-session; re-enter play mode after.
+  - Play mode only ticks while the Unity Editor window has OS focus — same trap as MRM-34, still
+    true. If Time.time / a coroutine looks frozen, that's why.
+  - A prefab asset and its live scene instance are separate — a scene-instance-only edit doesn't
+    reach future-spawned copies (e.g. reinforcements). This session's pattern: edit via
+    PrefabUtility.LoadPrefabContents/SaveAsPrefabAsset for the source, AND the live scene instance
+    if one already exists, in the same pass.
+  - Vendor code that needs its own asmdef to be referenceable from MrMoonlight.Runtime: Blaze,
+    Ian's Fire Pack (Assets/ThirdParty/, needed IansFirePack.asmdef). Vendor code that does NOT
+    (Plugins/ folder, auto-visible): DOTween. Check which situation a new vendor script is in
+    before assuming either way.
+  - AssetDatabase.ExportPackage with IncludeDependencies|Recurse is the clean way to pull one
+    prefab and only its actual dependencies out of the Playground project, rather than copying
+    a whole asset-pack folder by hand and guessing what's shared.
+
+
+HOUSE RULES THAT MATTER HERE
+
+  - No hardcoded values — MoonlightTunables, XML doc naming the owning issue. ~15 new fields added
+    today (hitbox multipliers, damage variance, lamp fire timings) — see the file's tail.
+  - Never commit or push. Carlos uses GitHub Desktop. A summary + suggested commit message was
+    left for him at the end of the 2026-09-02 session instead.
+  - Scene/prefab work: offer via UnityMCP, ask first, verify by reading real state back, document.
+    Same pattern used all session — e.g. reading git diff against HEAD to confirm a prefab-apply
+    hadn't silently corrupted something, before trusting it.
+  - Log every future gameplay-feel tweak (reason, before/after, Carlos's verdict) as a comment on
+    MRM-76, not in a memory or a new doc.

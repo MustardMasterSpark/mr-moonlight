@@ -15744,6 +15744,7 @@ GameObject:
   - component: {fileID: 3562825793126495086}
   - component: {fileID: 6925903888268430509}
   - component: {fileID: 4675941928501495045}
+  - component: {fileID: 8535949558205373928}
   m_Layer: 3
   m_Name: Player
   m_TagString: Player
@@ -16034,6 +16035,23 @@ MonoBehaviour:
   invulnerable: 0
   receiver: {fileID: 6925903888268430509}
   hitFlashDuration: 0.6
+--- !u!114 &8535949558205373928
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 988803277166744411}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9136d887655c7549a8aca8e275af928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.HealthRegenDebugToggle
+  regenEnabled: 0
+  stats: {fileID: 0}
+  receiver: {fileID: 0}
+  delayAfterHit: 2
+  regenPerSecond: 25
 --- !u!1 &1103240093849816445
 GameObject:
   m_ObjectHideFlags: 0

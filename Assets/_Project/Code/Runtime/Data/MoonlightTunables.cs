@@ -321,6 +321,47 @@ namespace MrMoonlight.Data
         /// <summary>Impulse applied to a detached death drop so it falls and rolls rather than dropping straight down. Owner: MRM-34</summary>
         public float EnemyDropScatterImpulse = 1.5f;
 
+        [Header("Combat — hitbox zones & damage variance, MRM-76")]
+
+        /// <summary>
+        /// Damage multiplier for a limb hit (arms/legs) — the baseline, 1.0. Carlos's design target
+        /// (2026-09-02): four to five pistol shots to kill a Spotter through a limb. Owner: MRM-76
+        /// </summary>
+        public float EnemyHitboxLimbMultiplier = 1.0f;
+
+        /// <summary>Damage multiplier for a torso hit. Target: two to three pistol shots. Owner: MRM-76</summary>
+        public float EnemyHitboxTorsoMultiplier = 2.0f;
+
+        /// <summary>
+        /// Damage multiplier for a head hit. MRM-32 documents ×3, but at the pistol's tuned damage
+        /// range (24-33) that reliably takes two hits, not one — Carlos's explicit call 2026-09-02
+        /// was to deviate from that spec number so headshots read as "almost always one shot,
+        /// occasionally two". At 4.0, only the single lowest damage roll (24) survives a headshot;
+        /// every roll of 25 or above (9 of the 10 possible integer values) kills in one. Owner:
+        /// MRM-76, deliberately off MRM-32's ×3
+        /// </summary>
+        public float EnemyHitboxHeadMultiplier = 4.0f;
+
+        /// <summary>
+        /// How far below an enemy's head bone (in metres, world-space) the head hitbox zone starts.
+        /// <see cref="Enemies.EnemyHitbox"/> classifies a hit by comparing its height against the
+        /// Animator's own Head and Hips bones, cached once at Awake, so this needs no per-species
+        /// tuning as long as the rig is Humanoid. Owner: MRM-76
+        /// </summary>
+        public float EnemyHitboxHeadBandMargin = 0.15f;
+
+        /// <summary>Lower bound of the per-shot damage randomiser, as a multiplier (0.8 = -20%). Carlos's ask: shots should vary "so we are a little bit more fair" rather than always landing the exact same number. Applies to the player's pistol (via each gun's DamageConfig, set to TwoConstants mode) and to enemy firearms (<see cref="EnemyDamageVarianceMultiplierMin"/> mirrors this for the enemy side since Burntwax's DamageConfig isn't ours to share). Owner: MRM-76</summary>
+        public float CombatDamageVarianceMultiplierMin = 0.80f;
+
+        /// <summary>Upper bound of the per-shot damage randomiser, as a multiplier (1.1 = +10%). Owner: MRM-76</summary>
+        public float CombatDamageVarianceMultiplierMax = 1.10f;
+
+        /// <summary>Lower bound of an enemy shot's damage randomiser. Same idea as <see cref="CombatDamageVarianceMultiplierMin"/>, kept as its own field because <see cref="Enemies.EnemyFirearm"/> rolls it once per shot and applies it to every pellet, not once per pellet — otherwise seven independent rolls average out and the shot-to-shot variance disappears. Owner: MRM-76</summary>
+        public float EnemyDamageVarianceMultiplierMin = 0.80f;
+
+        /// <summary>Upper bound of an enemy shot's damage randomiser. Owner: MRM-76</summary>
+        public float EnemyDamageVarianceMultiplierMax = 1.10f;
+
         [Header("Enemy — Spotter, MRM-34")]
 
         /// <summary>The Spotter's maximum health. "Medium health" in MRM-34's scope — sturdier than a Zealot, well under the Furman. Owner: MRM-34</summary>
@@ -335,14 +376,14 @@ namespace MrMoonlight.Data
         /// <summary>How far off-target a deliberate miss is aimed, in degrees. Owner: MRM-34</summary>
         public float SpotterMissAngle = 9f;
 
-        /// <summary>Seconds the Spotter holds his aim before the first shot of a burst. This is the tell that gives the player time to break line of sight. Owner: MRM-34</summary>
-        public float SpotterAimDelay = 0.65f;
+        /// <summary>Seconds the Spotter holds his aim before the first shot of a burst. This is the tell that gives the player time to break line of sight. Lowered from 0.65 (Carlos, 2026-09-02 — MRM-76: firing felt too slow). Owner: MRM-34</summary>
+        public float SpotterAimDelay = 0.45f;
 
-        /// <summary>Seconds between the two barrels. Owner: MRM-34</summary>
-        public float SpotterInterShotDelay = 0.85f;
+        /// <summary>Seconds between the two barrels. Lowered from 0.85 (Carlos, 2026-09-02 — MRM-76). Owner: MRM-34</summary>
+        public float SpotterInterShotDelay = 0.55f;
 
-        /// <summary>Seconds the Spotter is locked in his reload state after emptying both barrels. This is the player's window to close distance or reposition. Owner: MRM-34</summary>
-        public float SpotterReloadDuration = 2.6f;
+        /// <summary>Seconds the Spotter is locked in his reload state after emptying both barrels. This is the player's window to close distance or reposition. Lowered from 2.6 (Carlos, 2026-09-02 — MRM-76: a shorter window keeps the fight faster without removing it). Owner: MRM-34</summary>
+        public float SpotterReloadDuration = 1.8f;
 
         /// <summary>Distance the Spotter tries to hold from the player while shooting, in metres. Fed into Blaze's attack-state <c>distanceFromEnemy</c>. Owner: MRM-34</summary>
         public float SpotterEngagementDistance = 12f;
@@ -377,8 +418,18 @@ namespace MrMoonlight.Data
         /// <summary>Most reinforcements a flare summons. MRM-34 calls 10 simultaneous Spotters the game's worst case — measure the frame cost against MRM-64 before raising it. Owner: MRM-34</summary>
         public int SpotterReinforcementMax = 10;
 
-        /// <summary>Radius, in metres, over which flare reinforcements are scattered around the flaring Spotter. They must arrive spread out, never stacked. Owner: MRM-34</summary>
-        public float SpotterReinforcementScatterRadius = 20f;
+        /// <summary>
+        /// Nearest a reinforcement is allowed to spawn from the flaring Spotter, in metres. Added
+        /// 2026-09-02 (MRM-76): Carlos's report was that reinforcements popped in right next to the
+        /// player — "comical, like a little devil spawning other little devils." Combined with
+        /// <see cref="SpotterReinforcementScatterRadius"/> (now the outer bound, not the only bound),
+        /// <see cref="Enemies.EnemyReinforcementSpawner"/> samples an annulus between the two so every
+        /// reinforcement lands out past the player's usual sightline and has to run in. Owner: MRM-76
+        /// </summary>
+        public float SpotterReinforcementMinDistance = 45f;
+
+        /// <summary>Farthest a reinforcement may spawn from the flaring Spotter, in metres. Raised from 20 to 55 (Carlos, 2026-09-02 — MRM-76) alongside <see cref="SpotterReinforcementMinDistance"/> so the whole spawn band sits well outside the player's visual range instead of landing on top of them. Owner: MRM-34</summary>
+        public float SpotterReinforcementScatterRadius = 55f;
 
         /// <summary>Minimum spacing between two reinforcement spawn points, in metres. Owner: MRM-34</summary>
         public float SpotterReinforcementMinSpacing = 2.5f;
@@ -423,5 +474,28 @@ namespace MrMoonlight.Data
 
         /// <summary>Range of the flare light, in metres. Owner: MRM-34</summary>
         public float FlareLightRange = 20f;
+
+        [Header("Dropped lamp fire — MRM-76")]
+
+        /// <summary>Linear speed, in m/s, below which a dropped lamp counts as "settled" for <see cref="Enemies.LampFireEffect"/>. Owner: MRM-76</summary>
+        public float LampFireSettleLinearThreshold = 0.15f;
+
+        /// <summary>Angular speed, in rad/s, below which a dropped lamp counts as "settled". Owner: MRM-76</summary>
+        public float LampFireSettleAngularThreshold = 0.3f;
+
+        /// <summary>Seconds the lamp must stay under both settle thresholds before the fire ignites — a short grace period so a lamp that's merely paused mid-roll doesn't light early. Owner: MRM-76</summary>
+        public float LampFireSettleGraceDuration = 0.4f;
+
+        /// <summary>Fire VFX size as a multiplier of the lamp's own largest rendered dimension. Carlos's ask: size it relative to the lamp, not a fixed number. Owner: MRM-76</summary>
+        public float LampFireVfxScaleFactor = 2.5f;
+
+        /// <summary>Seconds the fire burns at full strength once it ignites. Lowered from 40 (Carlos, 2026-09-02 — read as too long). Owner: MRM-76</summary>
+        public float LampFireBurnDuration = 15f;
+
+        /// <summary>Seconds the fire VFX (particles, its own flicker light, audio) takes to die out once <see cref="LampFireBurnDuration"/> elapses. Raised from 2 (Carlos, 2026-09-02). Owner: MRM-76</summary>
+        public float LampFireVfxFadeDuration = 2.5f;
+
+        /// <summary>Seconds the lamp's own gameplay <c>Light</c> takes to dim to zero, starting at the same moment as the VFX fade. Deliberately longer than <see cref="LampFireVfxFadeDuration"/> — Carlos's ask keeps the lamp glowing a beat after the flame itself dies down. Owner: MRM-76</summary>
+        public float LampLightFadeDuration = 5f;
     }
 }

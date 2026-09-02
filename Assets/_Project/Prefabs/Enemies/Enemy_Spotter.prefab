@@ -156,6 +156,76 @@ Transform:
   - {fileID: 4048451064080351296}
   m_Father: {fileID: 8980783932008189245}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &155324696368435274
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6812752143409102460}
+  - component: {fileID: 2783972161249035248}
+  - component: {fileID: 4023914458414925241}
+  m_Layer: 6
+  m_Name: Hitbox_L_Forearm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6812752143409102460
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155324696368435274}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.0000013926473, y: 0.09575277, z: 0.000002460496}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 357526712983903410}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &2783972161249035248
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155324696368435274}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.09
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4023914458414925241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155324696368435274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &227453423848054417
 GameObject:
   m_ObjectHideFlags: 0
@@ -708,6 +778,7 @@ GameObject:
   - component: {fileID: 4931539858440991534}
   - component: {fileID: 3125126428581330960}
   - component: {fileID: 5099984566976082160}
+  - component: {fileID: 2882244307305043410}
   m_Layer: 6
   m_Name: Enemy_Spotter
   m_TagString: Enemy
@@ -725,7 +796,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1.25, y: 1.25, z: 1.25}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1330676398188491360}
@@ -763,7 +834,7 @@ NavMeshAgent:
   m_GameObject: {fileID: 1499000362912248528}
   m_Enabled: 1
   m_AgentTypeID: 0
-  m_Radius: 0.35
+  m_Radius: 0.4375
   m_Speed: 3
   m_Acceleration: 20
   avoidancePriority: 50
@@ -772,7 +843,7 @@ NavMeshAgent:
   m_AutoTraverseOffMeshLink: 1
   m_AutoBraking: 1
   m_AutoRepath: 1
-  m_Height: 1.8
+  m_Height: 2.25
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 3
@@ -795,10 +866,10 @@ CapsuleCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 2
-  m_Radius: 0.35
-  m_Height: 1.8
+  m_Radius: 0.4375
+  m_Height: 2.25
   m_Direction: 1
-  m_Center: {x: 0, y: 0.9, z: 0}
+  m_Center: {x: 0, y: 1.125, z: 0}
 --- !u!82 &5017290432383289521
 AudioSource:
   m_ObjectHideFlags: 0
@@ -947,7 +1018,7 @@ MonoBehaviour:
     turningAnimT: 0.25
   vision:
     visionActive: 1
-    visionPosition: {x: 0, y: 1.6, z: 0}
+    visionPosition: {x: 0, y: 2, z: 0}
     maxSightLevel: 3
     checkTargetHeight: 0
     useMinLevel: 1
@@ -1095,7 +1166,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 63f9d81f41de4ac4e944188683471a09, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.NormalStateBehaviour
-  moveSpeed: 1.6
+  moveSpeed: 2.2
   turnSpeed: 4
   idleAnim:
   - Idle
@@ -1128,7 +1199,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9b308175118052043acf3d3799463e05, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.AlertStateBehaviour
-  moveSpeed: 2.6
+  moveSpeed: 3.4
   turnSpeed: 6
   idleAnim:
   - Idle
@@ -1167,7 +1238,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a8818de4b5bb864aab8b6a39b7c78ad, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.AttackStateBehaviour
-  moveSpeed: 4.2
+  moveSpeed: 5.5
   turnSpeed: 8
   idleAnim: Idle
   moveAnim: Run
@@ -1238,7 +1309,7 @@ MonoBehaviour:
   receiveCallFromOthers: 1
   moveBackwards: 1
   moveBackwardsDistance: 5
-  moveBackwardsSpeed: 1.8
+  moveBackwardsSpeed: 2.2
   moveBackwardsAnim: Walk
   moveBackwardsAnimT: 0.25
   turnToTarget: 1
@@ -1246,7 +1317,7 @@ MonoBehaviour:
   useTurnAnims: 0
   strafe: 1
   strafeDirection: 2
-  strafeSpeed: 2.2
+  strafeSpeed: 3.2
   strafeTime: {x: 3, y: 5}
   strafeWaitTime: {x: 0.3, y: 1}
   leftStrafeAnim: StrafeLeft
@@ -1571,6 +1642,8 @@ MonoBehaviour:
   countMaxOverride: 10
   overrideScatterRadius: 0
   scatterRadiusOverride: 20
+  overrideMinDistance: 0
+  minDistanceOverride: 45
   navMeshSampleDistance: 4
   placementAttemptsPerSpawn: 12
   suppressCallsOnSpawned: 1
@@ -1681,6 +1754,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Runtime.EnemyDebugControls
   debugDamage: 25
   target: {fileID: 0}
+--- !u!114 &2882244307305043410
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 0
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &1529947185680349093
 GameObject:
   m_ObjectHideFlags: 0
@@ -1713,6 +1802,7 @@ Transform:
   - {fileID: 6463977180472504806}
   - {fileID: 1526730432095292988}
   - {fileID: 8459024673119637639}
+  - {fileID: 5474009531630309088}
   m_Father: {fileID: 3041503825022863316}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1544260254541567288
@@ -2696,6 +2786,7 @@ Transform:
   - {fileID: 4825214447247865305}
   - {fileID: 7381567396974435610}
   - {fileID: 2706931489493958135}
+  - {fileID: 6812752143409102460}
   m_Father: {fileID: 349366109263416767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4375002590085253779
@@ -3916,6 +4007,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1000767527245560935}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8056662711241410246
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5474009531630309088}
+  - component: {fileID: 726722438955493767}
+  - component: {fileID: 5695622981190367139}
+  m_Layer: 6
+  m_Name: Hitbox_R_Forearm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5474009531630309088
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8056662711241410246}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.000000980268, y: 0.09509436, z: 0.0000011855155}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8726320992580346405}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!135 &726722438955493767
+SphereCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8056662711241410246}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Radius: 0.09
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5695622981190367139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8056662711241410246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &8089988174032565471
 GameObject:
   m_ObjectHideFlags: 0

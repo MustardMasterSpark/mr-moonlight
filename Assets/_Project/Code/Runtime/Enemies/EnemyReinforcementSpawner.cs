@@ -36,7 +36,11 @@ namespace MrMoonlight.Enemies
 
         [Header("Scatter")]
         [SerializeField] private bool overrideScatterRadius;
-        [SerializeField] private float scatterRadiusOverride = 20f;
+        [SerializeField] private float scatterRadiusOverride = 55f;
+
+        [Tooltip("Nearest a reinforcement may spawn, in metres. Defaults come from MoonlightTunables.SpotterReinforcementMinDistance.")]
+        [SerializeField] private bool overrideMinDistance;
+        [SerializeField] private float minDistanceOverride = 45f;
 
         [Tooltip("How far a candidate point may be nudged onto the NavMesh before it is discarded.")]
         [SerializeField] private float navMeshSampleDistance = 4f;
@@ -57,6 +61,7 @@ namespace MrMoonlight.Enemies
         private int CountMin => overrideCount ? countMinOverride : Tunables.I.SpotterReinforcementMin;
         private int CountMax => overrideCount ? countMaxOverride : Tunables.I.SpotterReinforcementMax;
         private float ScatterRadius => overrideScatterRadius ? scatterRadiusOverride : Tunables.I.SpotterReinforcementScatterRadius;
+        private float MinDistance => overrideMinDistance ? minDistanceOverride : Tunables.I.SpotterReinforcementMinDistance;
 
         /// <summary>
         /// Spawn a wave around <paramref name="origin"/>. If <paramref name="target"/> is given the
@@ -154,10 +159,12 @@ namespace MrMoonlight.Enemies
         {
             for (int attempt = 0; attempt < placementAttemptsPerSpawn; attempt++)
             {
-                // Square-rooted radius so points are spread evenly over the disc; sampling the
-                // radius directly crowds them into the middle, which is the stacking we are trying
-                // to avoid.
-                Vector2 disc = Random.insideUnitCircle.normalized * (Mathf.Sqrt(Random.value) * ScatterRadius);
+                // Sampled over an annulus (MinDistance..ScatterRadius), not a full disc — MRM-76:
+                // reinforcements must land out past the player's usual sightline and run in, not pop
+                // in beside the flare. Square-rooting the squared-radius range keeps the distribution
+                // uniform over the ring's area instead of bunching near the inner edge.
+                float distance = Mathf.Sqrt(Random.Range(MinDistance * MinDistance, ScatterRadius * ScatterRadius));
+                Vector2 disc = Random.insideUnitCircle.normalized * distance;
                 Vector3 candidate = origin + new Vector3(disc.x, 0f, disc.y);
 
                 if (!NavMesh.SamplePosition(candidate, out NavMeshHit hit, navMeshSampleDistance, NavMesh.AllAreas))
@@ -191,6 +198,8 @@ namespace MrMoonlight.Enemies
         {
             Gizmos.color = new Color(1f, 0.35f, 0.1f, 0.35f);
             Gizmos.DrawWireSphere(transform.position, ScatterRadius);
+            Gizmos.color = new Color(1f, 0.6f, 0.1f, 0.35f);
+            Gizmos.DrawWireSphere(transform.position, MinDistance);
         }
     }
 }
