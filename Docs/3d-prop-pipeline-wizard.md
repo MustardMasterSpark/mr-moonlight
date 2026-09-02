@@ -26,7 +26,7 @@ These are load-bearing. Violating one costs a re-export or a re-bake, not a twea
 | Rule | Why |
 |---|---|
 | **1 Blender unit = 1 metre**, transforms applied, origin at the base/handhold | Anything else imports at the wrong scale or spins on its axis |
-| **FBX export: tick "Apply Transform"** | The single fix for sideways imports. Not optional |
+| **FBX export: tick "Apply Transform" (`bake_space_transform`) — but only while the object has no armature** | The single fix for sideways imports/oversized bounds, and for a Unity root that won't read Rotation (0,0,0). **Once an armature exists, leave it OFF** — it's the exporter's own risky, experimental toggle and can corrupt bone orientations. For rigged content, get the same clean-root result from Unity's importer instead: `ModelImporter.bakeAxisConversion = true`. See §4.2a |
 | **Unity mesh import: Scale Factor = 1, Materials = None** | Never compensate scale in Unity — fix the export. Never let the importer generate materials |
 | **The placed instance must read Rotation (0,0,0), Scale (1,1,1)** | Any hand-tuned rotation/scale means the *export* is wrong. Fix it upstream |
 | **`Filter Mode = Point` on BaseColor** | Bilinear blurs the quantised pixels back into mush and silently undoes the whole pixelation pass. `MoonlightTextureImporter.cs` enforces this automatically |
@@ -311,6 +311,32 @@ If Tripo's texturing isn't enough, or specific details need fixing:
 - **UVs get real attention here.** Auto-unwrap is fine for props; it is *not* fine for a head.
   Texture space on a face is scarce and seams on a deforming mesh are visible
 
+### 4.2a ⚠ Axis conversion: exporter bake vs. importer bake — validated on Spotter, 2026-09-01
+
+**First real finding from shakedown.** Blender's default FBX export (`-Z Forward`, `Y Up`,
+`bake_space_transform=False`, matching both the exporter's own default and Carlos's export
+dialog) does **not** put the character's tall axis on Unity's Y. It leaves the Z-up→Y-up
+conversion as a *transform-level* correction, which Unity represents as a root GameObject that
+imports with a non-identity rotation (seen as 270° / -90° on X). Bounds read correctly only if
+you respect that rotation — which fails the §0 ground rule that a placed instance reads Rotation
+(0,0,0). Setting `ModelImporter.bakeAxisConversion = true` on the *already-imported* asset did
+**not** fix it for a plain mesh with no Animator/Avatar — that flag only bakes axis conversion
+for rigged content.
+
+**The fix that worked, for this stage of the pipeline (no armature yet):** re-export from
+Blender with `bake_space_transform=True` (the exporter's "Apply Transform" checkbox). That bakes
+the Z-up→Y-up rotation directly into vertex data, so Unity's root imports with a clean identity
+transform and correct bounds — no importer-side correction needed.
+
+**This will not hold once AccuRig adds an armature.** `bake_space_transform` is exactly the
+toggle §0's ground rule table already warns is risky for rigged/animated content (it can corrupt
+bone orientations). At that point, flip the fix to the *Unity* side instead:
+`ModelImporter.bakeAxisConversion = true` on the imported FBX, which is documented as the
+rigged-content-safe way to bake the same axis correction. **Not yet validated** — the first
+AccuRig re-export is where this gets tested for real; if `bakeAxisConversion` doesn't clean up
+the root rotation for a Humanoid/Generic avatar the way it's supposed to, come back and correct
+this note.
+
 ### 4.3 🔧 MCP — ⚠ Verify the T-pose *by the numbers* before AccuRig
 
 **This is the known failure point of the entire character path.** Read §4.7 before doing this —
@@ -351,6 +377,19 @@ you ever retarget.
 - **Map the optional finger slots manually.** Unity's Humanoid avatar supports fingers but does
   not reliably auto-detect them, and QuickMagic hand retargeting depends on them
 - **Pose → Enforce T-Pose** as a safety net, even if §4.5 looked fine
+- **⚠ Check `globalScale` numerically — do not trust either the importer default or a flat
+  `1.0`.** Confirmed on the first real AccuRig export (MRM-75, Spotter/Old Timer,
+  2026-09-01): `import_model_file`'s auto-heuristic set `globalScale = 0.5561879` (garbage —
+  not a unit conversion, not a normalize-to-1). Naively "fixing" this to `1.0` (the right
+  answer for a Blender-authored FBX per the ground rule above) was **also wrong here** —
+  AccuRig/Reallusion's "Unity" export target writes raw centimeter coordinates with the FBX's
+  own unit metadata (`ModelImporter.fileScale`) left at `1`, so `useFileScale` cannot
+  auto-correct it either. The fix: read a known bone's world position (hip, foot) or the
+  SkinnedMeshRenderer bounds, compare against AccuRig's own reported "Character height: N cm"
+  readout, and set `globalScale` to whatever ratio makes the imported height match N **meters
+  ÷ 100** (i.e. `0.01` corrected the Spotter — verify per-character, don't assume 0.01 is
+  universal). **Report the actual bounds size after the fix**, the same "numbers not verdict"
+  rule as §4.3.
 
 ### 4.7 Why all that ceremony — the failure this prevents
 

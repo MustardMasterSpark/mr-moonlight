@@ -366,8 +366,13 @@ that MRM-9 just completed. **Retarget Pro is the editor-only, bake-out half. Tha
 
 ## 10. Open risks
 
-1. **Not yet proven on our rigs.** Nothing has been baked. §6.1 is the validation, and it must
-   happen before any issue schedules work around this tool. **~30 minutes.**
+1. **Retarget Pro's own GUI is still not yet proven on our rigs.** §6.1 is the validation, and it
+   must happen before any issue schedules work around the tool itself. **~30 minutes.** Note:
+   this is *not* the same as "no clip has ever been retargeted onto our rig" — see §11, which
+   used a different mechanism (Unity's built-in Humanoid retarget, baked via
+   `GameObjectRecorder`) to get real clips onto the Spotter without touching this GUI. §11's
+   method has no IK/foot-sliding correction; that gap is exactly what proving Retarget Pro's own
+   GUI would buy.
 2. **No wolf model is staged.** MRM-33's quadruped argument is the strongest reason to own this tool
    and the one we cannot test yet. MRM-33 says a wolf pack is staged at `Assets/Wolf_enemu/`; it is
    not there. Open question for Carlos, flagged on the issue.
@@ -376,3 +381,415 @@ that MRM-9 just completed. **Retarget Pro is the editor-only, bake-out half. Tha
 4. **Unity 6.3 deprecation drift.** 11 `CS0618` warnings today. Harmless now; if a future Unity turns
    them into errors, the tool is editor-only and in Playground, so the game is never at risk — and
    the already-baked clips are unaffected.
+
+---
+
+## 11. Method B — importing an external clip and baking it via Unity's built-in Humanoid
+retarget, no Retarget Pro GUI (proven, MRM-75, 2026-09-01)
+
+**Everything in this section happens in Playground (`E:\playground\My project`), never in
+Mr. Moonlight — same rule as §5.** Use this when the source and target are both Humanoid avatars
+(fingers not required to match) and you don't need IK foot-sliding correction. It sidesteps
+Retarget Pro's bone-chain GUI entirely, which matters because that GUI has no safe way to drive
+blind: §6.1 explicitly requires a human to look at the preview before trusting a bake, and
+scripting the window via reflection with no eyes on it defeats that safeguard. Reach for Method A
+(§6) instead when the target has non-human proportions (Wendigo) or isn't Humanoid at all
+(a quadruped) — Unity's built-in retargeting can't do either of those, which is the whole reason
+Retarget Pro was adopted in the first place (§3).
+
+### 11.1 Getting the source clip
+
+- **⚠️ Check "In Place" on Mixamo's preview panel BEFORE downloading anything — this is the single
+  most important step in this whole section.** It sits right below "Mirror" in the same parameters
+  panel as Overdrive/Character Arm-Space/Trim. Checking it strips root translation out of the clip
+  at the source, before it's ever exported. **Skipping this cost an entire session on MRM-75**
+  (2026-09-01): five different debugging passes — a Transform-vs-muscle-curve binding bug, a stale
+  `HumanPoseHandler` read, a misunderstood `keepOriginalPositionY` setting that turned out to be
+  inert for an already-baked clip, then finally hand-flattening `RootT.x/y/z` to zero after baking
+  — all in an attempt to fix root drift that a single checkbox at the source would have prevented
+  outright. **The lesson: always check the free, built-in option at the source before writing any
+  code to fix something after the fact.** Re-download every existing clip with this checked before
+  repeating any of the work below.
+- **Mixamo**: upload the target character (or reuse one already uploaded to the account), pick a
+  clip, hit **Download**. In the dialog: **Skin = Without Skin** unless you specifically want the
+  bundled mesh too — this is what keeps the download to a few hundred KB instead of several MB,
+  and it's all that's needed since only the skeleton + keyframes get used. Format
+  `FBX Binary (.fbx)`, FPS and Keyframe Reduction can stay at their defaults (30 / none) unless a
+  reason emerges to change them.
+- **Sketchfab or any other source with a full mesh attached**: no special handling needed — a
+  bundled mesh doesn't block anything below, it's simply unused. Don't waste time stripping it out
+  before import.
+- **Provenance**: keep the raw downloaded file's origin visible in the imported asset's name (e.g.
+  `Src_<Purpose>_<SourceHint>.fbx`) rather than renaming it away — it's the only record of where a
+  clip came from once it's sitting in the project.
+
+### 11.2 Import into Playground
+
+`import_model_file`, `output_folder` = the same folder as the target character (e.g.
+`Assets/Character Playground/<Character>/`), `animation_type = "humanoid"`.
+
+### 11.3 ⚠ Check `globalScale` on the TARGET always — on the source, only if you'll look at it directly
+
+**Clarified 2026-09-01, after a second Mixamo clip (`Reloading.fbx`) showed proportions matching
+the already-baked sources exactly, at a scale that looked "wrong" by the check below — it wasn't.**
+The source clip's own absolute scale does not affect this bake method's output at all. §11.5's
+`GameObjectRecorder` samples the **target's** bones, not the source's — Humanoid retargeting
+works in muscle-space (normalized joint angles), so the source rig is purely a puppet driving
+motion; its own bone lengths never reach the baked clip. Skip the scale check entirely for a
+source you're only ever going to retarget-and-bake, never render or use as a target elsewhere.
+
+The target character still needs this check — same ground rule as `3d-prop-pipeline-wizard.md`
+§4.6, restated here because it bites external animation sources just as often as rigged
+characters:
+
+- A clean Mixamo "Without Skin" download usually self-corrects: `fileScale` reads correctly and
+  `useFileScale` fixes it, landing on `globalScale = 1` with no manual change needed. Verify, don't
+  assume.
+- Anything authored in a DCC tool at centimeter scale with no reliable unit metadata — AccuRig
+  exports, and (confirmed this session) a Sketchfab-hosted re-upload of a Mixamo clip — needs
+  `globalScale` set explicitly (`0.01` worked both times so far, but recalculate per file, don't
+  hardcode it).
+- **Calibrate off a stable bone-to-bone distance (e.g. thigh length, hip-to-knee, ~0.4–0.45 m for
+  an adult), not the overall bounding box.** A source clip that starts mid-fall, curled up, or
+  convulsing throws the bounding box wildly off; a same-side limb bone pair doesn't lie to you the
+  way a pose-dependent bounding box does.
+
+### 11.4 Confirm both rigs are actually Humanoid
+
+Both the source clip's avatar and the target character's avatar need `isValid == true` and
+`isHuman == true` (`AssetDatabase.LoadAllAssetsAtPath` → find the `Avatar` sub-asset → check both
+fields). If either is false, this method cannot work — that clip needs Method A (§6) instead,
+since Retarget Pro has no `HumanBodyBones` dependency.
+
+### 11.5 Bake: temp controller + `HumanPoseHandler` — NOT `GameObjectRecorder`
+
+**⚠️ Corrected 2026-09-01, after the first batch of five clips baked this way played as an
+invisible/frozen model in Carlos's Animator preview.** The original version of this section used
+`GameObjectRecorder`, which only knows how to write raw per-bone `Transform` curves
+(position/rotation/scale). That is a real bug, not a preview-only quirk: a **Humanoid** Animator
+(which is what every character in this project uses) refuses to let generic Transform curves
+drive bones it already owns for muscle-space posing. The Inspector shows this as a binding
+warning ("Some generic clip(s) animate transforms that are already bound by a Humanoid avatar.
+These transforms can only be changed by Humanoid clips") and at runtime it doesn't error — it
+just silently fails to produce a valid pose, which reads exactly like "the model disappeared."
+Confirmed: `GameObjectRecorder`-baked clips read `AnimationClip.humanMotion == false`.
+
+The fix is to bake **Humanoid muscle curves** instead of Transform curves, via
+`UnityEngine.HumanPoseHandler` — the same curve format (`EditorCurveBinding` on `typeof(Animator)`
+with a muscle name, plus `RootT.x/y/z` + `RootQ.x/y/z/w` for root motion) that Unity's own FBX
+importer produces for a real Humanoid animation. Interestingly, Retarget Pro's own
+`GenericAnimationBaker.cs` (`Editor/Scripts/Bakers/`) has this exact same Transform-curve
+limitation for body bones — it only handles root motion through the correct `Animator`-typed
+curves (see its `WriteRootMotion` method), which is presumably why the tool's documented workflow
+recommends an FBX export/reimport round-trip rather than using its `AnimationClip` output
+directly on a Humanoid Animator. The `HumanPoseHandler` approach below sidesteps that round-trip
+entirely and stays in pure C#, with no FBX file ever touching disk.
+
+Temporary `AnimatorController` with one state whose motion is the source clip, played on an
+instance of the **target's own rig** (this is what makes Unity's Humanoid muscle-space
+retargeting kick in), then re-read back out as muscle values every frame:
+
+```csharp
+var targetInst = (GameObject)Object.Instantiate(targetPrefab);
+var animator = targetInst.GetComponent<Animator>();
+animator.applyRootMotion = true;   // required, or root motion (falls, lunges) gets lost
+
+var tempController = new AnimatorController();
+tempController.AddLayer("Base Layer");
+var state = tempController.layers[0].stateMachine.AddState("Bake");
+state.motion = sourceClip;
+animator.runtimeAnimatorController = tempController;
+
+var poseHandler = new HumanPoseHandler(animator.avatar, targetInst.transform);
+var humanPose = new HumanPose();
+int muscleCount = HumanTrait.MuscleCount;              // 95
+string[] muscleNames = HumanTrait.MuscleName;
+var muscleCurves = new AnimationCurve[muscleCount];
+for (int m = 0; m < muscleCount; m++) muscleCurves[m] = new AnimationCurve();
+var rootTPos = new[] { new AnimationCurve(), new AnimationCurve(), new AnimationCurve() };
+var rootQRot = new[] { new AnimationCurve(), new AnimationCurve(), new AnimationCurve(), new AnimationCurve() };
+
+animator.Play("Bake", 0, 0f);
+animator.Update(0f);
+
+float dt = 1f / (sourceClip.frameRate > 0 ? sourceClip.frameRate : 30f);
+int frameCount = Mathf.CeilToInt(sourceClip.length / dt);
+for (int i = 0; i <= frameCount; i++) {
+    animator.Update(dt);
+    float t = i * dt;
+    poseHandler.GetHumanPose(ref humanPose);
+    for (int m = 0; m < muscleCount; m++) muscleCurves[m].AddKey(t, humanPose.muscles[m]);
+    rootTPos[0].AddKey(t, humanPose.bodyPosition.x);
+    rootTPos[1].AddKey(t, humanPose.bodyPosition.y);
+    rootTPos[2].AddKey(t, humanPose.bodyPosition.z);
+    rootQRot[0].AddKey(t, humanPose.bodyRotation.x);
+    rootQRot[1].AddKey(t, humanPose.bodyRotation.y);
+    rootQRot[2].AddKey(t, humanPose.bodyRotation.z);
+    rootQRot[3].AddKey(t, humanPose.bodyRotation.w);
+}
+
+// write into the EXISTING placeholder clip asset if one exists — preserves its GUID, so any
+// AnimatorController state already pointing at it stays wired with zero extra work
+existingClip.ClearCurves();
+for (int m = 0; m < muscleCount; m++) {
+    var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), muscleNames[m]);
+    AnimationUtility.SetEditorCurve(existingClip, binding, muscleCurves[m]);
+}
+string[] rootTNames = { "RootT.x", "RootT.y", "RootT.z" };
+string[] rootQNames = { "RootQ.x", "RootQ.y", "RootQ.z", "RootQ.w" };
+for (int i = 0; i < 3; i++) AnimationUtility.SetEditorCurve(existingClip, EditorCurveBinding.FloatCurve("", typeof(Animator), rootTNames[i]), rootTPos[i]);
+for (int i = 0; i < 4; i++) AnimationUtility.SetEditorCurve(existingClip, EditorCurveBinding.FloatCurve("", typeof(Animator), rootQNames[i]), rootQRot[i]);
+EditorUtility.SetDirty(existingClip);
+```
+
+**Sanity check this actually worked**, before anything else: `existingClip.humanMotion` must read
+`true`. If it reads `false`, something in the muscle-curve writing above didn't take and the clip
+will fail the exact same way.
+
+**⚠️ Second correction, same day, caught by Carlos in the actual Animator preview: the loop above
+can produce `humanMotion == true` with a valid `RootT`/`RootQ` (so the character visibly moves
+through space) while every body muscle curve is completely flat — the character travels in a
+frozen T-pose.** Root motion and body muscles are evidently *not* equally reliable to read back
+via `HumanPoseHandler.GetHumanPose()` immediately after `animator.Update()` in an Editor-script
+context (outside Play Mode): root motion came through correctly every time; muscle data came back
+as a constant 0 for every key, silently, with no error.
+
+**The actual fix — and it's simpler than the loop above for the muscle part:** Humanoid muscle
+values are avatar-independent by design (that's the entire mechanism retargeting relies on), so
+there's no need to re-derive them by sampling a live Animator at all — **copy them straight from
+the source clip's own muscle curves onto the destination clip**:
+
+```csharp
+string[] muscleNames = HumanTrait.MuscleName;
+for (int m = 0; m < HumanTrait.MuscleCount; m++) {
+    var binding = EditorCurveBinding.FloatCurve("", typeof(Animator), muscleNames[m]);
+    var curve = AnimationUtility.GetEditorCurve(sourceClip, binding);   // null if that muscle
+    if (curve != null) AnimationUtility.SetEditorCurve(destClip, binding, curve);  // was never keyed
+}
+```
+
+A `null` curve for a given muscle (commonly ~40 of the 95, almost always the finger muscles) just
+means the source mocap never animated that muscle — not a bug, the avatar's default/rest value
+applies. Root motion (`RootT`/`RootQ`) keeps using the `HumanPoseHandler` capture loop above,
+which was confirmed correct in the live preview — only the muscle-reading part of that loop was
+the problem, so §11.5's code sample should be read as: **run the loop for root motion only,
+then copy muscle curves directly as shown here, skip trying to read muscles from the loop.**
+
+**Verify with a spot-check on a couple of limb muscles** (e.g. `Left Arm Down-Up`, `Left Upper
+Leg Front-Back`) — read `min`/`max` across the curve's keys and confirm they're not both `0`. A
+flat muscle curve is exactly what a silent T-pose-while-moving bug looks like, and it will not
+show up in the `humanMotion` check or the root-motion position-delta check from §11.6 — both of
+those passed on the broken clips. This is now a required third check alongside those two.
+
+Set `AnimationUtility.GetAnimationClipSettings(clip).loopTime` afterward according to how the
+state is meant to behave (loop for sustained locomotion/pain states, one-shot for falls/deaths/
+single actions), same as any other clip in this project.
+
+### 11.6 Verify before trusting the batch — same discipline as §6.1, different mechanism
+
+Retarget Pro's doc insists a human look at one baked clip before batching; this method has no
+preview window to look at, so two numeric checks substitute for it. **Both are required — the
+first one alone produced a false pass on the very first attempt of this method (§11.5's history)
+and the resulting clips didn't play at all.**
+
+1. **`clip.humanMotion` must be `true`.** This is the structural check and the one that actually
+   caught the bug: a clip built from raw Transform curves can still show a perfectly convincing
+   position delta under `SampleAnimation` (see next point) while being completely unplayable on a
+   Humanoid Animator. `humanMotion` is Unity's own flag for "this clip has valid muscle curves" —
+   check it first, before anything else.
+2. **Drive it through a real `Animator`, not `clip.SampleAnimation`.** `SampleAnimation` writes
+   curves straight onto the target's transforms and will happily apply a broken Transform-curve
+   clip too — it bypasses the exact Humanoid-avatar restriction that's being tested for, which is
+   why it gave a false positive last time. Instead: build the same kind of temporary
+   `AnimatorController` used for baking, assign the new clip as a state's motion, call
+   `animator.Play(...)` + `animator.Update(dt)`, and read a named, stable bone's world position at
+   the start and partway through. A real delta confirms real, Animator-playable motion; a
+   near-zero delta or a bone that can't be found means something's still wrong — before it goes
+   anywhere near a batch of five.
+
+### 11.7 What this method does NOT give you
+
+No IK correction, no foot-sliding cleanup, no handling for source/target proportion mismatches
+beyond what Unity's own Humanoid muscle-space retargeting already does for free. That gap is
+exactly Retarget Pro's value-add (§3) — if a baked clip looks wrong in a way that reads as
+sliding feet or floating hands rather than "wrong clip," that is the signal to go run it through
+the real Retarget Pro GUI (§6) instead, with eyes on the preview.
+
+---
+
+## 12. Using the real Retarget Pro GUI — lessons from the first full walkthrough (MRM-75,
+2026-09-01)
+
+After the root-motion trouble in §11, Carlos asked to switch to the actual Retarget Pro window
+with eyes on the preview, rather than more script-only bakes. These are the concrete lessons from
+that first real walkthrough, on top of the general procedure in §6.
+
+### 12.1 IK "Pole Weight" — set it to 0 if the pole gizmo goes wild
+
+Under a limb's IK Solve / Stability settings, **"Pole Weight"** controls how strongly the pole
+target's offset bends the joint. Left at its default (non-zero), a *tiny* gizmo drag on the pole
+target can send the joint wildly out of position — the offset fields readable as multiple meters
+(e.g. `1.44, 2.04, 5.99`) instead of the small fractional values a pole offset should normally
+need. **Confirmed fix: set Pole Weight to 0.** If you need to fine-tune a bend direction by hand
+afterward, do it by typing small values directly into the Joint Offset X/Y/Z fields (increments
+well under 1.0) rather than dragging the gizmo — the gizmo's screen-space-to-world-space
+sensitivity is also tied to how zoomed-in the preview camera is, so zooming in close on the joint
+before dragging helps too.
+
+### 12.2 Which profile edits are safe to script, and which need the real GUI
+
+Carlos's core worry after §11 was Claude's script silently corrupting animation *data* again.
+The actual dividing line that resolves this: **editing what the `RetargetProfile` asset points
+to and how its chains are mapped is plain data assignment — safe to script, no different from
+clicking the same field in the Inspector.** What's *not* safe to script blind is the actual
+*bake* (§6's `RetargetAnimBaker`, a ~3000-line stateful class built around a live preview scene)
+— that's the part requiring eyes-on verification, not the setup around it. Concretely, all of
+the following are safe, ordinary field/list assignments and were done via script successfully:
+
+- Swapping `profile.sourceCharacter` to a different source model, then calling
+  `RetargetProfileModelRigUtility.TryComposeProfileRigs(profile, true, out message)` to rebuild
+  the rig + re-run the chain auto-mapper (this is the exact same call the GUI's own
+  "Remap All Chains" button makes).
+- Setting a `BasicRetargetFeature`'s (or its `IKRetargetFeature`/`RootPelvisRetargetFeature`
+  subclass's) `sourceChain.elementChain` / `targetChain.elementChain` list directly, once you
+  know the correct bone names — see §12.3. This is the scriptable equivalent of manually
+  checking boxes in the "Element Chain Selection" tree window, and it's far faster once the
+  correct bone list is known from a previous manual pass.
+
+### 12.3 The "root" chain needs manual fixing on BOTH sides, every time the source model changes
+
+The chain auto-mapper (`RetargetProfileMappingUtility.TryRebuildProfileMappings`, triggered by
+"Remap All Chains") reliably resolves `pelvis`/`toes`/`spine`/`neck` and the finger chains, but
+**consistently fails to resolve the `root` chain on its own**, on both sides:
+
+- **Target side** (our AccuRig/CC-based rig): the fix is a single-bone chain containing just the
+  literal Transform named `root` (the node directly above `CC_Base_Hip` — not the hip itself, and
+  not the FBX's outer GameObject).
+- **Source side** (any Mixamo-derived skeleton): there is no separate root bone above Hips at
+  all — the fix is a single-bone chain containing the **source model's own top-level GameObject**
+  (i.e. whatever the source FBX asset is named, e.g. `Src_Flare_MixamoShootingGun`).
+
+**This resets every time `sourceCharacter` changes**, even though the target-side fix persists.
+Swapping the source model for a new clip (Fall → Flare → Reload, etc.) silently drops the source
+half of the `root` chain back to unresolved — check for a warning on `root` after every source
+swap, not just the first time. rightLeg/leftLeg/rightArm/leftArm chains, once fixed on the target
+side, **do** persist correctly across a source-character swap (only `root` regresses), so those
+don't need to be redone each time — confirmed by re-testing this exact sequence.
+
+### 12.4 The chain-picker tree's checkboxes are group-linked to whatever's currently row-selected
+
+In the "Element Chain Selection" tree window (opened via a chain's "Edit" button), toggling a
+bone's checkbox toggles **every currently row-selected bone at once**, not just the one you
+clicked — if several bones are highlighted as a multi-selection (e.g. left over from a stale
+prior chain spanning root→spine→head), checking or unchecking any one of them drags all of them
+along. **Fix: single-click a bone's name/label first to isolate it as the only selected row,
+*then* click its checkbox** — repeat per bone. This is confirmed source-level behavior
+(`RigTreeView.cs`): a checkbox toggle applies to the whole current `TreeView` selection when the
+clicked item is part of one, and to just that item otherwise.
+
+---
+
+## 13. The actual fix for the Spotter's 5 external clips — bypass baking entirely (MRM-75,
+2026-09-01)
+
+§11 and §12 above were both eventually abandoned for the Spotter's five Mixamo/Sketchfab clips
+(Flare, Fall, DeathDowned, Downed, Reload). Neither the script-bake method nor a full, careful
+Retarget Pro GUI pass (profile rebuilt from scratch twice, root chain fixed both sides per §12.3,
+Pole Weight zeroed per §12.1) produced a correct standalone `.anim` file — every bake, regardless
+of method, reproduced the same symptom: the character's hip collapsed to near-root height while
+other joints stayed plausible, as if only part of the pose had been captured. This took an entire
+session and 8+ measured Retarget Pro bake attempts plus several script-bake rewrites to actually
+solve.
+
+### 13.1 What was proven, by direct measurement, not assumption
+
+- **Root motion was never the cause.** Root translation/rotation was forced to exact identity on
+  a test bake and the hip-collapse symptom persisted unchanged — the bug lives in the muscle
+  data, not the root curve.
+- **Retarget Pro V5's actual bake output ignores several of its own settings for this rig
+  pairing.** "Use Root Motion", "Root Node", a feature's "Offset" field, and "Target Pose"/
+  "Source Pose" were each changed and re-baked in isolation; all visibly changed the *live
+  preview* but produced **byte-identical saved `.anim` output** every time, confirmed by reading
+  the actual saved file, not the preview. This reads as a real bug in Retarget Pro V5's bake
+  pipeline for a Mixamo→AccuRig pairing specifically — never root-caused to a specific line, but
+  reproduced 8 times, so treat it as a known limitation, not user error.
+- **All of Retarget Pro's bundled T-pose presets except `A_TPose_Humanoid` are broken.**
+  `A_TPose_CC4`, `A_TPose_Mixamo`, `A_TPose_UE4`, `A_TPose_UE5`, `A_TPose_Synty` all have
+  `humanMotion = false` and sample to a degenerate near-zero pose. This is a genuine bug in the
+  shipped presets — but fixing `profile.sourcePose`/`profile.targetPose` to point at the one good
+  preset **still did not fix the bake output** (see previous point: Source/Target Pose is a
+  preview-only field for this pipeline too).
+- **Live Humanoid-to-Humanoid retargeting was correct every single time it was sampled**, across
+  every clip, across the whole session. Unity's own Humanoid Avatar system retargets a source
+  clip onto a differently-proportioned target skeleton correctly and automatically, with zero
+  setup, the moment that clip plays through an `Animator` whose `Avatar` is the target's — this
+  was true from the very first import and never actually needed fixing.
+
+### 13.2 The actual fix
+
+**Skip baking. Assign the source clip directly as the Animator state's `motion`.** Do not run it
+through Retarget Pro's baker and do not run it through the §11 script-bake method — both
+extract-and-repackage the muscle curves into a *new* clip, and that extraction step is where the
+corruption happens (see §13.3). Playing the original clip live is not a workaround with a
+downside; it is Unity's normal, intended way to retarget Humanoid animation and it has no
+observable quality cost versus a baked clip for this use case.
+
+```csharp
+var sourcePath = "Assets/Character Playground/Oldtimer/Src_<Name>.fbx";
+var sourceAssets = UnityEditor.AssetDatabase.LoadAllAssetsAtPath(sourcePath);
+UnityEngine.AnimationClip sourceClip = null;
+foreach (var a in sourceAssets)
+    if (a is UnityEngine.AnimationClip c && !c.name.StartsWith("__preview__")) { sourceClip = c; break; }
+
+// loopTime: true for a repeatable action (Reload, Downed-writhing), false for a clip that should
+// end in a held pose (Fall, DeathDowned — the corpse/knockdown state).
+var settings = UnityEditor.AnimationUtility.GetAnimationClipSettings(sourceClip);
+settings.loopTime = false;
+UnityEditor.AnimationUtility.SetAnimationClipSettings(sourceClip, settings);
+
+var ac = UnityEditor.AssetDatabase.LoadAssetAtPath<UnityEditor.Animations.AnimatorController>(controllerPath);
+foreach (var cs in ac.layers[0].stateMachine.states)
+    if (cs.state.name == "<StateName>") cs.state.motion = sourceClip;
+```
+
+**Verification that actually catches the hip-collapse bug** — the same false-positive trap as
+§11.6 applies here too. Don't trust a single frame or the Scene-view preview; instantiate the
+*target* prefab, `AnimationMode.StartAnimationMode()` → `BeginSampling()` →
+`SampleAnimationClip(targetInstance, sourceClip, t)` → `EndSampling()` at several points across
+the clip's full duration, and read `animator.GetBoneTransform(HumanBodyBones.Hips).position.y`
+and `...Head....y` at each one. A collapsed bake shows the hip snapping to a near-zero,
+near-root value while other joints stay plausible; a correct one shows the hip height tracking
+what the clip's choreography actually calls for (e.g. Fall's hip legitimately drops from ~0.93m
+standing to ~0.16m collapsed over the clip — that's correct pose data, not the bug).
+
+### 13.3 Best-supported theory for *why* extraction corrupts it (unconfirmed — flagged as such)
+
+Unity's Humanoid muscles are documented as avatar-independent, but the live retargeting pipeline
+likely does more than copy those values — it probably applies some per-avatar normalization (tied
+to each avatar's own calibrated proportions/"Human Scale") as part of turning muscle values into
+an actual pose, and does this invisibly, every frame, as part of `Animator` playback. Every
+extraction method tried (raw muscle curve copy, `HumanPoseHandler` capture, combined
+capture-during-`AnimationMode`-sampling) most likely skips that normalization step. This is a
+reasoned hypothesis from watching the failure pattern, **not** something traced to a specific
+line of Unity's Humanoid retargeting source — do not repeat it to Carlos as a confirmed root
+cause, only as the best current explanation.
+
+### 13.4 Where this leaves Retarget Pro — it is not obsolete
+
+This bypass fixes single-clip retargeting *for this specific use case*: one external mocap clip,
+onto one Humanoid target, no bone-length/proportion correction wanted beyond what Unity's own
+Humanoid system already does for free. It does not replace Retarget Pro for cases needing actual
+IK correction or chain remapping:
+
+- **The Wendigo boss** — Humanoid type, but deliberately non-human proportions (per the
+  MRM-70/71 asset triage). Unity's built-in retargeting will still play a clip on it without
+  crashing, but Retarget Pro's IK-chain correction is expected to genuinely improve quality there
+  (foot placement, hand reach) in a way plain playback won't. Budget a real Retarget Pro pass for
+  the Wendigo when that work starts, informed by every §12 lesson above.
+- **Any future non-Humanoid rig** (a true quadruped/Generic-type skeleton) — Unity's built-in
+  Humanoid retargeting cannot touch a Generic avatar at all; Retarget Pro's bone-chain approach
+  would be the only option. Not currently a need: the existing wolf animations are already
+  authored for the wolf's own rig, nothing to retarget.
+- **FP (first-person) weapon/arm animations** — not a Retarget Pro case at all, in either
+  direction: every FP weapon animation the demo needs is already owned outright (HQ FPS Weapons,
+  19 weapons on one shared arm skeleton), so there is nothing to retarget there.
