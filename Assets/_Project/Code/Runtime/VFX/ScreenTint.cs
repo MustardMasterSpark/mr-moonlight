@@ -35,5 +35,16 @@ namespace MrMoonlight.VFX
         {
             _redContributions.Remove(source);
         }
+
+        /// <summary>
+        /// Removes every contribution. Being a static dictionary, this registry survives a scene
+        /// reload untouched — a contributor that ramps to red and gets destroyed without calling
+        /// <see cref="ClearRed"/> (e.g. <c>DeathSequence</c> on death) leaves the tint stuck on the
+        /// next scene. Call this before loading a new scene from a menu/restart flow.
+        /// </summary>
+        public static void ClearAll()
+        {
+            _redContributions.Clear();
+        }
     }
 }

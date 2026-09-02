@@ -1,6 +1,7 @@
 using DG.Tweening;
 using MrMoonlight.Data;
 using MrMoonlight.Events;
+using MrMoonlight.VFX;
 using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -24,9 +25,10 @@ namespace MrMoonlight.UI
     /// a third button that silently does the same thing as the first would be worse than no button.
     /// <see cref="RestartFromCheckpoint"/> is the placeholder that issue asked for.</para>
     ///
-    /// <para>Everything here runs on unscaled time and every exit resets <c>Time.timeScale</c> and
-    /// <c>AudioListener.pause</c> before loading, because both endings arrive with the game frozen
-    /// and the death path also arrives with audio suspended.</para>
+    /// <para>Everything here runs on unscaled time and every exit resets <c>Time.timeScale</c>,
+    /// <c>AudioListener.pause</c>, and <see cref="ScreenTint"/> before loading, because both
+    /// endings arrive with the game frozen, the death path also arrives with audio suspended, and
+    /// the death path's red tint (a static registry) would otherwise survive into the next scene.</para>
     /// </summary>
     public sealed class GameOverPanel : MonoBehaviour
     {
@@ -148,6 +150,12 @@ namespace MrMoonlight.UI
             // paused is silent with no obvious cause.
             Time.timeScale = 1f;
             AudioListener.pause = false;
+
+            // ScreenTint is a static registry — it survives the scene reload untouched. Without
+            // this, DeathSequence's "Death" contribution (ramped to 1 on death, never cleared)
+            // stays stuck at full red forever, restart or not. Clearing here means the next scene
+            // always opens with a clean tint, matching the fresh full-health PlayerStats it loads with.
+            ScreenTint.ClearAll();
 
             SceneManager.LoadScene(sceneName);
         }
