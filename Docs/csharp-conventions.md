@@ -166,13 +166,21 @@ public static class GameEvents
 
 ## Async and coroutines
 
-- **Coroutines for anything tied to a GameObject's lifetime** — animations, sequences, timed effects. They die with the object, which is what you want.
-- ⚠️ **CHANGED — DOTween is NOT installed.** This document previously said it was owned and was the
-  project's answer to "smooth". **It is not in the project** — `MrMoonlight.Runtime.asmdef` references
-  only `Unity.InputSystem`. Discovered 2026-08-24 while building `TimeManager`, which uses a plain
-  **coroutine + lerp over a duration** instead; reuse that shape (`TimeManager.ApplyPreset`) rather
-  than adding a package dependency mid-issue. If DOTween is ever actually installed, the old rule
-  applies again: always `SetLink(gameObject)` so the tween dies with its target.
+- **Coroutines for anything tied to a GameObject's lifetime that DOTween doesn't fit** — a
+  Perlin-noise-driven camera shake, a multi-branch state sequence, anything that isn't fundamentally
+  "value A to value B over time." For that shape, use DOTween instead (see below).
+- ⚠️ **CHANGED BACK — DOTween IS installed.** This document said it wasn't (2026-08-24, discovered
+  building `TimeManager`), and that was true at the time — it genuinely wasn't in the project.
+  Carlos supplied DOTween Pro 2026-09-02 and it's now in `Assets/Plugins/Demigiant/`, no asmdef
+  needed (Plugins-folder assemblies are auto-visible to everything). **It is the project's answer
+  to "smooth" again** — reach for `DOTween.To(...)` / a shortcut (`transform.DOMove`,
+  `light.DOIntensity`, etc.) / `.SetDelay(...)` before writing a new elapsed-time coroutine.
+  `TimeManager.ApplyPreset`'s coroutine+lerp shape predates this and hasn't been converted — not a
+  model to copy for new code. One known gap: `AudioSource.DOFade` doesn't resolve in this project
+  for reasons not worth chasing (other module shortcuts work); use
+  `DOTween.To(() => source.volume, v => source.volume = v, target, duration)` directly instead,
+  which is what that shortcut does internally anyway. Always `SetLink(gameObject)` (or kill the
+  tween in `OnDisable`) so it dies with its target rather than outliving a destroyed object.
 - **Avoid `async void`.** If async is genuinely needed, `async Task` with a cancellation token.
 - ⚠️ **CHANGED — `Task.Run` is no longer forbidden by the platform.** The Windows player is not
   single-threaded. It is still discouraged: Unity APIs remain main-thread-only, and nothing in this

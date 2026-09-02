@@ -5,6 +5,205 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-34 session 2 — the fight actually works, verified live (2026-09-02)
+
+Continues the entry below. Full record: **`Docs/mrm34-spotter-ai-build.md`** §13–14.
+
+**BUILT**
+
+- **`PlayerDamageReceiver`** on the Player root — the player side of `IDamageable`. Owns no health;
+  routes damage into `PlayerStats.Health` through the same `Stat.Deplete` the rest of the stack
+  uses, so defense modifiers, the death event and MRM-17's death sequence keep working.
+- **`InvulnerableDebugToggle`** — **F4**, one key along from F3's infinite stamina and built to the
+  same shape. Blocks the damage but *not* the hit: health never drops, but every absorbed shot is
+  counted with a running total and a `HIT` flash on screen.
+- **`MrMoonlight.Combat`** — new bottom-of-stack assembly holding `IDamageable` + `DamageInfo`,
+  moved out of `Code/Runtime/Enemies/`.
+- A ~15-line hook in `GunScriptableObject.PlayTrail` routing player hits into `IDamageable`, with a
+  guard against damaging the shooter. **Carlos later descoped player-gun damage**; the code was left
+  rather than reverted and is trivially removable (one block, marked `MRM-34:`).
+
+**DECISIONS**
+
+- **`IDamageable` moved to its own assembly, and it had to.** `MrMoonlight.Runtime` already
+  references `Burntwax.Core`; for the gun to call `IDamageable`, `Burntwax.Core` would have needed
+  to reference `MrMoonlight.Runtime` — **a circular assembly reference Unity forbids.** A third
+  assembly both depend on is the only way. It was also right anyway: `IDamageable` was never
+  enemy-specific, and `PlayerDamageReceiver : MrMoonlight.Enemies.IDamageable` read wrong.
+- **F4 does not use `Stat.Lock`** the way F3 does. Locking health would freeze healing, item effects
+  and the red-tint feedback, and would hide the hits. Gating at the damage entry point leaves the
+  stat stack behaving normally underneath.
+- **`PlayerDamageReceiver` goes on the Player root, not on `MrMoonlight Systems`** where
+  `PlayerStats` lives — shots resolve targets with `GetComponentInParent` from the collider they
+  hit, and `Body`'s parent chain reaches the root, not the Systems child.
+
+**FOUND**
+
+- **BUG — The Spotter could never see the player.** Blaze matches hostiles by the tag on the
+  **collider's own GameObject** (`BlazeAI.cs:1441`). The player's only collider is `Body`, which was
+  **`Untagged`** — the `Player` tag was on the parent, which has no collider. Every vision check
+  silently skipped him. Fixed by tagging `Body`. **Standing rule: the tag has to be on the
+  collider.**
+- **`GetComponentInParent<T>()` skips inactive GameObjects, and a prefab asset counts as inactive.**
+  Verifying wiring against the asset returns null and looks like a bug. Test the scene instance.
+- **A `PlayerSettings` change made *during* play mode is reverted on exit** — which is why the first
+  attempt at enabling `runInBackground` silently did not stick.
+- **Play mode only ticks while the Unity editor window has focus.** MCP cannot give it focus; ask
+  Carlos to click into Unity rather than burning calls rediscovering this.
+- **The Spotter is not small** — measured 1.86 m against the player's 1.80 m capsule. He *reads*
+  small because his head bone (1.51 m) sits just under the player's eye height (1.57 m), so you look
+  slightly down at him.
+- **Resizing an enemy does not require a NavMesh re-bake.** The bake depends on the baked geometry
+  and the agent *type* settings, neither of which is the enemy's scale. Only a radius above the
+  baked 0.5 m would warrant one. Four fields move together on a rescale — scale, capsule, agent,
+  and `vision.visionPosition.y`; the last is the easy one to miss.
+
+**VERIFIED LIVE** — watched running on the island, zero console errors
+
+One Spotter placed 12.9 m in front of the player, then nothing scripted:
+
+- Detection `visionMeter` → **1.00**, target `Body` — the tag fix works
+- Chased 12.9 m → 5.7 m, `state = attack`, `anim = Shoot`, bursting
+- **Player health 100 → 0** — the full damage pipeline works end to end
+- **The flare fired on its own** after the alone-timer, and **7 reinforcements spawned**, all engaging
+- **They did not stack** — closest pair 1.88 m after converging, visibly spread across the beach
+- **Runaway guard held** — all 7 refused to call waves of their own
+- Strafing animations cycling; each Spotter casting a lamp light pool on the sand
+- Carlos's own Spotter 206 m away stayed patrolling in `normal` — unaffected
+- **The flare VFX renders correctly**: burning core, sparks, rising smoke, and a strong orange light
+  pool. Arcs at the configured 45°.
+
+Screenshots: `Assets/Screenshots/mrm34_live_fight.png`, `mrm34_spotters.png`, `mrm34_flare_closeup.png`.
+
+**FAILED**
+
+- **Deleted a Spotter Carlos had placed himself**, via a cleanup filter that matched on
+  `EnemyIdentity` rather than on the test holder this session created. Recovered in full by
+  reloading the scene from disk. **Lesson: scoped cleanup matches on what the cleanup created,
+  never on a component type real content also carries.**
+- **Truncated `Docs/mrm34-spotter-ai-build.md`** — a Python patch script opened the file `'w'`
+  (which truncates immediately) and then threw a `UnicodeEncodeError` mid-write, destroying §1–12.
+  Rebuilt from source. **Lesson: never write in place; write a temp file and move it.**
+
+**NEXT**
+
+- Spark particles read as elongated shards rather than embers (`lengthScale 2.5` → ~1.2); flare core
+  is small relative to its light (`_Intensity`, `Core` scale). Both pure numbers.
+- Ten-Spotter frame cost in a build (MRM-64) — still the one unmeasured acceptance criterion.
+- NavMesh agent radius/slope/step tuning (MRM-27) — still a project-settings change, not made unasked.
+
+---
+
+## MRM-34 — Spotter AI, combat, flare reinforcements, lamp (2026-09-01/02)
+
+Built on `mrm-75` (deliberate branch-discipline exception, see memory `mrm75_branch_scope_exception`).
+Full as-built record: **`Docs/mrm34-spotter-ai-build.md`**.
+
+**BUILT**
+
+- **Blaze AI Engine transferred into Mr. Moonlight** — 48 scripts to
+  `Assets/_Project/Code/Vendor/Blaze AI Engine/Scripts/`, given `Blaze.Core` / `Blaze.Editor`
+  asmdefs (it ships with none, so it would otherwise land in `Assembly-CSharp` and be
+  unreferenceable). Demos folder (285 MB) left behind. **No layer or tag changed.**
+- **Shared enemy framework** (`MrMoonlight.Enemies`) — `IDamageable`/`DamageInfo`, `EnemyHealth`,
+  `EnemyHitbox`, `EnemyIdentity`, `EnemyFirearm`, `EnemyRangedAttack`, `EnemyReinforcementSpawner`,
+  `EnemyDeathDrop`, `EnemyPatrolRoute`, `EnemyAudioHooks`, `IReinforcementCaller`. Reusable by
+  Zealot (MRM-35) and Wolf (MRM-33); only numbers and the one unique behaviour change.
+- **Spotter specifics** — `SpotterFlareCall` (alone-check sphere, timer, one flare per Spotter,
+  3–10 scattered reinforcements) and `SpotterPanicCall` (low-health, 1–3, separate trigger).
+- **Patrol modes with a real inspector control** — `EnemyPatrolRoute` + custom inspector:
+  Idle / Random wander / Waypoints (Linear or Loop). Waypoints contribute horizontal position only;
+  height is re-derived from ground + NavMesh, and unresolvable markers are named at startup.
+- **Flare VFX, built from scratch** — `MrMoonlight/VFX/FlareCore` shader (additive billboard,
+  three stacked radial falloffs, vertex-stage flicker), trail, smoke + spark particles, and a real
+  `Light`. Prefab `Prefabs/VFX/VFX_Flare.prefab`.
+- **The lamp** — `Lamp_3.fbx` imported, DIRT texture at 512 with the pixelation pass, two RetroLit
+  materials cloned from `M_FlareGun.mat`, `Prefabs/World/Prop_Lamp.prefab` with a real point Light.
+  Socketed on `CC_Base_L_Hand/Socket_Lamp`. **Awaiting Carlos's review gate — not logged in
+  `prop-log.md` yet.**
+- **`Muzzle` nulls** added to `Weapon_DoubleBarrelShotgun.prefab` and `Weapon_FlareGun.prefab`
+  themselves, rotated 90° Y because both models run along local +X.
+- **Island NavMesh baked** — `NavMesh Surface` bounded to Y 7.5–75 m (above Crest's sea level),
+  Physics Colliders, voxel 0.2 m. **681 ms**, 75,671 triangles →
+  `Assets/_Project/Scenes/Island/NavMesh-Island.asset`.
+- **`EnemyDebugControls`** dev tool — Damage / Kill / Attack Player / Fire Flare / Log State from
+  the component context menu. Exists because the player cannot deal damage yet (MRM-32 Backlog),
+  so half of MRM-34 is otherwise untestable. Delete it once the player can shoot back.
+- **~40 new tunables** in `MoonlightTunables` under three new headers.
+
+**DECISIONS**
+
+- **The firing rhythm is ours, not Blaze's.** Blaze paces shots as randomised windows; MRM-34 asks
+  for exactly two shots then a reload. Blaze's `attackEvent` is treated as "you may open fire" and
+  `EnemyRangedAttack` runs the burst as one coroutine. `CycleDuration` is written into Blaze's
+  `attackDuration` at `Awake` so the two cannot drift.
+- **`AttackStateBehaviour`, not `CoverShooterBehaviour`** — despite MRM-34's triage note. The cover
+  shooter needs cover objects registered with `BlazeAICoverManager`, and the island has none placed;
+  with no cover it degrades to a plain ranged attacker anyway. Swapping it in later changes one
+  UnityEvent wiring.
+- **The 30% miss is deliberate, not incompetence** — the shot fires, draws tracers and hits the
+  world, just aimed wide. Offset applied once per shell (the cone stays a cone), rolled per shot
+  rather than per burst.
+- **The two reinforcement triggers stay separate code paths** (Carlos, explicit). Flare = proactive
+  and fires when isolated; panic = reactive and fires when hurt. Folding them would couple "hurt"
+  to "isolated".
+- **Runaway guard on by default** — spawned reinforcements cannot call reinforcements. Ten Spotters
+  each summoning ten is exponential; MRM-34's worst case is ten *total*. Not in the issue; flagged.
+- **The flare VFX is built, not imported.** The Asset Store "Flare Gun" (Rokay3D) flare is
+  unusable — see FOUND.
+- **Blaze's `Tags&Layers.preset` deliberately not applied.** MRM-27 warns layer order is
+  load-bearing; the project already has every tag and layer Blaze needs.
+- **Hand-authored `.shader` rather than Shader Graph**, matching `Water.shader`'s precedent. Carlos
+  preferred Shader Graph; the effect is a few radial gradients and a flicker, and the HLSL is the
+  spec for converting it if hand-tweaking is ever wanted.
+
+**FOUND** — read out of the real source and the real scene, not assumed
+
+- **Blaze drives the existing Animator Controller by state name.** `AnimationManager.Play` calls
+  `CrossFadeInFixedTime`. The hand-authored 13-state `AC_Spotter.controller` is exactly what Blaze
+  wants — **the open question from the character work is closed, and none of that work was wasted.**
+- **A `BlazeBehaviour` subclass REPLACES a state; it cannot run alongside one.** `RunBehaviour`
+  (`BlazeAI.cs` ~2314) only ticks the behaviour in the current state slot. **This corrects the
+  extension pattern written into MRM-27 and MRM-29.** Conditions watched *during* a state must be
+  plain components; custom states go through `BlazeAISpareState` / `SetSpareState`.
+- **`AddComponent<BlazeAI>()` leaves `vision` and `waypoints` null** — Unity's serializer
+  default-constructs nested `[Serializable]` classes on *deserialize*, not on `AddComponent`.
+  Building a Blaze agent from script must `new` them.
+- **MRM-27's terrain-tree question is moot.** The live terrain has `treeInstances = 0` and
+  `treePrototypes = 0` — there are no terrain trees. MRM-70's vegetation is real GameObjects
+  carrying **5,891 CapsuleColliders**, which rasterise into the NavMesh normally. **No collider pass
+  or exclusion mask needed.**
+- **The island's walkable surface is 21 disconnected components**, largest covering 41% of sampled
+  points. Mostly correct (beaches split by water, plateaus split by >45° slopes — "enemies cannot
+  climb a cliff" is an acceptance criterion), but **an enemy on one landmass cannot reach another.**
+- **The Asset Store flare is broken, not merely dated.** `flarebullet.prefab`'s particle material
+  GUID `473d6d3e…` **is not in the package** (it referenced Unity's removed Standard Assets smoke
+  material); its two shipped materials use built-in `Standard`, which renders magenta under URP.
+- **Blaze finishes wiring itself in `Start`, not `Awake`.** Calling `SetEnemy` on the frame a
+  reinforcement is instantiated is a null-reference waiting for a slow frame —
+  `EnemyReinforcementSpawner` now defers engagement by one frame.
+
+**FAILED**
+
+- **The firing rhythm, tracers and flare-in-flight have not been watched running.** Play mode does
+  not tick while the Unity editor is unfocused and MCP cannot give it focus; `Time.time` stayed at
+  0.02 across calls. `PlayerSettings.runInBackground` was turned **on** (it was off) so a future
+  play session ticks, but that only applies on entering play mode. Stated plainly per memory
+  `feedback_confirm_before_declaring_fixed`. Everything else was verified by reading real state back
+  — including 10-strong waves not stacking (closest pair 3.84 m vs a 2.5 m minimum) and the lamp
+  still burning after detaching with 0.0000 m world drift.
+
+**NEXT**
+
+- **`Island.unity` is unsaved** — it was already dirty before this session, so Carlos's in-progress
+  edits were not committed. **The `NavMesh Surface` GameObject is lost if it is not saved**; the
+  baked asset survives.
+- Carlos's hands-on playtest of the combat rhythm, using `EnemyDebugControls`.
+- The lamp's hand position, and its normal map — both agreed placeholders.
+- NavMesh agent radius/slope/step tuning (MRM-27) — a project-settings change, not made unasked.
+- MRM-29's three-blind-run search; Blaze's own search stands in for now.
+- Ten-Spotter frame cost in a build (MRM-34 criterion, ties to MRM-64).
+
 ## Animation tooling ruling (2026-08-31) — Retarget Pro V5 adopted, FPS Animation Baker Toolkit rejected
 
 Not an issue — an asset decision Carlos asked for, with the package read in Playground rather than

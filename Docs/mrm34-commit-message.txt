@@ -1,0 +1,124 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-34: Spotter AI — Blaze integration, combat, flare, lamp, island NavMesh
+
+
+DESCRIPTION (the body field)
+============================
+
+Builds the Spotter's full AI: patrol, detection, chase, the two-shot-then-reload
+combat rhythm, the flare that calls 3-10 reinforcements, the low-health panic
+call, the hand lamp, and death drops. Verified running end to end on the island.
+
+Also lands the shared enemy framework every later enemy (Zealot, Wolf, Furman)
+is meant to reuse — only numbers and the one unique behaviour should change.
+
+Full as-built record: Docs/mrm34-spotter-ai-build.md (15 sections).
+
+WHAT'S NEW
+
+- Blaze AI Engine transferred into the project as a runtime dependency
+  (Code/Vendor/Blaze AI Engine/, 48 scripts). It ships without an asmdef, so
+  Blaze.Core and Blaze.Editor were added; without them MrMoonlight.Runtime
+  cannot reference it at all. Demos folder (285 MB) deliberately left behind.
+  No layer or tag changed — Blaze's Tags&Layers.preset was NOT applied and
+  turned out to be unnecessary.
+
+- Shared enemy framework (MrMoonlight.Enemies): EnemyHealth, EnemyFirearm,
+  EnemyRangedAttack, EnemyReinforcementSpawner, EnemyDeathDrop, EnemyPatrolRoute
+  (+ custom inspector), EnemyAudioHooks, EnemyIdentity, EnemyHitbox,
+  IReinforcementCaller.
+
+- Spotter behaviours: SpotterFlareCall (alone-check sphere, timer, one flare per
+  Spotter) and SpotterPanicCall (low-health, separate trigger by design).
+
+- Flare VFX built from scratch — MrMoonlight/VFX/FlareCore shader, trail, smoke
+  and spark particles, and a real Light. The Asset Store "Flare Gun" pack was
+  checked first and is unusable: its particle material GUID is not in the package
+  at all, and its shipped materials are built-in Standard, which renders magenta
+  under URP.
+
+- The lamp: Lamp_3.fbx imported, DIRT texture at 512 through the pixelation pass,
+  RetroLit materials cloned from M_FlareGun.mat, Prop_Lamp.prefab with a real
+  point Light. Hand position and normal map are agreed placeholders.
+
+- Island NavMesh baked — volume-bounded above sea level, physics colliders,
+  681 ms, 75,671 triangles, saved to Scenes/Island/NavMesh-Island.asset.
+
+- PlayerDamageReceiver + InvulnerableDebugToggle (F4) on the Player, so enemies
+  can hurt Tracey and a fight can be watched without dying.
+
+- MrMoonlight.Combat — new leaf assembly holding IDamageable and DamageInfo.
+
+- ~40 new tunables under three new MoonlightTunables headers.
+
+- EnemyDebugControls dev tool (Damage / Kill / Attack Player / Fire Flare /
+  Log State) — the player cannot deal damage yet, so half of MRM-34 is
+  otherwise untestable.
+
+KEY DECISIONS
+
+- The firing rhythm lives in our code, not Blaze's. Blaze paces shots as
+  randomised windows; MRM-34 asks for exactly two then a reload. Blaze's
+  attackEvent is treated as "you may open fire" and EnemyRangedAttack runs the
+  burst as one coroutine.
+
+- AttackStateBehaviour, not CoverShooterBehaviour, despite the issue's triage
+  note — the cover shooter needs cover objects registered with
+  BlazeAICoverManager and the island has none placed.
+
+- The flare and panic reinforcement calls stay separate code paths (Carlos,
+  explicit). Proactive-when-isolated vs reactive-when-hurt.
+
+- Reinforcements cannot summon reinforcements (suppressCallsOnSpawned, on by
+  default). Ten Spotters each summoning ten is exponential; the issue's worst
+  case is ten total.
+
+- MrMoonlight.Combat had to exist: MrMoonlight.Runtime already references
+  Burntwax.Core, so Burntwax calling IDamageable would have been a circular
+  assembly reference, which Unity forbids.
+
+BUGS FIXED
+
+- The Spotter could never see the player. Blaze matches hostiles by the tag on
+  the collider's own GameObject; the player's only collider (Body) was Untagged
+  while the Player tag sat on the parent, which has no collider. Body is now
+  tagged Player.
+
+- Enemy looped in his hit animation. The gun passes the GunStateMachine on Arms
+  (untagged) as the damage source; HitStateBehaviour ends the flinch with
+  SetEnemy(that), Blaze rejects it as non-hostile, and the agent churns without
+  crossfading out. EnemyHealth now resolves a damage source to transform.root
+  before handing it to Blaze. FIX IS UNVERIFIED IN PLAY — test first.
+
+FINDINGS WORTH KEEPING
+
+- A BlazeBehaviour subclass REPLACES a state; it cannot run alongside one. This
+  corrects the extension pattern written into MRM-27 and MRM-29. Custom states
+  go through BlazeAISpareState instead.
+
+- Blaze drives the existing Animator Controller by state name, so the
+  hand-authored 13-state AC_Spotter.controller is exactly what it wants.
+
+- AddComponent<BlazeAI>() leaves vision and waypoints null — Unity's serializer
+  only default-constructs nested [Serializable] classes on deserialize.
+
+- MRM-27's terrain-tree question is moot: the terrain has zero terrain trees.
+  The vegetation is real GameObjects carrying 5,891 CapsuleColliders, which
+  rasterise into the NavMesh normally. No collider pass needed.
+
+- The island's walkable surface is 21 disconnected components, largest 41%. An
+  enemy on one landmass cannot reach another.
+
+NOTE ON SCOPE
+
+A ~15-line hook in GunScriptableObject routes player gunfire into IDamageable.
+Carlos descoped player-gun damage mid-session (MRM-32 owns it); the code was
+left rather than reverted and is one contiguous block marked "MRM-34:".
+
+ProjectSettings.asset changes only PlayerSettings.runInBackground (now on), so
+play mode keeps ticking while the editor is unfocused.
+
+Assets/Screenshots/mrm34_*.png are the verification captures referenced by the
+docs — drop them from the commit if you'd rather not track screenshots.

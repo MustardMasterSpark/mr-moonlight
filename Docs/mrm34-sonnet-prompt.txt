@@ -1,0 +1,124 @@
+You are picking up MRM-34 (Spotter enemy) in Mr. Moonlight. Opus built the system;
+you are finishing and tuning it. Branch: mrm-75.
+
+READ THESE FIRST, IN THIS ORDER
+  1. Docs/mrm34-spotter-ai-build.md  — the as-built record, 15 sections. Section 15
+     is the handoff: known bugs and the prioritised gap list. Read 15 first, then
+     skim 1-14 for context.
+  2. CLAUDE.md and Docs/csharp-conventions.md — house rules.
+  3. MRM-34 in Linear, and the comments on it (there are four; the last two are the
+     verification report and the handoff).
+
+Do NOT re-derive things the doc already settles. Section 15.4 lists the decisions
+that are made and should not be re-litigated.
+
+
+WHERE THINGS ARE
+
+  Assets/_Project/Code/Runtime/Enemies/       shared enemy framework
+  Assets/_Project/Code/Runtime/Enemies/Spotter/  SpotterFlareCall, SpotterPanicCall
+  Assets/_Project/Code/Runtime/Combat/        IDamageable, DamageInfo (own assembly)
+  Assets/_Project/Code/Runtime/Player/        PlayerDamageReceiver, InvulnerableDebugToggle
+  Assets/_Project/Code/Vendor/Blaze AI Engine/Scripts/   Blaze, tracked and editable
+  Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab
+  Assets/_Project/Prefabs/VFX/VFX_Flare.prefab
+  Assets/_Project/Prefabs/World/Prop_Lamp.prefab
+  Assets/_Project/Art/VFX/Flare/FlareCore.shader
+
+
+THE STATE IT IS IN
+
+Working, verified live on the island: patrol, detection, chase, the aim -> fire ->
+pause -> fire -> reload rhythm, damage to the player (health 100 -> 0), the flare
+firing on its own, 7 reinforcements spawning and engaging without stacking, the
+runaway guard, the lamps lighting the ground, and the flare VFX rendering.
+Screenshots in Assets/Screenshots/mrm34_*.png.
+
+
+TASK 1 — VERIFY THE HIT-LOOP FIX (do this first, before anything else)
+
+Carlos reported: "I hit the enemy once and then he looped in his stunned animation."
+
+Root cause was found and fixed but NOT watched running. The fix is
+EnemyHealth.ResolveAttacker() — it walks a damage source up to transform.root
+before handing it to blaze.Hit(), because Blaze rejects any enemy whose tag is not
+in vision.hostileTags, and the gun was passing the untagged "Arms" child.
+
+Full chain is documented in section 15.1. Go and confirm it actually works:
+shoot a Spotter once, check he flinches and then resumes rather than sticking.
+
+If he STILL sticks, the next suspect is section 15.2: EnemyRangedAttack.RunBurst()
+is a coroutine that keeps driving the animator through the flinch. CancelBurst()
+already exists and is wired to EnemyHealth.Died but not to the hit. Wire it to
+TakeDamage or to HitStateBehaviour.onStateEnter. Change ONE thing at a time.
+
+
+TASK 2 — WORK THE GAP LIST
+
+Section 15.3 has 15 items in priority order. After task 1 the highest-value ones are:
+
+  - Ten simultaneous Spotters measured IN A BUILD. This is the last unmet
+    acceptance criterion on MRM-34 and ties to MRM-64. Seven ran fine in the
+    editor, but editor performance is not build performance.
+  - Flare tuning, pure numbers, no code: the sparks read as elongated shards
+    rather than embers (Sparks -> ParticleSystemRenderer.lengthScale, 2.5 -> ~1.2),
+    and the core is small relative to the light it throws (M_FlareCore._Intensity
+    at 5.0, and the Core child's scale at 0.55).
+  - The lamp's position on the hand, once Carlos says where he wants it. Socket is
+    CC_Base_L_Hand/Socket_Lamp. He is also providing a normal map — it goes in
+    M_Lamp's _NormalMap, NOT _BumpMap; RetroLit renamed it.
+
+Ask Carlos before starting anything that is not on that list.
+
+
+HOW TO TEST
+
+The player cannot deal damage in the normal way (MRM-32 is Backlog), so use the
+debug tools that exist for exactly this:
+
+  - EnemyDebugControls on Enemy_Spotter. In play mode, right-click the component's
+    header in the Inspector (or the three-dots icon): Damage / Kill / Attack Player
+    / Fire Flare Now / Log State. Start with Log State.
+  - F4 on the player toggles invulnerability. It blocks the damage but still counts
+    and displays every hit on screen, so you can watch a whole fight without dying
+    and still see that shots are landing. F3 is infinite stamina.
+
+CRITICAL: play mode only ticks while the Unity editor window has focus. If
+Time.time is frozen at 0.02, the editor is unfocused — ask Carlos to click into
+Unity. Do not burn calls rediscovering this. Also: a PlayerSettings change made
+DURING play mode is reverted on exit.
+
+
+TRAPS THAT HAVE ALREADY COST TIME (all in the doc, do not rediscover them)
+
+  - Blaze identifies things BY TAG, and the tag must be on the object that carries
+    the collider, not a parent. This caused both bugs fixed today.
+  - A BlazeBehaviour subclass REPLACES a state slot; it cannot run alongside one.
+    For a new interrupting state use BlazeAISpareState / blaze.SetSpareState().
+  - AddComponent<BlazeAI>() leaves vision and waypoints NULL. If you build an agent
+    from script you must new them.
+  - GetComponentInParent<T>() skips inactive GameObjects, and a prefab ASSET counts
+    as inactive. Verify wiring against the live scene instance.
+  - RetroLit materials: the KeywordEnum properties need SetInteger AND the matching
+    keyword toggled. Cloning a known-good .mat is the safe way. See
+    Docs/3d-prop-pipeline-wizard.md section 3.2.
+  - Anything both Burntwax and our code must see has to live in MrMoonlight.Combat
+    or another leaf assembly — MrMoonlight.Runtime already references Burntwax.Core,
+    so the reverse is a circular reference.
+
+
+HOUSE RULES THAT MATTER HERE
+
+  - No hardcoded values. Everything goes in MoonlightTunables with an XML doc
+    comment naming the owning issue. There are already ~40 Spotter/flare tunables.
+  - Never commit or push. Carlos uses GitHub Desktop.
+  - Scene and inspector work: offer to do it via UnityMCP and ask permission first.
+    Do not silently hand back instructions, and do not silently do it either.
+  - Project-settings changes (NavMesh agent types, layers, tags) — ask first.
+  - When you clean up test objects, match on a uniquely named holder you created,
+    NEVER on a component type real scene content also carries. A cleanup filter
+    matching on EnemyIdentity deleted a Spotter Carlos had placed himself.
+  - When you script a file edit, write a temp file and os.replace it. An in-place
+    open(path,'w') that throws mid-write destroyed 12 sections of a doc today.
+  - Do not claim something works until you have watched it work. Carlos has called
+    this out before and it is a standing rule.

@@ -249,18 +249,42 @@ Read/Write off, Optimize Mesh on.** Never let the importer generate materials.
 | `_NormalMap` | the Normal | ⚠ **`_NormalMap`, not `_BumpMap`** — RetroLit renamed it |
 | `_NormalStrength` | `1.0` | |
 | `_FilterMode` | `1` — **Point** | |
-| `_SnapMode` | `2` — **View** | vertex snapping, the one PSX effect post-processing can't do |
+| `_SnapMode` | `2` — **View** | vertex snapping, the one PSX effect post-processing can't do. **Exception: small/handheld props (weapons, items) — see the callout below** |
+| `_SnapsPerUnit` | `64` | snap grid density, in **world-space metres**, not relative to the object |
 | `_AffineTextureStrength` | `1.0` | Carlos tuned this up from 0 on 2026-08-25 |
-| `_ResolutionLimit` | Off | |
-| `_ColorBitDepth` | Off | |
+| `_ResolutionLimit` | `8192` — practically "off" | ⚠ this is a real value, not literally 0 — see below |
+| `_ColorBitDepth` | `256` — practically "off" | ⚠ this is a real value, not literally 0 — see below |
 | `_DitherMode` | `0` — Screen | |
 | `_LightMode` | `1` — TexelLit | |
 | `_Glossiness` | `5` default | raise for metal |
 | `_AlphaClip` | on **only** for cutout foliage/cloth | never Surface Type = Transparent |
 
-> ⚠ **`SetInteger`, not `SetInt` or `SetFloat`.** The retro properties are `Integer`-typed and
-> `SetFloat` silently fails to persist — `PSXMaterialMigration.cs` carries a comment about losing
-> time to exactly this. If you set these from script, use `SetInteger`.
+> ⚠ **"Off" in this table means a real high-ceiling number, not 0.** `_ResolutionLimit`/
+> `_ColorBitDepth` reach their practical "no extra runtime degradation" state at `8192`/`256`
+> (a very high cap = no visible clamping) — **`0` is not neutral, it's broken.** Confirmed the hard
+> way 2026-09-01: reading a working material's int properties through the wrong
+> `ShaderUtil`/`Material` API branch misreported all nine retro ints as `0`, and building new
+> materials off that misread set `_SnapsPerUnit: 0` — a divide-by-zero in the vertex-snap shader
+> code that collapsed the mesh to nothing. **Always diff the two `.mat` files' raw YAML
+> (`m_Ints`/`m_Floats` blocks) to get real values, never trust a script-side property read alone.**
+>
+> ⚠ **`SetInteger` alone does not change the shader's behavior — the matching keyword must be
+> toggled too.** These retro properties are `[KeywordEnum]` properties: the shader's actual branch
+> in HLSL is driven by the **compiled keyword** (e.g. `_SNAPMODE_OFF`), not the raw int value.
+> `mat.SetInteger("_SnapMode", 3)` alone leaves the OLD keyword active and does nothing — you must
+> also call `mat.DisableKeyword("_SNAPMODE_VIEW")` (or whichever is currently set) and
+> `mat.EnableKeyword("_SNAPMODE_OFF")`. This is true for every enum property in this table
+> (`_FilterMode`, `_WrapMode`, `_DitherMode`, `_SnapMode`, `_LightMode`, `_ReceiveShadowsMode`).
+> `PSXMaterialMigration.cs`'s comment about `SetFloat` silently failing is the same family of bug
+> — `SetInteger` is necessary but **not sufficient** on its own.
+>
+> **Small/handheld props: turn vertex snap off, not View.** `_SnapsPerUnit` is a world-space
+> constant (64 snap points per **metre**) — fine for a ~1.8 m character, but a ~0.3 m weapon only
+> gets ~19 snap positions across its whole length, which reads as broken/chunky geometry, not a
+> retro wobble. Set `_SnapMode = 3` (**Off**, with the matching `_SNAPMODE_OFF` keyword per the
+> rule above) for any prop meant to be seen close to the camera at small scale — weapons
+> especially. Keep `_ColorBitDepth`/dither (the pixelated-texture look) unchanged; this is only
+> about the vertex-snap wobble. Confirmed 2026-09-01 on `M_Shotgun`/`M_FlareGun`, Carlos's call.
 
 ### 3.3 🔧 MCP — the prefab
 
@@ -497,7 +521,8 @@ work is making them match our look.
 2. **Texture/palette pass** — same `texture_pass.py` run as §5.3, at **1024** by default
    (a weapon is held close to the camera and seen constantly).
 3. **Material** to the §3 profile. Raise `_Glossiness` for gunmetal — this is where the scalar
-   actually earns its keep.
+   actually earns its keep. **`_SnapMode = Off`, not View** — see the small-prop callout in §3.2;
+   a weapon is exactly the case that exception exists for.
 4. **Preserve the rig and clips.** Do not re-export the mesh from Blender unless the cleanup pass
    genuinely required it — re-exporting risks the animation bindings for a texture change that
    didn't need it.
