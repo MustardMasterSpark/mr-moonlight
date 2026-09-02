@@ -5,6 +5,86 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-11 — Event Director built, 51 Spotters placed, input leak fixed (2026-09-02)
+
+Full record: **`Docs/event-director.md`**. Handoff: **`Docs/mrm11-refinement-sonnet-prompt.txt`**.
+
+**BUILT**
+
+- **Event Director** — runs a level from an authored text file
+  (`Assets/_Project/Data/Events/IslandEvents.txt`, a TextAsset, so it is a real file in git that
+  Unity bakes into the build with no separate bake step). Parser, sequencer, 11 working verbs,
+  9 reserved-and-warning verbs, per-verb load-time validation.
+- **The demo loop is four authored lines** — a 1s beat, an objective that announces itself,
+  a wait, a win.
+- **`SystemMessageUI`** — centre-bottom subtitle channel, Special Elite, unscaled-time fades.
+  Seeds MRM-14.
+- **`ObjectiveTracker` / `Objective`** — objective state and kill counting, fed by a new **static
+  `EnemyHealth.AnyDied`** (the only way runtime-spawned enemies can be counted).
+- **`GameOverPanel` extended to serve both endings** — headline per ending, RESTART and
+  MAIN MENU. Seeds MRM-19.
+- **Scene components** — `EventZone` (trigger volume), `EnemySpawnPoint`, `EventSignalReceiver`
+  (the no-code escape hatch), `EventSignals`.
+- **Editor tooling** — a runtime step/objective readout on the director's inspector, plus
+  **Tools → Mr. Moonlight → Validate Event Scripts** and **Print Event Verb Reference**.
+- **51 Spotters** under an `Enemies` holder, every one NavMesh-path-verified reachable from the
+  player spawn.
+- **F6 / F7 / F8 debug keys** — fog, CRT, and time-of-day preset cycling. See `Docs/debug-tools.md`.
+- **Bird spawner contained** — vendor `BirdSpawner` spawned 50 clones into the scene root; they now
+  go into a `Birds` child. Marked in place with a revert block, per the vendor-edit policy.
+
+**DECISIONS**
+
+- **Not a spreadsheet, despite MRM-11 asking for one.** Carlos's grid preference predated his
+  verdict on the deprecated SLDD, given this session: *"too confusing, too hard to read, too
+  cluttered… I actually never used it."* The SLDD fixed a full parameter list per event type and
+  forbade omitting, so real lines were ~80% `N/A` — a wide CSV forces the same shape. The rule is
+  now the opposite: **write only what the line needs**, named and order-free.
+- **Only `wait` blocks.** Every other verb fires and the director moves on. The SLDD gave each type
+  a `Blocking: T/F` and never enforced it, which is exactly how a screenplay-shaped document stops
+  being readable. Do not add hidden blocking to any other verb.
+- **Deadlock safety is per-condition.** World waits (zone/signal/sequence) time out and log; player
+  progress waits (objective/kills/group) wait forever on purpose, because timing them out would
+  hand out a win nobody earned. Signals latch, so an early trigger cannot hang a level.
+- **Custom one-off verbs are prefixed `!`** so a bespoke moment can never collide with a generic
+  verb added later.
+- **Spotter placement was gated on `NavMesh.CalculatePath` returning `PathComplete`** from the
+  player spawn. One test, two jobs: keeps them off the small island with no hardcoded geometry, and
+  guarantees the kill-20 objective is completable.
+- **F6/F7 restore themselves on play-mode exit**, F8 does not. `SceneEffectsToggle` writes to a
+  shared Volume *profile asset*, which play mode does not roll back; `TimeManager` drives scene
+  objects, which it does.
+
+**FAILED / FOUND**
+
+- **`Island.unity` had ZERO EventSystem.** Every UI button in that scene was dead on arrival, with
+  no error — the click simply did nothing. Would have bitten MRM-19 hard.
+- **Input System leak, predating this issue.** The *generated* `InputSystem_Actions.Dispose()` only
+  calls `Object.Destroy(asset)` and never disables the action maps; its finalizer then asserts. So
+  a correctly-disposed instance still leaked, on every scene change since MRM-9. Fixed in
+  `InputMapController.Dispose`. Only became visible because this issue's Restart button is the
+  first thing in the project that reloads a scene routinely.
+- **A static event cleared in `Awake` deletes subscribers that woke first.** Scene wake order is
+  undefined. `EventSignals` now clears latched *state* at runtime and subscribers only from
+  `[RuntimeInitializeOnLoadMethod]`.
+- **`FindGameObjectWithTag("Player")` returns the `Body` child**, not the root — correct for Blaze,
+  wrong for `GetComponentInChildren`.
+- **Winning inherited the health red tint**, so a player who won on low health read "Good boy"
+  through full-screen blood red. `HealthRedTintSource` is now disabled on a win.
+
+**NEXT**
+
+- `spawn` / `wait zone=` are built and unit-tested but **not exercised in the level** — no spawn
+  points or zones placed. This is the biggest untested area.
+- **A flare on top of 51 Spotters is untested.** The reinforcement maths has never run at this
+  population (MRM-34 territory).
+- **URP now logs an error**, not a warning: *"Too many additional punctual lights shadows… URP
+  removed 50 shadow maps."* One field fixes it — `Lamp Light` → No Shadows on
+  `Enemy_Spotter.prefab` — but which lamps cast shadows is an art call, so it is Carlos's.
+- MRM-14 and MRM-19 are each partly built; both carry a comment listing exactly what is still owed.
+
+---
+
 ## MRM-34 session 2 — the fight actually works, verified live (2026-09-02)
 
 Continues the entry below. Full record: **`Docs/mrm34-spotter-ai-build.md`** §13–14.

@@ -17,10 +17,32 @@ owner of the *feature it stands in for* is noted separately where relevant.
 | **F3** | `InfiniteStaminaDebugToggle` (`Runtime/Player/`) | Locks stamina at max via `Stat.Lock`, so sprint never slows to a walk | Testing traversal/sprint distance between blockout waypoints without stamina cutting a run short |
 | **F4** | `InvulnerableDebugToggle` (`Runtime/Player/`) | Blocks player damage at the entry point — health never drops, but every hit is still counted and flashed on screen | The player can't deal/take real damage yet (MRM-32 Backlog) — lets a Spotter fight be watched start to finish instead of ending after two shells |
 | **F5** | `HealthRegenDebugToggle` (`Runtime/Player/`) | Call-of-Duty-style regen: after 2s with no hit, health ramps back up (25/s, DOTween-driven) until full or the next hit resets the delay | Recover the red damage-tint quickly between playtest passes, without needing F4 or a bandage every time (2026-09-02) |
+| **F6** | `SceneEffectsDebugToggle` (`Runtime/DevTools/`) | Toggles HAZE fog on/off at runtime by driving `SceneEffectsToggle` | Judge a look with and without fog without leaving play mode (2026-09-02, MRM-11) |
+| **F7** | `SceneEffectsDebugToggle` (`Runtime/DevTools/`) | Toggles the CRT post effect on/off — same component as F6 | Same reason as F6; the retro filter hides a lot, so turning it off is how you see what's actually on screen |
+| **F8** | `TimeOfDayDebugCycle` (`Runtime/DevTools/`) | Steps to the next `TimeManager` preset and wraps: Morning → Sunset → Night → Apocalypse → Morning | Compare the island's four skies without hunting for the TimeManager's context menu (2026-09-02, MRM-11) |
 
-All five follow the same shape: a `[SerializeField] private bool` toggle, an `Update()` check
-against `Keyboard.current`, and an `OnGUI()` label only while active. Copy that pattern for the
-next one rather than inventing a new shape.
+All of them follow the same shape: a `[SerializeField] private bool` toggle (or the state they
+drive), an `Update()` check against `Keyboard.current`, and an `OnGUI()` label only while active.
+Copy that pattern for the next one rather than inventing a new shape. Labels are stacked down the
+screen by y-offset (F3/F4 at 40-70, F6/F7 at 100, F8 at 130) so several can be on at once.
+
+### F6/F7 restore themselves on exit — do not remove that
+
+`SceneEffectsDebugToggle` drives `SceneEffectsToggle` rather than reimplementing it, because that
+component already knows two awkward things: HAZE and Retro Shaders Pro live in assemblies it cannot
+reference (hence its lookup by type *name*), and **fog has two independent sources** — a global
+Volume override *and* every `HazeDensityVolume` in the scene. Duplicating either would give you a
+key that looks like it works while fog keeps rendering.
+
+But `SceneEffectsToggle` writes to the shared Volume **profile asset**, by design, so its inspector
+checkboxes persist like any other manual edit. An asset edited during play mode is **not** rolled
+back when play mode ends, unlike a scene object — so without care a cheat-key press would quietly
+change the project's shipping look. `SceneEffectsDebugToggle` snapshots the fog/CRT state in
+`Awake` and puts it back in `OnDisable`, and only if a key was actually pressed, so it never fights
+a deliberate inspector setting.
+
+F8 needs no such thing: `TimeManager` drives *scene* objects (the Sun light, the skybox), and play
+mode rolls those back on its own. That asymmetry is the whole reason one restores and one doesn't.
 
 **Font (2026-09-02, now on its third pick):** every live debug overlay (F2 `PlayerStatsDebugOverlay`,
 F3 `InfiniteStaminaDebugToggle`, F4 `InvulnerableDebugToggle`, F5 `HealthRegenDebugToggle`, plus

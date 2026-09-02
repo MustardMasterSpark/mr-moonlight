@@ -511,5 +511,40 @@ namespace MrMoonlight.Data
 
         /// <summary>Seconds the lamp's own gameplay <c>Light</c> takes to dim to zero, starting at the same moment as the VFX fade. Deliberately longer than <see cref="LampFireVfxFadeDuration"/> — Carlos's ask keeps the lamp glowing a beat after the flame itself dies down. Owner: MRM-76</summary>
         public float LampLightFadeDuration = 5f;
+
+        [Header("Event Director — MRM-11 (2026-09-02)")]
+
+        /// <summary>
+        /// Seconds a <c>wait</c> on a <i>world</i> condition (a zone, a signal, another sequence)
+        /// gives up after, logs an error, and carries on. Deadlock safety: a mis-typed zone name or
+        /// a volume the player squeezed past would otherwise leave the level stuck forever with
+        /// nothing on screen to say why. Waits on <i>player progress</i> (an objective, a kill
+        /// count, a spawned group) ignore this and wait forever on purpose — timing those out would
+        /// hand out a win nobody earned. Any line can override with <c>timeout=</c>. Owner: MRM-11
+        /// </summary>
+        public float EventWaitDefaultTimeout = 180f;
+
+        /// <summary>Attempts an <see cref="Events.EnemySpawnPoint"/> makes to find a valid, well-spaced NavMesh point per enemy before giving up on that one. Raise it only if scripted waves come up short on cluttered terrain. Owner: MRM-11</summary>
+        public int EventSpawnPlacementAttempts = 12;
+
+        /// <summary>Seconds the end-of-level screen takes to fade to black before Restart or Main Menu loads. Owner: MRM-11</summary>
+        public float EndScreenFadeDuration = 0.5f;
+
+        [Header("System messages + objectives — MRM-14 (seeded by MRM-11)")]
+
+        /// <summary>Seconds a <c>message</c> line stays on screen when it does not say <c>for=</c>. Owner: MRM-14</summary>
+        public float SystemMessageDefaultDuration = 5f;
+
+        /// <summary>Seconds an objective announcement stays on screen. Longer than a plain message — it is the thing the player has to remember. Owner: MRM-14</summary>
+        public float ObjectiveAnnounceDuration = 6f;
+
+        /// <summary>Seconds the centre-bottom message fades in and out over. Runs on unscaled time so a pause does not freeze it mid-fade. Owner: MRM-14</summary>
+        public float SystemMessageFadeDuration = 0.4f;
+
+        /// <summary>Point size of the centre-bottom message text at the 1920×1080 reference resolution. Owner: MRM-14</summary>
+        public float SystemMessageFontSize = 34f;
+
+        /// <summary>Colour of the centre-bottom message text. MRM-14 calls for blue; this is the pale, slightly cold blue that survives the CRT filter without glowing. Owner: MRM-14</summary>
+        public Color SystemMessageColor = new Color(0.72f, 0.85f, 1f, 1f);
     }
 }
