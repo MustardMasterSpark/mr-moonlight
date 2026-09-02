@@ -1,90 +1,107 @@
-You are continuing MRM-76 (gameplay balance tuning) and general polish on Mr. Moonlight, picking
-up from a single long session on 2026-09-02 that covered a lot of separate ground. Branch: mrm-75
-(same branch-scope exception as MRM-34 — see memory mrm75_branch_scope_exception).
+You are continuing MRM-76 (gameplay balance tuning) and a long tail of cosmetic/VFX/UI work on Mr.
+Moonlight, picking up from a second long session on 2026-09-02 (the first session's handoff was
+this same file — it's been overwritten with this update). Branch: mrm-75 (same branch-scope
+exception as MRM-34/MRM-76 before it — see memory mrm75_branch_scope_exception).
+
+Carlos is restarting his machine (Unity had gone unresponsive mid-session — see the trap section
+below, now written up properly). He will tell the next session when Unity is back up.
+
+
+FIRST TASK — VERIFY NOTHING BROKE, THEN VERIFY THE UNVERIFIED WORK BELOW
+
+Everything in "STATE — NOTHING BELOW HAS BEEN VISUALLY CONFIRMED" was done as file-level edits
+(via Read/Edit or via the UnityMCP bridge before it died) and never confirmed rendering correctly,
+because the bridge stopped responding partway through and Carlos restarted his machine rather than
+fight it. Once he says Unity is up:
+  1. Reconnect (`mcpforunity://instances`, `set_active_instance` if more than one).
+  2. Force a refresh + compile, read the console for errors.
+  3. Enter Play Mode, focus the window (Time/background work won't progress otherwise — see the
+     trap below), and actually look at each unverified item with a real screenshot before telling
+     Carlos anything is fixed. Per standing house rule, an editor screenshot or "no console errors"
+     is not proof — see memory feedback_confirm_before_declaring_fixed.
 
 
 READ THESE FIRST, IN THIS ORDER
 
-  1. Linear MRM-76 ("Gameplay balance tuning log") — every comment on it, in order. That is the
-     as-built record for everything below: exact numbers, reasoning, and what Carlos said about
-     each. Don't re-derive any of it from the code alone.
-  2. CLAUDE.md's new "Session hygiene" section — why this handoff file exists at all.
-  3. Docs/debug-tools.md — F1-F5 and the DOTween adoption notes.
-  4. Docs/csharp-conventions.md's "Async and coroutines" section — DOTween is installed now
-     (corrected back from an earlier "not installed" note); it's the standard for new smooth
-     transitions.
+  1. Linear MRM-76 ("Gameplay balance tuning log") — every comment on it, in order, especially the
+     last several from 2026-09-02 (the Spotter size/speed/fire-delay pass, the flare trajectory
+     rewrite + colour/SFX, the font swaps, and the final "session wrap" comment). This file is the
+     narrative; MRM-76's comments are the numbers and reasoning.
+  2. `Claude Code Context MDs/kickstart.md` §B.3a ("Three traps that have already cost real time") —
+     new this session. Covers the Editor-needs-focus-for-background-work trap (not just Play Mode
+     Time — `AssetDatabase.ImportPackage` and similar can also silently stall), the
+     script-edit-during-Play-Mode domain reload trap, and the prefab-vs-scene-instance dual-edit
+     pattern. This is the traps section CLAUDE.md's hard rules point to; read it before doing any
+     more hands-on Unity work.
+  3. `Docs/debug-tools.md` — F1-F5 table, the new "Font" note under it, and the new
+     "Text Animator for Unity" section.
+  4. `Docs/audio-import-workflow.md` — new gotcha note near the top of §1: a clip copied in by a
+     script (not dragged into the Editor) landed on the wrong preset once despite a correct
+     filename prefix.
 
 
-THE STATE IT IS IN — NOTHING BELOW HAS BEEN PLAYTESTED BY CARLOS YET
+STATE — NOTHING BELOW HAS BEEN VISUALLY CONFIRMED (bridge died mid-session)
 
-Everything in this list compiles clean and was smoke-tested (component wiring verified, a couple
-of scripted damage/kill calls checked for exceptions) but **none of it has been watched running by
-a human**. That is FIRST TASK for whoever picks this up: sit with Carlos through a real fight and
-confirm each of these actually reads the way the numbers say they should.
-
-  - Game Over sequence: was fully broken (DeathSequence had blackScreenImage/gameOverPanel
-    unassigned in the scene — silent audio cutout, no black screen, no text). Fixed by wiring both
-    references. Needs a real death (F4 off) to confirm.
-  - Per-body-part hitboxes: NEW system, not previously built. EnemyHitbox rewritten with two modes
-    — HeightBands (on the Spotter's existing root capsule, classifies by hit height against the
-    Animator's Head/Hips bones) and FixedZone (two new SphereColliders on the forearm bones, the
-    one part of "limb" the capsule doesn't cover). Multipliers: limb x1, torso x2, head x4.0
-    (Tunables.EnemyHitboxHeadMultiplier — deliberately off MRM-32's documented x3; read MRM-76's
-    comments for why).
-  - Pistol damage: was a flat 9, now 24-33 (TwoConstants mode on Pistol.asset's DamageConfig,
-    ±20%/+10% variance). Enemy shotgun got the same per-shot variance treatment in EnemyFirearm.
-  - Reinforcement spawn distance: was a 0-20m disc from the flaring Spotter (spawned right next to
-    the player), now a 45-55m annulus (EnemyReinforcementSpawner + two new Tunables).
-  - Spotter size/speed/fire-rate: scaled x1.25 (four-fields-together rescale — root scale, capsule,
-    NavMeshAgent, BlazeAI vision position), Blaze move speeds raised on Normal/Alert/Attack state
-    behaviours (NOT Tunables-routed — direct fields on the prefab, matches existing precedent),
-    SpotterAimDelay/InterShotDelay/ReloadDuration shortened.
-  - Dropped lamp fire (LampFireEffect, new component on Prop_Lamp.prefab): ignites when the
-    dropped lamp's rigidbody settles (not just first contact), scaled to the lamp's own size,
-    burns 15s, then fades over 2.5s (fire) / 5s (the lamp's own gameplay Light) via DOTween. A
-    separate one-shot glass-break sound plays on the lamp's FIRST ground impact (OnCollisionEnter),
-    deliberately earlier than the fire.
-  - F5 debug toggle (HealthRegenDebugToggle, new): Call-of-Duty-style regen, 2s after last hit then
-    ramps at 25 HP/s via a DOTween tween with SetDelay. See Docs/debug-tools.md for the full F1-F5
-    table.
-  - DOTween Pro: newly installed this session (Assets/Plugins/Demigiant/), no asmdef needed
-    (Plugins-folder assemblies auto-visible everywhere — unlike Ian's Fire Pack, which DID need
-    one). AudioSource.DOFade doesn't resolve for reasons not chased down; use raw
-    DOTween.To(() => source.volume, v => source.volume = v, target, duration) instead.
-  - Player was accidentally moved to (488, 0, 0) and PlayerUI's canvas got dragged to a bad local
-    offset during Carlos's own scene editing — both fixed (Player now sits 24m behind the Spotter,
-    ground-snapped, outside its sight range, for testing; PlayerUI reset to (0,0)). If Carlos wants
-    the player somewhere else for the next test, that's a one-line position edit, not a bug.
-
-
-TRAPS THAT ALREADY COST TIME TODAY (all in MRM-76's comments in more detail)
-
-  - Editing ANY script while Unity is in Play Mode forces a domain reload that nulls out runtime
-    wiring (GunStateMachine and similar threw NullReferenceException floods, twice). Always
-    manage_editor stop before editing code, even mid-session; re-enter play mode after.
-  - Play mode only ticks while the Unity Editor window has OS focus — same trap as MRM-34, still
-    true. If Time.time / a coroutine looks frozen, that's why.
-  - A prefab asset and its live scene instance are separate — a scene-instance-only edit doesn't
-    reach future-spawned copies (e.g. reinforcements). This session's pattern: edit via
-    PrefabUtility.LoadPrefabContents/SaveAsPrefabAsset for the source, AND the live scene instance
-    if one already exists, in the same pass.
-  - Vendor code that needs its own asmdef to be referenceable from MrMoonlight.Runtime: Blaze,
-    Ian's Fire Pack (Assets/ThirdParty/, needed IansFirePack.asmdef). Vendor code that does NOT
-    (Plugins/ folder, auto-visible): DOTween. Check which situation a new vendor script is in
-    before assuming either way.
-  - AssetDatabase.ExportPackage with IncludeDependencies|Recurse is the clean way to pull one
-    prefab and only its actual dependencies out of the Playground project, rather than copying
-    a whole asset-pack folder by hand and guessing what's shared.
+  - Spotter size, one more +10%: net ×1.5125 on top of baseline now (~2.82m tall). **Real flag,
+    not just headroom**: NavMesh agent radius is now 0.529m, *over* the 0.5m the NavMesh was baked
+    for — reinforcements or the Spotter itself may refuse to path cleanly or clip through geometry.
+    Needs a re-bake before it's trusted in a real fight, not just eyeballed. Applied because Carlos
+    said he's still dialing in the look and explicitly asked for it anyway.
+  - Flare trajectory, third rewrite: previous two attempts (45° pitch, then 78° pitch) both still
+    read as "shot sideways" to Carlos. Current approach abandons pitching the aim direction
+    entirely — `FlareProjectile.Launch()` now fires on a fixed vertical velocity (derived from a
+    new `FlareApexHeight` tunable, 50m, via `v = √(2·g·height)`) plus a small separate horizontal
+    `FlareForwardDrift` (3 m/s) that's the only source of the curve. Replaces the old
+    `FlareLaunchSpeed`/`FlareLaunchPitch` pair, which no longer exist. Math checks out on paper
+    (apex ~3.35s/50m, lands ~6.7s in, well inside the 11s burn) but nobody has watched one go up
+    since this rewrite.
+  - Flare colour/light pushed further red + brighter (`M_FlareCore.mat` `_BaseColor`
+    → (1.0, 0.015, 0), `_Intensity` → 8.5; the real point `Light` → (1.0, 0.02, 0), flicker range
+    7-14, range 26) — not re-tested since the trajectory rewrite landed at the same time.
+  - Flare-fire SFX now wired (`ENM_Spotter_FlareFire.ogg` → `EnemyAudioHooks.flareFire`) — never
+    heard, since nobody's fired a flare since it was wired.
+  - Two font swaps happened same day: `HitMePunk.ttf` first (all 5 live debug overlays + 3 TMP HUD
+    elements), then Carlos asked to replace it with `Punktype.ttf` — same 8 spots, same wiring
+    approach. Both fonts are still in the project; only Punktype is referenced. **A console error
+    appeared after this: `MissingReferenceException: The variable m_AtlasTextures of TMP_FontAsset
+    doesn't exist anymore.`** Not investigated — almost certainly a stale reference to one of the
+    two dynamically-created TMP font assets, but confirm which object is holding the stale
+    reference before guessing at a fix.
+  - Text Animator for Unity installed + its Default Content/Built-In Effects populated (13 effects,
+    curves, playbacks, timing presets under `Assets/Plugins/Febucci/`). Not wired to any text yet —
+    Carlos hasn't said which display text it's for.
+  - Northern Lights aurora VFX (`VFX_NorthernLights`) placed at (0, 350, 0) in Island, vendor
+    prefab + 3 colour material variants brought over from the Playground project into
+    `Assets/ThirdParty/Northern Lights Pack/`. Rendered with no shader errors when last screenshot,
+    but that was before the session's Unity troubles — worth a fresh look.
+  - Flying Birds VFX (`VFX_FlyingBirds`) added and then debugged same day: vendor prefab
+    (`Flying_Birds_VFX_Many`) brought over from Playground into `Assets/ThirdParty/Flying Birds
+    VFX/` (binaries) + `Assets/_Project/Code/Vendor/Flying Birds VFX/Scripts/` (the two scripts,
+    tracked per the vendor-code split). Placed 40m above the Player's current spawn position.
+    Carlos couldn't see them at all on the first placement — root cause was `Bird_mtl`'s base
+    colour being pure black `(0,0,0)` with zero reflectance, invisible against a dark night sky
+    regardless of position. Fixed to a dark charcoal-brown `(0.08, 0.075, 0.07)`, also bumped the
+    vendor's tiny default bird scale (0.3-1×) to 1-3× and dropped the flock from the original 80m
+    placement to 40m. **None of this — the colour fix, the size fix, or the height change — has
+    been seen rendering.** This is the single most likely thing to still be wrong next session:
+    check it first.
 
 
-HOUSE RULES THAT MATTER HERE
+HOUSE RULES THAT MATTER HERE (same as always, restated because this file gets read cold)
 
-  - No hardcoded values — MoonlightTunables, XML doc naming the owning issue. ~15 new fields added
-    today (hitbox multipliers, damage variance, lamp fire timings) — see the file's tail.
-  - Never commit or push. Carlos uses GitHub Desktop. A summary + suggested commit message was
-    left for him at the end of the 2026-09-02 session instead.
+  - No hardcoded values — MoonlightTunables, XML doc naming the owning issue and the date/reason
+    for any change. This session added `FlareApexHeight`/`FlareForwardDrift`, removed
+    `FlareLaunchSpeed`/`FlareLaunchPitch`, and touched several existing Flare/Spotter tunables —
+    see MoonlightTunables.cs's own doc comments for the exact before/after on each.
+  - Never commit or push. Carlos uses GitHub Desktop. A commit message was suggested to him
+    separately at the end of this session, not left here — check chat scrollback of this session
+    if you need it restated, or just look at `git status`/`git diff` and write a fresh one.
   - Scene/prefab work: offer via UnityMCP, ask first, verify by reading real state back, document.
-    Same pattern used all session — e.g. reading git diff against HEAD to confirm a prefab-apply
-    hadn't silently corrupted something, before trusting it.
+    This session's Northern Lights and Flying Birds imports both used the established Playground →
+    Mr. Moonlight technique (file + meta copy preserving GUIDs, not Package Manager or
+    AssetDatabase.ImportPackage) — see memory dual_project_workflow_decision if you need the
+    mechanics again.
   - Log every future gameplay-feel tweak (reason, before/after, Carlos's verdict) as a comment on
-    MRM-76, not in a memory or a new doc.
+    MRM-76. Cosmetic/VFX additions without an owning issue (Northern Lights, Flying Birds) got
+    folded into the same MRM-76 log this session too, pragmatically, rather than left undocumented
+    — keep doing that unless Carlos opens a dedicated issue for ambient dressing.

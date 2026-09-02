@@ -22,6 +22,32 @@ All five follow the same shape: a `[SerializeField] private bool` toggle, an `Up
 against `Keyboard.current`, and an `OnGUI()` label only while active. Copy that pattern for the
 next one rather than inventing a new shape.
 
+**Font (2026-09-02, now on its third pick):** every live debug overlay (F2 `PlayerStatsDebugOverlay`,
+F3 `InfiniteStaminaDebugToggle`, F4 `InvulnerableDebugToggle`, F5 `HealthRegenDebugToggle`, plus
+`DifficultyDebugOverlay` — 5 spots) renders via a `[SerializeField] private Font font` on each
+script instead of Unity's default GUI font. A matching TMP Font Asset drives the same swap on the
+3 TextMeshPro HUD elements (Game Over text, FPS counter, ammo counter — 3 spots, 8 total) — set via
+the real `TMP_Text.font` setter, not just the serialized field, so the matching generated material
+follows.
+
+Current live font: **`SpecialElite.ttf`** / `SpecialElite SDF.asset`. First pick was `HitMePunk.ttf`,
+swapped for `Punktype.ttf` same day, swapped again for Special Elite — Carlos is still comparing
+looks. All three fonts' raw `.ttf` and SDF `.asset` stay in the project (`Assets/_Project/Art/UI/Fonts/`)
+so switching back is just re-pointing the 8 spots, not regenerating anything.
+
+**Bug, hit once and fixed (2026-09-02):** the HitMePunk and Punktype TMP Font Assets were created
+via `TMP_FontAsset.CreateFontAsset(...)` but only the generated *material* was persisted as a saved
+sub-asset (`AssetDatabase.AddObjectToAsset`) — not the generated *atlas texture*. An unpersisted
+`Texture2D` reference serializes to `{fileID: 0}` (null) on disk, so every TMP object using either
+font threw `UnassignedReferenceException` on *every canvas repaint*, including in Edit Mode with the
+window unfocused — the flood of errors is the likely cause of an editor freeze that cost a whole
+session restart. Fix: after `CreateFontAsset(...)` and `TryAddCharacters(...)`, call
+`AssetDatabase.AddObjectToAsset` on **both** `fontAsset.atlasTextures[0]` and `fontAsset.material`
+before `SaveAssets()` — not just the material. Applied retroactively to fix HitMePunk and Punktype
+in place (same GUID/path, so no scene references needed updating) and used correctly from the start
+for Special Elite. If a future font swap ever brings back the `m_AtlasTextures` exception, this is
+the fix.
+
 ## Context-menu tools (not keybound)
 
 | Component | Where | What it does |
@@ -47,6 +73,30 @@ shortcut) doesn't resolve in this project — `Light.DOIntensity` and other modu
 fine, just not that one. Workaround, used in `LampFireEffect`: call
 `DOTween.To(() => source.volume, v => source.volume = v, target, duration)` directly — it's
 exactly what the shortcut does internally, so nothing is lost.
+
+## Text Animator for Unity
+
+Installed 2026-09-02 (Febucci) — Carlos already owned it; the Asset Store cache had it as a
+UPM-format `.unitypackage` (`.../Febucci/ScriptingGUI/Text Animator for Unity UI Toolkit and Text
+Mesh Pro.unitypackage`), which imports as an embedded local package at
+`Packages/com.febucci.text-animator-unity/` rather than a loose `Assets/` folder — modern Febucci
+ships as real UPM now. Five assemblies (Runtime, TMP integration, UI Toolkit integration, Input
+System integration, Attributes).
+
+**One import gotcha, already hit once:** the package's own first-run "Setup" window
+(`Tools > Febucci > TextAnimator > About Window` to reopen it) has "Install Default Content" /
+"Install Built In Effects" buttons that can silently no-op if the Editor loses focus right after
+clicking — same class of problem as the general "background work stalls unfocused" trap below.
+If clicking them does nothing, the fix is `AssetDatabase.ImportPackage` on
+`Packages/com.febucci.text-animator-unity/Data~/BuiltIn.unitypackage` (an absolute disk path, not
+a virtual `Packages/...` asset path — `Data~` is tilde-hidden from Unity's own AssetDatabase) —
+that's confirmed to land the same content the buttons install
+(`Assets/Plugins/Febucci/Text Animator for Unity/...`: Settings, 13 built-in effects, curves,
+playbacks, timing presets).
+
+**Not wired to any text yet** — installed and content-populated only. Carlos's plan is to drive
+some future display text (dialogue/subtitle-style, not decided which) through it, likely alongside
+TextMesh Pro rather than replacing it.
 
 ## Known gaps
 

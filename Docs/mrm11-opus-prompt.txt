@@ -1,0 +1,78 @@
+You are starting MRM-11 ("Event Director — data format + core runtime") in Mr. Moonlight, but
+SCOPED DOWN per Carlos's request on 2026-09-02: not the full spreadsheet-driven director yet, just
+enough to have a basic objective, a win condition, and game over working. His own words: "kill 20
+enemies to finish the demo, something simple right now, and the event also will be like spawning
+enemies or something." Branch: new branch off main, `mrm-11` (one issue, one branch — the mrm-75
+branch this came out of was a deliberate, one-time exception; don't carry that pattern forward, see
+memory mrm75_branch_scope_exception if you want the reasoning).
+
+Carlos said "we will talk more about this once we switch branches" — he has NOT given full
+requirements yet. Do not start implementing on session start. Open by discussing scope with him.
+
+
+READ THESE FIRST, IN THIS ORDER
+
+  1. MRM-11 in Linear — full description, especially its own "Model" section:
+     "Opus for the format and architecture. Then stop, write the design into this issue, and
+     implement the runtime with Sonnet in a fresh session. Do not stay on Opus to type out verb
+     handlers." That instruction is why this file has "opus" in its name — follow it literally:
+     propose the data format, get Carlos's approval, write it into MRM-11, and STOP. Do not
+     implement the runtime yourself even if the scoped-down version looks small enough to just
+     type out. Hand implementation to a fresh Sonnet session once the format is approved.
+  2. CLAUDE.md and Docs/csharp-conventions.md — house rules.
+  3. MRM-14 ("System messages + objectives") and MRM-19 ("Pause menu + game over screen") in
+     Linear — both Backlog, both smaller siblings of this issue. The scoped-down ask overlaps
+     both: "objective" is MRM-14's territory, "game over" already has a partial implementation
+     (see below) that's MRM-19's territory. Don't silently absorb either issue's full scope —
+     flag the overlap to Carlos and ask whether this session should also close them out or just
+     touch the minimum needed.
+
+
+WHAT ALREADY EXISTS — DO NOT REBUILD THESE, HOOK INTO THEM
+
+  - `Assets/_Project/Code/Runtime/Enemies/EnemyHealth.cs` — has a public `UnityEvent Died` already
+    firing on death (line ~51). This is the hook point for a kill counter; no new per-enemy
+    signal needs inventing.
+  - `Assets/_Project/Code/Runtime/Player/DeathSequence.cs` + `Assets/_Project/Code/Runtime/UI/GameOverPanel.cs`
+    — the player-death game-over path is already wired (`blackScreenImage`, `gameOverPanel` on
+    `DeathSequence`, confirmed assigned in the live scene 2026-09-02). A "win" condition needs the
+    mirror of this, not a rebuild of the loss path.
+  - `Assets/_Project/Code/Runtime/Enemies/EnemyReinforcementSpawner.cs` — the existing pattern for
+    spawning enemies at runtime (used by the Spotter's flare call, spawns in an annulus). Whatever
+    "event that spawns enemies" ends up meaning, check whether this can be reused/generalized
+    before writing a new spawner.
+  - `Assets/_Project/Code/Runtime/DevTools/DifficultyDebugOverlay.cs` — existing pattern for a
+    persistent on-screen text readout, if the "basic objective" display doesn't need real UI yet.
+  - `MoonlightTunables` — every new number (kill target, spawn counts, timers) goes here per the
+    hard rule, XML doc naming MRM-11 and the date.
+
+
+THE ACTUAL SCOPE QUESTION FOR CARLOS
+
+MRM-11's full acceptance criteria (spreadsheet format, baked ScriptableObject, `wait_for` deadlock
+safety, 12 verb types, editor tooling showing the current step) is a 5-point issue and explicitly
+NOT what Carlos asked for today. He asked for a minimal slice:
+
+  - A basic objective (currently: "kill 20 enemies")
+  - A win condition tied to that objective
+  - Game over already partially exists (see above) — confirm what's missing, don't rebuild
+  - "An event" that spawns enemies — unclear yet whether this means one scripted wave, a repeating
+    spawner, or the first real use of MRM-11's `spawn` verb in miniature
+
+Ask Carlos directly: is this a true throwaway prototype (hardcode the 20-kill win condition, no
+spreadsheet, rip it out later when the real MRM-11 lands), or does he want the minimal version of
+MRM-11's actual data-driven shape (a tiny spreadsheet with just `spawn` and a kill-count win
+condition) so it's not wasted work? MRM-11's spec is explicit that the format is Carlos's call
+("Carlos's stated preference, because it leaves less room for mistakes") — don't assume either
+answer, ask.
+
+
+HOUSE RULES THAT MATTER HERE
+
+  - No hardcoded values — MoonlightTunables, XML doc naming MRM-11 and the date.
+  - Never commit or push. Carlos uses GitHub Desktop.
+  - Scene/prefab work via UnityMCP: offer, ask permission first, verify by reading real state
+    back, document.
+  - One issue, one branch, one PR — back to normal after the mrm-75 exception.
+  - Propose the format, get approval, write it into MRM-11's description or a comment, STOP.
+    Implementation is a fresh Sonnet session's job per MRM-11's own "Model" note.

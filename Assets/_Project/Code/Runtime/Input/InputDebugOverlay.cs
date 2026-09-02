@@ -18,6 +18,9 @@ namespace MrMoonlight.Input
     {
         [SerializeField] private bool visible = true;
 
+        [Tooltip("Debug overlay font, so it doesn't read as generic default-Unity text. Carlos, 2026-09-02 (MRM-76).")]
+        [SerializeField] private Font font;
+
         private IDisposable _buttonPressListener;
         private InputSystem_Actions _lookupActions;
         private GUIStyle _style;
@@ -79,6 +82,7 @@ namespace MrMoonlight.Input
             // dark scene. Force a background box and bold, high-contrast text instead.
             _style ??= new GUIStyle(GUI.skin.label)
             {
+                font = font,
                 fontSize = 18,
                 fontStyle = FontStyle.Bold,
                 wordWrap = true,

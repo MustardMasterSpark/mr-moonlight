@@ -79,6 +79,14 @@ fixed, so if you're reading this looking for a gap, there isn't one anymore.)*
 That's it — no manual sample rate, mono, or compression decisions on a per-clip basis. The
 preset owns all of that.
 
+**Gotcha, seen once (2026-09-02):** a clip copied into `Assets/_Project/Audio/` by a script/external
+tool (`cp` + `AssetDatabase.Refresh`, not a drag-and-drop into the Editor) landed on the
+`Aud_OneShot_General` catch-all instead of its prefix's preset (`ENM_` → `Aud_EnemyVox`), even
+though the filename prefix was correct. Not confirmed as a rule, just flag it if a freshly-imported
+clip's Inspector doesn't show the preset you expected — fix is to apply the right `Aud_*` preset by
+hand (select the clip, click the preset icon top-right of Import Settings, pick it). Every clip
+dragged in through the Editor itself this project has still auto-routed correctly.
+
 ---
 
 ## 2. Applying a preset to files already sitting in the project (batch)

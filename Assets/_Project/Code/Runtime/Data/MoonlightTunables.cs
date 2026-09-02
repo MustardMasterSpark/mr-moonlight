@@ -376,8 +376,8 @@ namespace MrMoonlight.Data
         /// <summary>How far off-target a deliberate miss is aimed, in degrees. Owner: MRM-34</summary>
         public float SpotterMissAngle = 9f;
 
-        /// <summary>Seconds the Spotter holds his aim before the first shot of a burst. This is the tell that gives the player time to break line of sight. Lowered from 0.65 (Carlos, 2026-09-02 — MRM-76: firing felt too slow). Owner: MRM-34</summary>
-        public float SpotterAimDelay = 0.45f;
+        /// <summary>Seconds the Spotter holds his aim before the first shot of a burst. This is the tell that gives the player time to break line of sight. Lowered from 0.65, then 0.45 (Carlos, 2026-09-02 — MRM-76: still takes too long to start firing). Owner: MRM-34</summary>
+        public float SpotterAimDelay = 0.35f;
 
         /// <summary>Seconds between the two barrels. Lowered from 0.85 (Carlos, 2026-09-02 — MRM-76). Owner: MRM-34</summary>
         public float SpotterInterShotDelay = 0.55f;
@@ -448,11 +448,25 @@ namespace MrMoonlight.Data
 
         [Header("Flare VFX — MRM-34 (reused by MRM-57)")]
 
-        /// <summary>Speed the flare leaves the barrel at, in metres per second. Owner: MRM-34</summary>
-        public float FlareLaunchSpeed = 22f;
+        /// <summary>
+        /// How high the flare climbs before gravity turns it around, in metres. Replaces the old
+        /// launch-speed/launch-pitch pair (45° then 78°, Carlos, 2026-09-02 — MRM-76: still read as
+        /// "shot sideways"). The launch is now a real 90°-from-ground cheat — see
+        /// <see cref="VFX.FlareProjectile.Launch"/> — so this height is the only thing that decides
+        /// how strong the vertical shove is; <see cref="FlareGravityScale"/> decides how long it
+        /// takes to get there and fall back. Owner: MRM-76
+        /// </summary>
+        public float FlareApexHeight = 50f;
 
-        /// <summary>How far above the aim direction the flare is fired, in degrees. A flare is a signal, so it arcs upward rather than shooting flat. Owner: MRM-34</summary>
-        public float FlareLaunchPitch = 45f;
+        /// <summary>
+        /// Small horizontal speed, in metres per second, added on top of the vertical launch — the
+        /// only thing that curves the flare at all now that the launch itself is purely vertical.
+        /// Deliberately tiny next to the vertical speed so the shot still reads as "straight up" at
+        /// the muzzle; the drift only becomes visually obvious near the apex, once the vertical
+        /// speed has bled off — which is exactly the "goes up, hangs, then curves forward like a
+        /// mortar" read Carlos asked for. Owner: MRM-76
+        /// </summary>
+        public float FlareForwardDrift = 3f;
 
         /// <summary>Gravity multiplier applied to the flare in flight. Below 1 so it hangs in the air and reads as a signal rather than a mortar round. Owner: MRM-34</summary>
         public float FlareGravityScale = 0.45f;
@@ -463,17 +477,17 @@ namespace MrMoonlight.Data
         /// <summary>Seconds the flare takes to fade out once its burn time is up. Owner: MRM-34</summary>
         public float FlareFadeDuration = 2.5f;
 
-        /// <summary>Lower bound of the flare light's flicker, in intensity units. Owner: MRM-34</summary>
-        public float FlareLightIntensityMin = 4f;
+        /// <summary>Lower bound of the flare light's flicker, in intensity units. Raised from 4, then 5 (Carlos, 2026-09-02 — MRM-76: more illumination). Owner: MRM-34</summary>
+        public float FlareLightIntensityMin = 7f;
 
-        /// <summary>Upper bound of the flare light's flicker. Owner: MRM-34</summary>
-        public float FlareLightIntensityMax = 9f;
+        /// <summary>Upper bound of the flare light's flicker. Raised from 9, then 11 (Carlos, 2026-09-02 — MRM-76: more illumination). Owner: MRM-34</summary>
+        public float FlareLightIntensityMax = 14f;
 
         /// <summary>How many times per second the flare light re-randomises its intensity. Per-frame randomisation reads as noise; this slower rate reads as a burning chemical flame. Owner: MRM-34</summary>
         public float FlareFlickerFrequency = 14f;
 
-        /// <summary>Range of the flare light, in metres. Owner: MRM-34</summary>
-        public float FlareLightRange = 20f;
+        /// <summary>Range of the flare light, in metres. Raised from 20 (Carlos, 2026-09-02 — MRM-76: more illumination). Owner: MRM-34</summary>
+        public float FlareLightRange = 26f;
 
         [Header("Dropped lamp fire — MRM-76")]
 

@@ -71,6 +71,25 @@ That covers: placing prefabs · staging locations · wiring inspector references
 
 **Still ask, not assume,** on anything visual or audio, and anything genuinely ambiguous (which prefab, which hierarchy position, which values). The shift here is "always hand off" → "offer, then follow his answer" — not "ask" → "just do it."
 
+## B.3a — Three traps that have already cost real time doing B.3 work
+
+**The Editor must have OS focus for background work to progress, not just for Play Mode.**
+The well-known version of this is "`Time`/coroutines don't tick in Play Mode while the Editor
+window is unfocused." The less obvious version, hit 2026-09-02: `AssetDatabase.ImportPackage` and
+similar background asset operations can also stall indefinitely while unfocused — a `.unitypackage`
+import (or an in-Editor "Setup" window's own install button, which usually calls the same API)
+can sit doing nothing until the window gets focus again. If a background op looks hung, that's the
+first thing to suspect, not a broken package.
+
+**Editing any script while in Play Mode forces a domain reload that nulls runtime wiring.** Always
+`manage_editor` stop before editing code, even mid-session, then re-enter Play Mode after.
+
+**A prefab asset and its live scene instance are separate.** Editing the prefab source alone does
+propagate to an instance automatically *if that instance has no property override on the field
+being changed* — check by reading the live instance back after a prefab edit rather than assuming
+either way, and if there's any override, apply to both explicitly
+(`PrefabUtility.LoadPrefabContents`/`SaveAsPrefabAsset` for the source, then the live instance).
+
 ## B.4 — Git, and the commit proposal
 
 **Carlos pushes and merges through GitHub Desktop.** He is more comfortable there than in the CLI. **Claude never commits and never pushes.**
