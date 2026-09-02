@@ -22,17 +22,31 @@ All five follow the same shape: a `[SerializeField] private bool` toggle, an `Up
 against `Keyboard.current`, and an `OnGUI()` label only while active. Copy that pattern for the
 next one rather than inventing a new shape.
 
-**Font (2026-09-02):** every live debug overlay (all five above, plus `DifficultyDebugOverlay`)
-renders in `Punktype.ttf` (`Assets/_Project/Art/UI/Fonts/Punktype.ttf`) instead of Unity's default
-GUI font, via a `[SerializeField] private Font font` added to each script and wired on the scene
-instance. First pick was `HitMePunk.ttf` (same folder, same wiring) — Carlos swapped it for
-Punktype same day; the Hit Me Punk files are still in the project, just unreferenced, in case he
-wants them back. A matching TMP Font Asset (`Punktype SDF.asset`, Dynamic atlas) drives the same
-swap on the 3 TextMeshPro HUD elements (Game Over text, FPS counter, ammo counter) — set via the
-real `TMP_Text.font` setter, not just the serialized field, so the matching generated material
-follows; that material has to be persisted as a saved sub-asset by hand
-(`AssetDatabase.AddObjectToAsset`) since `TMP_FontAsset.CreateFontAsset` doesn't save its default
-material on its own.
+**Font (2026-09-02, now on its third pick):** every live debug overlay (F2 `PlayerStatsDebugOverlay`,
+F3 `InfiniteStaminaDebugToggle`, F4 `InvulnerableDebugToggle`, F5 `HealthRegenDebugToggle`, plus
+`DifficultyDebugOverlay` — 5 spots) renders via a `[SerializeField] private Font font` on each
+script instead of Unity's default GUI font. A matching TMP Font Asset drives the same swap on the
+3 TextMeshPro HUD elements (Game Over text, FPS counter, ammo counter — 3 spots, 8 total) — set via
+the real `TMP_Text.font` setter, not just the serialized field, so the matching generated material
+follows.
+
+Current live font: **`SpecialElite.ttf`** / `SpecialElite SDF.asset`. First pick was `HitMePunk.ttf`,
+swapped for `Punktype.ttf` same day, swapped again for Special Elite — Carlos is still comparing
+looks. All three fonts' raw `.ttf` and SDF `.asset` stay in the project (`Assets/_Project/Art/UI/Fonts/`)
+so switching back is just re-pointing the 8 spots, not regenerating anything.
+
+**Bug, hit once and fixed (2026-09-02):** the HitMePunk and Punktype TMP Font Assets were created
+via `TMP_FontAsset.CreateFontAsset(...)` but only the generated *material* was persisted as a saved
+sub-asset (`AssetDatabase.AddObjectToAsset`) — not the generated *atlas texture*. An unpersisted
+`Texture2D` reference serializes to `{fileID: 0}` (null) on disk, so every TMP object using either
+font threw `UnassignedReferenceException` on *every canvas repaint*, including in Edit Mode with the
+window unfocused — the flood of errors is the likely cause of an editor freeze that cost a whole
+session restart. Fix: after `CreateFontAsset(...)` and `TryAddCharacters(...)`, call
+`AssetDatabase.AddObjectToAsset` on **both** `fontAsset.atlasTextures[0]` and `fontAsset.material`
+before `SaveAssets()` — not just the material. Applied retroactively to fix HitMePunk and Punktype
+in place (same GUID/path, so no scene references needed updating) and used correctly from the start
+for Special Elite. If a future font swap ever brings back the `m_AtlasTextures` exception, this is
+the fix.
 
 ## Context-menu tools (not keybound)
 
