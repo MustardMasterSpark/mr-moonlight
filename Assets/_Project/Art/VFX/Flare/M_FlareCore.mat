@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_FlareCore
+  m_Shader: {fileID: 4800000, guid: 7d041a1a2de2d974eb31e416fa295ba4, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords: []
+  m_InvalidKeywords: []
+  m_LightmapFlags: 4
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap: {}
+  disabledShaderPasses: []
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs: []
+    m_Ints: []
+    m_Floats:
+    - _CoreSize: 0.1
+    - _FlickerAmount: 0.22
+    - _FlickerSpeed: 18
+    - _GlowFalloff: 2.6
+    - _HaloStrength: 0.45
+    - _Intensity: 5
+    - _PulseAmount: 0.1
+    - _PulseSpeed: 7
+    m_Colors:
+    - _BaseColor: {r: 1, g: 0.3, b: 0.1, a: 1}
+    - _HotColor: {r: 1, g: 0.96, b: 0.88, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1

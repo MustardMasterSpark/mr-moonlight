@@ -152,6 +152,35 @@ namespace Burntwax
                     target.Teleport();
                 }
 
+                // MRM-34: route hits into Mr. Moonlight's own damage interface, so the player's gun
+                // can actually hurt an enemy. Burntwax only knew about its own Destructible and
+                // Target components, which is why a Spotter could be shot all day and not notice.
+                //
+                // GetComponentInParent, not TryGetComponent: an enemy's colliders are hitboxes on
+                // bones (MRM-32's job) or the root capsule, and the health lives on the root either
+                // way. Full damage, not the halved figure Destructible takes — that halving is
+                // Burntwax's own balance for breakable props, not ours.
+                MrMoonlight.Combat.IDamageable damageable =
+                    Hit.collider.GetComponentInParent<MrMoonlight.Combat.IDamageable>();
+
+                // Never damage the shooter. The gun's HitMask is Everything, which now includes the
+                // player's own body — harmless while nothing on the player could take damage, but
+                // PlayerDamageReceiver changed that, and a self-inflicted hit would be a baffling
+                // bug to chase.
+                bool selfInflicted =
+                    damageable != null &&
+                    ActiveMonoBehaviour != null &&
+                    damageable.DamageTransform == ActiveMonoBehaviour.transform.root;
+
+                if (damageable != null && !damageable.IsDead && !selfInflicted)
+                {
+                    damageable.TakeDamage(new MrMoonlight.Combat.DamageInfo(
+                        DamageConfig.GetDamage(distance),
+                        Hit.point,
+                        (EndPoint - StartPoint).normalized,
+                        ActiveMonoBehaviour != null ? ActiveMonoBehaviour.gameObject : null));
+                }
+
                 string surfaceTag = Hit.collider.tag;
                 Vector3 impactPosition = Hit.point + Hit.normal * 0.01f;
                 Quaternion impactRotation = Quaternion.LookRotation(Hit.normal);

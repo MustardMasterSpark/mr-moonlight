@@ -300,5 +300,128 @@ namespace MrMoonlight.Data
 
         /// <summary>Fade duration for the inventory panel itself (distinct from the open/close animation clips), in seconds. Owner: MRM-42</summary>
         public float InventoryFadeDuration = 0.2f;
+
+        [Header("Enemies — shared, MRM-29 / MRM-34")]
+
+        /// <summary>Health fraction at or below which <see cref="Enemies.EnemyHealth"/> raises its one-shot low-health event. Shared by every enemy; the Spotter uses it for its panic reinforcement call, which is a separate trigger from the flare (see <see cref="SpotterFlareTimer"/>). Owner: MRM-34</summary>
+        public float EnemyLowHealthThreshold = 0.35f;
+
+        /// <summary>How fast an enemy bullet tracer travels along its already-resolved path, in metres per second. The shot itself is hitscan — this only controls how fast the visible streak crosses the gap, so the player can read the firing direction. Mirrors the Burntwax player-gun trail pattern (<c>GunScriptableObject.PlayTrail</c>). Owner: MRM-34</summary>
+        public float EnemyTracerSpeed = 140f;
+
+        /// <summary>How long an enemy tracer streak lingers after arriving, in seconds. Owner: MRM-34</summary>
+        public float EnemyTracerDuration = 0.12f;
+
+        /// <summary>Width of an enemy tracer streak, in metres. Birdshot is meant to read as a spray of thin lines, not one fat beam. Owner: MRM-34</summary>
+        public float EnemyTracerWidth = 0.035f;
+
+        /// <summary>Seconds a detached death drop (lamp, shotgun) survives before it is cleaned up. Zero means it is never cleaned up. Owner: MRM-34</summary>
+        public float EnemyDropLifetime = 0f;
+
+        /// <summary>Impulse applied to a detached death drop so it falls and rolls rather than dropping straight down. Owner: MRM-34</summary>
+        public float EnemyDropScatterImpulse = 1.5f;
+
+        [Header("Enemy — Spotter, MRM-34")]
+
+        /// <summary>The Spotter's maximum health. "Medium health" in MRM-34's scope — sturdier than a Zealot, well under the Furman. Owner: MRM-34</summary>
+        public float SpotterMaxHealth = 100f;
+
+        /// <summary>Shots fired before the Spotter locks into its reload state. MRM-34 specifies a double-barrel, so two. Owner: MRM-34</summary>
+        public int SpotterShotsBeforeReload = 2;
+
+        /// <summary>Probability (0-1) that a given shot is deliberately thrown wide. MRM-34 asks for 30%. This is a <i>deliberate</i> miss — the shot still fires and still draws tracers, it is just aimed off-target by <see cref="SpotterMissAngle"/>, so the player reads it as being shot at rather than as the enemy failing to notice them. Owner: MRM-34</summary>
+        public float SpotterMissChance = 0.30f;
+
+        /// <summary>How far off-target a deliberate miss is aimed, in degrees. Owner: MRM-34</summary>
+        public float SpotterMissAngle = 9f;
+
+        /// <summary>Seconds the Spotter holds his aim before the first shot of a burst. This is the tell that gives the player time to break line of sight. Owner: MRM-34</summary>
+        public float SpotterAimDelay = 0.65f;
+
+        /// <summary>Seconds between the two barrels. Owner: MRM-34</summary>
+        public float SpotterInterShotDelay = 0.85f;
+
+        /// <summary>Seconds the Spotter is locked in his reload state after emptying both barrels. This is the player's window to close distance or reposition. Owner: MRM-34</summary>
+        public float SpotterReloadDuration = 2.6f;
+
+        /// <summary>Distance the Spotter tries to hold from the player while shooting, in metres. Fed into Blaze's attack-state <c>distanceFromEnemy</c>. Owner: MRM-34</summary>
+        public float SpotterEngagementDistance = 12f;
+
+        /// <summary>Damage a single birdshot pellet deals inside <see cref="SpotterDamageFalloffStart"/>. A full-hit shot is this times <see cref="SpotterPelletCount"/>. Owner: MRM-34</summary>
+        public float SpotterPelletDamage = 4.5f;
+
+        /// <summary>Pellets per shot. Owner: MRM-34</summary>
+        public int SpotterPelletCount = 7;
+
+        /// <summary>Half-angle of the birdshot cone, in degrees. Owner: MRM-34</summary>
+        public float SpotterSpreadAngle = 4.5f;
+
+        /// <summary>Maximum range of a Spotter shot, in metres. Beyond this a pellet does nothing. Owner: MRM-34</summary>
+        public float SpotterShotRange = 45f;
+
+        /// <summary>Distance, in metres, at which pellet damage starts falling off. It reaches zero at <see cref="SpotterShotRange"/>. Owner: MRM-34</summary>
+        public float SpotterDamageFalloffStart = 15f;
+
+        /// <summary>Radius of the "am I the only Spotter here?" sphere, in metres. If another Spotter is inside it, this one does not flare. Owner: MRM-34</summary>
+        public float SpotterAloneCheckRadius = 25f;
+
+        /// <summary>Seconds a lone, engaged Spotter must survive before he fires the flare. Owner: MRM-34</summary>
+        public float SpotterFlareTimer = 8f;
+
+        /// <summary>Seconds the flare animation and its recovery occupy before normal behaviour resumes. Owner: MRM-34</summary>
+        public float SpotterFlareAnimationDuration = 2.2f;
+
+        /// <summary>Fewest reinforcements a flare summons. Owner: MRM-34</summary>
+        public int SpotterReinforcementMin = 3;
+
+        /// <summary>Most reinforcements a flare summons. MRM-34 calls 10 simultaneous Spotters the game's worst case — measure the frame cost against MRM-64 before raising it. Owner: MRM-34</summary>
+        public int SpotterReinforcementMax = 10;
+
+        /// <summary>Radius, in metres, over which flare reinforcements are scattered around the flaring Spotter. They must arrive spread out, never stacked. Owner: MRM-34</summary>
+        public float SpotterReinforcementScatterRadius = 20f;
+
+        /// <summary>Minimum spacing between two reinforcement spawn points, in metres. Owner: MRM-34</summary>
+        public float SpotterReinforcementMinSpacing = 2.5f;
+
+        /// <summary>Fewest reinforcements the <i>panic</i> call summons when a Spotter drops below <see cref="EnemyLowHealthThreshold"/>. Deliberately a separate, smaller trigger from the flare (Carlos, 2026-09-01) — the flare is proactive and fires when isolated, this one is reactive and fires when hurt. Owner: MRM-34</summary>
+        public int SpotterPanicReinforcementMin = 1;
+
+        /// <summary>Most reinforcements the panic call summons. Owner: MRM-34</summary>
+        public int SpotterPanicReinforcementMax = 3;
+
+        /// <summary>Intensity of the Spotter's hand lamp. A real Light, never an emission map (standing project rule) — it is what makes him readable at range, so it is gameplay, not decoration. Owner: MRM-34</summary>
+        public float SpotterLampIntensity = 2.5f;
+
+        /// <summary>Range of the Spotter's hand lamp, in metres. Owner: MRM-34</summary>
+        public float SpotterLampRange = 14f;
+
+        [Header("Flare VFX — MRM-34 (reused by MRM-57)")]
+
+        /// <summary>Speed the flare leaves the barrel at, in metres per second. Owner: MRM-34</summary>
+        public float FlareLaunchSpeed = 22f;
+
+        /// <summary>How far above the aim direction the flare is fired, in degrees. A flare is a signal, so it arcs upward rather than shooting flat. Owner: MRM-34</summary>
+        public float FlareLaunchPitch = 45f;
+
+        /// <summary>Gravity multiplier applied to the flare in flight. Below 1 so it hangs in the air and reads as a signal rather than a mortar round. Owner: MRM-34</summary>
+        public float FlareGravityScale = 0.45f;
+
+        /// <summary>Seconds the flare burns at full brightness before it starts dying. Owner: MRM-34</summary>
+        public float FlareBurnDuration = 11f;
+
+        /// <summary>Seconds the flare takes to fade out once its burn time is up. Owner: MRM-34</summary>
+        public float FlareFadeDuration = 2.5f;
+
+        /// <summary>Lower bound of the flare light's flicker, in intensity units. Owner: MRM-34</summary>
+        public float FlareLightIntensityMin = 4f;
+
+        /// <summary>Upper bound of the flare light's flicker. Owner: MRM-34</summary>
+        public float FlareLightIntensityMax = 9f;
+
+        /// <summary>How many times per second the flare light re-randomises its intensity. Per-frame randomisation reads as noise; this slower rate reads as a burning chemical flame. Owner: MRM-34</summary>
+        public float FlareFlickerFrequency = 14f;
+
+        /// <summary>Range of the flare light, in metres. Owner: MRM-34</summary>
+        public float FlareLightRange = 20f;
     }
 }

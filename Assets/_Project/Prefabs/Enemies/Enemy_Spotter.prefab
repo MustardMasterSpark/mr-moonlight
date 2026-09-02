@@ -687,9 +687,30 @@ GameObject:
   m_Component:
   - component: {fileID: 9211207744751232793}
   - component: {fileID: 8262715677953977046}
-  m_Layer: 0
+  - component: {fileID: 6332902194392843238}
+  - component: {fileID: 4972793300972336734}
+  - component: {fileID: 5017290432383289521}
+  - component: {fileID: 2708176152143561647}
+  - component: {fileID: 8174879223132452396}
+  - component: {fileID: 6873381848591918823}
+  - component: {fileID: 855888815862647697}
+  - component: {fileID: 2476670322325617531}
+  - component: {fileID: 5567649058292317419}
+  - component: {fileID: 3761320417115071139}
+  - component: {fileID: 2853355623865971796}
+  - component: {fileID: 313192679055458816}
+  - component: {fileID: 7175241145344593340}
+  - component: {fileID: 9180919272937548288}
+  - component: {fileID: 6415396301412995970}
+  - component: {fileID: 1236168117143241364}
+  - component: {fileID: 8748948135828423381}
+  - component: {fileID: 7878114975011076296}
+  - component: {fileID: 4931539858440991534}
+  - component: {fileID: 3125126428581330960}
+  - component: {fileID: 5099984566976082160}
+  m_Layer: 6
   m_Name: Enemy_Spotter
-  m_TagString: Untagged
+  m_TagString: Enemy
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -733,6 +754,933 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
+--- !u!195 &6332902194392843238
+NavMeshAgent:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_AgentTypeID: 0
+  m_Radius: 0.35
+  m_Speed: 3
+  m_Acceleration: 20
+  avoidancePriority: 50
+  m_AngularSpeed: 0
+  m_StoppingDistance: 0
+  m_AutoTraverseOffMeshLink: 1
+  m_AutoBraking: 1
+  m_AutoRepath: 1
+  m_Height: 1.8
+  m_BaseOffset: 0
+  m_WalkableMask: 4294967295
+  m_ObstacleAvoidanceType: 3
+--- !u!136 &4972793300972336734
+CapsuleCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 0.35
+  m_Height: 1.8
+  m_Direction: 1
+  m_Center: {x: 0, y: 0.9, z: 0}
+--- !u!82 &5017290432383289521
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_Resource: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 3
+  MaxDistance: 40
+  Pan2D: 0
+  rolloffMode: 1
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    - serializedVersion: 3
+      time: 1
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!114 &2708176152143561647
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e7a3ea08d6506f641a67d00652b50d0e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAI
+  useRootMotion: 0
+  groundLayers:
+    serializedVersion: 2
+    m_Bits: 257
+  audioScriptable: {fileID: 0}
+  agentAudio: {fileID: 5017290432383289521}
+  useLocalAvoidance: 1
+  layersToAvoid:
+    serializedVersion: 2
+    m_Bits: 64
+  avoidanceRadius: 1.6
+  showAvoidanceRadius: 0
+  avoidanceOffsetStrength: 0.15
+  avoidanceSteerSpeed: 15
+  avoidIfWithinAngle: 90
+  maxAvoidanceTime: 1
+  avoidanceCoolDownTime: 0.35
+  waypoints:
+    waypoints: []
+    loop: 0
+    waypointsRotation: []
+    timeBeforeTurning: 0.2
+    turnSpeed: 4
+    showWaypoints: 1
+    randomize: 1
+    preventPointsBehindObstacles: 1
+    randomizeRadius: 22
+    minAndMaxLevelDiff: {x: -2.5, y: 2.5}
+    showRandomizeRadius: 0
+    useMovementTurning: 1
+    movementTurningSensitivity: 0.5
+    useTurnAnims: 0
+    rightTurnAnimNormal: 
+    leftTurnAnimNormal: 
+    rightTurnAnimAlert: 
+    leftTurnAnimAlert: 
+    turningAnimT: 0.25
+  vision:
+    visionActive: 1
+    visionPosition: {x: 0, y: 1.6, z: 0}
+    maxSightLevel: 3
+    checkTargetHeight: 0
+    useMinLevel: 1
+    minSightLevel: -3
+    visionDuringNormalState:
+      coneAngle: 110
+      sightRange: 18
+    visionDuringAlertState:
+      coneAngle: 140
+      sightRange: 26
+    visionDuringAttackState:
+      coneAngle: 360
+      sightRange: 40
+      alwaysApply: 1
+    head: {fileID: 0}
+    showNormalVision: 1
+    normalVisionColor: {r: 1, g: 1, b: 1, a: 0.6}
+    showAlertVision: 1
+    alertVisionColor: {r: 1, g: 1, b: 0, a: 0.3}
+    showAttackVision: 0
+    attackVisionColor: {r: 1, g: 0, b: 0, a: 0.3}
+    showMaxSightLevel: 1
+    showMinSightLevel: 1
+    layersToDetect:
+      serializedVersion: 2
+      m_Bits: 457
+    hostileAndAlertLayers:
+      serializedVersion: 2
+      m_Bits: 8
+    hostileTags:
+    - Player
+    alertTags: []
+    enemyEnterEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    enemyLeaveEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    visionFrameSkipping: 2
+    multiRayVision: 1
+    useVisionMeter: 0
+    visionMeterSpeeds:
+      speedOnFullDistance: 5
+      speedOnHalfDistance: 10
+      speedOnEmpty: 3
+    distractByVMValue: 0
+    distractIfVMReaches: 0.6
+    overrideVMValueOnDistract: 0
+    vmValueOnDistract: 0
+    dontDecrementVMOnDistract: 0
+  checkEnemyContact: 0
+  enemyContactRadius: 1.2
+  showEnemyContactRadius: 0
+  friendly: 0
+  distanceCull: 0
+  animToPlayOnCull: 
+  ignoreUnreachableEnemy: 0
+  fallBackPoints: []
+  showPoints: 0
+  useOffMeshLinks: 0
+  jumpMethod: 0
+  jumpHeight: 2
+  jumpDuration: 0.8
+  useMovementSpeedForJump: 0
+  jumpSpeed: 3
+  jumpAnim: 
+  fallAnim: 
+  jumpAnimT: 0.25
+  onTeleportStart:
+    m_PersistentCalls:
+      m_Calls: []
+  onTeleportEnd:
+    m_PersistentCalls:
+      m_Calls: []
+  climbLadders: 0
+  ladderLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  climbUpSpeed: 3
+  climbUpAnim: 
+  climbToTopDuration: 1
+  climbToTopAnim: 
+  climbToTopHeadRoom: 0.4
+  climbAnimT: 0.25
+  useNormalStateOnAwake: 1
+  normalStateBehaviour: {fileID: 8174879223132452396}
+  useAlertStateOnAwake: 0
+  alertStateBehaviour: {fileID: 6873381848591918823}
+  attackStateBehaviour: {fileID: 855888815862647697}
+  coverShooterMode: 0
+  coverShooterBehaviour: {fileID: 0}
+  goingToCoverBehaviour: {fileID: 0}
+  useSurprisedState: 1
+  surprisedStateBehaviour: {fileID: 2476670322325617531}
+  canDistract: 0
+  distractedStateBehaviour: {fileID: 0}
+  priorityLevel: 50
+  turnOnEveryDistraction: 1
+  turnAlertOnDistract: 0
+  playDistractedAudios: 0
+  useHitCooldown: 0
+  maxHitCount: 3
+  hitCooldown: 5
+  hitStateBehaviour: {fileID: 5567649058292317419}
+  deathAnim: Death
+  deathAnimT: 0.2
+  disableCapsuleColliderOnDeath: 1
+  playDeathAudio: 0
+  deathCallRadius: 10
+  agentLayersToDeathCall:
+    serializedVersion: 2
+    m_Bits: 0
+  showDeathCallRadius: 0
+  useRagdoll: 0
+  useNaturalVelocity: 0
+  hipBone: {fileID: 0}
+  deathRagdollForce: {x: 0, y: 0, z: 0}
+  deathEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  destroyOnDeath: 0
+  timeBeforeDestroy: 5
+  companionMode: 0
+  companionTo: {fileID: 0}
+  companionBehaviour: {fileID: 0}
+  warnEmptyBehavioursOnStart: 1
+  warnEmptyAnimations: 1
+  warnEmptyAudio: 0
+  warnAnomaly: 1
+  capsuleCollider: {fileID: 4972793300972336734}
+  spareState: {fileID: 0}
+  enemyManager: {fileID: 0}
+  audioManager: {fileID: 0}
+  previousEnemy: {fileID: 0}
+  isAvoiding: 0
+--- !u!114 &8174879223132452396
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 63f9d81f41de4ac4e944188683471a09, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.NormalStateBehaviour
+  moveSpeed: 1.6
+  turnSpeed: 4
+  idleAnim:
+  - Idle
+  moveAnim: Walk
+  animT: 0.25
+  idleTime: {x: 3, y: 7}
+  playPatrolAudio: 0
+  avoidFacingObstacles: 0
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  obstacleRayDistance: 3
+  obstacleRayOffset: {x: 0, y: 0, z: 0}
+  showObstacleRay: 0
+  onStateEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateExit:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &6873381848591918823
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9b308175118052043acf3d3799463e05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.AlertStateBehaviour
+  moveSpeed: 2.6
+  turnSpeed: 6
+  idleAnim:
+  - Idle
+  moveAnim: Walk
+  animT: 0.25
+  idleTime: {x: 5, y: 5}
+  playPatrolAudio: 0
+  returnToNormal: 1
+  timeToReturnNormal: 12
+  returningDuration: 0
+  returningAnim: Walk
+  returningAnimT: 0.25
+  playAudioOnReturn: 0
+  avoidFacingObstacles: 0
+  obstacleLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  obstacleRayDistance: 3
+  obstacleRayOffset: {x: 0, y: 0, z: 0}
+  showObstacleRay: 0
+  onStateEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateExit:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &855888815862647697
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9a8818de4b5bb864aab8b6a39b7c78ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.AttackStateBehaviour
+  moveSpeed: 4.2
+  turnSpeed: 8
+  idleAnim: Idle
+  moveAnim: Run
+  idleMoveT: 0.2
+  avoidChase: 0
+  targetLocationUpdateTime: 0.5
+  autoSetNavmeshSamplingRadius: 1
+  navmeshSamplingRadius: 2.5
+  equipWeapon: 0
+  equipAnim: 
+  equipDuration: 0.8
+  equipAnimT: 0.25
+  onEquipEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  unequipAnim: 
+  unequipDuration: 0.8
+  onUnequipEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateExit:
+    m_PersistentCalls:
+      m_Calls: []
+  ranged: 1
+  distanceFromEnemy: 12
+  attackDistance: 12
+  distanceTolerance: 1.5
+  layersCheckOnAttacking:
+    serializedVersion: 2
+    m_Bits: 64
+  attacks:
+  - attackAnim: Shoot
+    attackDuration: 4.1
+    animT: 0.12
+    useAudio: 0
+    audioIndex: 0
+    applyRootMotion: 0
+  attackEvent:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 6415396301412995970}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyRangedAttack, MrMoonlight.Runtime
+        m_MethodName: RequestFire
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  runAttackEventOnAnimTFinish: 0
+  chaseOnEvade: 1
+  attackInIntervals: 1
+  attackInIntervalsTime: {x: 4.1, y: 5.1}
+  callOthers: 1
+  callRadius: 18
+  showCallRadius: 0
+  agentLayersToCall:
+    serializedVersion: 2
+    m_Bits: 64
+  callPassesColliders: 1
+  callOthersTime: 3
+  receiveCallFromOthers: 1
+  moveBackwards: 1
+  moveBackwardsDistance: 5
+  moveBackwardsSpeed: 1.8
+  moveBackwardsAnim: Walk
+  moveBackwardsAnimT: 0.25
+  turnToTarget: 1
+  turnSensitivity: 0.7
+  useTurnAnims: 0
+  strafe: 1
+  strafeDirection: 2
+  strafeSpeed: 2.2
+  strafeTime: {x: 3, y: 5}
+  strafeWaitTime: {x: 0.3, y: 1}
+  leftStrafeAnim: StrafeLeft
+  rightStrafeAnim: StrafeRight
+  strafeAnimT: 0.2
+  strafeLayersToAvoid:
+    serializedVersion: 2
+    m_Bits: 0
+  onAttackRotateSpeed: 10
+  rotateWhileAttacking: 0
+  searchLocationRadius: 1
+  searchRadius: 8
+  showSearchRadius: 0
+  timeToStartSearch: 2
+  searchPoints: 3
+  searchPointAnim: Idle
+  pointWaitTime: 2.5
+  endSearchAnim: Idle
+  endSearchAnimTime: 2
+  searchAnimsT: 0.25
+  playAudioOnSearchStart: 0
+  playAudioOnSearchEnd: 0
+  returnPatrolAnim: Walk
+  returnPatrolAnimT: 0.25
+  returnPatrolTime: 3
+  playAudioOnReturnPatrol: 0
+  playAttackIdleAudio: 0
+  attackIdleAudioTime: {x: 3, y: 10}
+  playAudioOnChase: 0
+  alwaysPlayOnChase: 0
+  playAudioOnMoveToAttack: 0
+  alwaysPlayOnMoveToAttack: 0
+  isEquipping: 0
+  isUnEquipping: 0
+--- !u!114 &2476670322325617531
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f434d6d6e3c517943b84fb109869aec8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.SurprisedStateBehaviour
+  anim: Idle
+  animT: 0.25
+  duration: 0.5
+  turnSpeed: 10
+  playAudio: 0
+  onStateEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateExit:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &5567649058292317419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 397fc0712619be347835f00b7b271c52, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpace.HitStateBehaviour
+  hitAnims:
+  - animName: Hit
+    duration: 0.6
+  hitAnimT: 0.15
+  hitAnimGap: 0.3
+  knockOutDuration: 3
+  faceUpStandClipName: 
+  faceDownStandClipName: 
+  ragdollToStandSpeed: 0.3
+  hipBone: {fileID: 0}
+  useNaturalVelocity: 0
+  knockOutForce: {x: 0, y: 0, z: 0}
+  cancelAttackOnHit: 1
+  playAudio: 0
+  alwaysPlayAudio: 1
+  callOthersRadius: 5
+  agentLayersToCall:
+    serializedVersion: 2
+    m_Bits: 0
+  showCallRadius: 0
+  onStateEnter:
+    m_PersistentCalls:
+      m_Calls: []
+  onStateExit:
+    m_PersistentCalls:
+      m_Calls: []
+  blaze: {fileID: 0}
+  ragdollState: 0
+--- !u!114 &3761320417115071139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7557c57a2f04aaf4a94226e4aecd005c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Blaze.Core::BlazeAISpareState
+  spareStates: []
+  blaze: {fileID: 0}
+--- !u!114 &2853355623865971796
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd9ee5071e1f86f418f719dc72c94c25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyIdentity
+  kind: 0
+--- !u!114 &313192679055458816
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 415abd859c41bc641a7c19ec27593812, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHealth
+  overrideMaxHealth: 0
+  maxHealthOverride: 100
+  overrideLowHealthThreshold: 0
+  lowHealthThresholdOverride: 0.35
+  callAlliesOnDeath: 1
+  Damaged:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 7175241145344593340}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyAudioHooks, MrMoonlight.Runtime
+        m_MethodName: PlayPain
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+  LowHealthReached:
+    m_PersistentCalls:
+      m_Calls: []
+  Died:
+    m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 8748948135828423381}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyDeathDrop, MrMoonlight.Runtime
+        m_MethodName: DropAll
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 6415396301412995970}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyRangedAttack, MrMoonlight.Runtime
+        m_MethodName: CancelBurst
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+      - m_Target: {fileID: 7175241145344593340}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyAudioHooks, MrMoonlight.Runtime
+        m_MethodName: PlayDeath
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+--- !u!114 &7175241145344593340
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 892c0222e59ca6d4d846f96aadf12ee9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyAudioHooks
+  source: {fileID: 0}
+  fire: {fileID: 0}
+  dryFire: {fileID: 0}
+  reload: {fileID: 0}
+  flareFire: {fileID: 0}
+  pain: {fileID: 0}
+  death: {fileID: 0}
+  alerted: {fileID: 0}
+  footstep: {fileID: 0}
+--- !u!114 &9180919272937548288
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa2e91f33d0c1d4438e93625a3e1ebf8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyFirearm
+  muzzle: {fileID: 2447115522165817490}
+  muzzleFlash: {fileID: 0}
+  overridePelletCount: 0
+  pelletCountOverride: 7
+  overridePelletDamage: 0
+  pelletDamageOverride: 4.5
+  overrideSpreadAngle: 0
+  spreadAngleOverride: 4.5
+  overrideRange: 0
+  rangeOverride: 45
+  hitMask:
+    serializedVersion: 2
+    m_Bits: 393
+  ignoreRoot: {fileID: 9211207744751232793}
+  tracerMaterial: {fileID: 2100000, guid: 24da594bad520f34ba750303097260e5, type: 2}
+  tracerColour:
+    serializedVersion: 2
+    key0: {r: 1, g: 1, b: 1, a: 1}
+    key1: {r: 1, g: 1, b: 1, a: 1}
+    key2: {r: 0, g: 0, b: 0, a: 0}
+    key3: {r: 0, g: 0, b: 0, a: 0}
+    key4: {r: 0, g: 0, b: 0, a: 0}
+    key5: {r: 0, g: 0, b: 0, a: 0}
+    key6: {r: 0, g: 0, b: 0, a: 0}
+    key7: {r: 0, g: 0, b: 0, a: 0}
+    ctime0: 0
+    ctime1: 65535
+    ctime2: 0
+    ctime3: 0
+    ctime4: 0
+    ctime5: 0
+    ctime6: 0
+    ctime7: 0
+    atime0: 0
+    atime1: 65535
+    atime2: 0
+    atime3: 0
+    atime4: 0
+    atime5: 0
+    atime6: 0
+    atime7: 0
+    m_Mode: 0
+    m_ColorSpace: -1
+    m_NumColorKeys: 2
+    m_NumAlphaKeys: 2
+--- !u!114 &6415396301412995970
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cdf1e49b2af40245848b317e0b29013, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyRangedAttack
+  firearm: {fileID: 9180919272937548288}
+  shootState: Shoot
+  reloadState: Reload
+  animationBlendTime: 0.12
+  overrideShotsBeforeReload: 0
+  shotsBeforeReloadOverride: 2
+  overrideMissChance: 0
+  missChanceOverride: 0.3
+  BurstStarted:
+    m_PersistentCalls:
+      m_Calls: []
+  Fired:
+    m_PersistentCalls:
+      m_Calls: []
+  ReloadStarted:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1236168117143241364
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f435cb7e245a18248a9af6a956fc1626, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyReinforcementSpawner
+  enemyPrefab: {fileID: 1499000362912248528}
+  spawnParent: {fileID: 0}
+  overrideCount: 0
+  countMinOverride: 3
+  countMaxOverride: 10
+  overrideScatterRadius: 0
+  scatterRadiusOverride: 20
+  navMeshSampleDistance: 4
+  placementAttemptsPerSpawn: 12
+  suppressCallsOnSpawned: 1
+  WaveSpawned:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &8748948135828423381
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 963f9f21427b835408a7c684be556992, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyDeathDrop
+  drops:
+  - item: {fileID: 3777491173468103847}
+    mass: 1.2
+    fallbackColliderRadius: 0.12
+  - item: {fileID: 8657054039667738551}
+    mass: 3.2
+    fallbackColliderRadius: 0.15
+  dropParent: {fileID: 0}
+--- !u!114 &7878114975011076296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 314185551ace58b4caa49206a3397929, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.Spotter.SpotterFlareCall
+  spawner: {fileID: 1236168117143241364}
+  flareMuzzle: {fileID: 883522843361285118}
+  flarePrefab: {fileID: 8883683708168957088, guid: 3bbae20520ae00142a77cb1bec4f5f65, type: 3}
+  flareState: Flare
+  launchDelay: 0.9
+  overrideAloneRadius: 0
+  aloneRadiusOverride: 25
+  overrideFlareTimer: 0
+  flareTimerOverride: 8
+  enemyLayers:
+    serializedVersion: 2
+    m_Bits: 64
+  showAloneRadius: 1
+  FlareFired:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &4931539858440991534
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c42fce8df529c0849bbd27e0d9c1f2d0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.Spotter.SpotterPanicCall
+  spawner: {fileID: 1236168117143241364}
+  overrideCount: 0
+  countMinOverride: 1
+  countMaxOverride: 3
+  PanicCalled:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &3125126428581330960
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d1eef6ba5f0cb7428f641c2846d3cbc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyPatrolRoute
+  mode: 1
+  wanderRadius: 22
+  avoidPointsBehindObstacles: 1
+  waypoints: []
+  routeMode: 0
+  groundMask:
+    serializedVersion: 2
+    m_Bits: 257
+  groundSearchDistance: 200
+  navMeshSnapDistance: 5
+  drawRoute: 1
+--- !u!114 &5099984566976082160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2580518baa1d7d542b3d5df0311e1a36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Runtime.EnemyDebugControls
+  debugDamage: 25
+  target: {fileID: 0}
 --- !u!1 &1529947185680349093
 GameObject:
   m_ObjectHideFlags: 0
@@ -829,6 +1777,38 @@ Transform:
   m_Children:
   - {fileID: 40846957850155562}
   m_Father: {fileID: 8449045885413290626}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1672518387735509282
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 9174547004773007167}
+  m_Layer: 0
+  m_Name: Socket_Lamp
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &9174547004773007167
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1672518387735509282}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 3777491173468103847}
+  m_Father: {fileID: 2706931489493958135}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1710234097356158832
 GameObject:
@@ -2073,6 +3053,7 @@ Transform:
   - {fileID: 6556220001586364440}
   - {fileID: 8449045885413290626}
   - {fileID: 461576518814454409}
+  - {fileID: 9174547004773007167}
   m_Father: {fileID: 357526712983903410}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5579305963295194772
@@ -3603,6 +4584,11 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 35843a8af92eeb249ab675e7ec63d6aa, type: 3}
+--- !u!4 &2447115522165817490 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 3331746174824181594, guid: 35843a8af92eeb249ab675e7ec63d6aa, type: 3}
+  m_PrefabInstance: {fileID: 1137541417831280584}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8657054039667738551 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 8641654709727340671, guid: 35843a8af92eeb249ab675e7ec63d6aa, type: 3}
@@ -3669,8 +4655,75 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6e680592dfd106347b9332f758037d4e, type: 3}
+--- !u!4 &883522843361285118 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 8416710279139524312, guid: 6e680592dfd106347b9332f758037d4e, type: 3}
+  m_PrefabInstance: {fileID: 8686544555295862054}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &7231111028400183140 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 2078093558882024002, guid: 6e680592dfd106347b9332f758037d4e, type: 3}
   m_PrefabInstance: {fileID: 8686544555295862054}
+  m_PrefabAsset: {fileID: 0}
+--- !u!1001 &8879290324865877887
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 9174547004773007167}
+    m_Modifications:
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5733412940241278052, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_Name
+      value: Lamp
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+--- !u!4 &3777491173468103847 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+  m_PrefabInstance: {fileID: 8879290324865877887}
   m_PrefabAsset: {fileID: 0}
