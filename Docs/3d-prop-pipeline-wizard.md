@@ -377,6 +377,19 @@ you ever retarget.
 - **Map the optional finger slots manually.** Unity's Humanoid avatar supports fingers but does
   not reliably auto-detect them, and QuickMagic hand retargeting depends on them
 - **Pose → Enforce T-Pose** as a safety net, even if §4.5 looked fine
+- **⚠ Check `globalScale` numerically — do not trust either the importer default or a flat
+  `1.0`.** Confirmed on the first real AccuRig export (MRM-75, Spotter/Old Timer,
+  2026-09-01): `import_model_file`'s auto-heuristic set `globalScale = 0.5561879` (garbage —
+  not a unit conversion, not a normalize-to-1). Naively "fixing" this to `1.0` (the right
+  answer for a Blender-authored FBX per the ground rule above) was **also wrong here** —
+  AccuRig/Reallusion's "Unity" export target writes raw centimeter coordinates with the FBX's
+  own unit metadata (`ModelImporter.fileScale`) left at `1`, so `useFileScale` cannot
+  auto-correct it either. The fix: read a known bone's world position (hip, foot) or the
+  SkinnedMeshRenderer bounds, compare against AccuRig's own reported "Character height: N cm"
+  readout, and set `globalScale` to whatever ratio makes the imported height match N **meters
+  ÷ 100** (i.e. `0.01` corrected the Spotter — verify per-character, don't assume 0.01 is
+  universal). **Report the actual bounds size after the fix**, the same "numbers not verdict"
+  rule as §4.3.
 
 ### 4.7 Why all that ceremony — the failure this prevents
 
