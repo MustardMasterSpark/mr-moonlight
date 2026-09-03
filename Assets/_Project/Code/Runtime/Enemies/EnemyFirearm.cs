@@ -144,7 +144,12 @@ namespace MrMoonlight.Enemies
             {
                 endPoint = hit.point;
 
-                if (hit.collider.GetComponentInParent<IDamageable>() is { IsDead: false } target)
+                // No friendly fire: enemies only ever hurt the player. hitMask already excludes most
+                // of this by layer, but colliders aren't guaranteed to be laid out that cleanly on
+                // every enemy variant (e.g. the gore prefab's added hitboxes/colliders) — checking
+                // EnemyIdentity directly is the one check that can't drift out of sync with layers.
+                if (hit.collider.GetComponentInParent<IDamageable>() is { IsDead: false } target
+                    && hit.collider.GetComponentInParent<EnemyIdentity>() == null)
                 {
                     target.TakeDamage(new DamageInfo(
                         DamageAtDistance(hit.distance) * shotDamageMultiplier, hit.point, direction, _owner));

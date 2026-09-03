@@ -1,86 +1,97 @@
-You are picking up Mr. Moonlight fresh, after a 2026-09-03 session that doubled the Spotter
-population and rebuilt the whole per-hitbox damage system. Branch: mrm-34 (check
-`git branch --show-current` if unsure). This file replaces its own earlier version, which covered a
-now-fully-resolved Animator Controller bug — that content is superseded, don't chase it.
+MRM-34 — Spotter: dismemberment + blood, session handoff (2026-09-03)
 
-Read `Docs/mrm34-spotter-ai-build.md` §16 before touching anything Spotter-related — it has the
-full reasoning and exact numbers for everything below. This file is just the "what's next" pointer.
+Read Docs/mrm34-spotter-ai-build.md §17 (17.1-17.6) first — this file is the "read me cold" pointer,
+that section is the full write-up.
 
+WHAT'S DONE
+-----------
+- Gore Simulator + Blood Factory (Pampel Games) migrated in: tracked scripts under
+  Assets/_Project/Code/Vendor/{Gore Simulator, Blood Factory, PampelGames Shared}; gitignored art
+  under Assets/ThirdParty/Pampel Games/.
+- Dismemberment is live on Enemy_Spotter.prefab (the ONLY Spotter prefab now — the experimental
+  duplicate, Enemy_Spotter_Gore.prefab, was deleted once this was confirmed working and unified back
+  onto the original). A lethal hit has a 50% chance (MoonlightTunables.EnemyDismembermentChance) of
+  cutting the limb nearest the killing blow. Mesh-cut only, NOT a ragdoll — a full ragdoll variant
+  was tried first and dropped same-day, it read as too aggressive/unstable next to Blaze's tuned
+  keyframed death animation, which still plays normally every time regardless of dismemberment.
+- Three Blood Factory effects wired into EnemyHealth, all parented to the nearest bone
+  (worldPositionStays: true) so they track the body through the death animation instead of floating
+  in world space once the body moves:
+    - hitBloodEffect (BloodSplash06) — every non-lethal hit, at the hit point.
+    - killBloodEffect (BloodSplash01_Radial) — every kill, always, from the torso. Scaled 3x on the
+      prefab (Carlos asked for bigger twice — 1x to 2x to 3x, each an absolute reset, not stacked).
+    - dismembermentBloodEffect (BloodSplatter06) — only on a dismemberment kill, at the cut point,
+      guarded so it can't lock onto the bone that just got reparented onto the severed flying piece.
+- Two unrelated combat bugs found and fixed live, project-wide (not Spotter-specific — flagged and
+  cross-posted to MRM-76, not silently folded in here):
+    - Friendly fire disabled: EnemyFirearm.FirePellet skips damage if the target has EnemyIdentity.
+    - One hitbox per shot: the player's multi-pellet shotgun could land separate pellets on
+      different hitboxes of the same enemy in one trigger pull; only the first now deals damage
+      (Burntwax GunScriptableObject.Shoot/PlayTrail, shared damageClaimed flag across pellets).
+- Lamp fire fade-in fixed: used to snap to full brightness/size instantly on ignite, now fades in
+  over LampFireVfxFadeInDuration (0.6s) the same way it already faded out. Ian's Fire Pack's
+  LightFlicker fights this the same way it fights the fade-out — same disable/re-enable trick used
+  for both.
+- Verified live across all 102 placed Enemy_Spotter instances in Island.unity after the prefab-source
+  edit: zero stragglers, every instance has GoreSimulator + all three blood fields.
 
-WHAT JUST HAPPENED (all verified live across every one of the 102 placed instances, not just the
-prefab source — see the propagation gotcha below before assuming a prefab edit is enough)
+WHAT'S NOT DONE / OPEN
+-----------------------
+- 🚩 Dismemberment cut geometry artifact — confirmed STILL HAPPENING after Carlos retested. A cut
+  plane crossing a large, sparse, normally-hidden polygon (Spotter's low-poly topology wasn't
+  modeled with cutting in mind) produces a flat spike instead of a clean seal. Raising
+  meshesPerBone 2->6 was tried, didn't fix it (expected — it changes WHICH position gets picked, not
+  the triangle size at any of them). Real fix is Blender retopology of the cut zones (neck,
+  shoulders, elbows, hips, knees) — Carlos's explicit call to defer, needs his go-ahead before any
+  Blender work starts per the standing rule. Already logged as a checklist item for future
+  characters: Docs/3d-prop-pipeline-wizard.md §4.11.
+- Carlos flagged that next session will likely add ANOTHER cosmetic blood effect. The pattern to
+  extend is already established in EnemyHealth.cs: SerializeField GameObject prefab reference +
+  SpawnBloodEffect(prefab, position, rotation, parentBone) call at whatever trigger point it needs.
+  Look at how hitBloodEffect/killBloodEffect/dismembermentBloodEffect are wired for the shape to
+  copy. Ask Carlos which Blood Factory prefab he wants and where it should trigger before assuming.
 
-1. Spotter population doubled 51 -> 102, scattered (jittered 15-40m off each original, NavMesh-
-   sampled, 3m min spacing). `Assets/_Project/Data/Events/IslandEvents.txt`'s comment updated.
+TRAPS FOUND, DON'T REDISCOVER THESE
+------------------------------------
+- Gore Simulator's own automatic bone-detection (AutoSetupHumanoid) is built for Mixamo-style bone
+  names and silently fails on this rig: CC_Base_* (AccuRig/Character Creator) delegates limb mesh
+  weight to *Twist01/02 helper bones, not the named joint bones themselves (CC_Base_L_Upperarm etc.
+  carry ZERO vertex weight). Had to build the 16-bone list by hand instead, one bone per
+  EnemyHitbox zone, using PampelGames.GoreSimulator.Editor.MeshEditorUtility.AddBoneToClass via
+  reflection (internal method) rather than the vendor's own auto-setup.
+- CC_Base_Head is NOT covered by that manual 16-bone list's targetNames array — it was only present
+  on the first (duplicate) prefab because of a leftover from an earlier failed AutoSetupHumanoid
+  attempt. Redoing the setup from scratch on the original prefab produced 15 bones, not 16, silently
+  missing the head, until caught. If this is ever rebuilt a third time: CC_Base_Head needs adding
+  explicitly, it won't come along for free.
+- Gore Simulator's real one-time setup ("Initialize" button in its custom inspector) has no clean
+  public static API — it's a private method (GoreSimulatorInspector.InitializeComponent) on a
+  UI-Toolkit custom Editor. The working technique: UnityEditor.Editor.CreateEditor(gs, editorType)
+  (its real OnEnable() auto-loads default SO references), then reflection to invoke
+  InitializeComponent() on that editor instance. This is idempotent — safe to re-run after changing
+  a setting like meshesPerBone, it won't duplicate colliders/joints (both creation utilities check
+  for an existing component first).
+- SubModulePhysics is NOT auto-added to cutModules by Gore Simulator's own setup — without it,
+  severed pieces have no Rigidbody/Collider and just float in place, ignoring gravity entirely. Had
+  to add it manually (collider: Automatic, rigidbody: true) after the bake.
+- Compiling scripts (refresh_unity with compile:"request") while Carlos is mid-Play-Mode forces a
+  domain reload that interrupts his test and can throw one-off "missing script"/NullReferenceException
+  console noise. Check play_mode.is_playing via the editor/state resource before forcing a compile;
+  if he's playing, wait or warn him first.
+- UnityMCP manage_prefabs save_prefab_stage/close_prefab_stage occasionally report a transient
+  "Unity plugin session disconnected" error even though the operation actually succeeded — always
+  re-check the prefab stage state (PrefabStageUtility.GetCurrentPrefabStage()) before retrying, don't
+  assume failure.
 
-2. The whole damage-hitbox system was replaced, twice in the same session — first a 6-box design
-   (root capsule kept as HeightBands fallback), then Carlos supplied a reference image and
-   explicitly overrode that with the final 15-box design that shipped:
-     - Root `EnemyHitbox` REMOVED. Capsule is movement/NavMesh only now, no damage duty, no
-       fallback. A shot in a gap between boxes (armpit, neck, groin) is a clean miss.
-     - 15 `BoxCollider` + `EnemyHitbox` (FixedZone) pairs, one per bone — see §16.2 for the exact
-       list and bone names. Sizes/positions are Carlos's rough placeholders; he said he'd hand-tune
-       them himself next, so don't be surprised if they've moved since this was written.
-     - This work belongs to MRM-32's scope even though it landed on the mrm-34 branch (Carlos's own
-       call, flagged and logged as a comment on both MRM-34 and MRM-32 in Linear). MRM-32's other
-       scope (stun tiers, hit-from-behind turn, shot-while-idle chase-to-origin, slope limit, Gore
-       Simulator dismemberment) is still fully open — don't assume MRM-32 is done because the
-       hitboxes exist now.
+FILES TOUCHED THIS SESSION (uncommitted — Carlos commits via GitHub Desktop, not Claude)
+-------------------------------------------------------------------------------------------
+Modified: Spotter.fbx.meta (Read/Write enabled), MoonlightTunables.cs + .asset, EnemyFirearm.cs,
+EnemyHealth.cs, LampFireEffect.cs, MrMoonlight.Runtime.asmdef, GunScriptableObject.cs (Burntwax
+vendor), Enemy_Spotter.prefab, Island.unity (Carlos's own scene edits, not this session's doing),
+Docs/mrm34-spotter-ai-build.md, Docs/3d-prop-pipeline-wizard.md.
+New: GoreStorage_Spotter.asset (+.meta), Vendor/Gore Simulator/, Vendor/Blood Factory/,
+Vendor/PampelGames Shared/ (all + .meta).
+Deleted: Enemy_Spotter_Gore.prefab (+.meta) — the experimental duplicate, unified away.
 
-3. The lamp moved from `CC_Base_L_Hand/Socket_Lamp` to `CC_Base_Hip/Socket_Lamp` (freed the hand
-   for its own hitbox), got a new `LampSwayEffect` component (tilts on local X with NavMeshAgent
-   speed — new tunables `SpotterLampSway{MaxAngle,Frequency,ReferenceSpeed}`, all first-guess
-   numbers), and got moved to a new "DroppedProp" physics layer (slot 9) so it stops physically
-   colliding with the Enemy layer and stops absorbing bullet raycasts meant for a real hitbox — this
-   closed a genuine pre-existing gap (the lamp's collider was live and non-trigger the whole time it
-   was socketed, and the guns' HitMask was literally "Everything"). The 4 Burntwax `ShootConfig`
-   assets that exclude layer 9 from HitMask are under gitignored `Assets/ThirdParty/**` — local-only,
-   reapply (clear bit 9) if that package is ever re-fetched fresh.
-
-
-TRAPS ALREADY FOUND
-
-- **Prefab-to-instance propagation is not reliable for structural component changes.** Editing
-  `Enemy_Spotter.prefab` via `PrefabUtility.LoadPrefabContents` + `SaveAsPrefabAsset` does not
-  always auto-sync already-placed scene instances when you destroy one component type and add
-  another on an existing child object. First pass this session: 1 of 102 instances (the
-  earliest-placed one) stayed on stale components after a full scene reload and needed the fix
-  applied to it directly. Second pass: 0 stragglers. Not predictable which instance sticks —
-  **always verify every placed instance after this kind of edit**
-  (`GetComponentsInChildren(typeof(EnemyHitbox), true).Length` across every child of "Enemies", not
-  a spot-check on one).
-- `manage_scene`'s `load` action can refuse with "unsaved changes" immediately after a successful
-  `save` — something in this scene re-dirties itself every tick even at rest (unidentified,
-  SunController/TimeManager are candidates). Reload via
-  `EditorSceneManager.OpenScene(path, OpenSceneMode.Single)` in `execute_code` directly instead of
-  fighting the guard.
-- `mcp__UnityMCP__execute_code` has no Roslyn installed — it silently falls back to CodeDom (C# 6):
-  no `using` statements inside the code body, no tuples, fully-qualify anything outside
-  `UnityEngine`/`UnityEditor` (e.g. `UnityEngine.AI.NavMesh`), and one call's local variables do not
-  persist to the next call. Full detail if you hit a confusing compile error: this file's sibling
-  memory note (not in this repo — ask if you want the details re-derived here instead).
-
-
-OUTSTANDING / NOT MINE TO DECIDE
-
-- Box hitbox sizes and positions are Carlos's own tuning pass, in progress as of this session ending
-  — don't "fix" them without being asked, he may already be mid-edit.
-- The `ShootConfig` HitMask edit (local-only, gitignored) — worth a one-line durable note somewhere
-  Carlos will actually see it before a fresh Burntwax re-fetch, if that's ever likely.
-- `Assets/_Project/Prefabs/World/Prop_Lamp.prefab` shows as modified in git — that's Carlos's own
-  in-progress lamp-scaling work (localScale 1 -> 1.4243 on the "Visual" child, plus Unity auto-added
-  `UniversalAdditionalLightData` to the Light), not this session's. Don't touch it or explain it
-  away; it's a separate concern for whenever he's done and commits.
-
-
-HOUSE RULES THAT MATTER HERE (restated because this file gets read cold)
-
-  - No hardcoded values — MoonlightTunables. This session added `SpotterLampSway{MaxAngle,
-    Frequency,ReferenceSpeed}`; follow the same pattern for anything new.
-  - Never commit or push — Carlos uses GitHub Desktop.
-  - Scene/prefab work: ask first, do it via the MCP bridge once he says yes, verify by reading real
-    component state back (across ALL placed instances, see the propagation trap above), document
-    what changed. Same pattern for Blender work.
-  - One issue, one branch, one PR — except when Carlos explicitly asks for a small cross-issue fix
-    inline (this session's MRM-32-scoped hitbox work landing on the mrm-34 branch is exactly that;
-    flagged once, in both places, then just done).
+Suggested commit message text is in the chat where "run the final instructions" was said — Carlos
+pastes it himself via GitHub Desktop, never committed by Claude directly.

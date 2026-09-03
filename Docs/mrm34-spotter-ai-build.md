@@ -823,3 +823,121 @@ Three changes, all in the same pass:
    Also cleared bit 9 from `HitMask` on all 4 Burntwax `ShootConfig` assets (Pistol/Revolver/
    Shotgun/Smg) so gun raycasts skip `DroppedProp` too. **These assets are gitignored**
    (`Assets/ThirdParty/**`) — local-only fix, reapply if the package is ever re-fetched.
+
+## 17. Session 4 (2026-09-03) — dismemberment + blood, and a topology gotcha to fix later
+
+Gore Simulator (Pampel Games) and Blood Factory (Pampel Games) migrated into the project
+(`Assets/_Project/Code/Vendor/Gore Simulator`, `Blood Factory`, `PampelGames Shared` — tracked
+scripts; `Assets/ThirdParty/Pampel Games/...` — gitignored art/content). Wired into `EnemyHealth`:
+a lethal hit has a `MoonlightTunables.EnemyDismembermentChance` chance (default 50%) of cutting the
+limb nearest the killing blow — mesh-cut only, no ragdoll, Blaze's own keyframed death animation
+still plays normally alongside it (a full ragdoll was tried first and dropped same-day: "squashed,
+physically unstable" next to the tuned animation). Blood Factory layered on top: a small spatter on
+every non-lethal hit, a radial splash on every kill (torso, always), a separate spill at the cut
+point on a dismemberment kill — all parented to the nearest bone with `worldPositionStays: true` so
+they ride along with the death animation instead of floating in place once the body moves.
+
+Safety pattern used while this was still experimental: all of it first landed on a **duplicate**
+prefab, `Enemy_Spotter_Gore.prefab`, not the original `Enemy_Spotter.prefab` — Carlos's explicit ask
+before any of it started. Verified via `git status` at every step that the original prefab and
+`Island.unity` stayed untouched by the gore/blood work itself while the duplicate was the only one
+carrying it. Once Carlos confirmed it was working the way he wanted (§17.4), the whole setup was
+re-applied to `Enemy_Spotter.prefab` directly and the duplicate deleted — see §17.4, there is now
+only one Spotter prefab again.
+
+### 17.1 🚩 Known issue, not fixed — cut geometry artifacts on sparse topology
+
+Confirmed live: a dismemberment cut can produce a long, flat spike ("paper airplane" shaped)
+sticking out of the wound instead of a clean seal. Root cause understood, not a config mistake:
+Gore Simulator cuts with a flat plane at a pre-baked position along each bone, and the new geometry
+that seals the cut follows whatever triangles that plane crosses. The Spotter's mesh — like most
+low-poly/retro-styled character meshes, not modeled with cutting in mind — has large, sparse
+polygons in places normally hidden under clothing (inside a sleeve, the collar, the torso cavity).
+Where a cut plane crosses one of those oversized triangles at a shallow angle, the seal follows that
+triangle's edges instead of producing small clean geometry.
+
+Tried: raised `GoreSimulator.meshesPerBone` 2 → 6 (applied when this was still the duplicate prefab,
+carried forward into the unified prefab in §17.4 — `meshesPerBone` controls how many candidate cut
+positions get pre-computed along each bone, so a higher value can steer the runtime pick away from a
+specific bad spot). Cheap, safe, still in place — **confirmed by Carlos after retesting that the
+artifact still happens.** Expected going in: this only changes which candidate position gets picked,
+not the size of the triangles at any of them, so it was never going to fully fix a triangle that's
+oversized along the *entire* limb segment.
+
+**Real fix, still not done, Carlos's explicit call to defer (confirmed again 2026-09-03 after
+retesting):** the Spotter mesh needs cutting-aware topology — smaller, denser polygons specifically
+in the regions gore is meant to slice through (neck, shoulders, elbows, hips, knees). Carlos may
+hand-mark the exact edge loops where dismemberment should occur. This is Blender retopology work,
+out of scope for now, and per the standing rule needs his go-ahead before it starts. Already added
+as a checklist item for any future character mesh, `Docs/3d-prop-pipeline-wizard.md` §4.11 — nothing
+further needed there, this paragraph is just the status update.
+
+### 17.2 Friendly fire disabled, and one-hitbox-per-shot
+
+Two combat bugs found and fixed during the same live-test pass, **both project-wide, not scoped to
+the Spotter** — flagging the cross-issue touch here since MRM-76 (balance/combat-feel log) is the
+more natural home for entries like these, but they landed on this branch since that's where the
+live testing was happening:
+
+- **Friendly fire.** `EnemyFirearm.FirePellet` (`Runtime/Enemies/EnemyFirearm.cs`) now skips
+  applying damage if the hit target carries an `EnemyIdentity` component — i.e. it's another enemy,
+  not the player. `hitMask` already excluded most of this by layer, but Carlos's ask was "enemies
+  can only damage us," full stop, and a component check can't silently drift out of sync with a
+  layer mask the way the mask alone could.
+- **One hitbox per shot.** The player's shotgun (`bulletsPerShot` > 1) fires several independent
+  raycasts per trigger pull, and each pellet can land on a *different* `EnemyHitbox` on the same
+  Spotter — Carlos's call was that only the first hitbox a shot registers should take damage, not
+  every pellet that happens to connect, both for the shotgun's multi-pellet case and for two
+  overlapping hitboxes. Fixed in Burntwax's own `GunScriptableObject.Shoot`/`PlayTrail`
+  (`Vendor/Burntwax FPS Engine/.../GunScriptableObject.cs`) — a `bool[] damageClaimed` shared across
+  every pellet's `PlayTrail` coroutine in one shot; the first pellet whose coroutine reaches a live,
+  non-self target claims it, every later pellet in that shot still flies and plays its tracer/impact
+  VFX but no longer deals damage. `EnemyFirearm` didn't need the same treatment — the player has
+  exactly one hitbox (`PlayerDamageReceiver`), so there's nothing for a second enemy pellet to
+  double up on.
+
+### 17.3 Lamp fire: fade in, not just fade out
+
+`LampFireEffect.Ignite()` used to snap the fire VFX to full size/brightness the instant the dropped
+lamp settles — "looks weird" per Carlos, next to the already-smooth fade-out. Fixed with a new
+`LampFireVfxFadeInDuration` tunable (0.6s, first guess): the fire's `Light` intensity and
+`AudioSource` volume now tween up from zero, and the whole fire object scales up from zero too
+(particle systems have no clean alpha to tween, so scale stands in for a growing-flame look).
+Reuses the exact same trick the existing fade-out already needed: Ian's Fire Pack's `LightFlicker`
+reads the light's *current* intensity as its baseline in `Start()` and overwrites it every frame
+after, so it has to be disabled before the fade touches the light and re-enabled only once the fade
+lands on its target value — otherwise it fights the tween the same way it would fight the fade-out
+if left running through that.
+
+### 17.4 Unified back onto one prefab
+
+Once Carlos confirmed the gore/blood behavior on the duplicate was what he wanted, the entire setup
+(`GoreSimulator` + the 16-bone selection, `SubModulePhysics`, `SubModuleDisableComponents`,
+`meshesPerBone = 6`, all three Blood Factory prefab references on `EnemyHealth`) was re-applied
+directly to `Enemy_Spotter.prefab`, and `Enemy_Spotter_Gore.prefab` was deleted — Carlos's explicit
+call, "let's unify and use one prefab from now on." Caught a real bug doing this the second time:
+the duplicate's bone list had `CC_Base_Head` in it only because of a leftover from an earlier, failed
+automatic bone-detection attempt (§ above) — rebuilding the list from scratch on the original
+silently produced 15 bones, not 16, missing the head entirely, until this was noticed and fixed.
+**If this setup is ever redone a third time, remember `CC_Base_Head` is not covered by the standard
+limb/torso `targetNames` list and needs adding explicitly.**
+
+Verified live across all 102 placed instances in `Island.unity` after the prefab-source edit — same
+`GetComponentsInChildren` sweep as the §16.2 hitbox rebuild used — zero stragglers this time: every
+instance picked up `GoreSimulator` and all three blood effect fields automatically.
+
+### 17.5 Cosmetic tuning, logged for completeness
+
+`BloodSplash01_Radial` (the kill splash) scaled up twice at Carlos's request, 1x → 2x → 3x (absolute
+scale on the prefab's root transform each time, not compounding). Also fixed, mid-session: a spawned
+blood effect used to sit at a fixed world position, so it could visibly detach from the body once
+Blaze's death animation moved it (confirmed live on a beheaded Spotter — the spill stayed floating
+where the head used to be). All three effects now parent to the nearest bone
+(`EnemyHealth.NearestBone`) with `worldPositionStays: true`, with a guard excluding any bone that
+`ExecuteCut` just reparented onto the severed, flying-away piece, so a dismemberment spatter can't
+end up chasing the departing limb instead of staying with the body.
+
+### 17.6 Next up, flagged by Carlos for a future session
+
+Another cosmetic blood effect is likely to be added next session — same `EnemyHealth` blood-effect
+pattern (§17 above) should extend cleanly to a fourth trigger point if needed.

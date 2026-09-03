@@ -455,6 +455,24 @@ expression states.
 > staying rig-compatible, same skeleton and scale, so weapon attachment points and hand poses
 > line up across both. **Its own Linear issue**, to be created when this path is first walked.
 
+### 4.11 ⚠ Gore-ready topology, if the character will ever be dismembered
+
+Found on the Spotter, 2026-09-03, after this pipeline was already done for him — Gore Simulator
+(MRM-34's dismemberment feature) cuts with a flat plane through whatever triangles it crosses.
+Low-poly/retro-styled meshes routinely have large, sparse polygons hidden under clothing (inside a
+sleeve, the collar, the torso cavity) that were never a problem visually — until a cut plane crosses
+one at a shallow angle and the resulting seal geometry follows that oversized triangle instead of
+producing a clean small cap, reading as a long flat spike sticking out of the wound. Not fixable
+from Gore Simulator's own settings alone (`meshesPerBone` only changes which of several candidate
+*positions* along a bone get picked, not the size of the triangles at any of them).
+
+**If a character is expected to go through Gore Simulator at any point**, budget denser topology —
+smaller, more even triangles — specifically at the likely cut zones: neck, shoulders, elbows, hips,
+knees. Carlos may hand-mark the exact edge loops where dismemberment should occur before retopology
+starts. Cheapest to build in from the start; expensive to retrofit onto a finished, rigged, textured
+character (which is exactly the position the Spotter is in now — the fix there is deferred, not
+done).
+
 ---
 
 ## 5. Path 2 — Static prop

@@ -69,6 +69,18 @@ namespace Burntwax
         {
             RaycastHit hit;
             List<string> surfaces = new List<string>();
+
+            // MRM-34/76: one enemy carries up to 15 separate hitbox colliders (EnemyHitbox), one
+            // per limb/torso/head zone. A multi-pellet shot (the shotgun) fires bulletsPerShot
+            // independent raycasts, so several pellets can land on different hitboxes of the same
+            // target in one trigger pull — Carlos's call was that only the first hitbox a shot
+            // registers should take damage, not every pellet that happens to connect. Shared across
+            // every pellet's PlayTrail coroutine in this shot; the first to reach its damage check
+            // claims it, every later pellet still flies and plays its impact VFX/audio but does not
+            // deal damage. A single-element array, not a local bool, because PlayTrail closures
+            // need a shared reference to mutate.
+            bool[] damageClaimed = { false };
+
             ShootSystem.Play();
             AudioConfig.PlayShootingClip(ShootingAudioSource, AmmoConfig.currentClip == 1);
             AmmoConfig.currentClip--;
@@ -81,11 +93,11 @@ namespace Burntwax
 
                 if (Physics.Raycast(Camera.main.transform.position, shootDirection, out hit, float.MaxValue, ShootConfig.HitMask))
                 {
-                    ActiveMonoBehaviour.StartCoroutine(PlayTrail(surfaces, i, ShootSystem.transform.position, hit.point, hit));
+                    ActiveMonoBehaviour.StartCoroutine(PlayTrail(surfaces, i, ShootSystem.transform.position, hit.point, hit, damageClaimed));
                 }
                 else
                 {
-                    ActiveMonoBehaviour.StartCoroutine(PlayTrail(surfaces, i, ShootSystem.transform.position, ShootSystem.transform.position + (shootDirection * TrailConfig.MissDistance), hit));
+                    ActiveMonoBehaviour.StartCoroutine(PlayTrail(surfaces, i, ShootSystem.transform.position, ShootSystem.transform.position + (shootDirection * TrailConfig.MissDistance), hit, damageClaimed));
                 }
             }
 
@@ -111,7 +123,7 @@ namespace Burntwax
             AmmoConfig.IncrementalReload();
         }
 
-        private IEnumerator PlayTrail(List<string> surfaces, int i, Vector3 StartPoint, Vector3 EndPoint, RaycastHit Hit)
+        private IEnumerator PlayTrail(List<string> surfaces, int i, Vector3 StartPoint, Vector3 EndPoint, RaycastHit Hit, bool[] damageClaimed)
         {
             TrailRenderer instance = TrailPool.Get();
             instance.gameObject.SetActive(true);
@@ -172,8 +184,9 @@ namespace Burntwax
                     ActiveMonoBehaviour != null &&
                     damageable.DamageTransform == ActiveMonoBehaviour.transform.root;
 
-                if (damageable != null && !damageable.IsDead && !selfInflicted)
+                if (damageable != null && !damageable.IsDead && !selfInflicted && !damageClaimed[0])
                 {
+                    damageClaimed[0] = true;
                     damageable.TakeDamage(new MrMoonlight.Combat.DamageInfo(
                         DamageConfig.GetDamage(distance),
                         Hit.point,

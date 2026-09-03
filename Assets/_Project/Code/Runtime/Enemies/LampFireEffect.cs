@@ -127,8 +127,7 @@ namespace MrMoonlight.Enemies
             {
                 GameObject fire = Instantiate(fireVfxPrefab, fireSpawnPoint.position, Quaternion.identity, fireSpawnPoint);
                 float scale = LargestLampDimension() * Tunables.I.LampFireVfxScaleFactor;
-                fire.transform.localScale = Vector3.one * scale;
-                FadeFireVfx(fire);
+                FadeFireVfx(fire, scale);
             }
 
             FadeLampLight();
@@ -147,14 +146,36 @@ namespace MrMoonlight.Enemies
         // DOTween's SetDelay does the "burn at full strength, then fade" waiting for us — no
         // manual WaitForSeconds/elapsed-time bookkeeping needed. MRM-76, Carlos's explicit call
         // 2026-09-02 to use DOTween for smooth transitions once it was installed.
-        private void FadeFireVfx(GameObject fire)
+        private void FadeFireVfx(GameObject fire, float targetScale)
         {
             var flicker = fire.GetComponentInChildren<LightFlicker>();
             Light fireLight = fire.GetComponentInChildren<Light>();
             AudioSource audio = fire.GetComponentInChildren<AudioSource>();
             var particleSystems = fire.GetComponentsInChildren<ParticleSystem>();
 
+            // Fade in first — Carlos's ask 2026-09-03: the ignite snapped to full size/brightness
+            // instantly and "looked weird" next to the already-smooth fade-out. Particle systems
+            // have no clean alpha to tween, so scale stands in for it — the flame visibly grows
+            // rather than popping in, alongside the light and audio actually fading.
+            //
+            // Disabling the flicker *before* its own Start() runs (which reads the light's current
+            // intensity as its baseline) means it captures the fully-faded-in target as that
+            // baseline once re-enabled below, instead of fighting a fade from zero the same way it
+            // would fight the fade-out further down if left running through it.
+            if (flicker != null) flicker.enabled = false;
+            float targetLightIntensity = fireLight != null ? fireLight.intensity : 0f;
+            float targetAudioVolume = audio != null ? audio.volume : 0f;
+            if (fireLight != null) fireLight.intensity = 0f;
+            if (audio != null) audio.volume = 0f;
+            fire.transform.localScale = Vector3.zero;
+
+            float fadeInDuration = Tunables.I.LampFireVfxFadeInDuration;
             var sequence = DOTween.Sequence();
+            sequence.Join(fire.transform.DOScale(targetScale, fadeInDuration));
+            if (fireLight != null) sequence.Join(fireLight.DOIntensity(targetLightIntensity, fadeInDuration));
+            if (audio != null) sequence.Join(DOTween.To(() => audio.volume, v => audio.volume = v, targetAudioVolume, fadeInDuration));
+            sequence.AppendCallback(() => { if (flicker != null) flicker.enabled = true; });
+
             sequence.AppendInterval(Tunables.I.LampFireBurnDuration);
             sequence.AppendCallback(() =>
             {
@@ -165,13 +186,13 @@ namespace MrMoonlight.Enemies
                 }
             });
 
-            float fadeDuration = Tunables.I.LampFireVfxFadeDuration;
-            if (fireLight != null) sequence.Join(fireLight.DOIntensity(0f, fadeDuration));
+            float fadeOutDuration = Tunables.I.LampFireVfxFadeDuration;
+            if (fireLight != null) sequence.Join(fireLight.DOIntensity(0f, fadeOutDuration));
 
             // DOTweenModuleAudio's AudioSource.DOFade shortcut doesn't resolve in this project for
             // reasons not worth chasing further — this is exactly what that shortcut does under
             // the hood, so it's a wash functionally.
-            if (audio != null) sequence.Join(DOTween.To(() => audio.volume, v => audio.volume = v, 0f, fadeDuration));
+            if (audio != null) sequence.Join(DOTween.To(() => audio.volume, v => audio.volume = v, 0f, fadeOutDuration));
 
             sequence.SetLink(fire).OnComplete(() => Destroy(fire));
         }
