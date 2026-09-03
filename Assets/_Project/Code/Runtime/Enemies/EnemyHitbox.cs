@@ -1,5 +1,6 @@
 using MrMoonlight.Combat;
 using MrMoonlight.Data;
+using PolymindGames;
 using UnityEngine;
 
 namespace MrMoonlight.Enemies
@@ -22,10 +23,17 @@ namespace MrMoonlight.Enemies
     /// classification needed; anything that lands here is a limb hit by construction.</item>
     /// </list>
     ///
-    /// Owner: MRM-34 (stub), MRM-76 (real zones).
+    /// <para>Also implements PolymindGames' <see cref="PolymindGames.IDamageHandler"/> (MRM-9), which
+    /// is how the HQ FPS weapons deliver hits: <c>FirearmStandardImpactEffect</c> does a
+    /// <c>collider.TryGetComponent(out IDamageHandler)</c>, so the handler has to live on the
+    /// collider's own GameObject. Rather than bolt a second bridge component onto all fifteen
+    /// hitboxes of every Spotter, this one component answers to both damage systems and funnels
+    /// them through the same zone-multiplier path.</para>
+    ///
+    /// Owner: MRM-34 (stub), MRM-76 (real zones), MRM-9 (HQ FPS damage interop).
     /// </summary>
     [AddComponentMenu("Mr. Moonlight/Enemies/Enemy Hitbox")]
-    public sealed class EnemyHitbox : MonoBehaviour, IDamageable
+    public sealed class EnemyHitbox : MonoBehaviour, IDamageable, PolymindGames.IDamageHandler
     {
         public enum HitboxZone { Limb, Torso, Head }
 
@@ -73,6 +81,44 @@ namespace MrMoonlight.Enemies
             var scaled = new DamageInfo(info.Amount * multiplier, info.Point, info.Direction, info.Source);
             health.TakeDamage(scaled);
         }
+
+        /// <summary>
+        /// PolymindGames entry point (MRM-9). The HQ FPS weapons call this on whatever collider
+        /// their ray hit.
+        ///
+        /// <para><b>One hitbox per ray, by construction.</b> Carlos's rule is that a shot must never
+        /// stack damage across several hitboxes of the same enemy. Every HQ FPS fire system uses
+        /// <c>Physics.Raycast</c>, which returns only the first collider along the ray, so a single
+        /// ray can only ever reach one hitbox. The shotgun's eight pellets are eight separate rays
+        /// and are each meant to land on their own - that is the spread, not double damage.</para>
+        /// </summary>
+        public DamageResult HandleDamage(float damage, in DamageArgs args)
+        {
+            if (health == null || health.IsDead)
+            {
+                return DamageResult.Ignored;
+            }
+
+            // args.HitForce is the shot's impulse; its direction is the travel direction our own
+            // DamageInfo wants. Falls back to the shooter's facing when a source gave no force.
+            Vector3 direction = args.HitForce.sqrMagnitude > 0.0001f
+                ? args.HitForce.normalized
+                : transform.forward;
+
+            Vector3 point = args.HitPoint != Vector3.zero ? args.HitPoint : transform.position;
+            GameObject source = args.Source != null ? args.Source.transform.gameObject : null;
+
+            TakeDamage(new DamageInfo(damage, point, direction, source));
+
+            return health.IsDead ? DamageResult.Fatal : DamageResult.Normal;
+        }
+
+        /// <summary>
+        /// Mr. Moonlight enemies are Blaze AI agents, not PolymindGames <c>ICharacter</c>s, so there
+        /// is no character to hand back. Only the vendor's own hitmarker UI reads this, and it
+        /// null-checks first.
+        /// </summary>
+        ICharacter PolymindGames.IDamageHandler.Character => null;
 
         private HitboxZone ClassifyByHeight(Vector3 worldPoint)
         {

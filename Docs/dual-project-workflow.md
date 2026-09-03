@@ -1,5 +1,14 @@
 # Two Unity projects — Mr. Moonlight (dev) + Playground (sandbox)
 
+> **⚠ RULING REVERSED, 2026-09-03 (MRM-9).** This document previously stated that HQ FPS Weapons
+> migrations take *"FBXs and textures only, never `FPSCore/`"*. Carlos's decision to adopt HQ FPS as
+> the character controller **and** weapon system made that impossible to honour: FPSCore is a single
+> dependency graph (every gameplay class is a `CharacterBehaviour` resolving its siblings through
+> `ICharacter`), so the whole framework came across. It is 8.3 MB of source in its own assembly and
+> unused types strip from the build; the art was cut hard instead — 3.6 GB → 115 MB.
+> The migration *mechanics* described below (filesystem copy, folder + every `.meta`, verify after)
+> are unchanged and were used for it. See `Docs/mrm9-hqfps-integration.md`.
+
 **Decision (2026-08-27/28, Carlos).** From now on, two separate Unity projects run side by side:
 
 | Project | Path | Role |
@@ -112,7 +121,7 @@ triggers a recompile, the recompile re-runs both, and they look new. They are no
 | Error | Real cause | Do |
 |---|---|---|
 | `DirectoryNotFoundException: ...\Packages\com.waveharmonic.crest\...\Settings.Crest.iOS.hlsl` | **Crest Water 5 is folder-copied into `Assets/PLAYGROUND/` instead of `Packages/com.waveharmonic.crest/`.** Its C# hardcodes that package path in nine `[GenerateHLSL(sourcePath = "Packages/com.waveharmonic.crest/...")]` attributes; URP's `CSharpToHLSL` generator tries to write there on every recompile and the folder does not exist | Ignore, or fix properly: **move** the folder to `Packages/com.waveharmonic.crest/` (it has a `package.json`, so it is a straight move and matches Mr. Moonlight) **or delete it** (Crest already migrated). **Never** create an empty folder under `Packages/` to satisfy the path — no `package.json` makes Package Manager error instead |
-| `custom elements added to the Unity Editor's main toolbar using unsupported methods` | `HQ FPS Weapons 2.0/FPSCore/3rdParty/EditorToolbox/Editor/ToolboxEditorToolbar.cs:89` — a Unity 6.3 deprecation in a bundled third-party toolbar, present since the pack was staged in May | Ignore. It cannot follow us over: MRM-23's migration list takes FBXs and textures only, never `FPSCore/` |
+| `custom elements added to the Unity Editor's main toolbar using unsupported methods` | `HQ FPS Weapons 2.0/FPSCore/3rdParty/EditorToolbox/Editor/ToolboxEditorToolbar.cs:89` — a Unity 6.3 deprecation in a bundled third-party toolbar, present since the pack was staged in May | ~~Ignore. It cannot follow us over: MRM-23's migration list takes FBXs and textures only, never `FPSCore/`~~ **SUPERSEDED 2026-09-03 by MRM-9** — `FPSCore/` *was* migrated wholesale (it is not cherry-pickable), so this warning now appears in Mr. Moonlight too. Still harmless; see `Docs/mrm9-hqfps-integration.md` §2 for why the ruling changed |
 
 **The general lesson.** A vendor package that hardcodes `Packages/<name>/` paths **must be installed
 as an embedded package, not copied into `Assets/`.** Crest is the second time this has bitten

@@ -25,8 +25,8 @@ namespace MrMoonlight.UI
     /// MRM-8 that Open/Navigate/Use/Close (<c>InventoryScroll</c>, <c>Jump</c>, <c>EquipMelee</c>)
     /// all live in the <c>Gameplay</c> map already, so switching to <c>UI</c> would strip exactly
     /// the controls the open panel needs. "Locked in place" instead comes from
-    /// <see cref="PlayerController.SetMovementLocked"/>, reversible unlike death's
-    /// <see cref="PlayerController.DisableControl"/> - nothing here touches the damage path, so
+    /// <see cref="MoonlightPlayerRig.SetMovementLocked"/>, reversible unlike death's
+    /// <see cref="MoonlightPlayerRig.DisableControl"/> - nothing here touches the damage path, so
     /// Tracey stays fully attackable while open, which is the point per the issue.</para>
     ///
     /// <para>Blocked while any non-Gameplay map (cutscene, turret, stretcher) is active - reads
@@ -40,11 +40,14 @@ namespace MrMoonlight.UI
     /// doesn't exist yet. This is the model half of MRM-42; the view half is blocked on Carlos.</para>
     /// Owner: MRM-42
     /// </summary>
-    [RequireComponent(typeof(BurntwaxPlayerBridge))]
+    // MRM-9: no [RequireComponent(typeof(MoonlightPlayerRig))]. The rig lives on the player
+    // ROOT, next to PolymindGames' character, while this component sits further down the
+    // hierarchy - RequireComponent would force a second, non-functional rig onto whatever
+    // GameObject this is on, which is exactly the duplication the swap was meant to remove.
     [RequireComponent(typeof(Inventory))]
     public sealed class InventoryUIController : MonoBehaviour
     {
-        private BurntwaxPlayerBridge _playerController;
+        private MoonlightPlayerRig _playerController;
         private Inventory _inventory;
         private float _previousScrollValue;
 
@@ -57,7 +60,7 @@ namespace MrMoonlight.UI
 
         private void Awake()
         {
-            _playerController = GetComponent<BurntwaxPlayerBridge>();
+            _playerController = GetComponentInParent<MoonlightPlayerRig>();
             _inventory = GetComponent<Inventory>();
         }
 

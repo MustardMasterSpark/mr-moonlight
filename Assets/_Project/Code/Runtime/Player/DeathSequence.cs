@@ -17,14 +17,17 @@ namespace MrMoonlight.Player
     /// punji-specific event. Owner: MRM-17
     /// </summary>
     [RequireComponent(typeof(PlayerStats))]
-    [RequireComponent(typeof(BurntwaxPlayerBridge))]
+    // MRM-9: no [RequireComponent(typeof(MoonlightPlayerRig))]. The rig lives on the player
+    // ROOT, next to PolymindGames' character, while this component sits further down the
+    // hierarchy - RequireComponent would force a second, non-functional rig onto whatever
+    // GameObject this is on, which is exactly the duplication the swap was meant to remove.
     public sealed class DeathSequence : MonoBehaviour
     {
         private const string RedTintSourceName = "Death";
 
         [Header("References")]
         [SerializeField] private PlayerStats playerStats;
-        [SerializeField] private BurntwaxPlayerBridge playerController;
+        [SerializeField] private MoonlightPlayerRig playerController;
 
         [Header("Placeholder — Carlos fills this in")]
 
@@ -45,7 +48,7 @@ namespace MrMoonlight.Player
 
             if (playerController == null)
             {
-                playerController = GetComponent<BurntwaxPlayerBridge>();
+                playerController = GetComponentInParent<MoonlightPlayerRig>();
             }
 
             if (screamAudioSource != null)
