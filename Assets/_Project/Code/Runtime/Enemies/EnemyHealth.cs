@@ -1,4 +1,5 @@
 using System;
+using DamageNumbersPro;
 using MrMoonlight.Combat;
 using MrMoonlight.Data;
 using PampelGames.BloodFactory;
@@ -62,6 +63,13 @@ namespace MrMoonlight.Enemies
 
         [Tooltip("Blood spill spawned at the cut point on the body's side of a dismemberment (not on the severed piece itself). Carlos's pick: BloodSplatter06.")]
         [SerializeField] private GameObject dismembermentBloodEffect;
+
+        [Header("Debug — Damage Numbers")]
+        [Tooltip("Debug-only visualization, NOT part of the shipped game — a quick way to see hit damage while tuning weapons/hitboxes. Pops the Damage Numbers Pro 'Bleed' style at the hit point on every hit; rapid hits on the same enemy combine into a running total in the center while each individual chip number still shows. Off by default — flip per-prefab to enable. Deliberately not routed through MoonlightTunables since it isn't a shipping feature.")]
+        [SerializeField] private bool showDebugDamageNumbers;
+
+        [Tooltip("The Damage Numbers Pro prefab to spawn (Bleed, 3D/world-space style). Only used when showDebugDamageNumbers is on.")]
+        [SerializeField] private DamageNumber debugDamageNumberPrefab;
 
         [Header("Events")]
         [Tooltip("Fires on every hit that actually removes health.")]
@@ -134,6 +142,7 @@ namespace MrMoonlight.Enemies
             if (info.Direction != Vector3.zero) _lastHitDirection = info.Direction;
 
             Damaged?.Invoke(info.Amount);
+            SpawnDebugDamageNumber(info.Point, info.Amount);
 
             if (CurrentHealth <= 0f)
             {
@@ -236,6 +245,22 @@ namespace MrMoonlight.Enemies
             instance.transform.SetParent(parent, true);
             if (instance.TryGetComponent(out BloodFactory bloodFactory)) bloodFactory.Execute();
             Destroy(instance, Tunables.I.EnemyBloodEffectLifetime);
+        }
+
+        /// <summary>
+        /// Debug-only: pops a Damage Numbers Pro popup at the hit point. Following the enemy's own
+        /// transform (rather than leaving it pinned to the hit point) both keeps the number attached
+        /// to a moving target and — via the DamageNumbersPro's own <c>SetFollowedTarget</c> — scopes
+        /// its combine/"spam" grouping to this specific enemy, mirroring the vendor demo's own
+        /// pattern (<c>DNP_Camera.Shoot()</c>): repeated hits on the same enemy combine into a
+        /// running total while each chip number still shows, hits on different enemies never mix.
+        /// </summary>
+        private void SpawnDebugDamageNumber(Vector3 point, float amount)
+        {
+            if (!showDebugDamageNumbers || debugDamageNumberPrefab == null) return;
+
+            DamageNumber popup = debugDamageNumberPrefab.Spawn(point, amount);
+            popup.SetFollowedTarget(transform);
         }
 
         /// <summary>Faces a blood effect back along the hit's travel direction, so it reads as spraying outward from the wound rather than in an arbitrary default orientation.</summary>

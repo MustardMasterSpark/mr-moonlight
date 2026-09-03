@@ -1,0 +1,64 @@
+Cold-start context for the next session. Read this file first, not chat scrollback.
+
+WHERE THE LAST SESSION LEFT OFF
+--------------------------------
+Branch `mrm-34` is done and Carlos is about to commit + merge it to main (dismemberment/blood
+effects from the prior session, plus one cross-scope addition: a debug-only "hit damage numbers"
+tool using the Damage Numbers Pro asset, off by default — see Docs/mrm34-spotter-ai-build.md §18
+and the MRM-34 Linear comment dated 2026-09-03 if you need that context, but it's closed out, not
+something to continue).
+
+Carlos's own words kicking off the next task: "Next thing we will do is not on the spotter
+anymore. We will actually start moving the animation of the hands from the HQ weapons asset."
+
+THIS IS A FRESH START, NOT A CONTINUATION — confirm scope before writing code
+------------------------------------------------------------------------------
+No branch exists yet for this. The most likely home is MRM-74 "Tracey character replacement +
+weapon animation retargeting" (Backlog, M2 milestone), but read its full description before
+assuming — it's a big issue (character pipeline + Player rig swap + weapon retargeting) and
+Carlos's one sentence could mean either:
+
+(a) The FULL MRM-74 weapon-retargeting step: baking HQ FPS Weapons 2.0's animation clips onto
+    Tracey's rig via Retarget Pro, per `Docs/retarget-pro-strategy.md`. MRM-74's own handoff note
+    says this was "blocked on Carlos's Tripo export" as of 2026-08-31 — check whether that export
+    has actually landed before assuming this is unblocked. If it hasn't, this can't be (a).
+
+(b) Something narrower and likely unblocked either way: HQ FPS Weapons 2.0 ships its 19 weapons'
+    Equip/Idle/Hold/Unequip animations on one shared `FP_Arms` Generic skeleton — i.e. the
+    first-person ARMS model + animations may already be usable close to as-is for the Player's
+    first-person view, without needing the full Tracey (third-person) retarget first. "Moving the
+    animation of the hands" reads like it could mean wiring up FP_Arms directly, which is a much
+    smaller task than full character replacement.
+
+**Ask Carlos which of these he means before diving in** — don't guess and start building. If it's
+(a) and the Tripo export genuinely hasn't landed, say so and ask how he wants to proceed rather
+than starting a blocked issue.
+
+RELEVANT READING, IN ORDER
+---------------------------
+1. `mcp__claude_ai_Linear__get_issue` on MRM-74 — full current scope/status, may have moved since
+   this was written.
+2. `Docs/retarget-pro-strategy.md` — the adopted animation tool, especially §12-13 (GUI gotchas,
+   the final bypass-baking fix) per memory `retarget-pro-strategy` / `mrm75_retargeting_final_resolution`.
+3. Memory `animation_tooling_ruling` — HQ FPS Weapons already owns every FP weapon animation needed;
+   Baker Toolkit was rejected; Retarget Pro is for enemies+Tracey only. Worth re-checking this still
+   holds before spending time on tooling decisions that were already made.
+4. Memory `mrm9_burntwax_controller_swap` / `Docs/mrm9-burntwax-integration.md` — the Player uses
+   Burntwax FPS Engine now, not the original controller. Any hand/arm animation wiring has to go
+   through however Burntwax expects its FP arms rigged (check `PlayerController`/whatever Burntwax
+   component currently drives the visible arms before assuming a from-scratch Animator setup).
+5. Memory `mrm75_retargeting_final_resolution` and `mrm75_accurig_scale_bug` — real gotchas hit
+   doing this exact kind of retarget work for the Spotter/Blaze, worth having front-of-mind before
+   repeating them here.
+6. `Docs/mrm34-spotter-ai-build.md` §16-18 if you need to understand what's currently live on the
+   Player/enemy combat side that a hand/weapon-animation change might touch (hitboxes, damage flow).
+
+WORKFLOW REMINDERS (already in CLAUDE.md, restated because they bite here specifically)
+-----------------------------------------------------------------------------------------
+- One issue, one branch. Confirm the actual issue number with Carlos before naming a branch.
+- Retarget-and-bake happens in Playground; only migrate the BAKED clips into Mr. Moonlight
+  (`Assets/_Project/Art/Animations/<Character>/`) — zero build footprint for the retargeting tool
+  itself. Same dual-project pattern used for every other asset transfer this project.
+- Blender/Unity scene-inspector work needs Carlos's permission per step, then verify by reading
+  real state back, then document — same rule that governed today's prefab wiring.
+- Record source clip provenance in `Docs/changelog.md` per MRM-74's own handoff note.

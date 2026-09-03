@@ -941,3 +941,81 @@ end up chasing the departing limb instead of staying with the body.
 
 Another cosmetic blood effect is likely to be added next session — same `EnemyHealth` blood-effect
 pattern (§17 above) should extend cleanly to a fourth trigger point if needed.
+
+## 18. Debug tool, 2026-09-03: Damage Numbers Pro ("Bleed") on enemy hits
+
+**Not part of MRM-34's scope or acceptance criteria** — Carlos asked for this inline while testing
+the Spotter, same pattern as prior cross-issue exceptions (see memory
+`cross_issue_scope_exceptions`). Flagged here and in the MRM-34 Linear comment rather than filed as
+its own issue, since it's explicitly **not shipping in the final game** — a debug visualization only,
+off by default.
+
+**What it is:** popping world-space damage numbers at the hit point on every enemy hit, powered by
+the "Damage Numbers Pro" asset's `Bleed` style (world-space/mesh-based, no Canvas or EventSystem
+involved). Rapid hits on the *same* enemy combine into a running total shown large in the center
+while each individual chip number still shows — the asset's own built-in combine behavior
+(`enableCombination` + `spamGroup` string matching), not something built from scratch.
+
+**Where it came from:** imported and fixed first in the Playground project (`E:\playground\My
+project`), which is where all Asset Store packages get bulk-imported before a Mr. Moonlight
+transfer (see memory `dual_project_workflow_decision`). Two real vendor bugs found and fixed there,
+both from an EntityId/Input System version mismatch between when the asset was authored and the
+project's actual Unity 6.3 + Input System package:
+- `EntityId.ToULong(x)` doesn't exist on this Unity version's `EntityId` struct (only
+  `IsValid`/`Equals`/`CompareTo`/`GetHashCode`/`ToString`) — 5 call sites across
+  `DamageNumberGUI.cs`, `DamageNumber.cs` (×3), and the demo's `DNP_Camera.cs`, all fixed by
+  swapping to `(ulong)obj.GetInstanceID()`, which is what these calls were actually trying to get.
+- The `DNP_3D_URP` demo scene's `Event System` still had the legacy `StandaloneInputModule`/
+  `BaseInput` pair, which throws under "Input System Package"-only Active Input Handling — same
+  class of bug as the Gore Simulator demo scenes (memory `playground_legacy_input_system_fix`).
+  Fixed by swapping to `InputSystemUIInputModule`.
+
+**Transfer into Mr. Moonlight** (file+meta copy, not Package Manager — per
+`dual_project_workflow_decision`), split per the ThirdParty vendor-code policy (memory
+`thirdparty_gitignored`):
+- **Tracked** (edited — the `EntityId` fix above is baked into these copies):
+  `Assets/_Project/Code/Vendor/DamageNumbersPro/` — the package's own `DamageNumbersPro.asmdef` +
+  its whole `Scripts/` tree (including the nested `Editor/` subfolders that hold its custom
+  inspectors — no separate asmdef needed there; Unity's magic-folder-name Editor exclusion still
+  applies to a folder named `Editor` even when it's covered by an enclosing asmdef).
+- **Git-ignored** (untouched vendor content): `Assets/ThirdParty/DamageNumbersPro/` — Materials/,
+  Fonts/, Shaders/, the `Editor/Resources/DNP/**` style/behavior presets, and the one prefab we
+  actually use, `Demo/Prefabs/3D/Bleed.prefab`. The rest of the vendor package (demo scenes, demo
+  camera/target/GUI scripts, the 2D/UI style variants) was **not** transferred — not needed,
+  no reason to carry the extra ~250 unused files.
+- `MrMoonlight.Runtime.asmdef` got a new `"DamageNumbersPro"` entry in `references` so `_Project`
+  code can call it.
+
+**The hook**, in `EnemyHealth.cs`:
+- `showDebugDamageNumbers` (bool, off by default) + `debugDamageNumberPrefab` (the `DamageNumber`
+  reference) — both `[SerializeField]`, deliberately **not** routed through `MoonlightTunables`
+  since this isn't a shipping feature (documented inline as the reason for the exception to the
+  normal no-hardcoded-values rule).
+- Called from `TakeDamage()` right after `Damaged?.Invoke(info.Amount)`, so it fires on every
+  damaging hit including the killing blow: `debugDamageNumberPrefab.Spawn(info.Point, info.Amount)`
+  then `.SetFollowedTarget(transform)`. `SetFollowedTarget` does two things at once — keeps the
+  popup riding along on a moving enemy, and (its own internal `spamGroup += (ulong)
+  followedTransform.GetInstanceID()`) scopes the combine grouping to *that specific enemy instance*,
+  so hits on different Spotters never combine into each other's totals. Mirrors the vendor demo's
+  own pattern (`DNP_ExampleMesh.cs`, `DNP_Camera.Shoot()`) rather than inventing a new one.
+
+**Wired live:** `Enemy_Spotter.prefab`'s `EnemyHealth.debugDamageNumberPrefab` → `Bleed.prefab`,
+`showDebugDamageNumbers` left `false` (verified by reading the prefab's serialized state back after
+the edit, not just by intending to set it). Carlos flips it on per-prefab when he wants to see it —
+nothing changes visually while it's off.
+
+**Not chased, pre-existing, unrelated:** recompiling with a `GoreSimulator` component selected in
+the Inspector throws a `NullReferenceException` from `GoreSimulatorInspector.cs:172`
+(`_goreSimulator` null in `GetDefaultReferences()` on `OnEnable`) — confirmed unrelated to this
+work (no DamageNumbersPro reference anywhere near that code path), confined to the vendor's own
+editor script, not blocking anything. Flag if it ever visibly breaks something.
+
+**Also this session, no code change:** explained to Carlos why the Spotter prefab now shows a ring
+of capsule colliders around the limbs in the Scene view that he hadn't seen before — these are
+Gore Simulator's own auto-generated "gore skeleton" (16 auxiliary bone proxies: hip, spine ×2,
+thighs, calves, feet, upper arms, forearms, hands, head), each carrying a capsule collider + a
+`cutModules` ragdoll-physics rigidbody (`ragdollTotalMass: 20`), added by the §17.4 dismemberment
+unification, not by yesterday's §16.2 hitbox rebuild. Confirmed by reading the live
+`GoreSimulator` component's `bonesListClasses`/`cutModules`/`ragdollModules` back off the prefab.
+Entirely separate from `EnemyHitbox`'s 15 damage boxes — different colliders, different purpose
+(cut/ragdoll physics for a severed limb vs. weapon damage detection), don't interact.
