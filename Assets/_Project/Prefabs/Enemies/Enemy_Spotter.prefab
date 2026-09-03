@@ -165,8 +165,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 6812752143409102460}
-  - component: {fileID: 2783972161249035248}
   - component: {fileID: 4023914458414925241}
+  - component: {fileID: 5562051545012639347}
   m_Layer: 6
   m_Name: Hitbox_L_Forearm
   m_TagString: Untagged
@@ -189,8 +189,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 357526712983903410}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &2783972161249035248
-SphereCollider:
+--- !u!114 &4023914458414925241
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 155324696368435274}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
+--- !u!65 &5562051545012639347
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -208,24 +224,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.09
+  m_Size: {x: 0.14, y: 0.22, z: 0.14}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &4023914458414925241
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 155324696368435274}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
-  mode: 1
-  fixedZone: 0
-  health: {fileID: 0}
-  animator: {fileID: 0}
 --- !u!1 &227453423848054417
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,6 +256,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1717509540815613536}
+  - {fileID: 2454158269286938637}
   m_Father: {fileID: 6730914258997579312}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &233789746455065075
@@ -290,6 +291,76 @@ Transform:
   - {fileID: 5512132108456379418}
   m_Father: {fileID: 4946105282010528898}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &244467945656139407
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5644705253621456282}
+  - component: {fileID: 5229498050252447390}
+  - component: {fileID: 8674295629030872305}
+  m_Layer: 6
+  m_Name: Hitbox_L_Thigh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5644705253621456282
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244467945656139407}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.001, y: 0.211, z: 0}
+  m_LocalScale: {x: 1, y: 1.1361, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2367973639496084162}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5229498050252447390
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244467945656139407}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.18, y: 0.28, z: 0.18}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8674295629030872305
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 244467945656139407}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &291659913832228793
 GameObject:
   m_ObjectHideFlags: 0
@@ -356,6 +427,7 @@ Transform:
   - {fileID: 4946105282010528898}
   - {fileID: 4202044933506112350}
   - {fileID: 988075824218156391}
+  - {fileID: 5200419700790302946}
   m_Father: {fileID: 8726320992580346405}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &326063302652959642
@@ -516,6 +588,76 @@ Transform:
   - {fileID: 6779649114786828815}
   m_Father: {fileID: 8980783932008189245}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &941151090253721504
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2008270446012746572}
+  - component: {fileID: 7161174212232744866}
+  - component: {fileID: 5448159569620052311}
+  m_Layer: 6
+  m_Name: Hitbox_L_Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2008270446012746572
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 941151090253721504}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.05, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 2706931489493958135}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &7161174212232744866
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 941151090253721504}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.1, y: 0.14, z: 0.08}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &5448159569620052311
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 941151090253721504}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &955991925467439614
 GameObject:
   m_ObjectHideFlags: 0
@@ -548,6 +690,7 @@ Transform:
   - {fileID: 8300029832303179204}
   - {fileID: 7271341972708326290}
   - {fileID: 9031072838550937288}
+  - {fileID: 3207399581946580754}
   m_Father: {fileID: 2367973639496084162}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1032825023104006069
@@ -650,6 +793,7 @@ Transform:
   - {fileID: 8757540891544719958}
   - {fileID: 4778402998381115513}
   - {fileID: 5295736991075045950}
+  - {fileID: 250027334542308777}
   m_Father: {fileID: 1796326939078059413}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1311258964246068061
@@ -778,7 +922,6 @@ GameObject:
   - component: {fileID: 4931539858440991534}
   - component: {fileID: 3125126428581330960}
   - component: {fileID: 5099984566976082160}
-  - component: {fileID: 2882244307305043410}
   m_Layer: 6
   m_Name: Enemy_Spotter
   m_TagString: Enemy
@@ -1754,22 +1897,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Runtime.EnemyDebugControls
   debugDamage: 25
   target: {fileID: 0}
---- !u!114 &2882244307305043410
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1499000362912248528}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
-  mode: 0
-  fixedZone: 0
-  health: {fileID: 0}
-  animator: {fileID: 0}
 --- !u!1 &1529947185680349093
 GameObject:
   m_ObjectHideFlags: 0
@@ -1892,14 +2019,14 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1672518387735509282}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: 0.000000029802322, y: -0.00000000376167, z: 0.20527399, w: 0.97870463}
+  m_LocalPosition: {x: 0.218, y: -0.03, z: 0.1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 3777491173468103847}
-  m_Father: {fileID: 2706931489493958135}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_Father: {fileID: 6730914258997579312}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 23.691}
 --- !u!1 &1710234097356158832
 GameObject:
   m_ObjectHideFlags: 0
@@ -1994,6 +2121,7 @@ Transform:
   m_Children:
   - {fileID: 3625201682877914574}
   - {fileID: 46676182812121360}
+  - {fileID: 9174547004773007167}
   m_Father: {fileID: 3746775888829107969}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2222238368903598636
@@ -2626,6 +2754,7 @@ Transform:
   m_Children:
   - {fileID: 638322200889383498}
   - {fileID: 1075120303385095116}
+  - {fileID: 8285660826105634500}
   m_Father: {fileID: 1180654877404651183}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &3188590935299284950
@@ -2690,6 +2819,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8757540891544719958}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3760981922464528896
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6136048590128800745}
+  - component: {fileID: 155643655713584811}
+  - component: {fileID: 7163769748762149774}
+  m_Layer: 6
+  m_Name: Hitbox_Chest
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6136048590128800745
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760981922464528896}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.005, y: 0.06, z: 0}
+  m_LocalScale: {x: 1.4596, y: 1.4596, z: 1.4596}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8980783932008189245}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &155643655713584811
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760981922464528896}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.3, y: 0.22, z: 0.2}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &7163769748762149774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3760981922464528896}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 1
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &3849095427020067383
 GameObject:
   m_ObjectHideFlags: 0
@@ -2722,6 +2921,76 @@ Transform:
   - {fileID: 4724607741641918121}
   m_Father: {fileID: 8459024673119637639}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &3900222453666941804
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2137457604240200728}
+  - component: {fileID: 8311408821759566373}
+  - component: {fileID: 8596883326148986931}
+  m_Layer: 6
+  m_Name: Hitbox_R_Thigh
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2137457604240200728
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900222453666941804}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.21, z: -0.02}
+  m_LocalScale: {x: 1, y: 1.1377, z: 1.1512}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1796326939078059413}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8311408821759566373
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900222453666941804}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.18, y: 0.28, z: 0.18}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8596883326148986931
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3900222453666941804}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &3956166983099345886
 GameObject:
   m_ObjectHideFlags: 0
@@ -2789,6 +3058,76 @@ Transform:
   - {fileID: 6812752143409102460}
   m_Father: {fileID: 349366109263416767}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4176982510399193602
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 250027334542308777}
+  - component: {fileID: 4503900351237802305}
+  - component: {fileID: 8810198311137663795}
+  m_Layer: 6
+  m_Name: Hitbox_R_Calf
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &250027334542308777
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4176982510399193602}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: 0.246, z: -0.011}
+  m_LocalScale: {x: 1, y: 1.83, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8278614936347362664}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &4503900351237802305
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4176982510399193602}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.15, y: 0.26, z: 0.15}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8810198311137663795
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4176982510399193602}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &4375002590085253779
 GameObject:
   m_ObjectHideFlags: 0
@@ -2851,6 +3190,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 5334776907283620024}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4397484246384424834
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2203077679003661934}
+  - component: {fileID: 43925191000066188}
+  - component: {fileID: 8638072352000391197}
+  m_Layer: 6
+  m_Name: Hitbox_L_Upperarm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2203077679003661934
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4397484246384424834}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 349366109263416767}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &43925191000066188
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4397484246384424834}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16, y: 0.22, z: 0.16}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8638072352000391197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4397484246384424834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &4587505361908673499
 GameObject:
   m_ObjectHideFlags: 0
@@ -3009,6 +3418,7 @@ Transform:
   m_Children:
   - {fileID: 8278614936347362664}
   - {fileID: 2668418070985391076}
+  - {fileID: 2137457604240200728}
   m_Father: {fileID: 3625201682877914574}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &4913145371328764461
@@ -3047,6 +3457,76 @@ Transform:
   - {fileID: 8851711284218023364}
   m_Father: {fileID: 7271341972708326290}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &4974789671389258908
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5200419700790302946}
+  - component: {fileID: 2419939754309684808}
+  - component: {fileID: 979442243025534815}
+  m_Layer: 6
+  m_Name: Hitbox_R_Hand
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5200419700790302946
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4974789671389258908}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.05, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8459024673119637639}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &2419939754309684808
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4974789671389258908}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.1, y: 0.14, z: 0.08}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &979442243025534815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4974789671389258908}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &5146742952291427750
 GameObject:
   m_ObjectHideFlags: 0
@@ -3144,9 +3624,79 @@ Transform:
   - {fileID: 6556220001586364440}
   - {fileID: 8449045885413290626}
   - {fileID: 461576518814454409}
-  - {fileID: 9174547004773007167}
+  - {fileID: 2008270446012746572}
   m_Father: {fileID: 357526712983903410}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5410269169964750323
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3207399581946580754}
+  - component: {fileID: 8955280217610471711}
+  - component: {fileID: 1242880499848594704}
+  m_Layer: 6
+  m_Name: Hitbox_L_Calf
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3207399581946580754
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5410269169964750323}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0.001, y: 0.287, z: -0}
+  m_LocalScale: {x: 1, y: 2.0031674, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1180654877404651183}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &8955280217610471711
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5410269169964750323}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.15, y: 0.26, z: 0.15}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1242880499848594704
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5410269169964750323}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &5579305963295194772
 GameObject:
   m_ObjectHideFlags: 0
@@ -3178,6 +3728,7 @@ Transform:
   m_Children:
   - {fileID: 357526712983903410}
   - {fileID: 6396257618096323047}
+  - {fileID: 2203077679003661934}
   m_Father: {fileID: 6289309195539200277}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &5594804088542104493
@@ -3338,6 +3889,146 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7141234656414462948}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &5913456484413285477
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1077235607511297376}
+  - component: {fileID: 671605878823781566}
+  - component: {fileID: 1900117317817404260}
+  m_Layer: 6
+  m_Name: Hitbox_R_Foot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1077235607511297376
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5913456484413285477}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.24498758, y: 0.03571508, z: 0.1397674, w: 0.9587339}
+  m_LocalPosition: {x: -0.032, y: 0.123, z: 0.009}
+  m_LocalScale: {x: 1.1251, y: 3.0634496, z: 0.62661}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4778402998381115513}
+  m_LocalEulerAnglesHint: {x: 27.372, y: 8.872, z: 18.753}
+--- !u!65 &671605878823781566
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5913456484413285477}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.12, y: 0.12, z: 0.22}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1900117317817404260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5913456484413285477}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
+--- !u!1 &5939548870760782962
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2454158269286938637}
+  - component: {fileID: 5304517494290717827}
+  - component: {fileID: 3282879008683625404}
+  m_Layer: 6
+  m_Name: Hitbox_Stomach
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2454158269286938637
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939548870760782962}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -0, y: -0.029, z: 0.007}
+  m_LocalScale: {x: 1.630549, y: 1.630549, z: 1.630549}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 46676182812121360}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5304517494290717827
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939548870760782962}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.26, y: 0.2, z: 0.18}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &3282879008683625404
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5939548870760782962}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 1
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &6038512633704947402
 GameObject:
   m_ObjectHideFlags: 0
@@ -3369,6 +4060,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1574888618517472788}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6215364160413214600
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3734832064648461915}
+  - component: {fileID: 5784434355574910465}
+  - component: {fileID: 4293391879834644197}
+  m_Layer: 6
+  m_Name: Hitbox_R_Upperarm
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3734832064648461915
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6215364160413214600}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0.1, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 3041503825022863316}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &5784434355574910465
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6215364160413214600}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16, y: 0.22, z: 0.16}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &4293391879834644197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6215364160413214600}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &6314489689533451393
 GameObject:
   m_ObjectHideFlags: 0
@@ -3430,6 +4191,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1574888618517472788}
+  - {fileID: 6581713578055906103}
   m_Father: {fileID: 4048451064080351296}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6409574448138495697
@@ -3494,6 +4256,76 @@ Transform:
   m_Children: []
   m_Father: {fileID: 4278874226816607050}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6788716050334349380
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 6581713578055906103}
+  - component: {fileID: 6184459581984388639}
+  - component: {fileID: 8306783619513180260}
+  m_Layer: 6
+  m_Name: Hitbox_Head
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &6581713578055906103
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6788716050334349380}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.003, y: 0.105, z: 0}
+  m_LocalScale: {x: 1.3889, y: 1.3889, z: 1.3889}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7050766356654299934}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6184459581984388639
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6788716050334349380}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.16, y: 0.2, z: 0.18}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &8306783619513180260
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6788716050334349380}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 2
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &6908018111649531738
 GameObject:
   m_ObjectHideFlags: 0
@@ -3557,6 +4389,7 @@ Transform:
   m_Children:
   - {fileID: 1180654877404651183}
   - {fileID: 4278874226816607050}
+  - {fileID: 5644705253621456282}
   m_Father: {fileID: 3625201682877914574}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &6979127322169833951
@@ -3691,6 +4524,7 @@ Transform:
   - {fileID: 3492667249887360817}
   - {fileID: 2577256379566494190}
   - {fileID: 5391637093890639666}
+  - {fileID: 6136048590128800745}
   m_Father: {fileID: 1717509540815613536}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &7156403363022950299
@@ -3945,6 +4779,76 @@ Transform:
   - {fileID: 8980783932008189245}
   m_Father: {fileID: 46676182812121360}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7818583211162250465
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 8285660826105634500}
+  - component: {fileID: 6377484448762400772}
+  - component: {fileID: 1135373121193597844}
+  m_Layer: 6
+  m_Name: Hitbox_L_Foot
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &8285660826105634500
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7818583211162250465}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0.21103351, y: -0.031062348, z: -0.006709752, w: 0.9769621}
+  m_LocalPosition: {x: 0.023, y: 0.112, z: -0.001}
+  m_LocalScale: {x: 1.697, y: 3.294786, z: 0.6374939}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 7271341972708326290}
+  m_LocalEulerAnglesHint: {x: 24.326, y: -3.998, z: -1.649}
+--- !u!65 &6377484448762400772
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7818583211162250465}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 0.12, y: 0.12, z: 0.22}
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1135373121193597844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7818583211162250465}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
 --- !u!1 &7920059098143951323
 GameObject:
   m_ObjectHideFlags: 0
@@ -4016,8 +4920,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5474009531630309088}
-  - component: {fileID: 726722438955493767}
   - component: {fileID: 5695622981190367139}
+  - component: {fileID: 1904623979230169207}
   m_Layer: 6
   m_Name: Hitbox_R_Forearm
   m_TagString: Untagged
@@ -4040,8 +4944,24 @@ Transform:
   m_Children: []
   m_Father: {fileID: 8726320992580346405}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!135 &726722438955493767
-SphereCollider:
+--- !u!114 &5695622981190367139
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8056662711241410246}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
+  mode: 1
+  fixedZone: 0
+  health: {fileID: 0}
+  animator: {fileID: 0}
+--- !u!65 &1904623979230169207
+BoxCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -4059,24 +4979,8 @@ SphereCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Radius: 0.09
+  m_Size: {x: 0.14, y: 0.22, z: 0.14}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5695622981190367139
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 8056662711241410246}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0cd2e0c2b303f4340b46e2fc2365d2df, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyHitbox
-  mode: 1
-  fixedZone: 0
-  health: {fileID: 0}
-  animator: {fileID: 0}
 --- !u!1 &8089988174032565471
 GameObject:
   m_ObjectHideFlags: 0
@@ -4301,6 +5205,7 @@ Transform:
   m_Children:
   - {fileID: 3284621099390438791}
   - {fileID: 606402800393102337}
+  - {fileID: 1077235607511297376}
   m_Father: {fileID: 8278614936347362664}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8770487136806221333
@@ -4686,6 +5591,7 @@ Transform:
   m_Children:
   - {fileID: 8726320992580346405}
   - {fileID: 7017026838924147472}
+  - {fileID: 3734832064648461915}
   m_Father: {fileID: 2577256379566494190}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1137541417831280584
@@ -4836,31 +5742,31 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -0.031
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.168
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.995963
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0
+      value: 0.00000003001007
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.0000000068684125
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalRotation.z
-      value: 0
+      value: -0.08976525
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
@@ -4872,19 +5778,81 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
+      value: -10.3
       objectReference: {fileID: 0}
     - target: {fileID: 5733412940241278052, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
       propertyPath: m_Name
       value: Lamp
       objectReference: {fileID: 0}
+    - target: {fileID: 5733412940241278052, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      propertyPath: m_Layer
+      value: 9
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 5733412940241278052, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 281307892335285234}
+    - targetCorrespondingSourceObject: {fileID: 1390771318293255244, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 2583778487511398067}
   m_SourcePrefab: {fileID: 100100000, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
 --- !u!4 &3777491173468103847 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5716699279587599320, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
   m_PrefabInstance: {fileID: 8879290324865877887}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &3794492901933978395 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 5733412940241278052, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+  m_PrefabInstance: {fileID: 8879290324865877887}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &281307892335285234
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3794492901933978395}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1c7791ccfba4374f829734d1d1ceac9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.LampSwayEffect
+  agent: {fileID: 0}
+--- !u!1 &7526799914271658803 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1390771318293255244, guid: 7c4fb7eab2eb8f944b4596856d2e88b0, type: 3}
+  m_PrefabInstance: {fileID: 8879290324865877887}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &2583778487511398067
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7526799914271658803}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 474bcb49853aa07438625e644c072ee6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Runtime::UnityEngine.Rendering.Universal.UniversalAdditionalLightData
+  m_UsePipelineSettings: 1
+  m_AdditionalLightsShadowResolutionTier: 2
+  m_CustomShadowLayers: 0
+  m_LightCookieSize: {x: 1, y: 1}
+  m_LightCookieOffset: {x: 0, y: 0}
+  m_SoftShadowQuality: 0
+  m_RenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_ShadowRenderingLayersMask:
+    serializedVersion: 0
+    m_Bits: 1
+  m_Version: 4
+  m_LightLayerMask: 1
+  m_ShadowLayerMask: 1
+  m_RenderingLayers: 1
+  m_ShadowRenderingLayers: 1

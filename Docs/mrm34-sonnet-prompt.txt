@@ -1,60 +1,86 @@
-You are picking up Mr. Moonlight fresh, after a short 2026-09-02 session that fixed a Spotter
-animation bug. Branch: mrm-34 (this file's earlier version said mrm-75 — that was stale; check
-`git branch --show-current` if unsure, don't trust either name blindly).
+You are picking up Mr. Moonlight fresh, after a 2026-09-03 session that doubled the Spotter
+population and rebuilt the whole per-hitbox damage system. Branch: mrm-34 (check
+`git branch --show-current` if unsure). This file replaces its own earlier version, which covered a
+now-fully-resolved Animator Controller bug — that content is superseded, don't chase it.
 
-MRM-34 (Spotter enemy AI) itself is long done and verified live end-to-end (detect → chase → fire →
-kill → flare → reinforcements) — see memory `mrm34_spotter_ai_built`. Nothing to redo there.
+Read `Docs/mrm34-spotter-ai-build.md` §16 before touching anything Spotter-related — it has the
+full reasoning and exact numbers for everything below. This file is just the "what's next" pointer.
 
 
-WHAT JUST HAPPENED (fully resolved, no follow-up needed)
+WHAT JUST HAPPENED (all verified live across every one of the 102 placed instances, not just the
+prefab source — see the propagation gotcha below before assuming a prefab edit is enough)
 
-Carlos reported Spotters occasionally visible lying flat on the ground for a couple seconds after
-spawn, standing up once he approached or they started/stopped moving. Root cause:
-`AC_Spotter.controller`'s `Downed` Trigger parameter had `defaultBool = true` (every other trigger
-was `false`), so every fresh instance auto-fired into the Downed animator state via its
-`AnyState -> Downed` transition before any script ever ran — confirmed in total isolation (bare
-GameObject + Animator + controller, zero scripts, still auto-transitioned). Fixed by resetting the
-default to `false` and saving the asset. Verified the controller change directly; a live in-Editor
-re-test still needs a fresh Play session on Carlos's end (was mid-verification when this session
-ended).
+1. Spotter population doubled 51 -> 102, scattered (jittered 15-40m off each original, NavMesh-
+   sampled, 3m min spacing). `Assets/_Project/Data/Events/IslandEvents.txt`'s comment updated.
 
-Full writeup: `Docs/spotter-downed-trigger-lessons-learned.md`. Also worth reading before touching
-any OTHER character's Animator Controller (Blaze, Wendigo, Tracey, anyone future) — Carlos
-specifically asked this lesson be kept in mind for those: **if an Animator Controller misbehaves
-identically across every instance with no script anywhere referencing the state/trigger by name,
-check parameter default values in the Parameters tab before suspecting code.** A Trigger left
-checked in that tab before saving serializes as a stuck `true` default — invisible in the graph
-view.
+2. The whole damage-hitbox system was replaced, twice in the same session — first a 6-box design
+   (root capsule kept as HeightBands fallback), then Carlos supplied a reference image and
+   explicitly overrode that with the final 15-box design that shipped:
+     - Root `EnemyHitbox` REMOVED. Capsule is movement/NavMesh only now, no damage duty, no
+       fallback. A shot in a gap between boxes (armpit, neck, groin) is a clean miss.
+     - 15 `BoxCollider` + `EnemyHitbox` (FixedZone) pairs, one per bone — see §16.2 for the exact
+       list and bone names. Sizes/positions are Carlos's rough placeholders; he said he'd hand-tune
+       them himself next, so don't be surprised if they've moved since this was written.
+     - This work belongs to MRM-32's scope even though it landed on the mrm-34 branch (Carlos's own
+       call, flagged and logged as a comment on both MRM-34 and MRM-32 in Linear). MRM-32's other
+       scope (stun tiers, hit-from-behind turn, shot-while-idle chase-to-origin, slope limit, Gore
+       Simulator dismemberment) is still fully open — don't assume MRM-32 is done because the
+       hitboxes exist now.
 
-Also worth reusing: the debugging *method*, not just the fix — see memory
-`feedback_editor_watcher_for_timing_bugs`. For any bug that reproduces reliably but briefly in Play
-Mode (a few seconds), don't try to time a manual pause-and-inspect through chat — entering Play Mode
-reloads the domain and wipes anything installed from Edit Mode first, and the round-trip alone eats
-a short window anyway. Instead write a throwaway `[InitializeOnLoad]` Editor script that self-arms
-on `EditorApplication.playModeStateChanged` and freezes/logs automatically. Delete it once done.
+3. The lamp moved from `CC_Base_L_Hand/Socket_Lamp` to `CC_Base_Hip/Socket_Lamp` (freed the hand
+   for its own hitbox), got a new `LampSwayEffect` component (tilts on local X with NavMeshAgent
+   speed — new tunables `SpotterLampSway{MaxAngle,Frequency,ReferenceSpeed}`, all first-guess
+   numbers), and got moved to a new "DroppedProp" physics layer (slot 9) so it stops physically
+   colliding with the Enemy layer and stops absorbing bullet raycasts meant for a real hitbox — this
+   closed a genuine pre-existing gap (the lamp's collider was live and non-trigger the whole time it
+   was socketed, and the guns' HitMask was literally "Everything"). The 4 Burntwax `ShootConfig`
+   assets that exclude layer 9 from HitMask are under gitignored `Assets/ThirdParty/**` — local-only,
+   reapply (clear bit 9) if that package is ever re-fetched fresh.
+
+
+TRAPS ALREADY FOUND
+
+- **Prefab-to-instance propagation is not reliable for structural component changes.** Editing
+  `Enemy_Spotter.prefab` via `PrefabUtility.LoadPrefabContents` + `SaveAsPrefabAsset` does not
+  always auto-sync already-placed scene instances when you destroy one component type and add
+  another on an existing child object. First pass this session: 1 of 102 instances (the
+  earliest-placed one) stayed on stale components after a full scene reload and needed the fix
+  applied to it directly. Second pass: 0 stragglers. Not predictable which instance sticks —
+  **always verify every placed instance after this kind of edit**
+  (`GetComponentsInChildren(typeof(EnemyHitbox), true).Length` across every child of "Enemies", not
+  a spot-check on one).
+- `manage_scene`'s `load` action can refuse with "unsaved changes" immediately after a successful
+  `save` — something in this scene re-dirties itself every tick even at rest (unidentified,
+  SunController/TimeManager are candidates). Reload via
+  `EditorSceneManager.OpenScene(path, OpenSceneMode.Single)` in `execute_code` directly instead of
+  fighting the guard.
+- `mcp__UnityMCP__execute_code` has no Roslyn installed — it silently falls back to CodeDom (C# 6):
+  no `using` statements inside the code body, no tuples, fully-qualify anything outside
+  `UnityEngine`/`UnityEditor` (e.g. `UnityEngine.AI.NavMesh`), and one call's local variables do not
+  persist to the next call. Full detail if you hit a confusing compile error: this file's sibling
+  memory note (not in this repo — ask if you want the details re-derived here instead).
 
 
 OUTSTANDING / NOT MINE TO DECIDE
 
-`git status` at the end of this session also showed `Assets/_Project/Art/UI/Fonts/SpecialElite
-SDF.asset` and `Assets/_Project/Scenes/Island.unity` modified, plus this session's own
-`AC_Spotter.controller` fix and the new lessons-learned doc. The font/Island changes predate this
-session (font swaps + VFX placement from earlier the same day — see `Docs/mrm76-sonnet-prompt.txt`
-for that history) and were left uncommitted by Carlos's own workflow choice, not abandoned mid-task.
-Don't touch or explain them away as part of this fix; they're a separate concern for whenever Carlos
-commits.
-
-For whatever comes next, check Linear (`MrMoonlightDemo`, team `MRM`) and `Docs/mrm76-sonnet-prompt.txt`
-for the current state of the gameplay-balance/VFX/font tail — that file is the active rolling
-handoff for that thread, this file is scoped only to the Spotter animator fix above.
+- Box hitbox sizes and positions are Carlos's own tuning pass, in progress as of this session ending
+  — don't "fix" them without being asked, he may already be mid-edit.
+- The `ShootConfig` HitMask edit (local-only, gitignored) — worth a one-line durable note somewhere
+  Carlos will actually see it before a fresh Burntwax re-fetch, if that's ever likely.
+- `Assets/_Project/Prefabs/World/Prop_Lamp.prefab` shows as modified in git — that's Carlos's own
+  in-progress lamp-scaling work (localScale 1 -> 1.4243 on the "Visual" child, plus Unity auto-added
+  `UniversalAdditionalLightData` to the Light), not this session's. Don't touch it or explain it
+  away; it's a separate concern for whenever he's done and commits.
 
 
 HOUSE RULES THAT MATTER HERE (restated because this file gets read cold)
 
-  - No hardcoded values — MoonlightTunables. This fix touched an Animator Controller asset, not a
-    tunable, so nothing to add there.
-  - Never commit or push — Carlos uses GitHub Desktop. A commit message for this fix was given to
-    him directly in chat at the end of this session, not repeated here.
-  - Scene/prefab/Blender work: offer via the MCP bridge, ask first, verify by reading real state
-    back, document. This session's fix was an asset-data edit (Animator Controller parameter), not
-    scene/inspector staging, so it was applied directly per Carlos's explicit go-ahead.
+  - No hardcoded values — MoonlightTunables. This session added `SpotterLampSway{MaxAngle,
+    Frequency,ReferenceSpeed}`; follow the same pattern for anything new.
+  - Never commit or push — Carlos uses GitHub Desktop.
+  - Scene/prefab work: ask first, do it via the MCP bridge once he says yes, verify by reading real
+    component state back (across ALL placed instances, see the propagation trap above), document
+    what changed. Same pattern for Blender work.
+  - One issue, one branch, one PR — except when Carlos explicitly asks for a small cross-issue fix
+    inline (this session's MRM-32-scoped hitbox work landing on the mrm-34 branch is exactly that;
+    flagged once, in both places, then just done).

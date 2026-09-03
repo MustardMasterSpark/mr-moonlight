@@ -446,6 +446,15 @@ namespace MrMoonlight.Data
         /// <summary>Range of the Spotter's hand lamp, in metres. Owner: MRM-34</summary>
         public float SpotterLampRange = 14f;
 
+        /// <summary>Peak angle the lamp tilts to on its local X axis at full sway, in degrees — the "hanging and swinging" read. Owner: MRM-34 (2026-09-03, lamp moved from hand to hip socket)</summary>
+        public float SpotterLampSwayMaxAngle = 12f;
+
+        /// <summary>Full swing cycles per second at full sway. Owner: MRM-34</summary>
+        public float SpotterLampSwayFrequency = 1.6f;
+
+        /// <summary>Spotter speed, in m/s, at which the lamp reaches full sway angle and frequency; scales down proportionally below it. Matches the Spotter's own NavMeshAgent speed (3) so a normal walk is already full sway. Owner: MRM-34</summary>
+        public float SpotterLampSwayReferenceSpeed = 3f;
+
         [Header("Flare VFX — MRM-34 (reused by MRM-57)")]
 
         /// <summary>

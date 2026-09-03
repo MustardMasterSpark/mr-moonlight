@@ -325,8 +325,12 @@ Source: `FLASHLIGHT LATERN PACK 6 OF 6 BY RETROS/FBX/Lamp_3.fbx`, Carlos's file.
 - `Prefabs/World/Prop_Lamp.prefab`: mesh + **real point `Light`** (warm kerosene 1.0/0.82/0.55,
   intensity 2.5, range 14, soft shadows) + BoxCollider. Rotation (0,0,0), scale (1,1,1).
 
-Socketed at `CC_Base_L_Hand/Socket_Lamp`. **Position is a placeholder** — Carlos said he will fix
-where it hangs. It is listed in `EnemyDeathDrop` so it detaches on death and keeps burning.
+**Moved 2026-09-03 (§16): socketed at `CC_Base_Hip/Socket_Lamp`**, not the hand — Carlos's call, to
+free the hand for its own hitbox. Local offset `(0.18, -0.05, 0.10)` is still a placeholder for
+Carlos to nudge by hand. It is listed in `EnemyDeathDrop` so it detaches on death and keeps burning.
+It now also carries `LampSwayEffect` (tilts on local X with NavMeshAgent speed) and sits on the
+`DroppedProp` physics layer (ignores collision with `Enemy`, excluded from every gun's `HitMask`) —
+see §16 for all three.
 
 ---
 
@@ -709,7 +713,7 @@ and changing two things at once makes it impossible to tell which one mattered.
 | 3 | **Ten-Spotter frame cost in a build** | The last unmet MRM-34 acceptance criterion. Ties to MRM-64. Seven ran fine in the editor, but editor ≠ build |
 | 4 | **MRM-29's three-blind-run search** | Blaze's own search stands in. Per §3.2 this one *can* legitimately be a `BlazeBehaviour` (it replaces the attack state's search) |
 | 5 | **NavMesh agent tuning** (MRM-27) | Bake uses the default `Humanoid` (radius 0.5 / height 2 / slope 45° / step 0.75). Spotter's agent is 0.35 / 1.8. Safe but conservative. Changing it means editing the project-wide agent or adding a custom type — a **project-settings change, so ask first** |
-| 6 | **Lamp hand position** | Agreed placeholder. Socket is `CC_Base_L_Hand/Socket_Lamp` |
+| 6 | ~~**Lamp hand position**~~ | **Moved, still placeholder.** Now `CC_Base_Hip/Socket_Lamp` (§16), offset itself still needs Carlos's hand-tuning |
 | 7 | **Lamp normal map** | Carlos is providing one. Drop into `M_Lamp`'s `_NormalMap` (**not** `_BumpMap` — RetroLit renamed it) |
 | 8 | **Lamp not logged in `prop-log.md`** | The wizard says log only after Carlos's review gate. Still pending |
 | 9 | **Flare spark shape** | Read as elongated shards, not embers. `Sparks` → `ParticleSystemRenderer.lengthScale` 2.5 → ~1.2. Pure numbers |
@@ -717,8 +721,10 @@ and changing two things at once makes it impossible to tell which one mattered.
 | 11 | **Shotgun drop has no pickup** | Detaches only, as agreed. MRM-26 owns pickups |
 | 12 | **No audio** | `EnemyAudioHooks` call sites exist with empty clip slots. Inspector job, not a code job. Prefix `ENM_Spotter_*` |
 | 13 | **Player-gun damage hook is descoped** | ~15 lines in `GunScriptableObject`, marked `MRM-34:`. Works, but is not MRM-32's real implementation. Remove or absorb |
-| 14 | **No per-bone hitboxes** | `EnemyHitbox` exists as a stub; only the root capsule is present. MRM-32 |
+| 14 | ~~**No per-bone hitboxes**~~ | **Done (§16).** 15 boxes replace the capsule height-band stub entirely — sizes/positions are still rough, Carlos is hand-tuning |
 | 15 | **Debug tools still on the prefab** | `EnemyDebugControls` on the Spotter, `InvulnerableDebugToggle` (F4) on the Player. Delete when MRM-32 makes them redundant |
+| 16 | **Hitbox gaps are now clean misses** | Removing the capsule's `EnemyHitbox` (§16) means a shot landing between the 15 boxes (armpit, neck, groin) no longer falls back to anything — Carlos's explicit call, flagged here in case it reads as a bug later |
+| 17 | **`ShootConfig` HitMask edit is local-only** | The 4 Burntwax `ShootConfig` assets that exclude `DroppedProp` (§16) live under gitignored `Assets/ThirdParty/` — reapply if that package is ever re-fetched fresh |
 
 ### 15.4 Things that are done and should not be re-litigated
 
@@ -730,3 +736,90 @@ and changing two things at once makes it impossible to tell which one mattered.
 - The runaway guard defaulting on (§4)
 - `MrMoonlight.Combat` existing as its own assembly — forced by a circular reference (§13.3)
 - The Island NavMesh bake and its settings (§7)
+- The 51→102 Spotter population and the 15-box hitbox rebuild (§16) — Carlos's explicit design
+  calls, not defaults picked without asking
+
+---
+
+## 16. Session 3 (2026-09-03) — pacing pass: population, hitboxes, lamp
+
+Carlos ran a full demo playthrough and asked for two pacing changes, then escalated into a hitbox
+redesign mid-session. All of it applied directly (scene/prefab work, permission asked and given each
+time per `kickstart.md` §B.3), verified by reading the live component state back across every
+placed instance afterward — not just the prefab source. Full detail: memories
+`mrm34_spotter_scatter_doubling`, `unitymcp_execute_code_codedom_constraints`,
+`mrm34_spotter_hitbox_rebuild` (Claude's own persistent memory, not in this repo, but the session
+transcript's reasoning is reflected here).
+
+### 16.1 Population: 51 → 102 Spotters, scattered
+
+The 51 Spotters were hand-baked `Enemy_Spotter` clones directly in `Island.unity` (not a spawner,
+not the event script) — confirmed by grepping the scene file for `Enemy_Spotter_` literal count.
+Doubled by jittering one duplicate 15-40 m from each original, NavMesh-sampled (6 m tolerance),
+rejected within 3 m of any other point (original or new). Result: 102 total, 0 placement failures,
+closest pair 7.9 m apart, none underwater (Y range 8.1-55.3, sea level Y=8). `IslandEvents.txt`'s
+comment updated from 51 to 102.
+
+**Side effect worth knowing:** every Spotter carries a real lamp `Light`, and URP's additional-light
+shadow atlas (2048×2048, shared across all shadow-casting lights in a frame) was already warning
+before this change (`"Reduced additional punctual light shadows resolution..."`) — doubling the
+population will make that fire more often. Purely a shadow-quality/perf signal, not an error; watch
+for visibly blocky shadows in a firefight. MRM-60 already has a precedent tunable for capping
+concurrent real-time lights in the mine that could be extended outdoors if this becomes a real
+problem.
+
+### 16.2 Hitboxes: capsule height-bands → 15 fixed boxes
+
+Carlos supplied a reference image and explicitly overrode the height-band design from earlier the
+same session (see §16.2's own predecessor, which briefly existed as a 6-box capsule-fallback design
+before being replaced again within the hour — the capsule-fallback version never shipped past this
+doc). Final design:
+
+- **Root `EnemyHitbox` removed entirely.** The capsule is movement/NavMesh only now — no damage
+  duty, no fallback. A shot landing in a gap between the 15 boxes (armpit, neck, groin) is a clean
+  miss.
+- **15 `BoxCollider` + `EnemyHitbox` (FixedZone) pairs**, one per bone: `Hitbox_Head` (Head zone);
+  `Hitbox_Chest` / `Hitbox_Stomach` on `CC_Base_Spine02` / `CC_Base_Waist` (Torso zone);
+  `Hitbox_{L,R}_Upperarm` / `Forearm` / `Hand` and `Hitbox_{L,R}_Thigh` / `Calf` / `Foot` (Limb
+  zone, 12 boxes). All sizes are rough placeholders — Carlos is hand-tuning position/size/shape
+  per-box now that the count and anchoring are locked in.
+- Boxes over spheres was Carlos's own call, endorsed: a limb reads as a rectangle, not a sphere, so
+  a box wastes less volume beyond the actual mesh and is easier to eyeball-align. No performance
+  difference between `BoxCollider` and `SphereCollider` for this — a handful of raycasts a frame,
+  not thousands.
+
+**Gotcha confirmed twice in one session:** editing the prefab source (`PrefabUtility.LoadPrefabContents`
++ `SaveAsPrefabAsset`) does not reliably auto-sync already-placed scene instances for structural
+component changes (destroy+add). First pass left exactly 1 of 102 stuck on stale components after a
+full scene reload (the earliest-placed instance, `Enemy_Spotter_00`) and needed the same edit
+applied to it directly; the second pass had zero stragglers. Not predictable which instances stick —
+**always verify every placed instance after this kind of edit**, via a
+`GetComponentsInChildren(typeof(EnemyHitbox), true).Length` count across all of "Enemies", not a
+spot-check on one.
+
+### 16.3 Lamp: hand → hip, plus a sway effect and a dedicated physics layer
+
+Three changes, all in the same pass:
+
+1. **Reparented** `Socket_Lamp` from `CC_Base_L_Hand` to `CC_Base_Hip` — Carlos's call, so the new
+   `Hitbox_L_Hand` box wouldn't compete for space with it. New local offset `(0.18, -0.05, 0.10)`,
+   itself still a placeholder.
+2. **New `LampSwayEffect.cs`** (`Runtime/Enemies/`): tilts the lamp on local X proportional to the
+   Spotter's `NavMeshAgent.velocity.magnitude` — "hanging and swinging while walking," per Carlos's
+   description. Reference speed defaults to the agent's own cruising speed (3 m/s), so a normal walk
+   is already full sway. Watches for a `Rigidbody` and self-disables once `EnemyDeathDrop` adds one,
+   mirroring `LampFireEffect`'s existing idiom exactly (`Runtime/Enemies/LampFireEffect.cs`'s own
+   `Update()`). Tunables: `SpotterLampSwayMaxAngle` (12°), `SpotterLampSwayFrequency` (1.6 Hz),
+   `SpotterLampSwayReferenceSpeed` (3 m/s) — all first-guess numbers, not measured.
+3. **New Physics layer `DroppedProp`** (slot 9), assigned to the lamp GameObject (persists through
+   `EnemyDeathDrop`'s reparent, since layer is a GameObject property). `LampFireEffect.Awake()` now
+   calls `Physics.IgnoreLayerCollision(DroppedProp, Enemy, true)` once (static guard) — this closes
+   a real gap found earlier the same session: the lamp's live, non-trigger `BoxCollider` (present
+   the whole time it's socketed, not just after drop) could physically clip the body/ragdoll and
+   could steal a bullet raycast meant for a hitbox, since the guns' `HitMask` was `Everything`. World
+   geometry (Ground, Default, Destructible, ...) is untouched, so a dropped lamp still lands and
+   rolls normally — only the Enemy-layer interaction is disabled, and "clips into the body" is
+   accepted as cosmetic-only per Carlos.
+   Also cleared bit 9 from `HitMask` on all 4 Burntwax `ShootConfig` assets (Pistol/Revolver/
+   Shotgun/Smg) so gun raycasts skip `DroppedProp` too. **These assets are gitignored**
+   (`Assets/ThirdParty/**`) — local-only fix, reapply if the package is ever re-fetched.

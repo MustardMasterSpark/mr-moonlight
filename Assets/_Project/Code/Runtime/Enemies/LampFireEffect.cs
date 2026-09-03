@@ -44,6 +44,8 @@ namespace MrMoonlight.Enemies
         private bool _ignited;
         private bool _impactSoundPlayed;
 
+        private static bool _dropCollisionRulesSet;
+
         private void Awake()
         {
             if (lampLight == null) lampLight = GetComponentInChildren<Light>();
@@ -54,6 +56,28 @@ namespace MrMoonlight.Enemies
             if (impactAudioSource == null) impactAudioSource = gameObject.AddComponent<AudioSource>();
             impactAudioSource.playOnAwake = false;
             impactAudioSource.spatialBlend = 1f; // 3D — attenuates with distance from the player's AudioListener
+
+            EnsureDropCollisionRules();
+        }
+
+        // The lamp's collider sits on the "DroppedProp" layer whether it's still socketed or
+        // already on the ground — MRM-34, Carlos's call 2026-09-03: it should never physically
+        // collide with the enemy body it's clipping through or another enemy's hitboxes (clipping
+        // into the body is fine, it's cosmetic), and it must never register as a bullet hit either
+        // (see ShootConfig HitMask — "DroppedProp" is excluded there too). World geometry (Ground,
+        // Default, Destructible, ...) is untouched, so a dropped lamp still lands and rolls
+        // normally. A static guard because every Spotter's lamp calls this at Awake and the rule
+        // only needs setting once per session.
+        private static void EnsureDropCollisionRules()
+        {
+            if (_dropCollisionRulesSet) return;
+            _dropCollisionRulesSet = true;
+
+            int droppedProp = LayerMask.NameToLayer("DroppedProp");
+            int enemy = LayerMask.NameToLayer("Enemy");
+            if (droppedProp < 0 || enemy < 0) return;
+
+            Physics.IgnoreLayerCollision(droppedProp, enemy, true);
         }
 
         // EnemyDeathDrop's collider is non-trigger, so this fires on the lamp's first real ground
