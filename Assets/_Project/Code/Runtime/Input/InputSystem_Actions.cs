@@ -243,6 +243,16 @@ namespace MrMoonlight.Input
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""Unbound"",
+                    ""type"": ""Button"",
+                    ""id"": ""d3c6a0f2-04fc-451d-973f-d2e338e5b787"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -1073,6 +1083,7 @@ namespace MrMoonlight.Input
             m_Gameplay_BootsToggle = m_Gameplay.FindAction("BootsToggle", throwIfNotFound: true);
             m_Gameplay_InventoryScroll = m_Gameplay.FindAction("InventoryScroll", throwIfNotFound: true);
             m_Gameplay_Pause = m_Gameplay.FindAction("Pause", throwIfNotFound: true);
+            m_Gameplay_Unbound = m_Gameplay.FindAction("Unbound", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1188,6 +1199,7 @@ namespace MrMoonlight.Input
         private readonly InputAction m_Gameplay_BootsToggle;
         private readonly InputAction m_Gameplay_InventoryScroll;
         private readonly InputAction m_Gameplay_Pause;
+        private readonly InputAction m_Gameplay_Unbound;
         /// <summary>
         /// Provides access to input actions defined in input action map "Gameplay".
         /// </summary>
@@ -1260,6 +1272,10 @@ namespace MrMoonlight.Input
             /// </summary>
             public InputAction @Pause => m_Wrapper.m_Gameplay_Pause;
             /// <summary>
+            /// Provides access to the underlying input action "Gameplay/Unbound".
+            /// </summary>
+            public InputAction @Unbound => m_Wrapper.m_Gameplay_Unbound;
+            /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
             public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
@@ -1330,6 +1346,9 @@ namespace MrMoonlight.Input
                 @Pause.started += instance.OnPause;
                 @Pause.performed += instance.OnPause;
                 @Pause.canceled += instance.OnPause;
+                @Unbound.started += instance.OnUnbound;
+                @Unbound.performed += instance.OnUnbound;
+                @Unbound.canceled += instance.OnUnbound;
             }
 
             /// <summary>
@@ -1386,6 +1405,9 @@ namespace MrMoonlight.Input
                 @Pause.started -= instance.OnPause;
                 @Pause.performed -= instance.OnPause;
                 @Pause.canceled -= instance.OnPause;
+                @Unbound.started -= instance.OnUnbound;
+                @Unbound.performed -= instance.OnUnbound;
+                @Unbound.canceled -= instance.OnUnbound;
             }
 
             /// <summary>
@@ -1985,6 +2007,13 @@ namespace MrMoonlight.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnPause(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Unbound" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnUnbound(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

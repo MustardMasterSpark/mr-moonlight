@@ -21,11 +21,11 @@ namespace MrMoonlight.Player
     /// boots/weapon/substance modifiers attached here actually affect movement. See
     /// <see cref="PlayerController"/>'s class doc comment.</para>
     /// </summary>
-    [RequireComponent(typeof(BurntwaxPlayerBridge))]
     public sealed class PlayerStats : MonoBehaviour
     {
         [Header("References")]
-        [SerializeField] private BurntwaxPlayerBridge playerController;
+        [Tooltip("Leave empty to resolve from the character. Only used to relay jump/sprint signals; the pools themselves live on PolymindGames' managers now.")]
+        [SerializeField] private MoonlightPlayerRig playerRig;
 
         private float _currentAudioPitch;
         private float _lastSprintTime = float.NegativeInfinity;
@@ -63,9 +63,9 @@ namespace MrMoonlight.Player
 
         private void Awake()
         {
-            if (playerController == null)
+            if (playerRig == null)
             {
-                playerController = GetComponent<BurntwaxPlayerBridge>();
+                playerRig = GetComponentInParent<MoonlightPlayerRig>();
             }
 
             Health = new Stat(Tunables.I.MaxHealth, 0f, Tunables.I.MaxHealth);
@@ -85,19 +85,24 @@ namespace MrMoonlight.Player
 
         private void OnEnable()
         {
-            playerController.OnJumped += HandleJumped;
-            playerController.OnSprinting += HandleSprinting;
+            if (playerRig != null)
+            {
+                playerRig.OnSprinting += HandleSprinting;
+            }
         }
 
         private void OnDisable()
         {
-            playerController.OnJumped -= HandleJumped;
-            playerController.OnSprinting -= HandleSprinting;
+            if (playerRig != null)
+            {
+                playerRig.OnSprinting -= HandleSprinting;
+            }
         }
 
         private void Update()
         {
-            UpdateStaminaRegen();
+            // Stamina regen and drain moved to PolymindGames' StaminaManager in MRM-9;
+            // MoonlightPlayerRig mirrors its value into Stamina each frame before this runs.
             UpdateBreathingThresholds();
             UpdateAudioPitch();
             UpdateDeathCheck();
@@ -112,40 +117,15 @@ namespace MrMoonlight.Player
             }
         }
 
-        private void HandleJumped()
-        {
-            if (!Stamina.IsLocked)
-            {
-                Stamina.Deplete(Tunables.I.JumpStaminaCost);
-            }
-        }
-
+        /// <summary>
+        /// Sprint no longer drains stamina here - MRM-9 handed the pool to PolymindGames'
+        /// StaminaManager, which charges the Run state at
+        /// <see cref="MoonlightTunables.SprintStaminaDrainPerSecond"/>. This is kept only to record
+        /// when sprinting last happened, which the breathing hooks still read.
+        /// </summary>
         private void HandleSprinting(float deltaTime)
         {
             _lastSprintTime = Time.time;
-
-            if (Stamina.IsLocked)
-            {
-                return;
-            }
-
-            float staminaFraction = Stamina.MaxValue > 0f ? Stamina.Value / Stamina.MaxValue : 0f;
-            float drainRate = Tunables.I.StaminaDrainCurve.Evaluate(staminaFraction);
-            Stamina.Deplete(drainRate * deltaTime);
-        }
-
-        private void UpdateStaminaRegen()
-        {
-            if (Stamina.IsLocked)
-            {
-                return;
-            }
-
-            bool regenDelayElapsed = Time.time - _lastSprintTime >= Tunables.I.StaminaRegenDelayAfterSprint;
-            if (regenDelayElapsed)
-            {
-                Stamina.Restore(Tunables.I.StaminaRegenRate * Time.deltaTime);
-            }
         }
 
         private void UpdateBreathingThresholds()

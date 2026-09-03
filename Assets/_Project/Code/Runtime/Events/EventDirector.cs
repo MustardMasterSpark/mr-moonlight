@@ -317,15 +317,15 @@ namespace MrMoonlight.Events
             // Searched from the root, not from `player`: the Player tag is on the Body collider
             // (physics reads the collider's own tag, never a parent's), while the bridge lives on
             // a sibling branch — MrMoonlight Systems. Starting at `player` finds nothing.
-            BurntwaxPlayerBridge bridge = player != null
-                ? player.transform.root.GetComponentInChildren<BurntwaxPlayerBridge>(true)
+            MoonlightPlayerRig bridge = player != null
+                ? player.transform.root.GetComponentInChildren<MoonlightPlayerRig>(true)
                 : null;
 
-            if (bridge == null) bridge = FindFirstObjectByType<BurntwaxPlayerBridge>(FindObjectsInactive.Include);
+            if (bridge == null) bridge = FindFirstObjectByType<MoonlightPlayerRig>(FindObjectsInactive.Include);
 
             if (bridge == null)
             {
-                Debug.LogWarning("[EventDirector] Level ended but no BurntwaxPlayerBridge was found — the player keeps looking around behind the end panel.", this);
+                Debug.LogWarning("[EventDirector] Level ended but no MoonlightPlayerRig was found — the player keeps looking around behind the end panel.", this);
                 return;
             }
 

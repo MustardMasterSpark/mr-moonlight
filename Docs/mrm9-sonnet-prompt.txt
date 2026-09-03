@@ -1,0 +1,260 @@
+Cold-start context for the next session. Read this file first, not chat scrollback.
+
+MODEL NOTE: this hand-off is written for Sonnet. The build phase (framework migration, layer
+remap, integration architecture) is done and verified on Opus. What remains is tuning, HUD
+construction and bug-fixing on a system that already exists — the same build→tune split used for
+MRM-34.
+
+
+==============================================================================
+1. WHAT THIS BRANCH IS
+==============================================================================
+
+Branch: `mrm-9-hqfps`, off `main`, created 2026-09-03. Nothing committed or pushed.
+Issue: MRM-9 (Player prefab + FPS controller). Touches many others — see §9.
+
+Carlos replaced BOTH the character controller and the weapon system with HQ FPS Weapons 2.0
+(PolymindGames FPSCore). Burntwax FPS Engine is being removed.
+
+His two governing constraints, stated verbatim mid-session — honour them:
+
+  "We're just gonna have one character controller and I would rather import this one and build
+   the functions on top of that one. We don't want functionality split in several places related
+   to the character controller."
+
+  "Just bring in the necessary stuff. We are trying to avoid bloating the project."
+
+**READ `Docs/mrm9-hqfps-integration.md` BEFORE TOUCHING ANYTHING.** It is long, and it is the real
+documentation — decisions, who made them, every trap, measured numbers. This file is the pointer,
+not the record.
+
+
+==============================================================================
+2. STATE — WHAT WORKS RIGHT NOW (all verified in play mode, not assumed)
+==============================================================================
+
+- FPSCore framework compiles clean in Mr. Moonlight. Zero compile errors.
+- `Player_Tracey.prefab` is live in `Island.unity` and playable.
+- Movement, look, crouch, sprint, jump, slide — all vendor, all working.
+- 4 weapons in the holster: [0] DB Shotgun, [1] M1911, [2] Crossbow, [3] Baseball Bat.
+- Q / right-bumper cycles them, wraps 0→1→2→3→0.
+- Infinite reserve ammo, finite chamber (reloading still required).
+- Weapons damage Spotters. Spotters detect and damage the player.
+- Stamina, health, Speed stat all mirrored into PlayerStats correctly.
+- Gamepad look, cursor lock, CRT/fog, ADS, trigger response — all fixed this session.
+- Debug overlays and cheats all work: F2 stats, F3 infinite stamina, F4 invulnerable,
+  F5 health regen, F6/F7 fog+CRT, F8 time of day. FPS counter bottom-left.
+
+Build 24 (`E:\Builds\24 - HQFPS Swap - 2026-09-03`) is this state.
+
+
+==============================================================================
+3. ⚠ THE FIVE PRECAUTIONS THAT WILL BITE YOU
+==============================================================================
+
+3.1 NEVER WRITE DIRECTLY TO PlayerStats HEALTH OR STAMINA
+    PolymindGames' HealthManager/StaminaManager own those now. `MoonlightPlayerRig` mirrors them
+    into `PlayerStats` EVERY FRAME. Any `stats.Health.Deplete(...)` or `.BaseValue = x` is
+    silently erased on the next tick — no error, no warning, it just does nothing.
+
+    This single mistake caused THREE separate reported bugs this session (enemies couldn't hurt
+    the player, health-regen cheat dead, infinite-stamina cheat dead).
+
+    Use instead:  rig.ApplyIncomingDamage(amount, args)   -- damage, applies Defense
+                  rig.RestoreHealth(amount)               -- healing
+                  rig.RestoreStamina(amountOn0to100Scale) -- stamina
+    `Stat.Lock()` DOES work — the mirror was taught to respect locked stats and push them the
+    other way. MRM-41's consumables have NOT been converted yet and will hit this (§6).
+
+3.2 THE PREFAB BUILD TOOL WILL BREAK THE SCENE IF RE-RUN
+    `Tools > MrMoonlight > Migration > Build Player_Tracey from FPS_Player (MRM-9)` DELETES and
+    recreates the prefab asset, which breaks the link from the instance in `Island.unity`.
+    Only re-run it if you are prepared to re-instantiate the player in the scene and re-point
+    `Event Director.player`. Day-to-day edits should go on the prefab directly.
+
+3.3 EDITING A PREFAB ASSET NEEDS PrefabUtility, NOT SetDirty
+    `LoadMainAssetAtPath` + `SetDirty` + `SaveAssets` silently does NOT persist changes to a
+    prefab's own hierarchy (it only saves nested prefab instances). Use
+    `PrefabUtility.LoadPrefabContents` → `SaveAsPrefabAsset` → `UnloadPrefabContents`.
+    Also: `SaveAsPrefabAsset` returns SUCCESS while writing nothing if Unity holds a filesystem
+    lock on the folder (the tell is `rm` failing with "Device or resource busy"). Delete/modify
+    through `AssetDatabase.DeleteAsset`. ALWAYS verify by re-reading the asset.
+
+3.4 LAYERS ARE LOAD-BEARING AND NON-OBVIOUS
+    FPSCore hardcodes layer indices; eight collided with ours and were moved to 18–25.
+    Full table in the integration doc §4. Three that matter most:
+      - Player root MUST be on `Player`(3) — Blaze AI vision looks for that layer. Vendor
+        default was `Character`(25), which made the player invisible to every enemy.
+      - Enemy damage hitboxes are on `Health`(10). `Enemy`(6) is deliberately NOT in the weapon
+        damage mask, because the enemy's root Blaze capsule sits on it, encloses all 15 hitboxes
+        and has no damage handler — shots stopped on it and did nothing.
+      - Ragdoll bones are on `Ragdoll`(26), outside the weapon mask, so shots pass through them.
+    If shots stop doing damage again, check layers before anything else.
+
+3.5 VENDOR DEFAULTS ARE TUNED FOR THE VENDOR'S DEMO, NOT OUR GAME
+    Four separate bugs this session were vendor defaults that are perfectly sensible in the HQ FPS
+    firing-range demo and wrong here: a PostProcessing-only camera volume mask, a mouse-shaped
+    input release test, cursor lock parked on a GameMode prefab we didn't take, and Temporal AA
+    (which smears our pixel dither). When migrating anything else from this asset, audit its
+    assumptions, not just its references.
+
+
+==============================================================================
+4. ARCHITECTURE — WHERE THINGS LIVE
+==============================================================================
+
+Code we own:
+  Assets/_Project/Code/Runtime/Player/
+    MoonlightPlayerRig.cs        THE single seam to PolymindGames. Replaced all four Burntwax
+                                 bridges. Owns: stamina tunables, gamepad look tunables, Speed
+                                 stat modifier, the stat mirror, damage intake, cursor state, and
+                                 the control surface (Input, CameraPivot, SetMovementLocked,
+                                 DisableControl, ResetCameraPitch, OnJumped, OnSprinting).
+    MoonlightWeaponCycler.cs     Q / right-bumper next-weapon. HQ FPS has no cycling of its own.
+    MoonlightStartingLoadout.cs  The 4 test weapons. TESTING SCAFFOLD — remove for MRM-26.
+
+  Assets/_Project/Code/Editor/Migration/
+    PolymindLayerRemap.cs        One-shot layer rewrite. Re-runnable.
+    PolymindPlayerBuild.cs       Rebuilds Player_Tracey from vendor source. See 3.2.
+
+Vendor code (ours now, edited in place — every edit is marked "MRM-9"):
+  Assets/_Project/Code/Vendor/PolymindGames/      8.3 MB, own assembly
+  Assets/_Project/Data/PolymindGames/             ScriptableObjects
+  Assets/ThirdParty/PolymindGames/                art/audio (git-ignored, 115 MB)
+
+Vendor files edited — `grep -rn "MRM-9" Assets/_Project/Code/Vendor/PolymindGames` to find them:
+  UnityConstants.cs        layer remap + Moonlight masks
+  StaminaManager.cs        TrySetStateCosts()
+  FPSLookInput.cs          gamepad look conversion
+  FPSWieldablesInput.cs    analog trigger release (fire AND aim)
+  SurfaceManager.cs        _decalsEnabled switch
+  StartupWindow.cs         auto-open disabled
+
+
+==============================================================================
+5. TUNABLES ADDED (MoonlightTunables)
+==============================================================================
+  JumpStaminaCostNormalised     0.05    0-1 scale, jump cost
+  SprintStaminaDrainPerSecond   0.035   0-1 scale, sprint drain
+  GamepadLookSpeed              1200    raise if the right stick feels slow
+  GamepadLookAcceleration       9000    stick ramp
+Marked SUPERSEDED (nothing reads them): StaminaDrainCurve, StaminaRegenRate,
+StaminaRegenDelayAfterSprint, JumpStaminaCost.
+
+
+==============================================================================
+6. REMAINING WORK — ORDERED, WITH THE REASONING
+==============================================================================
+
+ 1. HUD. Highest value, most visible gap. There is currently NO crosshair, NO ammo counter, NO
+    stamina bar — the old player's `PlayerUI` canvas died with it. Carlos asked for HQ FPS's ammo
+    counter, its "no ammo" message and its stamina bar. Vendor components exist and are imported:
+    `FirearmAmmoUI`, `PlayerStaminaUI`, `CrosshairControllerUI` (+ Basic/Advanced crosshairs).
+    Build them onto the scene `HUD Canvas`, using OUR fonts, at 1920×1080.
+    Trap: the vendor UI prefabs in `HQFPS/Prefabs/UI` reference the vendor's input asset and throw
+    `ArgumentNullException` in `InputActionLabelUI.OnValidate`. Build fresh rather than reusing
+    those prefabs, then delete that folder (§7).
+
+ 2. Remove Burntwax. ONLY after Carlos confirms he's happy with the new player.
+    - `Island.unity` still holds `Player (OLD Burntwax - delete after verification)`, INACTIVE.
+      That is the rollback. Delete it first.
+    - Then: `Assets/_Project/Code/Runtime/Player/Burntwax*.cs` (4 files, already unreferenced),
+      `Assets/_Project/Code/Vendor/Burntwax FPS Engine/`,
+      `Assets/ThirdParty/Burntwax Collective/`, `Assets/_Project/Prefabs/Player.prefab`,
+      `Assets/_Project/Prefabs/Legacy/Player_Legacy_PreMRM9.prefab`.
+    - Remove "Burntwax.Core" from `MrMoonlight.Runtime.asmdef`.
+    - This also clears 11 of the 19 project prefabs that have missing scripts.
+
+ 3. Weapon pickup → MRM-41 inventory adapter. Carlos chose to KEEP our `Inventory` and adapt
+    FPSCore to it. Not written. FPSCore's `WieldableInventory` drives selection off its own
+    "Holster" container; our `Inventory` owns the pocket/backpack type cap. Something has to
+    reconcile them. Also convert MRM-41's consumables per 3.1.
+
+ 4. Interaction unification. Our `InteractionDetector` and FPSCore's `InteractionHandler` BOTH
+    read Interact. This is exactly the split Carlos warned against. FPSCore's should win — it
+    drives weapon pickup.
+
+ 5. `RetroLitViewModel.shader`. The FP (in-hand + hands) materials are still on the vendor's
+    `Shader Graphs/LitFieldOfView`, because it does the viewmodel FOV warp in its vertex stage and
+    RetroLit has no equivalent. Carlos chose RetroLit for weapons AND hands, so port the warp into
+    a RetroLit variant. RetroLit's vertex function is a clean ~20-line block; the globals are
+    `_FOV` and `_FOVEnabled`, set by `CameraFOVHandler`. Integration doc §3 has the detail.
+
+ 6. Input mode unification. Our `InputMapController` CLONES the action asset; FPSCore binds the
+    asset itself. They coexist but our pause/UI modes don't disable FPSCore's actions. Collapse
+    onto FPSCore's `InputManager` contexts.
+
+ 7. Per-weapon damage values. Carlos will supply numbers. Current, before hitbox multipliers:
+    pistol 30, shotgun 20/pellet × 8, crossbow 40. Hitbox multipliers are MRM-76's.
+
+ 8. Prune unused vendor content: `HQFPS/Prefabs/UI`, the 14 unused wieldable/pickup prefabs,
+    `FPSCore/Art/Fonts` (12 MB, we use our own).
+
+
+==============================================================================
+7. KNOWN GAPS AND OPEN QUESTIONS
+==============================================================================
+
+- Arms use the bare-skin `Arm_Standard` variant. `Arm_Shirt&Gloves` is imported and processed and
+  suits 1979 Alaska better. Carlos's call; it's a renderer swap on the arms wieldable.
+- Impact decals are OFF (`SurfaceManager._decalsEnabled = false`), at Carlos's request, "we will
+  do that later". One checkbox to restore.
+- Shotgun spread is the vendor's 6°–8°. Carlos was shown the measured numbers (±1.05 m at 10 m
+  against a 0.5 m torso) and CHOSE TO KEEP IT. Do not "fix" this.
+- Weapon cycling walks empty slots too. Invisible with 4 always-filled slots; matters for MRM-26.
+- `MoonlightWeaponCycler.slotCount` is a serialized 4. Keep it in sync with the loadout.
+- The flare gun is imported but NOT on the player. MRM-34 uses flares for enemy reinforcements.
+- Console noise that is NOT yours: 3× Gore Simulator inspector NRE, a main-toolbar warning, a
+  shadow-atlas warning (MRM-34's 102 Spotters), and missing-script errors from 19 pre-existing
+  broken prefabs surfaced by FPSCore's save system scanning every prefab on play.
+
+
+==============================================================================
+8. PERFORMANCE — MEASURED, WITH THE BIG WIN NOT YET TAKEN
+==============================================================================
+
+Baseline ~105 FPS, CPU main-thread bound (8.68 ms main vs 6.86 ms GPU).
+NOTHING added by MRM-9 allocates per frame; no leaks (all subscriptions released in OnDestroy).
+
+Both dominant costs are PRE-EXISTING and scale with MRM-34's 102-Spotter population:
+  - 2,762 active kinematic ragdoll bodies → Physics.SyncColliderTransformBatchJob = 5.75 ms
+  - 168 KB GC per frame across 968 allocations — ~89% is Blaze AI (drops to 19 KB without them)
+
+APPLIED: Temporal AA → None. Cost ~1 ms AND it smears the pixel dither RetroLit exists to make.
+
+NOT APPLIED, biggest available win — gate the ragdolls. Measured: 2,762 → 758 bodies,
+5.75 → 1.71 ms, ~105 → ~117 FPS. Not shipped because Blaze drives KNOCKDOWN through the same
+ragdoll (`HitStateBehaviour`), so the re-enable path must cover non-fatal knockdown as well as
+death, and both need deliberate testing. This belongs to MRM-34's owner.
+
+The GC churn matters more than average FPS — 168 KB/frame causes collection stutter regardless.
+Best lever is fewer simultaneously-active Spotters or distance-based deactivation.
+
+CAVEAT: these are EDITOR numbers and are inflated. Ratios hold; confirm absolutes on build 24.
+
+
+==============================================================================
+9. CROSS-ISSUE SCOPE
+==============================================================================
+One branch touched many issues (flagged per the cross-issue rule):
+  MRM-9  controller swap (owner)     MRM-12 stats now mirrored
+  MRM-16 interaction (unresolved)    MRM-21 ADS + aim cone now vendor's
+  MRM-22/23/24 pistol/bat/shotgun    MRM-25 weapon switching (done)
+  MRM-26 drops/pickups (blocked)     MRM-34 enemy hitbox layers + IDamageHandler
+  MRM-41 inventory (adapter TODO)    MRM-74 arms/animations superseded this
+  MRM-76 hitbox multipliers intact
+
+Also: `Docs/dual-project-workflow.md`'s "never migrate FPSCore/" ruling is REVERSED by this branch.
+
+
+==============================================================================
+10. WORKFLOW REMINDERS
+==============================================================================
+- Never commit or push. Carlos uses GitHub Desktop. Offer a commit message instead.
+- Scene/prefab/Blender work: ASK first, then do it via MCP, then verify by reading real state
+  back, then document. Carlos gave standing permission for the scene swap this session; that
+  does not carry forward automatically.
+- Verify with a screenshot or a state read-back before saying anything is fixed. A single frame
+  of an animated first-person weapon is NOT evidence — an equip animation mid-sweep looked
+  exactly like a broken viewmodel FOV this session until the shader globals were queried.
+- Keep Unity focused during long imports/builds; unfocused work stalls.

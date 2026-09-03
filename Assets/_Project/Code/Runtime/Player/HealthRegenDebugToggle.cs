@@ -32,6 +32,9 @@ namespace MrMoonlight.Player
 
         [SerializeField] private PlayerDamageReceiver receiver;
 
+        [Tooltip("The seam to PolymindGames' health. Found on this object or a parent if left empty.")]
+        [SerializeField] private MoonlightPlayerRig rig;
+
         [Tooltip("Seconds after the last hit before regen starts.")]
         [SerializeField] private float delayAfterHit = 2f;
 
@@ -48,6 +51,7 @@ namespace MrMoonlight.Player
         {
             if (stats == null) stats = GetComponentInChildren<PlayerStats>();
             if (receiver == null) receiver = GetComponent<PlayerDamageReceiver>();
+            if (rig == null) rig = GetComponentInParent<MoonlightPlayerRig>();
         }
 
         private void OnEnable()
@@ -89,9 +93,24 @@ namespace MrMoonlight.Player
             float missing = stats.Health.MaxValue - stats.Health.BaseValue;
             if (missing <= 0f) return;
 
+            // MRM-9: tween through the rig, not into the stat.
+            //
+            // PolymindGames' HealthManager owns health now and MoonlightPlayerRig mirrors it into
+            // PlayerStats every frame, so writing Health.BaseValue here was undone on the very next
+            // tick - the same defect that stopped enemy fire from hurting the player. The setter
+            // now feeds the delta to the manager and lets the mirror bring the stat along.
+            float lastValue = stats.Health.BaseValue;
             _regenTween = DOTween.To(
                     () => stats.Health.BaseValue,
-                    v => stats.Health.BaseValue = v,
+                    v =>
+                    {
+                        float delta = v - lastValue;
+                        lastValue = v;
+                        if (delta <= 0f) return;
+
+                        if (rig != null) rig.RestoreHealth(delta);
+                        else stats.Health.Restore(delta);
+                    },
                     stats.Health.MaxValue,
                     missing / regenPerSecond)
                 .SetDelay(delayAfterHit)

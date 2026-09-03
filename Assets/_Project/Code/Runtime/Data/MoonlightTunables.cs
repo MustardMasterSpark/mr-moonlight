@@ -46,6 +46,21 @@ namespace MrMoonlight.Data
         /// <summary>How quickly look input ramps toward its target speed, in degrees per second squared. Softens the snap of stick input. Owner: MRM-9</summary>
         public float LookAcceleration = 900f;
 
+        /// <summary>
+        /// Gamepad look rate, in mouse-delta-equivalent units per second (MRM-9). The HQ FPS look
+        /// handler multiplies whatever it receives by the mouse sensitivity option, so stick input
+        /// has to be converted into something shaped like a mouse delta first - see
+        /// <c>FPSLookInput</c>. That makes this a different unit from the retired
+        /// <see cref="LookSpeedStick"/>, which fed degrees straight into Cinemachine.
+        /// Raise it if the right stick feels slow. Owner: MRM-9
+        /// </summary>
+        public float GamepadLookSpeed = 1200f;
+
+        /// <summary>How fast the gamepad stick ramps up to <see cref="GamepadLookSpeed"/>, in the
+        /// same units per second squared. High values feel immediate, low values feel weighty.
+        /// Owner: MRM-9</summary>
+        public float GamepadLookAcceleration = 9000f;
+
         /// <summary>Peak jump height, in metres. Owner: MRM-9</summary>
         public float JumpHeight = 1.2f;
 
@@ -117,17 +132,42 @@ namespace MrMoonlight.Data
         /// <summary>Stamina pool ceiling. Owner: MRM-12</summary>
         public float MaxStamina = 100f;
 
-        /// <summary>Stamina drain rate while sprinting, in stamina/second, as a function of the fraction of stamina remaining (X: 1 = full, 0 = empty). "Drains on a curve, slower at first, faster as it empties" per MRM-12 — the default eases from a ~10/sec drain near full up to a ~25/sec drain near empty. Owner: MRM-12</summary>
+        /// <summary>SUPERSEDED by MRM-9's HQ FPS controller swap. The old curve-based drain belonged to
+        /// the hand-rolled stamina system; PolymindGames' <c>StaminaManager</c> now owns stamina and
+        /// drains at a flat per-state rate (<see cref="SprintStaminaDrainPerSecond"/>). Kept only so
+        /// existing references still resolve — nothing reads it. Owner: MRM-12, retired by MRM-9</summary>
         public AnimationCurve StaminaDrainCurve = AnimationCurve.EaseInOut(0f, 25f, 1f, 10f);
 
-        /// <summary>Flat stamina regeneration rate once regen is active, in stamina/second. Owner: MRM-12</summary>
+        /// <summary>SUPERSEDED by MRM-9. Regen is now the HQ FPS per-state rate: +0.2/sec idle,
+        /// +0.25/sec crouched, on the 0-1 scale. Owner: MRM-12, retired by MRM-9</summary>
         public float StaminaRegenRate = 15f;
 
-        /// <summary>Seconds after sprinting stops before stamina regen begins. Owner: MRM-12</summary>
+        /// <summary>SUPERSEDED by MRM-9. The equivalent knob is <c>StaminaManager._regenerationPause</c>
+        /// on Player_Tracey (1.35s). Owner: MRM-12, retired by MRM-9</summary>
         public float StaminaRegenDelayAfterSprint = 1.5f;
 
-        /// <summary>Flat stamina cost of a single jump, deducted once per <see cref="Player.PlayerController.OnJumped"/>. Owner: MRM-12</summary>
+        /// <summary>SUPERSEDED by MRM-9. Use <see cref="JumpStaminaCostNormalised"/> — the HQ FPS
+        /// stamina pool is 0-1, not 0-100. Owner: MRM-12, retired by MRM-9</summary>
         public float JumpStaminaCost = 8f;
+
+        /// <summary>
+        /// Stamina spent by one jump, on PolymindGames' 0-1 stamina scale (so 0.05 = 5% of a full
+        /// bar). Applied to the Jump movement state's one-off enter cost by
+        /// <see cref="Player.MoonlightPlayerRig"/> at startup.
+        ///
+        /// <para>Default is the HQ FPS value Carlos signed off on after playing the asset standalone
+        /// ("I like how it behaves right now, like the ratio at which it recovers"), lifted off the
+        /// vendor prefab rather than invented. This and <see cref="SprintStaminaDrainPerSecond"/> are
+        /// the two knobs he asked to have exposed. Owner: MRM-9</para>
+        /// </summary>
+        public float JumpStaminaCostNormalised = 0.05f;
+
+        /// <summary>
+        /// Stamina drained per second while sprinting, on PolymindGames' 0-1 scale. Applied to the
+        /// Run movement state by <see cref="Player.MoonlightPlayerRig"/> at startup. Default is the
+        /// vendor's own value — see <see cref="JumpStaminaCostNormalised"/>. Owner: MRM-9
+        /// </summary>
+        public float SprintStaminaDrainPerSecond = 0.035f;
 
         /// <summary>Flat stamina cost of a single Pickaxe swing. Consumed by the Pickaxe issue via <see cref="Player.PlayerStats.ConsumeSwingStamina"/>; not yet called by anything since the Pickaxe isn't built. Owner: MRM-12</summary>
         public float SwingStaminaCost = 12f;
