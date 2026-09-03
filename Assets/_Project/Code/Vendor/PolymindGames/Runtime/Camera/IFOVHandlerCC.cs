@@ -21,6 +21,13 @@
         float ViewModelSize { get; }
 
         /// <summary>
+        /// MRM-9: True while the camera is intentionally zoomed away from the base FOV (aiming
+        /// down sights, charging a shot, etc). Used to gate the hip-fire look-speed boost in
+        /// <c>CharacterLookHandler</c> so ADS sensitivity is left untouched.
+        /// </summary>
+        bool IsZoomed { get; }
+
+        /// <summary>
         /// Sets the size of the view model.
         /// </summary>
         /// <param name="size">The size to set for the view model.</param>

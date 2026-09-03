@@ -1,0 +1,117 @@
+Cold-start context for the next session. Read this file first, not chat scrollback.
+
+MODEL: Sonnet. This is a small, focused visual fix, not a new system — no reason for Opus.
+
+==============================================================================
+1. WHAT JUST HAPPENED (previous Sonnet session, same day)
+==============================================================================
+
+Branch state: `mrm-9-hqfps` was ALREADY MERGED to `main` before this session started (PR #26).
+The previous session's work landed directly on `main`'s working tree and is UNCOMMITTED — Carlos
+has the commit message (see the chat, or re-derive from `git diff` — three files, see §3.
+
+Read `Docs/mrm9-sonnet-prompt.txt` for the full MRM-9 controller/weapon-swap picture if you need
+it, and `Docs/mrm9-hqfps-integration.md` §12 for exactly what the previous session did (hip-fire
+look speed +50%, ADS untouched, plus a real vendor-framework trap found and fixed — a
+`TryGetCC` call cached once in `OnBehaviourStart` can silently return null due to an
+initialization-order race; resolve such lookups lazily instead, not just for look/FOV code).
+Linear MRM-9 has a matching comment.
+
+That work is NOT eyeballed by Carlos yet (numeric verification only, done by puppeteering the aim
+handler in Play mode via UnityMCP `execute_code` and reading fields back by reflection — no
+mouse was actually moved). If he mentions the look speed still feels off, that's the first place
+to check, not a fresh investigation.
+
+
+==============================================================================
+2. THIS SESSION'S TASK
+==============================================================================
+
+Carlos, verbatim: the weapons and hands "look very dark," and he does NOT want a Light added —
+fix the actual cause of the darkness, not paper over it with a light source.
+
+No branch created for this yet. Ask him whether to branch (and off what — `main` is currently
+correct/up to date) before committing, per the one-issue-one-branch rule; this is arguably still
+MRM-9 scope (weapon/hands rendering), same as the look-speed tweak was.
+
+
+==============================================================================
+3. GROUNDING FACTS — checked before this handoff was written, not guesses
+==============================================================================
+
+- `git status` on `main` right now shows 3 modified files, uncommitted, from the look-speed work:
+  `Assets/_Project/Code/Vendor/PolymindGames/Runtime/Camera/{IFOVHandlerCC,CameraFOVHandler,
+  CharacterLookHandler}.cs`. Unrelated to this task — don't let them confuse a `git diff` read.
+
+- **The first-person weapon and hand materials are still on the VENDOR's shader**, not RetroLit:
+  `Assets/_Project/Code/Vendor/PolymindGames/Shaders/LitFieldOfView.shadergraph` (and an `_SSS`
+  variant). This is a KNOWN, already-tracked gap — item 5 in `Docs/mrm9-hqfps-integration.md`
+  §10's "Still to do" table: *"RetroLitViewModel.shader — the FP materials are still on the
+  vendor's Shader Graphs/LitFieldOfView, because it does the viewmodel FOV warp in its vertex
+  stage and RetroLit has no equivalent. Carlos chose RetroLit for weapons AND hands, so port the
+  warp into a RetroLit variant."* Section §3 of that doc has the technical detail (globals `_FOV`
+  / `_FOVEnabled`, set by `CameraFOVHandler`, ~20-line vertex block to port).
+
+  **This is the single most likely cause of "dark".** `LitFieldOfView` is a standard Lit
+  shadergraph reacting normally to scene lights — if the island's ambient/night lighting is dim
+  (this is a horror game, Aanniarvik Island, 1979 — check `Docs/mrm47-69-progress` / the
+  TimeManager setup for what time-of-day is actually active), a normally-lit weapon will look
+  dark exactly the way an unlit RetroLit prop would NOT, because RetroLit's stylized lighting
+  response is tuned deliberately (see `Docs/3d-prop-pipeline-wizard.md` — every other prop in the
+  game is RetroLit). Finishing the RetroLit port that was already planned may fix "dark" as a
+  side effect of matching the rest of the game's look, rather than needing a separate lighting fix.
+
+- No dedicated viewmodel light rig exists (`grep -ri "armslight\|viewmodellight\|weaponlight"`
+  under `Assets/_Project` returns nothing) — so if it's a lighting-owner problem, it's the general
+  scene lights / light probes / HAZE fog reaching (or not reaching) the viewmodel, not a broken
+  rig to repair.
+
+- `Docs/rendering_stack` memory: HAZE fog needs the camera's post-processing ON to render at all
+  (regression was Burntwax-swap related, already fixed) — worth confirming fog density/color
+  isn't independently darkening the viewmodel render if the FP camera stacks under the same
+  volume as the world camera.
+
+
+==============================================================================
+4. WHERE TO ACTUALLY LOOK, IN ORDER
+==============================================================================
+
+1. Screenshot the current in-game weapon/hands look first (build or focused Play mode — editor
+   screenshots lie when unfocused, see `verification_requires_a_build` memory) so "dark" has a
+   concrete before-image to compare any fix against.
+2. Check what shader the weapon/hand materials are ACTUALLY assigned right now via UnityMCP
+   (`manage_asset` / read the material), confirming §3's `LitFieldOfView` claim still holds —
+   don't assume, verify current state first per project convention.
+3. If still `LitFieldOfView`: this is the RetroLit-port task that was already scoped (item 5).
+   Doing it may resolve "dark" directly. If it doesn't, or Carlos wants a faster interim fix,
+   the next things to check on `LitFieldOfView` itself: does it read the correct light layer mask
+   for the FP camera, does it get any AO/exposure term crushing it, is the FP camera's own
+   Volume stack (if any) applying extra exposure/tonemapping compared to the world camera.
+4. If materials are already RetroLit (i.e. §3's grounding fact turned out stale by the time you
+   read it — reconfirm, don't trust this file blindly per the memory-staleness rule): RetroLit
+   samples ONLY BaseColor + Normal (no mask, no metallic, no emission — AO is multiplied into the
+   albedo at bake time, per `Docs/3d-prop-pipeline-wizard.md` §3.2). A weapon whose baked albedo
+   has AO multiplied in too aggressively, or whose RetroLit brightness/light-response keywords
+   aren't matched (`unity_material_script_edit_transient_invisibility` memory: RetroLit needs a
+   matching `KeywordEnum` + `SetInteger` toggle, edited via script can cause transient
+   invisibility/wrong-branch rendering if done wrong) is a plausible second cause.
+5. Only after the above: check general scene light intensity / light probe density near the
+   player's spawn and patrol paths (per `mrm70_terrain_...` and general island lighting memories,
+   the island's baked lighting setup is not fully documented as "final" anywhere Claude has
+   touched — this may genuinely need a light INTENSITY change, which is different from "add a
+   Light" and should be fine with Carlos, but confirm with him if in doubt).
+
+
+==============================================================================
+5. WORKFLOW REMINDERS
+==============================================================================
+- Never commit or push. Offer a commit message instead; Carlos uses GitHub Desktop.
+- Material/shader edits via UnityMCP are exactly the kind of "engine state" change the project's
+  scene/inspector rule covers — ask Carlos before mutating materials/shaders live via UnityMCP,
+  do it, verify by reading the actual asset state back, then document. Same for any Blender work.
+- Confirm any "fixed" claim with a screenshot (focused Play mode or a build), not just "no
+  console errors" or "isVisible true" — per `feedback_confirm_before_declaring_fixed` memory,
+  this project has been burned by that twice already.
+- If you end up doing the RetroLitViewModel.shader port (item 5), that's real shader-graph +
+  script work, not a five-minute material swap — size it honestly to Carlos before diving in if
+  it looks bigger than "brighten a value."

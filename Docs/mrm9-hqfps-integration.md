@@ -595,3 +595,53 @@ Caused by this work, benign, goes away with item 10 above:
 
 - `ArgumentNullException` in `InputActionLabelUI.OnValidate` — a vendor UI prefab we do not use,
   validating against an action asset we did not import
+
+---
+
+## 12. 2026-09-03 — Sonnet tuning pass: hip-fire look speed
+
+By this point `mrm-9-hqfps` had already been merged to `main` (PR #26); this work landed directly
+on `main`'s working tree, uncommitted pending Carlos's own branch/commit choice in GitHub Desktop.
+
+Carlos: hip-fire camera turn speed felt very slow; raise it 50%, leave ADS speed exactly as it is.
+
+The vendor's `CharacterLookHandler.GetTargetSensitivity` has exactly **one** sensitivity formula
+shared by hip and ADS — `InputOptions.MouseSensitivity`, optionally scaled by
+`camera.fieldOfView / GraphicsOptions.FieldOfView` if the optional `_camera` field is wired.
+Raising that shared value, or the gamepad-only `GamepadLookSpeed` tunable, would have scaled ADS
+by the same 50% — the opposite of what was asked.
+
+**Fix:** added `bool IsZoomed` to `IFOVHandlerCC`, implemented on `CameraFOVHandler` as
+`!Mathf.Approximately(_cameraFOVTweenMod, 1f)` (the multiplier the aim/charge systems set via
+`SetCameraFOV`, distinct from the separate speed/height/airborne FOV kick applied afterward in
+`Update()`, so it doesn't false-positive on sprinting or falling). `CharacterLookHandler` now
+multiplies sensitivity by a new `HipFireSensitivityBoost = 1.5f` constant only when not zoomed.
+
+**Trap hit while wiring it up:** caching the `IFOVHandlerCC` reference once in
+`OnBehaviourStart` via `character.TryGetCC(out _fovHandler)` came back **null**, even though
+`CameraFOVHandler` sits on the same GameObject and the character's `_components` dictionary
+verifiably contains an `IFOVHandlerCC` entry moments later. Root cause not fully isolated
+(candidates: `CharacterLookHandler` starts `enabled = false` in `Awake()` so its own `Start()` is
+deferred until `SetLookInput` is called, or FPSCore's activation order for this prefab beats
+`Character.Awake()`). The textbook "all Awakes run before any Start" assumption is **not** safe
+to rely on for cross-component `TryGetCC` lookups in this framework. Fixed by resolving lazily on
+first use instead: `_fovHandler ??= Character.GetCC<IFOVHandlerCC>();` inside
+`GetTargetSensitivity`, rather than caching once in `OnBehaviourStart`. Self-heals regardless of
+the exact race, costs nothing once resolved. Any future `CharacterBehaviour` that needs another
+optional character component should do the same.
+
+**Verification:** Unity was running (`MrMoonlight@87580c9df5a077ae`, port 8080). Entered Play mode
+and puppeteered the equipped weapon's `IFirearmAimHandler.StartAiming()`/`StopAiming()` via
+`execute_code`, reading `CharacterLookHandler`'s private sensitivity state back by reflection in
+the same synchronous call (a separate round-trip lets FPSCore's own input polling silently revert
+the manual aim state, since the real mouse button was never actually held):
+
+| State | Sensitivity |
+|---|---|
+| Hip-fire | 1.5 (base 1.0 × boost) |
+| ADS (zoomed) | 1.0 (boost correctly suppressed) |
+
+Compiled clean, no new console errors. **Not yet eyeballed by Carlos hands-on** — "1.5×" is a
+numeric target, not a felt one; flag for his own pass before considering this fully done.
+
+Files touched: `IFOVHandlerCC.cs`, `CameraFOVHandler.cs`, `CharacterLookHandler.cs`.

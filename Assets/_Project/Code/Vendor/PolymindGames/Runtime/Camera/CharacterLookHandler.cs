@@ -10,7 +10,7 @@ namespace PolymindGames
 {
     using Debug = UnityEngine.Debug;
 
-    [OptionalCharacterComponent(typeof(IMotorCC))]
+    [OptionalCharacterComponent(typeof(IMotorCC), typeof(IFOVHandlerCC))]
     public sealed class CharacterLookHandler : CharacterBehaviour, ILookHandlerCC, ISaveableComponent
     {
         [SerializeField]
@@ -50,6 +50,14 @@ namespace PolymindGames
         private Vector2 _smoothMove;
 
         private const float SensitivityMod = 0.05f;
+
+        // MRM-9 (2026-09-03 tuning pass): Carlos found hip-fire look speed too slow and asked for
+        // +50%, with ADS speed left exactly as it is. ADS is already slowed proportionally to FOV
+        // zoom below (targetSensitivity *= fovRatio) - so this boost is gated off via
+        // IFOVHandlerCC.IsZoomed rather than folded into MouseSensitivity/GamepadLookSpeed, which
+        // would have scaled ADS by the same 50% instead of leaving it alone.
+        private const float HipFireSensitivityBoost = 1.5f;
+        private IFOVHandlerCC _fovHandler;
 
         public Vector2 ViewAngles => _viewAngles;
         public Vector2 LookInput => _lookInput;
@@ -135,9 +143,17 @@ namespace PolymindGames
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private float GetTargetSensitivity(float currentSens, float deltaTime)
         {
+            // MRM-9: resolved lazily rather than cached in OnBehaviourStart - CameraFOVHandler's
+            // registration into the character's CC lookup isn't reliably ready by then.
+            _fovHandler ??= Character.GetCC<IFOVHandlerCC>();
+
             float targetSensitivity = InputOptions.Instance.MouseSensitivity;
             if (_hasFOVCamera)
                 targetSensitivity *= _camera.fieldOfView / GraphicsOptions.Instance.FieldOfView;
+
+            if (_fovHandler is not { IsZoomed: true })
+                targetSensitivity *= HipFireSensitivityBoost;
+
             return Mathf.Lerp(currentSens, targetSensitivity, deltaTime * 5f);
         }
 

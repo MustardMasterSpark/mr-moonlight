@@ -52,6 +52,12 @@ namespace PolymindGames
         public float ViewModelFOV => _viewModelFOVTween.GetCurrentValue();
         public float ViewModelSize => transform.localScale.x;
 
+        // MRM-9: _cameraFOVTweenMod is the multiplier the aim/charge systems command via
+        // SetCameraFOV, independent of the speed/height/airborne FOV kick applied afterwards in
+        // Update() - so this reflects "is something deliberately zooming the camera" without
+        // false positives from sprinting or falling.
+        public bool IsZoomed => !Mathf.Approximately(_cameraFOVTweenMod, 1f);
+
         public void SetViewModelSize(float size) => transform.localScale = Vector3.one * size;
 
         public void SetCameraFOV(float fovMultiplier, float duration = 0.3f, float delay = 0f)
