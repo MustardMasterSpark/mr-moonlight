@@ -19,9 +19,11 @@ wait  seconds=1
 
 # Sets the objective AND announces it centre-bottom, in one line, so the words
 # the player reads and the words the pause menu will hold can never drift apart.
-# 20 is the real demo target (Carlos, 2026-09-02). 51 Spotters are placed on the
-# island, so there is comfortable slack. If you change this number, change the
-# wording in the same line — nothing keeps them in sync for you.
+# 20 is the real demo target (Carlos, 2026-09-02). 102 Spotters are placed on the
+# island (doubled from 51, 2026-09-03, to tighten the demo's pace — each original
+# got one scattered duplicate 15-40m away), so there is comfortable slack. If you
+# change this number, change the wording in the same line — nothing keeps them in
+# sync for you.
 objective  kill_spotters  text="Homework: Kill 20 old timers"  kills=20  kind=Spotter  for=8
 
 # Waits forever on purpose. This is a player-progress wait: it resolves when the

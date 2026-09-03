@@ -30,6 +30,9 @@ MonoBehaviour:
     m_Bits: 4294967295
   LookPitchDownMax: 85
   LookPitchUpMax: 80
+  CameraFovDefault: 60
+  CameraFovAimDownSights: 40
+  CameraAimBlendDuration: 0.15
   StickDeadzone: 0.125
   InvertYAxis: 0
   PathfindingMillisecondsPerFrame: 2
@@ -165,3 +168,71 @@ MonoBehaviour:
   InventoryCloseAnimationDuration: 0.4
   InventoryItemSpinSpeed: 60
   InventoryFadeDuration: 0.2
+  EnemyLowHealthThreshold: 0.35
+  EnemyTracerSpeed: 140
+  EnemyTracerDuration: 0.12
+  EnemyTracerWidth: 0.035
+  EnemyDropLifetime: 0
+  EnemyDropScatterImpulse: 1.5
+  EnemyHitboxLimbMultiplier: 1
+  EnemyHitboxTorsoMultiplier: 2
+  EnemyHitboxHeadMultiplier: 4
+  EnemyHitboxHeadBandMargin: 0.15
+  CombatDamageVarianceMultiplierMin: 0.8
+  CombatDamageVarianceMultiplierMax: 1.1
+  EnemyDamageVarianceMultiplierMin: 0.8
+  EnemyDamageVarianceMultiplierMax: 1.1
+  EnemyDismembermentChance: 1
+  EnemyDismembermentForce: 4
+  SpotterMaxHealth: 100
+  SpotterShotsBeforeReload: 2
+  SpotterMissChance: 0.3
+  SpotterMissAngle: 9
+  SpotterAimDelay: 0.35
+  SpotterInterShotDelay: 0.55
+  SpotterReloadDuration: 1.8
+  SpotterEngagementDistance: 12
+  SpotterPelletDamage: 4.5
+  SpotterPelletCount: 7
+  SpotterSpreadAngle: 4.5
+  SpotterShotRange: 45
+  SpotterDamageFalloffStart: 15
+  SpotterAloneCheckRadius: 25
+  SpotterFlareTimer: 8
+  SpotterFlareAnimationDuration: 2.2
+  SpotterReinforcementMin: 3
+  SpotterReinforcementMax: 10
+  SpotterReinforcementMinDistance: 45
+  SpotterReinforcementScatterRadius: 55
+  SpotterReinforcementMinSpacing: 2.5
+  SpotterPanicReinforcementMin: 1
+  SpotterPanicReinforcementMax: 3
+  SpotterLampIntensity: 2.5
+  SpotterLampRange: 14
+  SpotterLampSwayMaxAngle: 12
+  SpotterLampSwayFrequency: 1.6
+  SpotterLampSwayReferenceSpeed: 3
+  FlareApexHeight: 50
+  FlareForwardDrift: 3
+  FlareGravityScale: 0.45
+  FlareBurnDuration: 11
+  FlareFadeDuration: 2.5
+  FlareLightIntensityMin: 7
+  FlareLightIntensityMax: 14
+  FlareFlickerFrequency: 14
+  FlareLightRange: 26
+  LampFireSettleLinearThreshold: 0.15
+  LampFireSettleAngularThreshold: 0.3
+  LampFireSettleGraceDuration: 0.4
+  LampFireVfxScaleFactor: 2.5
+  LampFireBurnDuration: 15
+  LampFireVfxFadeDuration: 2.5
+  LampLightFadeDuration: 5
+  EventWaitDefaultTimeout: 180
+  EventSpawnPlacementAttempts: 12
+  EndScreenFadeDuration: 0.5
+  SystemMessageDefaultDuration: 5
+  ObjectiveAnnounceDuration: 6
+  SystemMessageFadeDuration: 0.4
+  SystemMessageFontSize: 34
+  SystemMessageColor: {r: 0.72, g: 0.85, b: 1, a: 1}

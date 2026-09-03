@@ -98,3 +98,26 @@ if the *next* piece of work suits a different model — Opus for building a new 
 Sonnet for tuning/polish/bug-fixing on one that already exists (the MRM-34 build → tune split is the
 precedent). Never commit or push as part of this — Carlos does that in GitHub Desktop; offer a
 summary of what changed and a suggested commit message instead.
+
+### "Run the final instructions" — Carlos's end-of-session trigger phrase
+
+When Carlos says **"run the final instructions"** (or close enough — "wrap up," "final steps," this
+exact phrase said in past sessions), it means all three of the following, every time, without
+re-asking what he means:
+
+1. **Commit message.** Summary + description for the current issue branch, in the repo's usual
+   style, ending with the required attribution footer (see this session's system instructions for
+   the exact footer text — it can change between sessions, don't hardcode it here). Text only —
+   never actually commit or push (see the hard rule above).
+2. **Close documentation gaps.** Update whatever's now stale: the relevant `Docs/*.md` build/design
+   doc for the issue (add a dated session section rather than editing history away), any other doc
+   that referenced the old state, and a Linear comment on the issue(s) actually touched — including
+   any issue whose scope was touched incidentally (cross-issue work, flag it explicitly in the
+   comment, same as the one-issue-one-branch exception above).
+3. **Context prompt for the next session.** Same file and shape as the handoff described just above
+   in this section — what's done, what's next, traps found. This step and step 2 overlap in
+   research but not in audience: the doc/Linear updates are the permanent record, this file is the
+   "read me first, cold" pointer for whoever picks the branch back up.
+
+Do all three before reporting back — this phrase is the signal that the session is wrapping, not a
+request to ask which of the three he wants.

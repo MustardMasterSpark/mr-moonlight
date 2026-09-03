@@ -362,6 +362,35 @@ namespace MrMoonlight.Data
         /// <summary>Upper bound of an enemy shot's damage randomiser. Owner: MRM-76</summary>
         public float EnemyDamageVarianceMultiplierMax = 1.10f;
 
+        [Header("Dismemberment — Gore Simulator, MRM-34")]
+
+        /// <summary>
+        /// Chance (0-1) that a lethal hit detaches the limb nearest the killing blow — a mesh cut
+        /// only, no ragdoll; Blaze's own keyframed death animation still plays normally alongside
+        /// it. Only takes effect on enemies that carry a Pampel Games
+        /// <see cref="PampelGames.GoreSimulator.GoreSimulator"/> component — currently just the
+        /// Spotter's dedicated gore prefab variant (<c>Enemy_Spotter_Gore.prefab</c>), not the base
+        /// <c>Enemy_Spotter.prefab</c>. Carlos's ask: "50% chance". A full-body ragdoll variant was
+        /// tried first and dropped 2026-09-03 — it read as too aggressive (squashed, physically
+        /// unstable) next to the tuned death animation. Owner: MRM-34
+        /// </summary>
+        public float EnemyDismembermentChance = 0.5f;
+
+        /// <summary>
+        /// Force magnitude, in Newtons, applied to the severed limb on a dismemberment kill so it
+        /// separates and falls rather than just dropping in place. Direction comes from the killing
+        /// hit's travel direction, not this value. Owner: MRM-34
+        /// </summary>
+        public float EnemyDismembermentForce = 4f;
+
+        /// <summary>
+        /// Seconds a spawned Blood Factory effect instance (hit spatter, kill splash, dismemberment
+        /// spill) survives before being destroyed. The prefabs don't self-clean — Blood Factory's
+        /// own particle systems just stop, they don't despawn their GameObject — so this is the
+        /// only thing preventing them piling up. Owner: MRM-34
+        /// </summary>
+        public float EnemyBloodEffectLifetime = 5f;
+
         [Header("Enemy — Spotter, MRM-34")]
 
         /// <summary>The Spotter's maximum health. "Medium health" in MRM-34's scope — sturdier than a Zealot, well under the Furman. Owner: MRM-34</summary>
@@ -446,6 +475,15 @@ namespace MrMoonlight.Data
         /// <summary>Range of the Spotter's hand lamp, in metres. Owner: MRM-34</summary>
         public float SpotterLampRange = 14f;
 
+        /// <summary>Peak angle the lamp tilts to on its local X axis at full sway, in degrees — the "hanging and swinging" read. Owner: MRM-34 (2026-09-03, lamp moved from hand to hip socket)</summary>
+        public float SpotterLampSwayMaxAngle = 12f;
+
+        /// <summary>Full swing cycles per second at full sway. Owner: MRM-34</summary>
+        public float SpotterLampSwayFrequency = 1.6f;
+
+        /// <summary>Spotter speed, in m/s, at which the lamp reaches full sway angle and frequency; scales down proportionally below it. Matches the Spotter's own NavMeshAgent speed (3) so a normal walk is already full sway. Owner: MRM-34</summary>
+        public float SpotterLampSwayReferenceSpeed = 3f;
+
         [Header("Flare VFX — MRM-34 (reused by MRM-57)")]
 
         /// <summary>
@@ -502,6 +540,9 @@ namespace MrMoonlight.Data
 
         /// <summary>Fire VFX size as a multiplier of the lamp's own largest rendered dimension. Carlos's ask: size it relative to the lamp, not a fixed number. Owner: MRM-76</summary>
         public float LampFireVfxScaleFactor = 2.5f;
+
+        /// <summary>Seconds the fire VFX (scale, light, audio) takes to grow in once the lamp settles and ignites, before it starts burning at full strength. Added 2026-09-03 — the ignite snapped to full size/brightness instantly, "looked weird" next to the already-smooth fade-out. First-guess number, not measured. Owner: MRM-76</summary>
+        public float LampFireVfxFadeInDuration = 0.6f;
 
         /// <summary>Seconds the fire burns at full strength once it ignites. Lowered from 40 (Carlos, 2026-09-02 — read as too long). Owner: MRM-76</summary>
         public float LampFireBurnDuration = 15f;

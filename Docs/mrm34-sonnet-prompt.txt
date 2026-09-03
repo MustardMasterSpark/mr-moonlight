@@ -1,124 +1,97 @@
-You are picking up MRM-34 (Spotter enemy) in Mr. Moonlight. Opus built the system;
-you are finishing and tuning it. Branch: mrm-75.
+MRM-34 — Spotter: dismemberment + blood, session handoff (2026-09-03)
 
-READ THESE FIRST, IN THIS ORDER
-  1. Docs/mrm34-spotter-ai-build.md  — the as-built record, 15 sections. Section 15
-     is the handoff: known bugs and the prioritised gap list. Read 15 first, then
-     skim 1-14 for context.
-  2. CLAUDE.md and Docs/csharp-conventions.md — house rules.
-  3. MRM-34 in Linear, and the comments on it (there are four; the last two are the
-     verification report and the handoff).
+Read Docs/mrm34-spotter-ai-build.md §17 (17.1-17.6) first — this file is the "read me cold" pointer,
+that section is the full write-up.
 
-Do NOT re-derive things the doc already settles. Section 15.4 lists the decisions
-that are made and should not be re-litigated.
+WHAT'S DONE
+-----------
+- Gore Simulator + Blood Factory (Pampel Games) migrated in: tracked scripts under
+  Assets/_Project/Code/Vendor/{Gore Simulator, Blood Factory, PampelGames Shared}; gitignored art
+  under Assets/ThirdParty/Pampel Games/.
+- Dismemberment is live on Enemy_Spotter.prefab (the ONLY Spotter prefab now — the experimental
+  duplicate, Enemy_Spotter_Gore.prefab, was deleted once this was confirmed working and unified back
+  onto the original). A lethal hit has a 50% chance (MoonlightTunables.EnemyDismembermentChance) of
+  cutting the limb nearest the killing blow. Mesh-cut only, NOT a ragdoll — a full ragdoll variant
+  was tried first and dropped same-day, it read as too aggressive/unstable next to Blaze's tuned
+  keyframed death animation, which still plays normally every time regardless of dismemberment.
+- Three Blood Factory effects wired into EnemyHealth, all parented to the nearest bone
+  (worldPositionStays: true) so they track the body through the death animation instead of floating
+  in world space once the body moves:
+    - hitBloodEffect (BloodSplash06) — every non-lethal hit, at the hit point.
+    - killBloodEffect (BloodSplash01_Radial) — every kill, always, from the torso. Scaled 3x on the
+      prefab (Carlos asked for bigger twice — 1x to 2x to 3x, each an absolute reset, not stacked).
+    - dismembermentBloodEffect (BloodSplatter06) — only on a dismemberment kill, at the cut point,
+      guarded so it can't lock onto the bone that just got reparented onto the severed flying piece.
+- Two unrelated combat bugs found and fixed live, project-wide (not Spotter-specific — flagged and
+  cross-posted to MRM-76, not silently folded in here):
+    - Friendly fire disabled: EnemyFirearm.FirePellet skips damage if the target has EnemyIdentity.
+    - One hitbox per shot: the player's multi-pellet shotgun could land separate pellets on
+      different hitboxes of the same enemy in one trigger pull; only the first now deals damage
+      (Burntwax GunScriptableObject.Shoot/PlayTrail, shared damageClaimed flag across pellets).
+- Lamp fire fade-in fixed: used to snap to full brightness/size instantly on ignite, now fades in
+  over LampFireVfxFadeInDuration (0.6s) the same way it already faded out. Ian's Fire Pack's
+  LightFlicker fights this the same way it fights the fade-out — same disable/re-enable trick used
+  for both.
+- Verified live across all 102 placed Enemy_Spotter instances in Island.unity after the prefab-source
+  edit: zero stragglers, every instance has GoreSimulator + all three blood fields.
 
+WHAT'S NOT DONE / OPEN
+-----------------------
+- 🚩 Dismemberment cut geometry artifact — confirmed STILL HAPPENING after Carlos retested. A cut
+  plane crossing a large, sparse, normally-hidden polygon (Spotter's low-poly topology wasn't
+  modeled with cutting in mind) produces a flat spike instead of a clean seal. Raising
+  meshesPerBone 2->6 was tried, didn't fix it (expected — it changes WHICH position gets picked, not
+  the triangle size at any of them). Real fix is Blender retopology of the cut zones (neck,
+  shoulders, elbows, hips, knees) — Carlos's explicit call to defer, needs his go-ahead before any
+  Blender work starts per the standing rule. Already logged as a checklist item for future
+  characters: Docs/3d-prop-pipeline-wizard.md §4.11.
+- Carlos flagged that next session will likely add ANOTHER cosmetic blood effect. The pattern to
+  extend is already established in EnemyHealth.cs: SerializeField GameObject prefab reference +
+  SpawnBloodEffect(prefab, position, rotation, parentBone) call at whatever trigger point it needs.
+  Look at how hitBloodEffect/killBloodEffect/dismembermentBloodEffect are wired for the shape to
+  copy. Ask Carlos which Blood Factory prefab he wants and where it should trigger before assuming.
 
-WHERE THINGS ARE
+TRAPS FOUND, DON'T REDISCOVER THESE
+------------------------------------
+- Gore Simulator's own automatic bone-detection (AutoSetupHumanoid) is built for Mixamo-style bone
+  names and silently fails on this rig: CC_Base_* (AccuRig/Character Creator) delegates limb mesh
+  weight to *Twist01/02 helper bones, not the named joint bones themselves (CC_Base_L_Upperarm etc.
+  carry ZERO vertex weight). Had to build the 16-bone list by hand instead, one bone per
+  EnemyHitbox zone, using PampelGames.GoreSimulator.Editor.MeshEditorUtility.AddBoneToClass via
+  reflection (internal method) rather than the vendor's own auto-setup.
+- CC_Base_Head is NOT covered by that manual 16-bone list's targetNames array — it was only present
+  on the first (duplicate) prefab because of a leftover from an earlier failed AutoSetupHumanoid
+  attempt. Redoing the setup from scratch on the original prefab produced 15 bones, not 16, silently
+  missing the head, until caught. If this is ever rebuilt a third time: CC_Base_Head needs adding
+  explicitly, it won't come along for free.
+- Gore Simulator's real one-time setup ("Initialize" button in its custom inspector) has no clean
+  public static API — it's a private method (GoreSimulatorInspector.InitializeComponent) on a
+  UI-Toolkit custom Editor. The working technique: UnityEditor.Editor.CreateEditor(gs, editorType)
+  (its real OnEnable() auto-loads default SO references), then reflection to invoke
+  InitializeComponent() on that editor instance. This is idempotent — safe to re-run after changing
+  a setting like meshesPerBone, it won't duplicate colliders/joints (both creation utilities check
+  for an existing component first).
+- SubModulePhysics is NOT auto-added to cutModules by Gore Simulator's own setup — without it,
+  severed pieces have no Rigidbody/Collider and just float in place, ignoring gravity entirely. Had
+  to add it manually (collider: Automatic, rigidbody: true) after the bake.
+- Compiling scripts (refresh_unity with compile:"request") while Carlos is mid-Play-Mode forces a
+  domain reload that interrupts his test and can throw one-off "missing script"/NullReferenceException
+  console noise. Check play_mode.is_playing via the editor/state resource before forcing a compile;
+  if he's playing, wait or warn him first.
+- UnityMCP manage_prefabs save_prefab_stage/close_prefab_stage occasionally report a transient
+  "Unity plugin session disconnected" error even though the operation actually succeeded — always
+  re-check the prefab stage state (PrefabStageUtility.GetCurrentPrefabStage()) before retrying, don't
+  assume failure.
 
-  Assets/_Project/Code/Runtime/Enemies/       shared enemy framework
-  Assets/_Project/Code/Runtime/Enemies/Spotter/  SpotterFlareCall, SpotterPanicCall
-  Assets/_Project/Code/Runtime/Combat/        IDamageable, DamageInfo (own assembly)
-  Assets/_Project/Code/Runtime/Player/        PlayerDamageReceiver, InvulnerableDebugToggle
-  Assets/_Project/Code/Vendor/Blaze AI Engine/Scripts/   Blaze, tracked and editable
-  Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab
-  Assets/_Project/Prefabs/VFX/VFX_Flare.prefab
-  Assets/_Project/Prefabs/World/Prop_Lamp.prefab
-  Assets/_Project/Art/VFX/Flare/FlareCore.shader
+FILES TOUCHED THIS SESSION (uncommitted — Carlos commits via GitHub Desktop, not Claude)
+-------------------------------------------------------------------------------------------
+Modified: Spotter.fbx.meta (Read/Write enabled), MoonlightTunables.cs + .asset, EnemyFirearm.cs,
+EnemyHealth.cs, LampFireEffect.cs, MrMoonlight.Runtime.asmdef, GunScriptableObject.cs (Burntwax
+vendor), Enemy_Spotter.prefab, Island.unity (Carlos's own scene edits, not this session's doing),
+Docs/mrm34-spotter-ai-build.md, Docs/3d-prop-pipeline-wizard.md.
+New: GoreStorage_Spotter.asset (+.meta), Vendor/Gore Simulator/, Vendor/Blood Factory/,
+Vendor/PampelGames Shared/ (all + .meta).
+Deleted: Enemy_Spotter_Gore.prefab (+.meta) — the experimental duplicate, unified away.
 
-
-THE STATE IT IS IN
-
-Working, verified live on the island: patrol, detection, chase, the aim -> fire ->
-pause -> fire -> reload rhythm, damage to the player (health 100 -> 0), the flare
-firing on its own, 7 reinforcements spawning and engaging without stacking, the
-runaway guard, the lamps lighting the ground, and the flare VFX rendering.
-Screenshots in Assets/Screenshots/mrm34_*.png.
-
-
-TASK 1 — VERIFY THE HIT-LOOP FIX (do this first, before anything else)
-
-Carlos reported: "I hit the enemy once and then he looped in his stunned animation."
-
-Root cause was found and fixed but NOT watched running. The fix is
-EnemyHealth.ResolveAttacker() — it walks a damage source up to transform.root
-before handing it to blaze.Hit(), because Blaze rejects any enemy whose tag is not
-in vision.hostileTags, and the gun was passing the untagged "Arms" child.
-
-Full chain is documented in section 15.1. Go and confirm it actually works:
-shoot a Spotter once, check he flinches and then resumes rather than sticking.
-
-If he STILL sticks, the next suspect is section 15.2: EnemyRangedAttack.RunBurst()
-is a coroutine that keeps driving the animator through the flinch. CancelBurst()
-already exists and is wired to EnemyHealth.Died but not to the hit. Wire it to
-TakeDamage or to HitStateBehaviour.onStateEnter. Change ONE thing at a time.
-
-
-TASK 2 — WORK THE GAP LIST
-
-Section 15.3 has 15 items in priority order. After task 1 the highest-value ones are:
-
-  - Ten simultaneous Spotters measured IN A BUILD. This is the last unmet
-    acceptance criterion on MRM-34 and ties to MRM-64. Seven ran fine in the
-    editor, but editor performance is not build performance.
-  - Flare tuning, pure numbers, no code: the sparks read as elongated shards
-    rather than embers (Sparks -> ParticleSystemRenderer.lengthScale, 2.5 -> ~1.2),
-    and the core is small relative to the light it throws (M_FlareCore._Intensity
-    at 5.0, and the Core child's scale at 0.55).
-  - The lamp's position on the hand, once Carlos says where he wants it. Socket is
-    CC_Base_L_Hand/Socket_Lamp. He is also providing a normal map — it goes in
-    M_Lamp's _NormalMap, NOT _BumpMap; RetroLit renamed it.
-
-Ask Carlos before starting anything that is not on that list.
-
-
-HOW TO TEST
-
-The player cannot deal damage in the normal way (MRM-32 is Backlog), so use the
-debug tools that exist for exactly this:
-
-  - EnemyDebugControls on Enemy_Spotter. In play mode, right-click the component's
-    header in the Inspector (or the three-dots icon): Damage / Kill / Attack Player
-    / Fire Flare Now / Log State. Start with Log State.
-  - F4 on the player toggles invulnerability. It blocks the damage but still counts
-    and displays every hit on screen, so you can watch a whole fight without dying
-    and still see that shots are landing. F3 is infinite stamina.
-
-CRITICAL: play mode only ticks while the Unity editor window has focus. If
-Time.time is frozen at 0.02, the editor is unfocused — ask Carlos to click into
-Unity. Do not burn calls rediscovering this. Also: a PlayerSettings change made
-DURING play mode is reverted on exit.
-
-
-TRAPS THAT HAVE ALREADY COST TIME (all in the doc, do not rediscover them)
-
-  - Blaze identifies things BY TAG, and the tag must be on the object that carries
-    the collider, not a parent. This caused both bugs fixed today.
-  - A BlazeBehaviour subclass REPLACES a state slot; it cannot run alongside one.
-    For a new interrupting state use BlazeAISpareState / blaze.SetSpareState().
-  - AddComponent<BlazeAI>() leaves vision and waypoints NULL. If you build an agent
-    from script you must new them.
-  - GetComponentInParent<T>() skips inactive GameObjects, and a prefab ASSET counts
-    as inactive. Verify wiring against the live scene instance.
-  - RetroLit materials: the KeywordEnum properties need SetInteger AND the matching
-    keyword toggled. Cloning a known-good .mat is the safe way. See
-    Docs/3d-prop-pipeline-wizard.md section 3.2.
-  - Anything both Burntwax and our code must see has to live in MrMoonlight.Combat
-    or another leaf assembly — MrMoonlight.Runtime already references Burntwax.Core,
-    so the reverse is a circular reference.
-
-
-HOUSE RULES THAT MATTER HERE
-
-  - No hardcoded values. Everything goes in MoonlightTunables with an XML doc
-    comment naming the owning issue. There are already ~40 Spotter/flare tunables.
-  - Never commit or push. Carlos uses GitHub Desktop.
-  - Scene and inspector work: offer to do it via UnityMCP and ask permission first.
-    Do not silently hand back instructions, and do not silently do it either.
-  - Project-settings changes (NavMesh agent types, layers, tags) — ask first.
-  - When you clean up test objects, match on a uniquely named holder you created,
-    NEVER on a component type real scene content also carries. A cleanup filter
-    matching on EnemyIdentity deleted a Spotter Carlos had placed himself.
-  - When you script a file edit, write a temp file and os.replace it. An in-place
-    open(path,'w') that throws mid-write destroyed 12 sections of a doc today.
-  - Do not claim something works until you have watched it work. Carlos has called
-    this out before and it is a standing rule.
+Suggested commit message text is in the chat where "run the final instructions" was said — Carlos
+pastes it himself via GitHub Desktop, never committed by Claude directly.

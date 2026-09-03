@@ -1,0 +1,104 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 491e45e1e8bc9f54d89292a094071f8a, type: 3}
+  m_Name: GoreSimulatorModuleStorage
+  m_EditorClassIdentifier: 
+  goreModules:
+  - rid: 6014529934856028184
+  - rid: 6014529934856028185
+  - rid: 6014529934856028186
+  subModules:
+  - rid: 6014529934856028187
+  - rid: 6014529934856028188
+  - rid: 6014529934856028189
+  - rid: 6014529934856028190
+  - rid: 6014529934856028191
+  - rid: 6014529934856028192
+  - rid: 6014529934856028193
+  explosionModules: []
+  ragdollModules: []
+  references:
+    version: 2
+    RefIds:
+    - rid: 6014529934856028184
+      type: {class: GoreModuleCut, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+    - rid: 6014529934856028185
+      type: {class: GoreModuleExplosion, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+    - rid: 6014529934856028186
+      type: {class: GoreModuleRagdoll, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+    - rid: 6014529934856028187
+      type: {class: SubModuleAutoDespawn, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        despawnTimer: 0
+        shrink: 0
+        startShrinking: 0
+        move: 0
+        moveVector: {x: 0, y: 0, z: 0}
+        startMoving: 0
+        allowShrink: 0
+    - rid: 6014529934856028188
+      type: {class: SubModuleCachedParts, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        meshPartsParent: {fileID: 0}
+    - rid: 6014529934856028189
+      type: {class: SubModuleCutRagdoll, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        minimumBoneAmount: 0
+        drag: 0
+        angularDrag: 0
+    - rid: 6014529934856028190
+      type: {class: SubModuleDecal, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        radius: 0
+        strength: 0
+        uvTransformation: {fileID: 0}
+    - rid: 6014529934856028191
+      type: {class: SubModuleDisableComponents, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        disableBones: 0
+        components: []
+    - rid: 6014529934856028192
+      type: {class: SubModuleParticleEffects, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        particleClasses: []
+        addedType: 
+    - rid: 6014529934856028193
+      type: {class: SubModulePhysics, ns: PampelGames.GoreSimulator, asm: PG.GoreSimulator}
+      data:
+        _goreSimulator: {fileID: 0}
+        moduleType: 0
+        collider: 0
+        vertexLimit: 0
+        fallbackCollider: 0
+        layer: 0
+        tag: 
+        rigidbody: 0
+        drag: 0
+        angularDrag: 0
