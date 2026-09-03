@@ -2,63 +2,103 @@ Cold-start context for the next session. Read this file first, not chat scrollba
 
 WHERE THE LAST SESSION LEFT OFF
 --------------------------------
-Branch `mrm-34` is done and Carlos is about to commit + merge it to main (dismemberment/blood
-effects from the prior session, plus one cross-scope addition: a debug-only "hit damage numbers"
-tool using the Damage Numbers Pro asset, off by default — see Docs/mrm34-spotter-ai-build.md §18
-and the MRM-34 Linear comment dated 2026-09-03 if you need that context, but it's closed out, not
-something to continue).
+Session did NOT touch Mr. Moonlight at all — all work happened in the separate Weapons project
+(`E:\playground\weapon`, MCP port 8082, tool prefix `mcp__unityMCP_weapons__*`). Carlos wanted to
+test the raw HQ FPS Weapons 2.0 asset standalone before deciding how much of MRM-74 applies. It
+had compile errors, then rendered solid pink/magenta once compiling. Both root-caused and fixed —
+full writeup in `Docs/dual-project-workflow.md` under "Weapons project — pink/magenta render fix
+(2026-09-03)", short version also on the MRM-74 Linear comment dated 2026-09-03. Don't re-read
+those in full unless something regresses; the short version:
 
-Carlos's own words kicking off the next task: "Next thing we will do is not on the spotter
-anymore. We will actually start moving the animation of the hands from the HQ weapons asset."
+- Missing `com.unity.postprocessing` package → compile errors → installed (not the real fix alone).
+- The asset's own BIRP→URP converter tool has a vendor bug that never sets its
+  `POLYMIND_GAMES_FPS_URP` scripting define → set it manually in Player Settings, which exposed one
+  more vendor compile bug (unqualified `Volume` type in `RenderPipelineUtility.cs:261`) → fixed.
+- The actual pink render was 56/145 materials — including the weapon models themselves (AKM,
+  Crossbow, FlareGun, etc.) and ~25 particle/VFX materials (muzzle flash, fire, explosions) — still
+  on Built-in-only shaders. Converted via `UnityEditor.Rendering.MaterialUpgrader` +
+  `StandardUpgrader`/`ParticleUpgrader`. One low-priority holdout left (ConiferTree.fbx's embedded
+  submaterial — has a separate pre-made `Materials_URP/` set already).
 
-THIS IS A FRESH START, NOT A CONTINUATION — confirm scope before writing code
-------------------------------------------------------------------------------
-No branch exists yet for this. The most likely home is MRM-74 "Tracey character replacement +
-weapon animation retargeting" (Backlog, M2 milestone), but read its full description before
-assuming — it's a big issue (character pipeline + Player rig swap + weapon retargeting) and
-Carlos's one sentence could mean either:
+**Verified clean as of 2026-09-03: FiringRange demo scene renders correctly, zero console errors,
+144/145 materials URP-compatible.** This is the state to migrate FROM — do not re-import the raw
+asset from scratch and re-hit the same two vendor bugs.
+
+CARLOS'S OWN WORDS KICKING OFF THE NEXT TASK
+-----------------------------------------------
+"Next thing we will do is actually moving part of this system and animation to MrMoonlight so be
+ready."
+
+THIS IS STILL AMBIGUOUS SCOPE — CONFIRM BEFORE WRITING CODE, SAME AS LAST HANDOFF
+-------------------------------------------------------------------------------------
+The previous handoff (before the pink-fix detour) flagged the same open question and it's still
+open — Carlos's sentence doesn't resolve it on its own:
 
 (a) The FULL MRM-74 weapon-retargeting step: baking HQ FPS Weapons 2.0's animation clips onto
-    Tracey's rig via Retarget Pro, per `Docs/retarget-pro-strategy.md`. MRM-74's own handoff note
-    says this was "blocked on Carlos's Tripo export" as of 2026-08-31 — check whether that export
-    has actually landed before assuming this is unblocked. If it hasn't, this can't be (a).
+    Tracey's rig via Retarget Pro, per `Docs/retarget-pro-strategy.md`. MRM-74 is still Backlog and
+    its own handoff note says this is blocked on Carlos's Tripo character export — check whether
+    that's landed before assuming this is unblocked.
 
-(b) Something narrower and likely unblocked either way: HQ FPS Weapons 2.0 ships its 19 weapons'
-    Equip/Idle/Hold/Unequip animations on one shared `FP_Arms` Generic skeleton — i.e. the
-    first-person ARMS model + animations may already be usable close to as-is for the Player's
-    first-person view, without needing the full Tracey (third-person) retarget first. "Moving the
-    animation of the hands" reads like it could mean wiring up FP_Arms directly, which is a much
-    smaller task than full character replacement.
+(b) Something narrower: HQ FPS Weapons 2.0 ships its 19 weapons' Equip/Idle/Hold/Unequip animations
+    on one shared `FP_Arms` Generic skeleton — i.e. the first-person ARMS model + animations may
+    already be usable close to as-is for the Player's first-person view, without needing the full
+    Tracey (third-person) retarget first. Carlos saying "system and animation" (not "Tracey" or
+    "character") reads more like this — wiring up `FP_Arms` directly — but don't assume, ask.
 
-**Ask Carlos which of these he means before diving in** — don't guess and start building. If it's
-(a) and the Tripo export genuinely hasn't landed, say so and ask how he wants to proceed rather
-than starting a blocked issue.
+**Ask Carlos which of these he means before diving in.** If it's (a) and the Tripo export genuinely
+hasn't landed, say so and ask how he wants to proceed rather than starting a blocked issue.
+
+ALSO CONFIRM: WHICH ISSUE, WHICH BRANCH
+------------------------------------------
+One issue, one branch. MRM-74 is the obvious home but is scoped as the FULL character+retarget
+job (see its description) — if Carlos's actual ask is narrower (option b above), it may warrant its
+own issue rather than starting `mrm-74` branch for a partial slice. Confirm the issue number with
+Carlos before naming a branch, same rule as always.
+
+MIGRATION MECHANICS — READ BEFORE COPYING ANYTHING
+------------------------------------------------------
+`Docs/dual-project-workflow.md` "Moving an asset from Playground into Mr. Moonlight" is the
+established method for ALL of Playground/Weapons → Mr. Moonlight transfers, not just this one:
+direct filesystem copy (folder + every `.meta` file), confirm self-contained first, refresh +
+verify in Mr. Moonlight after (don't take the filesystem copy on faith).
+
+That same doc already states the established scope limit for HQ FPS Weapons specifically:
+**"MRM-23's migration list takes FBXs and textures only, never `FPSCore/`."** i.e. bring over the
+art (weapon models, arm models, animation clips, textures), not PolymindGames' own C# framework —
+Mr. Moonlight wires things through Burntwax FPS Engine (`Docs/mrm9-burntwax-integration.md`), not
+FPSCore's own player/weapon scripts. Worth confirming this limit still holds for whatever Carlos
+scopes next, since it directly shapes what gets copied.
 
 RELEVANT READING, IN ORDER
 ---------------------------
 1. `mcp__claude_ai_Linear__get_issue` on MRM-74 — full current scope/status, may have moved since
-   this was written.
-2. `Docs/retarget-pro-strategy.md` — the adopted animation tool, especially §12-13 (GUI gotchas,
-   the final bypass-baking fix) per memory `retarget-pro-strategy` / `mrm75_retargeting_final_resolution`.
-3. Memory `animation_tooling_ruling` — HQ FPS Weapons already owns every FP weapon animation needed;
+   this was written (2026-09-03, still Backlog, still blocked-on-Tripo per its own handoff note).
+2. `Docs/dual-project-workflow.md` — both the "Weapons project pink-fix" section (2026-09-03, this
+   session) and "Moving an asset from Playground into Mr. Moonlight" (migration mechanics).
+3. `Docs/retarget-pro-strategy.md`, especially §12-13 (GUI gotchas, the final bypass-baking fix) per
+   memory `retarget-pro-strategy` / `mrm75_retargeting_final_resolution`.
+4. Memory `animation_tooling_ruling` — HQ FPS Weapons already owns every FP weapon animation needed;
    Baker Toolkit was rejected; Retarget Pro is for enemies+Tracey only. Worth re-checking this still
    holds before spending time on tooling decisions that were already made.
-4. Memory `mrm9_burntwax_controller_swap` / `Docs/mrm9-burntwax-integration.md` — the Player uses
+5. Memory `mrm9_burntwax_controller_swap` / `Docs/mrm9-burntwax-integration.md` — the Player uses
    Burntwax FPS Engine now, not the original controller. Any hand/arm animation wiring has to go
    through however Burntwax expects its FP arms rigged (check `PlayerController`/whatever Burntwax
    component currently drives the visible arms before assuming a from-scratch Animator setup).
-5. Memory `mrm75_retargeting_final_resolution` and `mrm75_accurig_scale_bug` — real gotchas hit
+6. Memory `mrm75_retargeting_final_resolution` and `mrm75_accurig_scale_bug` — real gotchas hit
    doing this exact kind of retarget work for the Spotter/Blaze, worth having front-of-mind before
    repeating them here.
-6. `Docs/mrm34-spotter-ai-build.md` §16-18 if you need to understand what's currently live on the
+7. Memory `weapon_project_setup` — pointer to the render-pipeline fix details, same content as
+   `Docs/dual-project-workflow.md`'s new section.
+8. `Docs/mrm34-spotter-ai-build.md` §16-18 if you need to understand what's currently live on the
    Player/enemy combat side that a hand/weapon-animation change might touch (hitboxes, damage flow).
 
 WORKFLOW REMINDERS (already in CLAUDE.md, restated because they bite here specifically)
 -----------------------------------------------------------------------------------------
 - One issue, one branch. Confirm the actual issue number with Carlos before naming a branch.
-- Retarget-and-bake happens in Playground; only migrate the BAKED clips into Mr. Moonlight
-  (`Assets/_Project/Art/Animations/<Character>/`) — zero build footprint for the retargeting tool
-  itself. Same dual-project pattern used for every other asset transfer this project.
+- Retarget-and-bake happens in Playground (or now Weapons, for HQ FPS Weapons specifically); only
+  migrate the BAKED clips into Mr. Moonlight (`Assets/_Project/Art/Animations/<Character>/`) — zero
+  build footprint for the retargeting tool itself. Same dual-project pattern used for every other
+  asset transfer this project.
 - Blender/Unity scene-inspector work needs Carlos's permission per step, then verify by reading
   real state back, then document — same rule that governed today's prefab wiring.
 - Record source clip provenance in `Docs/changelog.md` per MRM-74's own handoff note.

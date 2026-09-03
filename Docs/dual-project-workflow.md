@@ -119,6 +119,58 @@ as an embedded package, not copied into `Assets/`.** Crest is the second time th
 (see `mrm71-crest-water-kickoff.md`); check for hardcoded `Packages/` strings before folder-copying
 any future package into Playground.
 
+## Weapons project — pink/magenta render fix (2026-09-03)
+
+The Weapons project (`E:\playground\weapon`, port 8082) wouldn't compile, then wouldn't render
+correctly, before Carlos could even test the raw HQ FPS Weapons 2.0 asset. Two unrelated problems,
+found in this order — **worth re-checking both if this project is ever reset/reimported from a
+fresh asset download**, and worth checking for on the Mr. Moonlight side too if MRM-23/74's
+migration ever pulls in *unconverted* source files instead of files already fixed here.
+
+**1. Compile errors — missing legacy Post Processing package.** ~9 `CS0234` errors in
+`FPSCore/Code/Runtime/PostProcessing/*.cs`, all `UnityEngine.Rendering.PostProcessing` not found.
+Fixed by installing `com.unity.postprocessing` (Package Manager). This got it compiling but was
+**not the correct fix** — see next.
+
+**2. Pink/magenta render — two compounding vendor bugs, not a Mr. Moonlight-side mistake.**
+FPSCore supports both Built-in RP and URP behind a scripting define, `POLYMIND_GAMES_FPS_URP`
+(`#if POLYMIND_GAMES_FPS_URP` → native `UnityEngine.Rendering.Volume`, else → legacy
+`UnityEngine.Rendering.PostProcessing`). The asset ships its own pipeline-converter tool
+(`FPSCore/Code/Editor/Utilities/RenderPipeline/RenderPipelineUtility.cs`, GUI button in a custom
+"Tools Window" → Project page) to flip that define when you pick URP — **but it has a copy-paste
+bug**: the line that computes the symbol to *add* reads `GetDefineSymbolForPipeline(fromPipeline)`
+instead of `targetPipeline` (~line 149), so clicking BIRP→URP in that tool never actually sets the
+define. Net effect: the project renders with URP (a correct native `Volume`/profile was already in
+the demo scene) while the PostProcessing code silently kept compiling for the legacy branch —
+`PostProcessingManager` was managing an empty, inert legacy `PostProcessVolume` instead of the real
+one.
+  - Fixed by manually adding `POLYMIND_GAMES_FPS_URP` to Player Settings → Standalone scripting
+    define symbols (`PlayerSettings.SetScriptingDefineSymbols`) rather than trusting the vendor's
+    own converter button.
+  - That exposed a **second**, previously-unreachable vendor bug (nobody had ever gotten the define
+    set before): `RenderPipelineUtility.cs:261` uses a bare `Volume` with no matching `using` alias
+    in that file → `CS0246`. Fixed by qualifying it as `UnityEngine.Rendering.Volume`.
+  - **The actual visible symptom** (solid magenta filling most of the Game/Scene view) turned out to
+    be **separate from both bugs above**: 56 of 145 materials project-wide — including the weapon
+    models themselves (AKM, Crossbow, DBShotgun, FireAxe, FlareGun, FragGrenade, etc.) — were still
+    on the Built-in-only `Standard` shader, which URP can't render. `Shader.isSupported` does **not**
+    catch this (it only checks platform support, not render-pipeline compatibility), which is why an
+    automated shader-validity scan came back clean while the view was still solid pink. Fixed via
+    Unity's own `UnityEditor.Rendering.MaterialUpgrader.UpgradeProjectFolder(...)` with
+    `StandardUpgrader("Standard")`, then a second pass with `ParticleUpgrader` for ~25 more
+    materials still on `Particles/Standard Unlit` and various `Legacy Shaders/Particles/*` (muzzle
+    flash / fire / explosion VFX — would only have shown pink once something actually fired a
+    weapon, not from the static scene). One holdout remains: `ConiferTree.fbx`'s embedded
+    sub-material, low priority — the model already has a separate pre-made `Materials_URP/` set it
+    can be pointed at instead.
+  - Mid-fix, the MCP bridge went unresponsive for ~15s+ during the second material pass — matches
+    the known `[[unity_editor_focus_traps]]` pattern (background AssetDatabase work stalls while the
+    Editor window isn't OS-focused); resolved the moment Carlos focused the window, not a real hang.
+
+**Verified 2026-09-03:** scene-view screenshot of the FiringRange demo scene shows correct
+textures (stone/brick canopy structure, no magenta), zero console errors, 144/145 materials on
+URP-compatible shaders.
+
 ## Playground is also the animation bench (2026-08-31)
 
 Everything needed to retarget animation is co-located in Playground and **stays there**:
