@@ -645,3 +645,75 @@ Compiled clean, no new console errors. **Not yet eyeballed by Carlos hands-on** 
 numeric target, not a felt one; flag for his own pass before considering this fully done.
 
 Files touched: `IFOVHandlerCC.cs`, `CameraFOVHandler.cs`, `CharacterLookHandler.cs`.
+
+---
+
+## 13. 2026-09-03 — Weapon/hands "darkness" investigated, resolved as no fix needed
+
+Branch: `mrm-9-weapon-lighting` (new, off `main`, per the deferred handoff in
+`Docs/mrm9-lighting-sonnet-prompt.txt`). Carlos: hands and weapons "look pretty dark," no added
+Light source wanted.
+
+**Confirmed, contradicting the deferred hypothesis:** the FP weapon/hand materials are on the
+vendor's `Shader Graphs/LitFieldOfView` (`FP_M1911.mat`) and `LitFieldOfView_SSS`
+(`FP_Arm_Standard.mat`) — standard URP Lit, Metallic workflow. But reading the actual graph
+defaults ruled out a shader-family cause: `Metallic` slot = 0 (not full-metal), `Occlusion` = 1,
+`Smoothness` = 0.5 — none of these crush the diffuse term. `RetroLit.shader` was also read in
+full: its default diffuse path (`_USE_AMBIENT_OVERRIDE` off) samples the **same** `SampleSHVertex`
+ambient as any URP Lit shader, so porting to RetroLit alone would **not** have fixed this — it
+only helps if paired with deliberately turning on RetroLit's ambient-light override at a boosted
+value, which is a separate decision from "which shader family."
+
+**Root cause of the "flat black" look Carlos originally saw:** the Night preset's own lighting is
+genuinely very dim by design (`SUN` intensity 0.12, `RenderSettings.ambientIntensity` 0.4 over dark
+SH colors, `M_Sky_NightSkyglowHeavy` skybox) — see `TimeManager`'s 4 presets
+(Morning/Sunset/Night/Apocalypse) and its `TimeOfDayDebugCycle` companion, which auto-rotates
+through all four on a timer for debug purposes. The very dark, flat-looking frame from the original
+report was captured **mid-transition** in that auto-cycle, not a stable state.
+
+**Verification:** entered Play mode, called `TimeManager.ApplyPreset(2, 0f)` (Night) and disabled
+`TimeOfDayDebugCycle` to lock the state, left the FP materials completely unmodified, and
+screenshotted. Result: the shotgun and hand show real detail (metal highlights, skin tone) — dark
+and atmospheric, not a black silhouette. Carlos reviewed this screenshot against the mid-transition
+one and **confirmed he prefers the locked-Night look as-is.**
+
+**Outcome: no material or shader change made.** The `RetroLitViewModel.shader` port (item 5 in
+§10) is still open as a stylistic/consistency task if Carlos wants it later, but it is no longer
+blocking or explained as a darkness bug — treat it as optional polish, not a fix.
+
+**Caveat for whoever picks this up:** `TimeOfDayDebugCycle` will keep auto-rotating through all
+four presets during normal play and any future demo/build unless someone explicitly disables it or
+locks a preset — this was not changed. If a stable time-of-day is wanted for a specific
+presentation, that is a one-property toggle on the `TimeManager` GameObject, not a rebuild of this
+investigation.
+
+### Cross-issue fix on the same branch: Northern Lights invisible in Play mode
+
+While producing a build for Carlos's in-class presentation, he separately reported the three
+`VFX_NorthernLights` prefabs visible in Scene view but **not** in Play mode/builds since around the
+HQFPS controller swap. Root cause: `Player_Tracey/Body/Head/Camera/PlayerCamera`'s `cullingMask`
+excludes the `TransparentFX` layer (layer 1) — the layer all three aurora prefabs sit on. Scene
+view ignores culling masks entirely, which is why it looked fine there. This is a side effect of
+HQ FPS Weapons' own camera defaults replacing Burntwax's culling mask, not anything in the VFX
+prefabs. **Fix:** added `TransparentFX` back into `PlayerCamera.cullingMask` (`41795633` →
+`41795635`), verified by reading the value back, saved `Island.unity`.
+
+Flagging per the cross-issue-scope exception precedent: this is not MRM-9 scope, but it was a
+one-property fix requested live and landed on this branch alongside the darkness investigation
+rather than a fresh branch, to unblock the same presentation build.
+
+**Unrelated incidental diff in `Island.unity`, not investigated further (budget-constrained):**
+saving the scene also picked up (a) a `Gaia.NoiseSettings` MonoBehaviour's serialization position
+shifting earlier in the YAML file (cosmetic reorder, not a semantic change), and (b) small
+`m_LocalPosition` drift (single-digit-to-double-digit units) on two `Northern Lights Curtain
+URP.prefab` instances. Likely the aurora's own slow drift/parallax animation running in edit mode
+over the session's real elapsed time, not something introduced by the culling-mask fix — flagged
+rather than silently included or reverted, same pattern as the unresolved MRM-68 diff.
+
+**Builds produced this session** (see `Docs/build_process` memory for the folder convention):
+- Build 25 — "Class Demo" — main branch as of the hip-fire-speed commit, before the Northern
+  Lights fix.
+- Build 26 — "Northern Lights Fix" — includes the culling-mask fix above. **This is the one to
+  hand to Carlos** if only one build ships.
+
+Files touched: `Assets/_Project/Scenes/Island.unity` (camera culling mask only, intentionally).
