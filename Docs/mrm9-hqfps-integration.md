@@ -717,3 +717,67 @@ rather than silently included or reverted, same pattern as the unresolved MRM-68
   hand to Carlos** if only one build ships.
 
 Files touched: `Assets/_Project/Scenes/Island.unity` (camera culling mask only, intentionally).
+
+## 14. 2026-09-04 — Standing rule: reload is always manual, never automatic on an empty trigger pull
+
+**Carlos's rule, verbatim intent:** pulling the trigger on an empty magazine plays the dry-fire
+click and does nothing else — no automatic reload. The player must reload deliberately. Keep
+pulling the trigger on empty and you keep hearing the click, indefinitely, until you reload
+yourself.
+
+**This is a standing project-wide rule, not a per-weapon tweak — it applies to every current and
+future ranged weapon that uses ammunition** (M1911, DBShotgun, Crossbow today; any HQ FPS firearm
+added later).
+
+### Where it lives
+
+HQ FPS Weapons already ships exactly this switch: `PolymindGames.Options.GameplayOptions`
+(`Assets/_Project/Code/Vendor/PolymindGames/Runtime/Options/GameplayOptions.cs`), option
+`AutoReloadOnDry`. `Firearm.StartUse()` (`Firearm.cs`) is the single call site every firearm's
+trigger input funnels through:
+
+```csharp
+if (_magazine.IsMagazineEmpty() && !IsReloading)
+{
+    if (GameplayOptions.Instance.AutoReloadOnDry && StartReload())
+        return true;
+
+    _dryFireFeedback.TriggerDryFireFeedback();
+    return true;
+}
+```
+
+Because every `Firearm` component reads this same option, flipping it once governs every weapon —
+**do not** wire a per-weapon workaround (e.g. an `AutoReloadOnDry`-style bool on an individual
+barrel-effect or magazine component) to fight this; if a future weapon ever needs to opt out, that
+is a deliberate design exception to flag with Carlos, not a default to reach for.
+
+**Changed:** the option's default flipped from `true` to `false` in two places that must move
+together —
+1. The C# field default: `_autoReloadOnDry = new(true)` → `new(false)` — this is what a
+   never-before-run install (or a "restore defaults" call) falls back to.
+2. The live settings asset,
+   `Assets/_Project/Data/PolymindGames/Resources/Options/GameplayOptions.asset` — the actual
+   ScriptableObject default this project ships with.
+
+**Trap found while verifying, worth knowing for any future `UserOptions<T>`-based setting:** these
+options are not read from the asset above at runtime once a save file exists. `UserOptions<T>`
+(`UserOptions.cs`) checks `UserOptionsPersistence.GetSavePath<T>()` first —
+`%AppData%LocalLow/Mustard Master Spark/MrMoonlight/Options/GameplayOptions.json` on this machine
+— and if that file exists, loads *from it*, ignoring the ScriptableObject default entirely. Editing
+the C# default and the `.asset` file is not enough on a machine that has already played the game
+once; the stale JSON silently wins. Had to hand-edit `_autoReloadOnDry` in that JSON file too to
+verify the change live. If a future settings default change doesn't seem to take effect, check
+that file before assuming the code is wrong.
+
+**Verified live** (Play mode, reflection against the running `Firearm` +
+`FirearmBasicReloadableMagazine` on the equipped `HQFPS_Wieldable_DBShotgun`): forced the magazine
+to 0 with `ForceSetAmmo(0)`, then called `StartUse()` five times in a row. Every call returned
+`true` (input consumed → dry-fire), `IsReloading` stayed `false` the entire time, and ammo stayed
+at `0` — confirming no auto-reload fires, ever, without a deliberate reload action. Dry-fire audio
+was already wired for all three weapons (shared `FPS_Firearm_DryFire` container, §"AudioRandomContainer
+migration" work same day), so this needed no new sound.
+
+Files touched: `Assets/_Project/Code/Vendor/PolymindGames/Runtime/Options/GameplayOptions.cs`,
+`Assets/_Project/Data/PolymindGames/Resources/Options/GameplayOptions.asset`, and the user's local
+save-data JSON (not part of the repo).

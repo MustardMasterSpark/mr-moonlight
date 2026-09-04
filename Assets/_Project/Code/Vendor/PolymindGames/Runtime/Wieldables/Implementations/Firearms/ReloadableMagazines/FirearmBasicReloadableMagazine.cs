@@ -20,7 +20,7 @@ namespace PolymindGames.WieldableSystem
 
         [SerializeField]
         [Tooltip("Audio clip to play during the reload.")]
-        private AudioSequence _reloadAudio;
+        private AudioData _reloadAudio;
         
         [SerializeField, Range(0f, 15f), Title("Empty Reload")]
         [Help("Enable empty reload by setting a duration greater than 0.", UnityMessageType.None, Order = 2000)]
@@ -32,7 +32,7 @@ namespace PolymindGames.WieldableSystem
 
         [SerializeField]
         [ShowIf(nameof(_emptyReloadDuration), 0.01f, Comparison = UnityComparisonMethod.GreaterEqual)]
-        private AudioSequence _emptyReloadAudio;
+        private AudioData _emptyReloadAudio;
 
         private AudioSource _audioSource;
         private Coroutine _reloadCoroutine;
@@ -82,7 +82,7 @@ namespace PolymindGames.WieldableSystem
             animator.SetFloat(AnimationConstants.ReloadSpeed, _reloadAnimSpeed);
             animator.SetBool(AnimationConstants.IsEmpty, false);
             animator.SetBool(AnimationConstants.IsReloading, true);
-            _audioSource = Wieldable.Audio.PlayClips(_reloadAudio, BodyPoint.Torso);
+            _audioSource = Wieldable.Audio.PlayClip(_reloadAudio, BodyPoint.Torso);
         }
 
         protected virtual void OnEmptyReload()
@@ -91,7 +91,7 @@ namespace PolymindGames.WieldableSystem
             animator.SetFloat(AnimationConstants.ReloadSpeed, _emptyReloadAnimSpeed);
             animator.SetBool(AnimationConstants.IsEmpty, true);
             animator.SetBool(AnimationConstants.IsReloading, true);
-            _audioSource = Wieldable.Audio.PlayClips(_emptyReloadAudio, BodyPoint.Hands);
+            _audioSource = Wieldable.Audio.PlayClip(_emptyReloadAudio, BodyPoint.Hands);
         }
         
         /// <summary>

@@ -34,7 +34,7 @@ namespace PolymindGames.WieldableSystem
         private Vector3 _spawnRotation;
 
         [SerializeField]
-        private AudioSequence _ejectAudio;
+        private AudioData _ejectAudio;
 
         private const float InheritedSpeed = 0.85f;
         private const float SpeedRandomness = 0.5f;
@@ -45,7 +45,7 @@ namespace PolymindGames.WieldableSystem
         {
             base.Eject();
 
-            Wieldable.Audio.PlayClips(_ejectAudio, BodyPoint.Hands);
+            Wieldable.Audio.PlayClip(_ejectAudio, BodyPoint.Hands);
 
             if (_spawnDelay > 0.01f || !Wieldable.IsGeometryVisible || Mathf.Abs(_spawnScale - 1f) > 0.01f)
             {

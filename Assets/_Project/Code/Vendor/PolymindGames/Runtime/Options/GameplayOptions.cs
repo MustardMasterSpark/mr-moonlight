@@ -23,8 +23,13 @@ namespace PolymindGames.Options
         [SerializeField, Title("Reload")]
         private Option<bool> _cancelReloadOnShoot = new();
 
+        // MRM-9/ammo: default OFF - Carlos's ranged-weapon rule (2026-09-04): an empty trigger
+        // pull is a dry-fire click, never an automatic reload. Reloading is a deliberate player
+        // action only. This is the shared switch every Firearm already checks in
+        // Firearm.StartUse(), so it governs every current and future ranged weapon uniformly -
+        // no per-weapon wiring needed.
         [SerializeField]
-        private Option<bool> _autoReloadOnDry = new(true);
+        private Option<bool> _autoReloadOnDry = new(false);
 
         [SerializeField, Title("Saving")]
         private Option<bool> _autosaveEnabled = new();

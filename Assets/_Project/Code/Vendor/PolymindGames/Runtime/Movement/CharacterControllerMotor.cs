@@ -260,7 +260,12 @@ namespace PolymindGames.MovementSystem
             translation.y -= groundingForce;
             _collisionFlags = _cController.Move(translation);
             
-            _velocity = (_cachedTransform.position - _lastPosition) / deltaTime;
+            // MRM-19: deltaTime is 0 while Time.timeScale is 0 (pause). Dividing zero displacement
+            // by zero deltaTime was producing NaN every paused frame, which corrupted
+            // CameraFOVHandler's _cameraFOVMod - once NaN, Mathf.Lerp(NaN, x, t) stays NaN forever,
+            // so the camera FOV never recovered even after resuming. No motion happened, so zero
+            // velocity is also the correct answer, not just a safe one.
+            _velocity = deltaTime > 0f ? (_cachedTransform.position - _lastPosition) / deltaTime : Vector3.zero;
             _isGrounded = _cController.isGrounded;
             
             if (wasGrounded != _isGrounded)

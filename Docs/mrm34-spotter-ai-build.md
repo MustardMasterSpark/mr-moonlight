@@ -1019,3 +1019,41 @@ unification, not by yesterday's §16.2 hitbox rebuild. Confirmed by reading the 
 `GoreSimulator` component's `bonesListClasses`/`cutModules`/`ragdollModules` back off the prefab.
 Entirely separate from `EnemyHitbox`'s 15 damage boxes — different colliders, different purpose
 (cut/ragdoll physics for a severed limb vs. weapon damage detection), don't interact.
+
+## 19. 2026-09-04 — damage numbers made fog-immune (overlay camera)
+
+**Also cross-issue** (same debug tool as §18, still not shipping), asked inline while Carlos was
+testing with fog on and the numbers were unreadably dim. HAZE (the volumetric fog post-process,
+`Docs/rendering_stack` memory) composites over the whole screen after transparents render, with no
+per-object exclusion — so the `Bleed` popups (world-space, transparent) were getting enveloped like
+any other geometry.
+
+**Fix: a second camera, not a fog-system change.** Flipping HAZE's own before/after-transparents
+timing would have made *every* transparent effect (blood spray, muzzle flash, the Northern Lights
+aurora) fog-immune too, which isn't wanted — those should still read as sitting inside the fog.
+Instead:
+
+- New layer **`WorldOverlayFX`** (index 27)
+- New camera **`DamageNumbersOverlayCamera`**, child of `PlayerCamera` (local transform identity,
+  so it always matches the main camera's position/rotation), `UniversalAdditionalCameraData.renderType
+  = Overlay`, culling mask = `WorldOverlayFX` only, added to `PlayerCamera`'s camera stack
+  (`m_Cameras`)
+- `PlayerCamera`'s own culling mask left untouched — layer 27 was never in its bitmask, so nothing
+  doubles up
+- `Bleed.prefab`'s 4 GameObjects (root + sub-meshes) moved to `WorldOverlayFX`
+
+**Why no separate renderer asset was needed:** HAZE already ships `_excludeOverlayCameras` (found
+in `HazeRendererFeature.cs`, already `true` in `PC_Renderer.asset`) — it skips its own compositing
+pass entirely for any camera whose `CameraRenderType == Overlay`. So the overlay camera reuses the
+same `PC_Renderer` as everything else and is automatically fog-immune by construction, no renderer
+duplication/stripping required.
+
+**Cost:** negligible. URP overlay cameras share the base camera's render target and only draw their
+own culling-mask-selected objects as an extra pass — for a handful of small, transient text meshes
+this is a rounding error at the game's current framerate. This is also a deliberately reusable
+pattern, not a one-off: the same layer/camera is the right home for any future "always-visible
+regardless of fog/lighting" effect (hit markers, outlines/highlights), not just this debug tool.
+
+Verified: spawned a popup in Play mode, confirmed `layer == 27` on the instance, no console errors,
+no measurable framerate change. Could not get a clean in-editor screenshot of it rendering (spawned
+off-frame during the test) — worth Carlos's own live look through actual fog.
