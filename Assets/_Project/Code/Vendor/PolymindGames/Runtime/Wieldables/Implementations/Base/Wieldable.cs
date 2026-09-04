@@ -25,16 +25,16 @@ namespace PolymindGames.WieldableSystem
         private float _equipDuration = 0.5f;
 
         [SerializeField]
-        [Tooltip("Audio sequence played during equipping.")]
-        private AudioSequence _equipAudio;
+        [Tooltip("Audio played during equipping.")]
+        private AudioData _equipAudio;
 
         [SerializeField, Range(0f, 5f), Title("Holstering")]
         [Tooltip("Duration of the holstering animation.")]
         private float _holsterDuration = 0.5f;
 
         [SerializeField]
-        [Tooltip("Audio sequence played during holstering.")]
-        private AudioSequence _holsterAudio;
+        [Tooltip("Audio played during holstering.")]
+        private AudioData _holsterAudio;
 
         private WieldableStateType _state;
         private bool _isGeometryVisible = true;
@@ -103,7 +103,7 @@ namespace PolymindGames.WieldableSystem
             Animator.SetTrigger(AnimationConstants.Equip);
             
             Audio ??= GetComponent<ICharacterAudioPlayer>();
-            Audio.PlayClips(_equipAudio, BodyPoint.Hands);
+            Audio.PlayClip(_equipAudio, BodyPoint.Hands);
 
             for (float timer = Time.time + _equipDuration; timer > Time.time;)
                 yield return null;
@@ -126,7 +126,10 @@ namespace PolymindGames.WieldableSystem
             if (!instantHolster)
             {
                 Audio ??= GetComponent<ICharacterAudioPlayer>();
-                Audio.PlayClips(_holsterAudio, BodyPoint.Hands, holsterSpeed);
+                // MRM-9/audio: PlayClip has no speed parameter (AudioSequence's had one for
+                // multi-clip timing) - holsterSpeed only ever scaled the animation/coroutine
+                // timer below now, same as it always did for the geometry-hide delay.
+                Audio.PlayClip(_holsterAudio, BodyPoint.Hands);
                 
                 Animator.SetTrigger(AnimationConstants.Holster);
                 Animator.SetFloat(AnimationConstants.HolsterSpeed, holsterSpeed);

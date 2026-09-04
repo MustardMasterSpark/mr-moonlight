@@ -56,6 +56,7 @@ namespace MrMoonlight.Player
         private InputMapController _input;
         private bool _movementLocked;
         private bool _controlDisabled;
+        private bool _controlSuspended;
         private bool _pitchResetActive;
 
         /// <summary>Mr. Moonlight's own action wrapper, kept for the UI and interaction code that
@@ -398,10 +399,22 @@ namespace MrMoonlight.Player
             ApplyInputEnabledState();
         }
 
+        /// <summary>
+        /// Reversible full-stop, used by <see cref="PauseController"/> (MRM-19). Unlike
+        /// <see cref="SetMovementLocked"/> this also kills look — the pause menu takes the screen
+        /// over entirely rather than sharing it the way the inventory does — and unlike
+        /// <see cref="DisableControl"/> it turns back on when the game resumes.
+        /// </summary>
+        public void SetControlSuspended(bool suspended)
+        {
+            _controlSuspended = suspended;
+            ApplyInputEnabledState();
+        }
+
         private void ApplyInputEnabledState()
         {
-            bool movementOn = !_controlDisabled && !_movementLocked;
-            bool everythingElseOn = !_controlDisabled;
+            bool everythingElseOn = !_controlDisabled && !_controlSuspended;
+            bool movementOn = everythingElseOn && !_movementLocked;
 
             if (_movementInput != null) _movementInput.enabled = movementOn;
             if (_wieldablesInput != null) _wieldablesInput.enabled = movementOn;
@@ -424,7 +437,7 @@ namespace MrMoonlight.Player
         /// </summary>
         private void ApplyCursorState()
         {
-            bool gameplay = !_controlDisabled && !_movementLocked;
+            bool gameplay = !_controlDisabled && !_movementLocked && !_controlSuspended;
             Cursor.lockState = gameplay ? CursorLockMode.Locked : CursorLockMode.None;
             Cursor.visible = !gameplay;
         }

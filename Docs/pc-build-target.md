@@ -83,6 +83,17 @@ and wrongly blamed for the invisible terrain — do not re-enable without a meas
 
 Ambient 0.4 / reflection 0.25 — a proposal, not a settled look; revisit with the real skybox.
 
+> **2026-09-04 — shadow distance had regressed to 40m, found and fixed.** Carlos reported a dark
+> "shadow circle" moving with the camera in-build — the well-known symptom of `shadowDistance`
+> being tighter than a scene's visible geometry: shadows render only inside that radius, so a
+> heavily-forested scene looks abruptly different just past it. Live inspection found both
+> `PC_RPAsset.asset` and `QualitySettings.asset` reading **40m**, not the **90m** documented above
+> — almost certainly a Gaia vegetation-regen silently reapplying its own preset at some point
+> between when 90m was set and now (Gaia ships a `GWS_URPShadowDistance` wizard-check asset for
+> exactly this kind of setting). Restored to 90m in both files — this is a regression fix, not a
+> new decision; the reasoning above (13-25m trees clipping shadows close to the player) still
+> applies unchanged. If this drifts again after a future Gaia regen, check those two files first.
+
 ## 6. Known, still open
 
 - **Trees cost 3 draw calls each.** The fix is either an atlas merge (3 materials → 1) or

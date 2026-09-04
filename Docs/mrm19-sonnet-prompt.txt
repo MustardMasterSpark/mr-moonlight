@@ -1,0 +1,81 @@
+Cold-start context for the next session. Read this file first, not chat scrollback.
+
+MODEL: Sonnet. Tweaking/tuning on systems that already exist, not building new ones.
+
+==============================================================================
+1. WHAT JUST HAPPENED (previous session, 2026-09-03/04, branch `mrm-19`)
+==============================================================================
+
+Two real chunks of work, plus a long tail of cross-issue tweaks Carlos asked for inline. Nothing
+in this session was committed or pushed — Carlos does that in GitHub Desktop.
+
+**A. MRM-19 pause, narrow scope only.** Escape (keyboard) / Start (gamepad) opens a pause that
+halts the game cleanly (`Time.timeScale = 0`) and resumes cleanly. No UI, no buttons, no game-over
+screen — deliberately deferred, Carlos's own call at kickoff. Full design + the vendor bug found
+and fixed along the way (`CharacterControllerMotor` NaN velocity at zero timescale, which corrupted
+the camera FOV permanently): `Docs/mrm19-pause-implementation.md`.
+
+**B. A long cross-issue tail, all asked for live while testing build 27**, most of it about weapon
+audio:
+- Shadow distance had regressed from the documented 90m to 40m (Gaia regen side effect, probably)
+  — restored. `Docs/pc-build-target.md` §5.
+- Damage-number debug tool (MRM-34, not shipping) made fog-immune via a new overlay camera.
+  `Docs/mrm34-spotter-ai-build.md` §19.
+- **Weapon audio rebuilt on Unity's `AudioRandomContainer`** — this is the big one, see §2 below.
+- **Manual-reload rule**: an empty trigger pull is always a dry-fire click, never an automatic
+  reload, for every current and future ranged weapon. One global flag
+  (`GameplayOptions.AutoReloadOnDry = false`), already verified live.
+  `Docs/mrm9-hqfps-integration.md` §14 — also documents a real trap: this project's options
+  persist to a JSON save file that silently overrides the ScriptableObject default once it exists,
+  so a future options-default change needs the save file checked too, not just the code/asset.
+
+Linear: comments posted on MRM-19 (main summary) and MRM-34 (damage-number cross-issue). MRM-19's
+own status is still Backlog in Linear — normal for this project (Carlos checkpoint-merges without
+updating status), not a signal anything's wrong.
+
+==============================================================================
+2. THIS SESSION'S LIKELY TASK — Carlos said he'll be bringing new weapon sound files
+==============================================================================
+
+**Read `Docs/weapon-audio-system.md` in full before touching any audio.** It has the complete
+container map (which `AudioRC_*.asset` backs which weapon/slot), the workflow (drag clips into the
+container's Elements list in the Inspector — no code, no per-weapon wiring, that's the whole
+point of the system built last session), and the one real trap if a container ever needs to be
+built or edited from script instead of by hand (constructors are internal; the working path is
+`UnityEditor.ProjectWindowCallback.DoCreateAudioRandomContainer`, documented there with the exact
+reflection recipe used).
+
+**Known priority: `AudioRC_Fire_DBShotgun` is a stand-in** (a flare-gun sound, because HQ FPS
+Weapons 2.0 never shipped a real double-barrel-shotgun fire sound at all — confirmed absent from
+every source copy of the vendor pack, not a migration miss). If Carlos hands over shotgun takes,
+this is almost certainly the first thing to swap.
+
+**Also worth revisiting once real material exists:** the currently-silent slots listed in
+`weapon-audio-system.md` §2 (aim-stop, fire-tail, eject, swap-cartridge, hit/impact) — Carlos may
+bring material for some of these too. Don't invent placeholder sounds for them unprompted; wait for
+him to supply clips, same pattern as `DeathScreamPool` and `EnemyAudioHooks` elsewhere in this
+project (empty slot + real call site, not a placeholder beep).
+
+**Unresolved from last session, worth asking about if it comes up again:** Carlos remembered
+hearing a "shattered glass" sound on a baseball-bat hit against a Spotter. Investigated thoroughly
+(traced `BasicMeleeAttack`'s `SurfaceManager` impact-sound path, the enemy's own hit-reaction hooks,
+the collider's physics-material/surface-identity setup) and found no code path that should produce
+glass — the surface system as configured resolves to a concrete-hit sound, not glass, and the only
+"Glass" audio assets anywhere in the project are unreferenced leftover Burntwax files. Not
+resolved, not reproduced — flagged as open rather than guessed at further. If Carlos brings it up
+again, ask what exactly he hit and when, live-test rather than re-deriving from code alone.
+
+==============================================================================
+3. WORKFLOW REMINDERS
+==============================================================================
+- Never commit or push. Offer a commit message instead.
+- Editing an `AudioRandomContainer`'s clip list is an *asset* edit (drag-and-drop in Inspector, or
+  via UnityMCP `manage_asset`/direct Inspector work) — not scene/GameObject placement, so it
+  doesn't trigger the scene-view permission rule the way touching `Island.unity` does. Still ask
+  first if the task drifts into anything that touches the live scene (new overlay cameras, prefab
+  layer changes, etc. — the pattern from last session).
+- If continuing pause work (the 4-button UI, game-over screen) rather than audio: start from
+  `Docs/mrm19-pause-implementation.md` §5's open-items list, and confirm with Carlos whether he
+  wants the full remaining MRM-19 scope now or is still just tuning what's live.
+- Confirm any "fixed"/"sounds right" claim live (Play mode or a build), not just by reading code —
+  this project has been burned by premature claims before.
