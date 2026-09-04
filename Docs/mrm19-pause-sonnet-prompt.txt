@@ -1,0 +1,115 @@
+Cold-start context for the next session. Read this file first, not chat scrollback.
+
+MODEL: Sonnet. UI/state-machine wiring on existing systems, no new architecture.
+
+==============================================================================
+1. WHAT JUST HAPPENED (previous session, same day, 2026-09-03)
+==============================================================================
+
+Two things landed on branch `mrm-9-weapon-lighting` (off `main`), UNCOMMITTED — Carlos commits via
+GitHub Desktop, not Claude:
+
+1. Investigated Carlos's "weapons/hands look dark" complaint. Conclusion: NOT a shader/material
+   bug. The FP materials (`Shader Graphs/LitFieldOfView` / `LitFieldOfView_SSS`) are fine; the
+   flat-black frame he originally saw was `TimeManager`'s `TimeOfDayDebugCycle` mid-transition
+   between presets. Locked to the Night preset with materials untouched, Carlos reviewed a
+   screenshot and **confirmed he likes that look as-is**. No code/material changes from this task.
+2. Cross-issue fix (flagged explicitly, same pattern as prior sessions' scope exceptions):
+   `PlayerCamera`'s culling mask was missing `TransparentFX`, so the 3 `VFX_NorthernLights`
+   prefabs were invisible in Play mode/builds since the HQFPS controller swap (visible in Scene
+   view only, which ignores culling masks). Fixed the mask, saved `Island.unity`.
+
+Full detail: `Docs/mrm9-hqfps-integration.md` §13. Linear comments on MRM-9 and MRM-47.
+
+Two builds went out for Carlos's in-class presentation same day: Build 25 ("Class Demo", before
+the Northern Lights fix) and **Build 26 ("Northern Lights Fix", the one that matters — has the
+culling-mask fix)**, both under `E:\Builds\`.
+
+**Known incidental diff, not investigated further (see §13 for why):** saving `Island.unity` also
+picked up a cosmetic Gaia `NoiseSettings` serialization reorder and small position drift on the two
+`Northern Lights Curtain URP.prefab` instances — most likely that VFX's own slow drift animation
+running in edit mode over the session's elapsed real time, not a bug. Flagged, not reverted.
+
+
+==============================================================================
+2. THIS SESSION'S TASK
+==============================================================================
+
+Carlos, verbatim: "next session we will implement pause (give me the ability to pause when I click
+escape or pause on the controller pls)."
+
+This matches **MRM-19** in Linear ("Pause menu + game over screen (unstyled)", currently Backlog,
+`gitBranchName: mrm-19`). Read the full issue before starting — it's bigger than what Carlos just
+asked for:
+
+- **Pause** (Start button / Escape): halt game, show current objective, 4 buttons — Continue,
+  Restart from last checkpoint (fade), Restart the game (fade, erases checkpoint state), Return to
+  Main Menu (fade, erases saved state).
+- **Game over** (separate but merged into the same issue): Restart (whole scene for now, leave a
+  placeholder for checkpoint-restart since checkpoint design isn't settled) and Return to Main
+  Menu.
+- No styling required — UX restyles later. This issue proves functionality only.
+
+**Carlos's immediate ask is narrower**: just the ability to open/close a pause state via Escape
+(keyboard) or the controller's Pause/Start button. **Confirm scope with him at the start of the
+session** — do the full MRM-19 (pause + game over), or just wire up the pause toggle input and
+halt/resume first, with the 4 buttons and game-over screen as a fast follow? Don't assume; the
+issue is Urgent/2 points, small enough either way, but the checkpoint-restart button depends on a
+system ("checkpoint design") Carlos says isn't settled yet — that's a real blocker for one of the
+four pause buttons specifically, not the others.
+
+
+==============================================================================
+3. WHERE TO ACTUALLY LOOK, IN ORDER
+==============================================================================
+
+1. **Input system split — read this before wiring Escape/Pause input.** Per
+   `Docs/mrm9-hqfps-integration.md` §10 item 8 (still open, unresolved): `InputMapController`
+   (ours) clones the project's Input Action asset; HQ FPS Weapons' `InputManager` binds the action
+   asset directly. They currently coexist, but **pause/UI input modes don't cover FPSCore's
+   actions** — this is exactly the gap a pause feature will fall into. Check both systems' current
+   action maps before adding a new binding; a naive new "Pause" action on only one of them will
+   silently not fire depending on which system currently "owns" input focus. Confirm current state
+   via UnityMCP before assuming this doc entry is still accurate (memory-staleness rule).
+2. **Reuse the Death sequence's halt/fade patterns.** MRM-17 ("Death sequence + blackout") is Done
+   and already solves "remove all control immediately, clean up HUD state, fade to black" —
+   `DeathSequence`, `HealthRedTintSource`, `PlayerDamageReceiver` on
+   `Player_Tracey/MrMoonlight Systems`. Pause needs the same "freeze player input, don't freeze UI
+   input" split. Read `DeathSequence.cs` first rather than designing pause halt logic from scratch.
+3. **Static-registry gotcha already hit once** (MRM-11 traps memory): a static `ScreenTint`
+   registry not cleared between scene loads caused a stuck red tint after death, fixed in build 23.
+   If pause's fade-to-black reuses any similar static/singleton screen-effect registry, check it
+   clears on Restart/Return-to-Menu, not just on normal unpause.
+4. **HUD Canvas** (`HUD Canvas` GameObject in `Island.unity`) already exists with `EventSystem` +
+   `InputSystemUIInputModule` present in the scene (confirmed working, MRM-11 traps memory: the
+   scene originally had NO EventSystem and UI buttons were silently dead — that's fixed now, but
+   verify it's still there before assuming pause UI buttons will just work).
+5. **Checkpoint system status:** per MRM-19's own acceptance criteria, "Restart from last
+   checkpoint" needs an actual checkpoint system Carlos hasn't designed yet. Do not invent one;
+   leave the placeholder method the issue explicitly asks for, same as the Game Over screen's
+   equivalent placeholder.
+6. **Time.timeScale vs a dedicated pause flag:** decide and document (per MRM-19 acceptance
+   criteria: "pausing during a cutscene either works correctly or is blocked deliberately"). Check
+   whether `EventDirector` (the text-script level-flow system from MRM-11) has any timing
+   assumptions that would break under `Time.timeScale = 0` — likely does, since it's driving
+   scripted `wait` blocks. This needs a decision, not just a `Time.timeScale = 0` reflex.
+
+
+==============================================================================
+4. WORKFLOW REMINDERS
+==============================================================================
+- One issue, one branch: start a fresh branch off `main` for MRM-19 — but note `main` does not yet
+  have this session's culling-mask fix or darkness-investigation doc update; those are sitting
+  uncommitted on `mrm-9-weapon-lighting` pending Carlos's own commit/merge in GitHub Desktop. Ask
+  him whether that's landed on `main` yet before branching, per the project's git-sanity-check
+  habit (same check done at the start of this session).
+- Never commit or push. Offer a commit message instead.
+- Scene/inspector wiring (new Canvas, EventSystem changes, wiring buttons) needs Carlos's
+  permission first per the project's standing rule — ask before mutating, then verify by reading
+  state back, then document.
+- Confirm any "pause works" claim with a screenshot or an actual focused Play-mode/build
+  verification, not just "no console errors" — this project has been burned by premature "fixed"
+  claims twice already (`feedback_confirm_before_declaring_fixed` memory).
+- Carlos plays hands-on and dictates messages (typos expected) — verify pause/resume live with
+  both keyboard (Escape) and controller (Start/Pause button) before calling it done; don't assume
+  parity between the two input paths given the input-system split in §3.1 above.
