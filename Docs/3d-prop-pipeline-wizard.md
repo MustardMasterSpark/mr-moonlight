@@ -321,6 +321,13 @@ says it is done does §9 fire.
 The long one. **Do not batch it.** One character all the way through and verified before the
 second one starts.
 
+> 🧭 **Start at `Docs/character-pipeline-guide.md`, not here.** That guide is the spine: nine
+> numbered stages from "about to model" to "in the game holding a weapon", with who does each one,
+> exactly what to hand over, and the phrase to say to resume at any stage. **§4 below is the detail
+> for its Stages 2–6** and stays authoritative for those. The guide additionally owns Stage 0
+> (the four rules that are cheap before modelling and expensive after) and the two player-only
+> stages — the viewmodel arms and the visible body — which §4.10 used to defer.
+
 ### 4.1 👤 CARLOS — Tripo → mesh in T-pose
 
 Carlos's step. The model comes out **in a T-pose** — this matters enormously later.
@@ -450,10 +457,21 @@ are NOT needed as 3D models** — they appear only as faces in the Polaroid text
 **Faces are 2D texture swaps, not rigs** — budget a face texture atlas per character with
 expression states.
 
-> **Not this pipeline:** Tracey's **FPS arm/hand viewmodel layer** — a first-person viewmodel
-> (arms/hands + hair + held weapon) that swaps independently of her third-person body while
-> staying rig-compatible, same skeleton and scale, so weapon attachment points and hand poses
-> line up across both. **Its own Linear issue**, to be created when this path is first walked.
+> **Tracey's FPS arm/hand viewmodel layer — this path has now been walked (2026-09-05).** It is
+> **Stage 7** of `Docs/character-pipeline-guide.md`, and the architecture behind it is
+> `Docs/tracey-rig-strategy.md`.
+>
+> ⚠ **The note that used to sit here was wrong on one point** and it is worth correcting explicitly,
+> because it was the intuitive answer: it assumed the viewmodel would stay *"rig-compatible, same
+> skeleton and scale"* as the third-person body. **It cannot.** The HQ FPS weapon animations are
+> authored on a 44-bone Generic skeleton (`Arms_Root`) that has **two root bones and no hips, spine
+> or clavicle**, driven in **camera space** by a ParentConstraint onto the camera. It can never be a
+> Humanoid avatar, and its clips can never be retargeted onto a body rig. The player therefore
+> carries **two skeletons that never merge** — a Humanoid body and a Generic arms viewmodel.
+>
+> What *is* shared is the **art**, not the rig. And AccuRig turns out to map 1:1 onto the vendor arm
+> bones by name (19 of 22 per arm), so moving weights between the two is a dictionary lookup rather
+> than a spatial transfer. Guide Stage 7 has the map.
 
 ### 4.11 ⚠ Gore-ready topology, if the character will ever be dismembered
 
