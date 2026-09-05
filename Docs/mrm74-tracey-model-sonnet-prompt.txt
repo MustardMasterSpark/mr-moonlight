@@ -1,0 +1,237 @@
+MRM-74 — TRACEY'S MODEL — COLD-START CONTEXT FOR THE NEXT SESSION
+Written 2026-09-05, end of the Opus planning session that designed the character pipeline.
+Read this file first, not chat scrollback.
+
+SUPERSEDES `Docs/mrm74-sonnet-prompt.txt` (2026-09-03) — that file predates the HQ FPS controller
+swap, still talks about Burntwax, and its central plan is now disproven. Do not follow it.
+
+SUGGESTED MODEL: Sonnet. The architecture is decided and documented; what remains is executing a
+written pipeline, hands-on in Blender and Unity via MCP.
+
+
+=====================================================================
+READ FIRST, IN THIS ORDER — DO NOT START WITHOUT THESE
+=====================================================================
+  1. Docs/character-pipeline-guide.md   <- THE SPINE. Nine numbered stages. Carlos resumes by
+                                           saying "Stage N, <thing>". This is your instruction set.
+  2. Docs/tracey-rig-strategy.md        <- WHY the architecture is what it is. Read §1-3 and §8-9.
+  3. Docs/3d-prop-pipeline-wizard.md §4 <- the detail for Stages 2-6. Still authoritative there.
+  4. The MRM-74 Linear comment dated 2026-09-05 — NOT the issue description (see below).
+
+
+=====================================================================
+MRM-74 IS NOW CORRECT AND IS THE SOURCE OF TRUTH. TRUST IT.
+=====================================================================
+The description was REWRITTEN on 2026-09-05 at Carlos's instruction ("let's just keep the current
+source of truth as what we just described"), and the title changed from "...+ weapon animation
+retargeting" to "Tracey character — model, rig, and first-person viewmodel arms". So CLAUDE.md's
+normal rule applies again: the issue wins, and it now agrees with the docs.
+
+Recorded here only so nobody re-proposes it: the OLD description said the plan was to "retarget
+the HQ FPS Weapons 2.0 animation set onto her rig" via Retarget Pro. **That is impossible**, proven
+on 2026-09-05 by reading the actual data, not by opinion:
+
+  - The weapon clips live on `Arms_Root`: 44 bones, TWO root bones (UpperArm.L / UpperArm.R), and
+    NO hips, spine, chest or clavicle. Unity's Humanoid avatar requires a hips->spine->chest->
+    shoulder chain, so this skeleton can never be a Humanoid avatar at all. The vendor ships it
+    Generic (`animationType: 2`) for exactly this reason.
+  - The clips are authored in CAMERA space — the arm roots are ParentConstraint-ed onto
+    `IMotionMixer.TargetTransform`. A reload clip means "put the hand here relative to the lens",
+    never "rotate the shoulder by X". There is no shoulder rotation in the data to retarget.
+  - Humanoid retargeting is rotation-based and deliberately discards exact positions, which would
+    break weapon-in-hand alignment even if the first two problems vanished.
+
+The correct architecture — TWO skeletons that never merge — is now stated in the issue itself, and
+in `Docs/tracey-rig-strategy.md`. Issue and docs agree. Nothing is pending.
+
+
+=====================================================================
+WHAT CARLOS ASKED FOR NEXT, IN HIS OWN WORDS
+=====================================================================
+"First I need to finish Tracy's model and all of the enemies' models and then I give you the base
+of the full body model. And also separately, the arms of that specific character, so you can then
+add the skeleton that will be our baseline for the weapon animations."
+
+So the sequence is: HE models -> he hands over the body AND (separately) that character's arms ->
+you rig and wire. He also said, about the whole pipeline:
+
+"Mostly what I will be doing is probably creating the models. Texturing, of course. And providing
+animations. But if you can do weight distributions, that would be cool. In general everything you
+can do is better for me."
+
+=> AUTOMATE BY DEFAULT. Ask permission for Blender/Unity work per CLAUDE.md, but propose doing it
+yourself rather than handing him instructions. He is token-constrained and time-constrained.
+
+
+=====================================================================
+WHERE TRACEY ACTUALLY IS RIGHT NOW — MEASURED, NOT ESTIMATED
+=====================================================================
+Blender file: C:\Users\calva\Desktop\3D Characters\Tracey\tracey low poly weapons arms.blend
+(This is Carlos's WORKING COPY. The original "tracey low poly.blend" is untouched. He may hand you
+a newer file — ask which is current before touching anything.)
+
+She is a Tripo blockout, NOT a character yet:
+  - Five loose objects, no armature: body (1009 v), head (881 v), hands (152 v), boots (388 v),
+    ear (36 v). ~2.5k verts before mirrors.
+  - ZERO vertex groups on every object. Nothing is rigged or weighted.
+  - One auto material, `tripo_mat_5fb676ae`, on all five. No real texture.
+  - SHE IS EXACTLY 1.000 m TALL, feet at Z=0. Must be scaled to ~1.70 m and APPLIED in Blender.
+  - `hands` is one connected piece, no separated fingers, spanning 22 cm at 1.0 scale
+    (= 37 cm at 1.7 m, against ~72 cm for a real shoulder-to-fingertip).
+
+THE ONE BLOCKING MODELLING CONSTRAINT — tell Carlos before he models, not after:
+  HANDS NEED REAL FINGERS. 5 fingers, 3 visible segments, both hands. The weapon animations drive
+  15 finger bones per hand (trigger pulls, thumb on hammer, magazine grips). Blocky low-poly
+  fingers are completely fine — PS1-era hands were exactly that. Fused mittens are not. This is
+  the only thing on the Stage 0 list that cannot be fixed later.
+
+
+=====================================================================
+LIVE STATE YOU WILL TRIP OVER IF NOBODY TELLS YOU
+=====================================================================
+1. THE GAME IS CLEAN. NO PLACEHOLDER ART IS LIVE.
+   A dry run on 2026-09-05 briefly registered an arm set named "Tracey" at index 0 of
+   `HQFPS_Wieldable_Arms.prefab`, using the VENDOR'S `Arm_Standard` mesh. Carlos had it REVERTED
+   the same day — "these are not the arms we're going to be using." Verified from disk: the prefab
+   is back to its vendor baseline, 8 renderers and 4 arm sets with `Standard` at index 0.
+   The FBX, the two mesh assets, the material, the placeholder PNG and the two verification
+   screenshots were all deleted. DO NOT go looking for them; they are gone on purpose.
+
+2. THE BUILD TOOL SURVIVED, AND IT IS MESH-AGNOSTIC. THAT IS THE VALUABLE PART.
+   `Tools > MrMoonlight > Character > Build Tracey FP Arms`
+   `Tools > MrMoonlight > Character > Remove Tracey FP Arms`   <- the matching revert
+   (Assets/_Project/Code/Editor/Migration/MoonlightTraceyArmsBuild.cs)
+   Both idempotent. Build works on ANY mesh bound to `Arms_Root`, so Stage 7 is mostly a matter of
+   handing it Carlos's arms. With the assets deleted it aborts cleanly with "export the arms from
+   Blender first", which is correct until his real arms exist.
+   DO NOT REWRITE IT. Extend it if the naming needs to generalise past Tracey.
+
+   ⚠ WHY THERE IS A `Remove` MENU ITEM AND NOT "JUST UNDO IT IN GIT": the arms prefab lives under
+   `Assets/ThirdParty/`, which .gitignore excludes wholesale. Git cannot revert an edit it never
+   saw. ANYTHING THIS PIPELINE WRITES INTO VENDOR TERRITORY NEEDS A SCRIPTED WAY BACK OUT — build
+   the undo at the same time as the do.
+
+3. THIS SESSION'S WORK SITS ON THE `mrm-25` BRANCH, WHICH IS THE WRONG HOME.
+   It belongs to MRM-74. Nothing is committed (Carlos commits in GitHub Desktop). Confirm the
+   branch with him before adding to it. One issue, one branch.
+
+4. `Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset` shows as modified and was NOT touched by
+   this session — Unity regenerated it. Leave it or ask.
+
+
+=====================================================================
+THE THREE TRAPS ALREADY PAID FOR — DO NOT REDISCOVER THESE
+=====================================================================
+Full detail in Docs/tracey-rig-strategy.md §9 and the guide's Appendix B.
+
+1. BLENDER'S DEFAULT FBX EXPORT IS 100x TOO SMALL.
+   Fix in Blender: `apply_scale_options='FBX_SCALE_ALL'` with `global_scale=1.0`. NOT with a Scale
+   Factor of 100 in the ModelImporter — that hides it and breaks the next re-export.
+   ⚠ This is the OPPOSITE direction to the AccuRig scale bug (which needs 0.01). Do not reason
+   about which multiplier applies. COMPARE MESH BOUNDS AGAINST A KNOWN-GOOD VENDOR MESH and let
+   the numbers decide. Both scale bugs are real and they point opposite ways.
+
+2. BLENDER RECALCULATES BONE ROLL AND SILENTLY TWISTS FINGERS.
+   Round-tripping a rigged vendor FBX through Blender returned 15 of 44 bones with bindpose
+   rotations off by up to 0.109 — every left-hand finger plus the whole right forearm chain.
+   Binding that to the vendor skeleton twists exactly those joints, and it only shows up
+   mid-reload, on one hand, reading as "the animation is broken."
+   Bone ORDER survives, so the fix is to transplant the vendor mesh's bindpose array wholesale.
+   `MoonlightTraceyArmsBuild` already does this on every run and aborts if the skeleton stops
+   matching. Do not remove that step.
+
+3. THE VIEWMODEL ARMS ARE NOT RETROLIT, AND CANNOT BE.
+   They use `Shader Graphs/LitFieldOfView_SSS`. The FOV nodes in that graph are what pull the arms
+   to their own 60 degree FOV (`CameraFOVHandler`, global `_FOV` / `_FOVEnabled`). RetroLit has no
+   such node — RetroLit arms would render at world FOV and CLIP THROUGH WALLS.
+   MRM-9's "hands are RetroLit" ruling therefore cannot hold literally. OPEN QUESTION for Carlos:
+   if he wants the retro finish on hands, the FOV nodes must be ported into a RetroLit viewmodel
+   variant first. That is very likely the same unfinished `RetroLitViewModel.shader` already
+   blamed in the `mrm9_weapon_darkness_deferred` memory — worth solving once for weapons and hands
+   together, as its own job. Do not bodge it per-material.
+
+
+=====================================================================
+THE ACCURIG FACT THAT MAKES ALL OF THIS CHEAP
+=====================================================================
+AccuRig's arm maps 1:1 by NAME onto the vendor arms rig — 19 of 22 bones per arm:
+
+  CC_Base_L_Upperarm        -> UpperArm.L
+  CC_Base_L_Forearm         -> Forearm.L
+  CC_Base_L_Hand            -> Hand.L
+  CC_Base_L_Index1/2/3      -> Index.1.L  / Index.2.L  / Index.3.L
+  CC_Base_L_Mid1/2/3        -> Middle.1.L / Middle.2.L / Middle.3.L
+  CC_Base_L_Ring1/2/3       -> Ring.1.L   / Ring.2.L   / Ring.3.L
+  CC_Base_L_Pinky1/2/3      -> Pinky.1.L  / Pinky.2.L  / Pinky.3.L
+  CC_Base_L_Thumb1/2/3      -> Thumb.1.L  / Thumb.2.L  / Thumb.3.L
+  (no counterpart)          -> ForearmTwist.1-4.L   [fold into Forearm]
+
+So moving weights between an AccuRig arm and the vendor arm is a DICTIONARY LOOKUP, not a spatial
+transfer. AccuRig stays the first-pass rigger exactly as it was for the Spotter. No "Frankenstein"
+merged rig is needed, and Carlos has been told this.
+
+Vendor rest pose, for reference when pose-matching (real human scale, relaxed A-pose):
+  UpperArm.L head=(0.212, 0.044, 1.375) tail=(0.319, 0.046, 1.213)
+  Forearm.L  head=(0.319, 0.046, 1.213) tail=(0.402, 0.017, 1.113)
+  Hand.L     head=(0.484, -0.011, 1.014)
+⚠ DO NOT change the vendor bone LENGTHS. The animations are authored for those proportions;
+stretching a bone throws the weapon out of the hand. Fit the mesh to the bones, not the reverse.
+
+
+=====================================================================
+WHAT TO ACTUALLY DO WHEN THE SESSION STARTS
+=====================================================================
+DO NOT START WORK ON A KICKOFF PROMPT. This file is context to read, not a start signal — memory
+`feedback_dont_auto_start_on_kickoff`. Wait for Carlos's explicit go-ahead.
+
+When he gives it, he will most likely say one of:
+
+  "Stage 1 done, here's the mesh"    -> he has finished modelling. Go to guide Stage 2:
+                                        Blender cleanup, scale to 1.7 m, join, retopo the
+                                        deformation loops, UVs, then the NUMERIC T-pose check.
+                                        Report actual numbers, never a verdict.
+
+  "Stage 2, clean up Tracey"         -> same as above but he wants you to drive the cleanup.
+
+  "Stage 3 done, here's the rigged FBX" -> AccuRig output landed. Go to Stage 4 (verify the T-pose
+                                        survived — AccuRig silently reverts it) then Stage 5
+                                        (Unity Humanoid import, and VERIFY THE SCALE NUMERICALLY
+                                        against AccuRig's reported "Character height: N cm").
+
+If he asks something that isn't a stage, map it onto the guide's stage table and say which stage
+it is before starting. The whole point of the numbering is that he can resume anywhere.
+
+
+=====================================================================
+LINEAR
+=====================================================================
+  MRM-74 — the home for this work. STILL IN BACKLOG, but its DESCRIPTION AND TITLE WERE REWRITTEN
+           on 2026-09-05 and now match the docs exactly. Read the description; it carries the
+           nine-stage table, the architecture, the AccuRig map and the traps. The 2026-09-05
+           comment holds the same material as the working record.
+  MRM-72 — commented: the prop wizard's §4 now defers to the character guide, and its §4.10 note
+           about the viewmodel being "rig-compatible, same skeleton and scale" was CORRECTED —
+           that assumption was wrong and would have cost a session.
+  MRM-9  — commented: the RetroLit-vs-LitFieldOfView_SSS finding (trap 3 above).
+  MRM-25 — untouched by this session, but its branch is what everything currently sits on.
+
+
+=====================================================================
+FILES THIS SESSION ADDED OR CHANGED (all uncommitted)
+=====================================================================
+Nine files, after the revert. NO art assets — the whole diff is docs plus one Editor tool.
+
+  NEW  Docs/character-pipeline-guide.md                 <- the spine, nine stages
+  NEW  Docs/tracey-rig-strategy.md                      <- architecture + build record + traps
+  NEW  Docs/mrm74-tracey-model-sonnet-prompt.txt        <- this file
+  NEW  Assets/_Project/Code/Editor/Migration/MoonlightTraceyArmsBuild.cs   (+ .meta)
+  EDIT Docs/00-INDEX.md                                 <- two new entries
+  EDIT Docs/3d-prop-pipeline-wizard.md                  <- §4 pointer + §4.10 correction
+  EDIT Docs/mrm74-sonnet-prompt.txt                     <- marked SUPERSEDED
+  (also EDITED but not by this session: Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset —
+   Unity regenerated it. Leave it or ask Carlos.)
+
+REVERTED on 2026-09-05, do not expect to find these:
+  Assets/_Project/Art/Characters/Tracey/Arms/     (FBX, 2 meshes, material, placeholder PNG)
+  Assets/Screenshots/tracey_arms_phase1*.png      (verification renders)
+  the "Tracey" arm set + 2 renderers in HQFPS_Wieldable_Arms.prefab

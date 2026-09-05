@@ -781,3 +781,39 @@ migration" work same day), so this needed no new sound.
 Files touched: `Assets/_Project/Code/Vendor/PolymindGames/Runtime/Options/GameplayOptions.cs`,
 `Assets/_Project/Data/PolymindGames/Resources/Options/GameplayOptions.asset`, and the user's local
 save-data JSON (not part of the repo).
+
+---
+
+## 15. 2026-09-04 — Superseded in part by MRM-25 (weapon test arsenal)
+
+`Docs/mrm25-weapon-test-arsenal.md` extends this work the same day. What it changes about the state
+described above:
+
+| §  | Was | Now |
+|---|---|---|
+| §9 | Five wieldables on the player (Arms + 4 weapons) | **Fifteen** — Arms plus 13 weapons and the Syringe |
+| §9 "Weapon cycling" | Q cycles to the next weapon | **Number keys 1-5 and 7/G pick a category**; Q/E are body lean. The gamepad right bumper keeps the linear cycle |
+| §6 "The `Unbound` sink" | Seven vendor actions sunk, incl. Lean and Heal | **Lean and Heal now have real bindings** (Q/E and H). Five remain sunk: Drop, Select, Holster, Throw, FireMode, Scroll |
+| §6 table | Interact = E, Flashlight = F | **Interact = F, Flashlight = L** — E was needed for lean-right |
+| §9 "Infinite ammo" | 3 firearms on the infinite provider | **8**, applied in the weapon prefab variants rather than on the player |
+| §10 item 9 "Per-weapon damage" | Open; pistol 30 / shotgun 20 / crossbow 40 | **Done** — all 13 weapons' damage lives in `MoonlightTunables` and is pushed in by tooling |
+| §10 item 5 `RetroLitViewModel.shader` | Open, optional polish | Unchanged, still open |
+| §3 "The wobble Carlos asked us not to repeat" | Stated as fixed on all six world materials | **It was not.** `M1911.mat` and `Crossbow.mat` were still on `_SNAPMODE_VIEW`, i.e. snapping was live on the pistol and crossbow. Corrected by MRM-25; see its §4 |
+| §9 "the crossbow's 5x scope deleted" | `RemoveCrossbowScopes` matched **any** object named SniperScope | Narrowed to the crossbow subtree — the blanket match would have deleted the Hunting Rifle's scope on every rebuild |
+
+**One correction to §2's account.** "The other fourteen weapons' meshes, textures, audio and
+prefabs" were listed as left behind. Only the **art and audio** were: every vendor *prefab* (all 21
+wieldables, 8 magazines, 8 shells, 21 pickups) and every *item definition* (28, including all eight
+ammunition types) came across wholesale in the Data/Prefabs migration. That is why MRM-25 needed to
+import art and audio only, and why every prefab relinked with zero fixup once the GUID-preserving
+`.meta` files landed.
+
+**A consequence of §"AudioRandomContainer migration" worth flagging:** retyping
+`_equipAudio`/`_holsterAudio`/`_reloadAudio`/`_emptyReloadAudio`/`_ejectAudio` from `AudioSequence`
+to `AudioData` **discarded the stored value on every weapon not hand-re-authored at the time**. Five
+of the newly imported firearms were completely silent when fired. Fixed by MRM-25; the general
+lesson is that retyping a serialized field is a data migration, not just a code change.
+
+**`PolymindPlayerBuild` was updated but deliberately NOT run.** It still deletes and recreates the
+prefab, which would break the scene instance and its nine added components — see
+`mrm25-weapon-test-arsenal.md` §3.
