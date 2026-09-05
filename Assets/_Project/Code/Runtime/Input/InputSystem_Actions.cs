@@ -253,6 +253,86 @@ namespace MrMoonlight.Input
                     ""interactions"": """",
                     ""initialStateCheck"": false,
                     ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryMelee"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000001"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryPistol"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000003"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryShotgun"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000005"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryRifle"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000007"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryPrecision"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000009"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""WeaponCategoryThrowable"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000011"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Heal"",
+                    ""type"": ""Button"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000015"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false,
+                    ""priority"": 0
+                },
+                {
+                    ""name"": ""Lean"",
+                    ""type"": ""Value"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000900"",
+                    ""expectedControlType"": ""Axis"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": true,
+                    ""priority"": 0
                 }
             ],
             ""bindings"": [
@@ -413,7 +493,7 @@ namespace MrMoonlight.Input
                 {
                     ""name"": """",
                     ""id"": ""1c04ea5f-b012-41d1-a6f7-02e963b52893"",
-                    ""path"": ""<Keyboard>/e"",
+                    ""path"": ""<Keyboard>/f"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -500,17 +580,6 @@ namespace MrMoonlight.Input
                 },
                 {
                     ""name"": """",
-                    ""id"": ""aaaaaaa2-0005-4002-8002-aaaaaaaa0005"",
-                    ""path"": ""<Keyboard>/q"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""SwitchWeapon"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""aaaaaaa2-0006-4002-8002-aaaaaaaa0006"",
                     ""path"": ""<Gamepad>/rightShoulder"",
                     ""interactions"": """",
@@ -545,7 +614,7 @@ namespace MrMoonlight.Input
                 {
                     ""name"": """",
                     ""id"": ""aaaaaaa2-0009-4002-8002-aaaaaaaa0009"",
-                    ""path"": ""<Keyboard>/f"",
+                    ""path"": ""<Keyboard>/l"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",
@@ -684,6 +753,127 @@ namespace MrMoonlight.Input
                     ""action"": ""Pause"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000002"",
+                    ""path"": ""<Keyboard>/1"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryMelee"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000004"",
+                    ""path"": ""<Keyboard>/2"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryPistol"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000006"",
+                    ""path"": ""<Keyboard>/3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryShotgun"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000008"",
+                    ""path"": ""<Keyboard>/4"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryRifle"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000010"",
+                    ""path"": ""<Keyboard>/5"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryPrecision"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000012"",
+                    ""path"": ""<Keyboard>/7"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryThrowable"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000014"",
+                    ""path"": ""<Keyboard>/g"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""WeaponCategoryThrowable"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000016"",
+                    ""path"": ""<Keyboard>/h"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Heal"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""LeanKeys"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000901"",
+                    ""path"": ""1DAxis"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Lean"",
+                    ""isComposite"": true,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": ""negative"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000902"",
+                    ""path"": ""<Keyboard>/q"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Lean"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
+                },
+                {
+                    ""name"": ""positive"",
+                    ""id"": ""aaaaaaa5-2500-4025-8025-000000000903"",
+                    ""path"": ""<Keyboard>/e"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": "";Keyboard&Mouse"",
+                    ""action"": ""Lean"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": true
                 }
             ]
         },
@@ -1084,6 +1274,14 @@ namespace MrMoonlight.Input
             m_Gameplay_InventoryScroll = m_Gameplay.FindAction("InventoryScroll", throwIfNotFound: true);
             m_Gameplay_Pause = m_Gameplay.FindAction("Pause", throwIfNotFound: true);
             m_Gameplay_Unbound = m_Gameplay.FindAction("Unbound", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryMelee = m_Gameplay.FindAction("WeaponCategoryMelee", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryPistol = m_Gameplay.FindAction("WeaponCategoryPistol", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryShotgun = m_Gameplay.FindAction("WeaponCategoryShotgun", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryRifle = m_Gameplay.FindAction("WeaponCategoryRifle", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryPrecision = m_Gameplay.FindAction("WeaponCategoryPrecision", throwIfNotFound: true);
+            m_Gameplay_WeaponCategoryThrowable = m_Gameplay.FindAction("WeaponCategoryThrowable", throwIfNotFound: true);
+            m_Gameplay_Heal = m_Gameplay.FindAction("Heal", throwIfNotFound: true);
+            m_Gameplay_Lean = m_Gameplay.FindAction("Lean", throwIfNotFound: true);
             // UI
             m_UI = asset.FindActionMap("UI", throwIfNotFound: true);
             m_UI_Navigate = m_UI.FindAction("Navigate", throwIfNotFound: true);
@@ -1200,6 +1398,14 @@ namespace MrMoonlight.Input
         private readonly InputAction m_Gameplay_InventoryScroll;
         private readonly InputAction m_Gameplay_Pause;
         private readonly InputAction m_Gameplay_Unbound;
+        private readonly InputAction m_Gameplay_WeaponCategoryMelee;
+        private readonly InputAction m_Gameplay_WeaponCategoryPistol;
+        private readonly InputAction m_Gameplay_WeaponCategoryShotgun;
+        private readonly InputAction m_Gameplay_WeaponCategoryRifle;
+        private readonly InputAction m_Gameplay_WeaponCategoryPrecision;
+        private readonly InputAction m_Gameplay_WeaponCategoryThrowable;
+        private readonly InputAction m_Gameplay_Heal;
+        private readonly InputAction m_Gameplay_Lean;
         /// <summary>
         /// Provides access to input actions defined in input action map "Gameplay".
         /// </summary>
@@ -1276,6 +1482,38 @@ namespace MrMoonlight.Input
             /// </summary>
             public InputAction @Unbound => m_Wrapper.m_Gameplay_Unbound;
             /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryMelee".
+            /// </summary>
+            public InputAction @WeaponCategoryMelee => m_Wrapper.m_Gameplay_WeaponCategoryMelee;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryPistol".
+            /// </summary>
+            public InputAction @WeaponCategoryPistol => m_Wrapper.m_Gameplay_WeaponCategoryPistol;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryShotgun".
+            /// </summary>
+            public InputAction @WeaponCategoryShotgun => m_Wrapper.m_Gameplay_WeaponCategoryShotgun;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryRifle".
+            /// </summary>
+            public InputAction @WeaponCategoryRifle => m_Wrapper.m_Gameplay_WeaponCategoryRifle;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryPrecision".
+            /// </summary>
+            public InputAction @WeaponCategoryPrecision => m_Wrapper.m_Gameplay_WeaponCategoryPrecision;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/WeaponCategoryThrowable".
+            /// </summary>
+            public InputAction @WeaponCategoryThrowable => m_Wrapper.m_Gameplay_WeaponCategoryThrowable;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/Heal".
+            /// </summary>
+            public InputAction @Heal => m_Wrapper.m_Gameplay_Heal;
+            /// <summary>
+            /// Provides access to the underlying input action "Gameplay/Lean".
+            /// </summary>
+            public InputAction @Lean => m_Wrapper.m_Gameplay_Lean;
+            /// <summary>
             /// Provides access to the underlying input action map instance.
             /// </summary>
             public InputActionMap Get() { return m_Wrapper.m_Gameplay; }
@@ -1349,6 +1587,30 @@ namespace MrMoonlight.Input
                 @Unbound.started += instance.OnUnbound;
                 @Unbound.performed += instance.OnUnbound;
                 @Unbound.canceled += instance.OnUnbound;
+                @WeaponCategoryMelee.started += instance.OnWeaponCategoryMelee;
+                @WeaponCategoryMelee.performed += instance.OnWeaponCategoryMelee;
+                @WeaponCategoryMelee.canceled += instance.OnWeaponCategoryMelee;
+                @WeaponCategoryPistol.started += instance.OnWeaponCategoryPistol;
+                @WeaponCategoryPistol.performed += instance.OnWeaponCategoryPistol;
+                @WeaponCategoryPistol.canceled += instance.OnWeaponCategoryPistol;
+                @WeaponCategoryShotgun.started += instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryShotgun.performed += instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryShotgun.canceled += instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryRifle.started += instance.OnWeaponCategoryRifle;
+                @WeaponCategoryRifle.performed += instance.OnWeaponCategoryRifle;
+                @WeaponCategoryRifle.canceled += instance.OnWeaponCategoryRifle;
+                @WeaponCategoryPrecision.started += instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryPrecision.performed += instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryPrecision.canceled += instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryThrowable.started += instance.OnWeaponCategoryThrowable;
+                @WeaponCategoryThrowable.performed += instance.OnWeaponCategoryThrowable;
+                @WeaponCategoryThrowable.canceled += instance.OnWeaponCategoryThrowable;
+                @Heal.started += instance.OnHeal;
+                @Heal.performed += instance.OnHeal;
+                @Heal.canceled += instance.OnHeal;
+                @Lean.started += instance.OnLean;
+                @Lean.performed += instance.OnLean;
+                @Lean.canceled += instance.OnLean;
             }
 
             /// <summary>
@@ -1408,6 +1670,30 @@ namespace MrMoonlight.Input
                 @Unbound.started -= instance.OnUnbound;
                 @Unbound.performed -= instance.OnUnbound;
                 @Unbound.canceled -= instance.OnUnbound;
+                @WeaponCategoryMelee.started -= instance.OnWeaponCategoryMelee;
+                @WeaponCategoryMelee.performed -= instance.OnWeaponCategoryMelee;
+                @WeaponCategoryMelee.canceled -= instance.OnWeaponCategoryMelee;
+                @WeaponCategoryPistol.started -= instance.OnWeaponCategoryPistol;
+                @WeaponCategoryPistol.performed -= instance.OnWeaponCategoryPistol;
+                @WeaponCategoryPistol.canceled -= instance.OnWeaponCategoryPistol;
+                @WeaponCategoryShotgun.started -= instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryShotgun.performed -= instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryShotgun.canceled -= instance.OnWeaponCategoryShotgun;
+                @WeaponCategoryRifle.started -= instance.OnWeaponCategoryRifle;
+                @WeaponCategoryRifle.performed -= instance.OnWeaponCategoryRifle;
+                @WeaponCategoryRifle.canceled -= instance.OnWeaponCategoryRifle;
+                @WeaponCategoryPrecision.started -= instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryPrecision.performed -= instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryPrecision.canceled -= instance.OnWeaponCategoryPrecision;
+                @WeaponCategoryThrowable.started -= instance.OnWeaponCategoryThrowable;
+                @WeaponCategoryThrowable.performed -= instance.OnWeaponCategoryThrowable;
+                @WeaponCategoryThrowable.canceled -= instance.OnWeaponCategoryThrowable;
+                @Heal.started -= instance.OnHeal;
+                @Heal.performed -= instance.OnHeal;
+                @Heal.canceled -= instance.OnHeal;
+                @Lean.started -= instance.OnLean;
+                @Lean.performed -= instance.OnLean;
+                @Lean.canceled -= instance.OnLean;
             }
 
             /// <summary>
@@ -2014,6 +2300,62 @@ namespace MrMoonlight.Input
             /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
             /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
             void OnUnbound(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryMelee" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryMelee(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryPistol" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryPistol(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryShotgun" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryShotgun(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryRifle" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryRifle(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryPrecision" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryPrecision(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "WeaponCategoryThrowable" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnWeaponCategoryThrowable(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Heal" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnHeal(InputAction.CallbackContext context);
+            /// <summary>
+            /// Method invoked when associated input action "Lean" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+            /// </summary>
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+            /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+            void OnLean(InputAction.CallbackContext context);
         }
         /// <summary>
         /// Interface to implement callback methods for all input action callbacks associated with input actions defined by "UI" which allows adding and removing callbacks.

@@ -627,5 +627,74 @@ namespace MrMoonlight.Data
 
         /// <summary>Colour of the centre-bottom message text. MRM-14 calls for blue; this is the pale, slightly cold blue that survives the CRT filter without glowing. Owner: MRM-14</summary>
         public Color SystemMessageColor = new Color(0.72f, 0.85f, 1f, 1f);
+
+        [Header("Weapon damage — MRM-25 (2026-09-04)")]
+
+        // Carlos, 2026-09-04: "For now assign the values for damage that you consider. We will later
+        // fine-tune each weapon." These are HQ FPS Weapons' own shipped values, not invented ones —
+        // they are already internally consistent (a revolver hits harder than a pistol, a hunting
+        // rifle harder than either) and three of them were already the live numbers before this
+        // issue. Surfaced here so the fine-tuning pass has one place to work rather than thirteen
+        // prefabs, and so a rebuild of Player_Tracey cannot silently reset them.
+        //
+        // These are applied to the wieldable prefabs by
+        // Tools > MrMoonlight > Migration > Build Player_Tracey from FPS_Player. Editing a number
+        // here and re-running that menu item is the whole tuning loop.
+        //
+        // Firearms: damage PER PROJECTILE, before the hitbox zone multipliers above. A shotgun
+        // fires eight of them (see WeaponShotgunPelletCount), so its per-shot ceiling is 8x the
+        // number below and only lands in full at very close range.
+
+        /// <summary>M1911 .45 ACP, 8-round magazine. The baseline sidearm. Owner: MRM-25</summary>
+        public float WeaponDamageM1911 = 30f;
+
+        /// <summary>.357 Magnum revolver, 6-round cylinder. Hits harder than the M1911, reloads far slower. Owner: MRM-25</summary>
+        public float WeaponDamageRevolver = 50f;
+
+        /// <summary>Remington 870 pump shotgun, per pellet, 7-shell tube. Owner: MRM-25</summary>
+        public float WeaponDamageR870 = 15f;
+
+        /// <summary>Sawn-off double barrel, per pellet, 2 shells. Higher per pellet than the R870 to pay for holding only two shots. Owner: MRM-25</summary>
+        public float WeaponDamageDBShotgun = 20f;
+
+        /// <summary>M1A (M14) 7.62x51mm, 7-round magazine, semi-automatic. Owner: MRM-25</summary>
+        public float WeaponDamageM1A = 45f;
+
+        /// <summary>AKM 7.62x39mm, 30-round magazine. Full-auto by default (its Firearm Mode property selects between full and semi). Lower per shot than the M1A because it fires far more of them. Owner: MRM-25</summary>
+        public float WeaponDamageAKM = 40f;
+
+        /// <summary>Crossbow bolt. Silent, single shot, slow reload — priced like a rifle round. Owner: MRM-25</summary>
+        public float WeaponDamageCrossbow = 40f;
+
+        /// <summary>Bolt-action hunting rifle, .300 Win Mag, 5 rounds, 5x scope. The hardest-hitting firearm. Owner: MRM-25</summary>
+        public float WeaponDamageHuntingRifle = 80f;
+
+        // Melee: a min..max range rolled per swing, so hits vary the same way shots do.
+
+        /// <summary>Combat knife, minimum damage per swing. Fast, short reach (1.4 m). Owner: MRM-25</summary>
+        public float WeaponDamageCombatKnifeMin = 20f;
+
+        /// <summary>Combat knife, maximum damage per swing. Owner: MRM-25</summary>
+        public float WeaponDamageCombatKnifeMax = 25f;
+
+        /// <summary>Fire axe, minimum damage per swing. Slowest melee, longest reach after the Club, hits hardest. Owner: MRM-25</summary>
+        public float WeaponDamageFireAxeMin = 35f;
+
+        /// <summary>Fire axe, maximum damage per swing. Owner: MRM-25</summary>
+        public float WeaponDamageFireAxeMax = 40f;
+
+        /// <summary>The Club (BaseballBat asset — see Docs/glossary.md), minimum damage per swing. Owner: MRM-25</summary>
+        public float WeaponDamageClubMin = 25f;
+
+        /// <summary>The Club, maximum damage per swing. Owner: MRM-25</summary>
+        public float WeaponDamageClubMax = 30f;
+
+        /// <summary>
+        /// Stack size the testing arsenal holds each throwable at. Carlos: "once you throw one
+        /// grenade, you will spawn another one of the same type." Kept well above 1 because
+        /// <c>MeleeThrowAttack</c> takes a different branch on the last item in a stack — see
+        /// <see cref="Player.MoonlightInfiniteThrowables"/>. Owner: MRM-25
+        /// </summary>
+        public int WeaponThrowableTestStock = 99;
     }
 }

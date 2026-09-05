@@ -1,0 +1,121 @@
+MRM-25 — WEAPON TEST ARSENAL — CONTEXT FOR THE NEXT SESSION
+Written 2026-09-04, end of the Opus session that built it.
+Branch: mrm-25 (off main at 16f6b3c). NOTHING IS COMMITTED — Carlos commits in GitHub Desktop.
+
+READ FIRST, IN THIS ORDER
+  1. Docs/mrm25-weapon-test-arsenal.md   <- the full record. Everything below is a pointer into it.
+  2. Docs/mrm9-hqfps-integration.md §15  <- what MRM-25 supersedes in the controller swap
+  3. Docs/weapon-audio-system.md         <- the AudioRandomContainer rule, still binding
+
+SUGGESTED MODEL FOR WHAT COMES NEXT: Sonnet.
+The systems all exist and are verified. What remains is tuning numbers and reacting to Carlos's
+hands-on feel notes — the MRM-34 build-then-tune split precedent.
+
+
+WHAT IS DONE AND VERIFIED LIVE
+  13 weapons + the Syringe in the holster from spawn, spawning on the Combat Knife.
+  Number keys 1/2/3/4/5/7(and G) pick a weapon CATEGORY; pressing again walks it and wraps.
+  Q/E body lean. H uses the Syringe. Keyboard only — Carlos's explicit call.
+  Infinite reserve ammo on all 8 firearms; magazines finite, reload still manual.
+  Grenades refill the frame they are thrown.
+  Hunting Rifle scoped (with the reticle+vignette overlay); M1A and Crossbow on iron sights.
+  All damage in MoonlightTunables under "Weapon damage — MRM-25".
+  Compiles clean. Play-mode verified. Screenshot: Assets/Screenshots/mrm25_hunting_rifle_scope.png
+
+
+THE THREE TOOLS — run in this order, all idempotent
+  Tools > MrMoonlight > Weapons > 1. Build Weapon Library
+  Tools > MrMoonlight > Weapons > 2. Upgrade Player_Tracey
+  Tools > MrMoonlight > Weapons > 3. Build + wire weapon audio
+
+  MoonlightWeaponSet.cs is the SINGLE description of the weapon set (identity, category, order).
+  Change the arsenal there, re-run 1 and 2. Do not maintain a second list anywhere.
+
+
+>>> DO NOT RUN "Build Player_Tracey from FPS_Player (MRM-9)" <<<
+  It deletes and recreates the prefab, which breaks the scene instance. That instance carries NINE
+  added components and TWO added GameObjects that exist nowhere in the prefab — DeathSequence with
+  its death-scream pool / black-screen image / game-over panel, HealthRedTintSource, four debug
+  overlays, PauseController, the damage-numbers overlay camera, the Death Scream Source. A rebuild
+  drops every one and the resulting nulls fail SILENTLY.
+  The tool was updated to stay correct as a disaster-recovery path, but it was deliberately not run.
+  If you ever must: re-instance the player in Island.unity and re-point Event Director.player.
+
+
+WHAT CARLOS STILL HAS TO JUDGE (nothing below is a bug yet — it is unfelt)
+  - How the weapons feel. Damage numbers are HQ FPS's own, not tuned by us.
+  - Lean feel on Q/E (vendor cooldown 0.2s, vendor obstruction mask).
+  - THE REBIND HE MAY VETO: Interact moved E -> F, Flashlight moved F -> L, because E was needed
+    for lean-right. If he dislikes it, change it in Tools/pipeline/patch_input_actions_mrm25.py
+    (REBIND dict) and re-run, or just edit the .inputactions in the Input Actions window.
+  - Melee reach/timing on Fire Axe and Combat Knife.
+  - Grenade and Molotov throw arcs, explosion damage, Molotov fire pool.
+  - Nothing is confirmed on a BUILT EXE yet (see the verification_requires_a_build memory).
+
+
+TRAPS THIS SESSION PAID FOR — do not rediscover these
+  1. A MALFORMED GUID SILENTLY KILLS THE WHOLE .inputactions ASSET.
+     A binding id with a 2-digit second group made Unity's importer reject the entire file. The
+     asset still existed, the generated C# wrapper still compiled against the OLD file, and every
+     InputActionReference resolved .action to null. Symptom looked like "my new actions don't
+     exist". The patch script now validates every id with uuid.UUID(). If input goes strange,
+     check the console for "Could not parse input actions in JSON format".
+
+  2. CHANGING A C# FIELD INITIALIZER DOES NOT CHANGE AN EXISTING PREFAB.
+     MoonlightStartingLoadout kept its serialized four-weapon list from MRM-9 however the
+     initializer read. Cost a play-mode run. Anything that must actually change on an existing
+     prefab has to go through SerializedObject — see MoonlightWeaponSetBuild.ConfigureLoadout.
+
+  3. MATCHING AN INPUT ACTION BY NAME IS NOT ENOUGH.
+     The vendor asset also has an action called "Lean", so a pasted FPSBodyLeanInput looked correct
+     by name while still pointing at the vendor asset. Compare by object identity.
+
+  4. "Inventory Is Full" CAN MEAN A TAG RESTRICTION, NOT CAPACITY.
+     The Syringe was refused by the Holster's TagContainerRestriction with 3 slots free, because its
+     item definition shipped untagged. Check restrictions before capacity.
+
+  5. READ THE FRAME BEFORE BELIEVING IT.
+     An attachment check in the same frame as SelectAtIndex reported every scope inactive — the
+     equip had not finished. Same lesson as mrm9-hqfps-integration.md §9b.
+
+  6. RETYPING A SERIALIZED FIELD IS A DATA MIGRATION.
+     MRM-9's AudioSequence -> AudioData retype left five newly-imported firearms completely silent.
+
+  7. AudioRandomContainer CANNOT BE CREATED NORMALLY. Constructors are internal; CreateInstance and
+     ObjectFactory both fail; Activator produces a broken asset. Only
+     DoCreateAudioRandomContainer.CreateAudioRandomContainerFromSelectedClips works, by reflection.
+     MoonlightWeaponAudioBuild already does this — reuse it, do not re-solve it.
+
+
+OPEN ITEMS, ranked by how much they matter
+  1. PlayerDamageReceiver EXISTS TWICE on the scene player (root + MrMoonlight Systems). Predates
+     this issue. Harmless today because the colliders are on the root so the root copy wins, but it
+     is a live duplicate on a damage path. Deserves its own look and test.
+  2. The AKM is FULL-AUTO only. Its fire-mode switch is the vendor FireMode action, still sunk into
+     the bindingless Unbound action. Bind it if semi-auto is wanted.
+  3. THE VENDOR AMMO COUNTER / CROSSHAIR / FIRE-MODE UI is still unmigrated. It sits in the same
+     FPS_UI_Wieldables.prefab the scope overlay came from and is ONE EDIT away in
+     MoonlightWeaponSetBuild.AddScopeOverlayUI. Would genuinely help weapon testing — an ammo
+     counter makes reloading legible. Not done because it was not asked for.
+     (This is mrm9-hqfps-integration.md §10 item 4.)
+  4. Weapon_DoubleBarrelShotgun.prefab and Weapon_FlareGun.prefab sit loose at the root of
+     _Project/Prefabs/Weapons/ from earlier issues, off the new MRM_Weapon_* convention.
+  5. Still-silent audio slots with no clip in the package: aim-stop, most fire tails, shell eject,
+     cartridge swap, melee hit impact. Nothing to assign; source clips if wanted.
+  6. TimeOfDayDebugCycle still auto-rotates the time of day during play, which is why weapon
+     screenshots come out very dark. Unchanged from MRM-9 §13.
+
+
+LINEAR
+  MRM-25 — commented with the full summary. Acceptance criteria NOT met (they need MRM-26 pickups);
+           what landed is the arsenal and the switching mechanism, not the shipping state machine.
+  MRM-77 — NEW. "Weapon test range mode" — the restorable record of this testing setup, per
+           Carlos's ask. Dormant by design.
+  MRM-9  — commented: three defects of its own found and fixed here, plus a correction to its §2.
+  MRM-23 — commented: Fire Axe / Combat Knife imported as test weapons; the ruling that the melee
+           weapon is the Club still stands. The axe's third-swing clip is now in the project.
+
+
+UNCOMMITTED DIFF NOTE
+  Island.unity's diff includes 174 Gaia m_hasErrors flag flips and the known Gaia.NoiseSettings
+  YAML reorder. Cosmetic, same as the MRM-9 session. Flagged, not hidden.

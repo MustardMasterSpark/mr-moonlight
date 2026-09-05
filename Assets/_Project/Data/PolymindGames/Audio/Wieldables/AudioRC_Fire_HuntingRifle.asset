@@ -1,0 +1,71 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1233149941 &-7610045736755182614
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HQFPS_HuntingRifle_Shoot2_{-7610045736755182614}
+  m_AudioClip: {fileID: 8300000, guid: cf405c231413b084fbec46910fdea5dd, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-5835336828732189702
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HQFPS_HuntingRifle_Shoot4_{-5835336828732189702}
+  m_AudioClip: {fileID: 8300000, guid: a34957b8b702cc641b56da6f0f1cd845, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &-1534775021497330128
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HQFPS_HuntingRifle_Shoot3_{-1534775021497330128}
+  m_AudioClip: {fileID: 8300000, guid: ebf19da5fe69b2d46935e2032806e9e8, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1233149941 &1004228147130008354
+AudioContainerElement:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: HQFPS_HuntingRifle_Shoot1_{1004228147130008354}
+  m_AudioClip: {fileID: 8300000, guid: b9622d6b2a74c0f4f832e5f35954ce30, type: 3}
+  m_Volume: 0
+  m_Enabled: 1
+--- !u!1307931743 &6418180475301049370
+AudioRandomContainer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: AudioRC_Fire_HuntingRifle
+  m_Volume: 0
+  m_Pitch: 0
+  m_AutomaticTriggerTime: 0
+  m_LoopCount: 1
+  m_VolumeRandomizationRange: {x: -5, y: 0}
+  m_PitchRandomizationRange: {x: -75, y: 75}
+  m_AutomaticTriggerTimeRandomizationRange: {x: 0, y: 0}
+  m_LoopCountRandomizationRange: {x: 0, y: 0}
+  m_Elements:
+  - {fileID: 1004228147130008354}
+  - {fileID: -7610045736755182614}
+  - {fileID: -1534775021497330128}
+  - {fileID: -5835336828732189702}
+  m_AvoidRepeatingLast: 0
+  m_PlaybackMode: 1
+  m_TriggerMode: 1
+  m_AutomaticTriggerMode: 1
+  m_LoopMode: 2
+  m_VolumeRandomizationEnabled: 1
+  m_PitchRandomizationEnabled: 1
+  m_AutomaticTriggerTimeRandomizationEnabled: 0
+  m_LoopCountRandomizationEnabled: 0
