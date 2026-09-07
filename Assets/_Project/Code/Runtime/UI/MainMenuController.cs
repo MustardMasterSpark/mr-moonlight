@@ -1,5 +1,6 @@
 using System.Collections;
 using MrMoonlight.Data;
+using MrMoonlight.World;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -16,12 +17,40 @@ namespace MrMoonlight.UI
     /// since that spec keeps the staged background visible underneath instead of going through
     /// black. Credits fades itself (<see cref="CreditsController"/>) on its own opaque panel.
     /// Owner: MRM-18
+    ///
+    /// <para><b>Feather intro (added post-MRM-18, Carlos's ask):</b> while <see cref="introFeatherFall"/>
+    /// falls, everything else in the 3D scene (the ground plane, other props, eventually a full
+    /// staged background) must read as pure black - only the feather itself is visible. A
+    /// Screen-Space-Overlay canvas (what <see cref="fadeOverlay"/> is) always renders above every
+    /// camera's 3D output, so there is no way to make the feather draw "through" it - instead,
+    /// <see cref="introFeatherCamera"/> is a second camera, culled to only the feather's own layer
+    /// (<c>WorldOverlayFX</c>), rendering into a RenderTexture that <see cref="introFeatherCanvas"/>
+    /// displays on a second Screen-Space-Overlay canvas with a higher sorting order than the main
+    /// menu canvas - so it draws above <see cref="fadeOverlay"/> while that overlay stays fully
+    /// opaque and hides the normal camera's rendering of everything else underneath. Once the
+    /// feather lands (<see cref="FeatherFall.OnLanded"/>), the overlay camera/canvas switch off and
+    /// <see cref="fadeOverlay"/> fades to clear at the same time <see cref="mainButtonsGroup"/>
+    /// fades in - "fade out everything and reveal the world and the UI" as one beat. The feather's
+    /// own layer stays included in the main camera's culling mask throughout, so once revealed it
+    /// simply continues existing as a normal part of the scene, already resting where it landed.
+    /// <see cref="introFeatherFall"/>'s own Loop must stay off - this sequence expects exactly
+    /// one landing.</para>
     /// </summary>
     public sealed class MainMenuController : MonoBehaviour
     {
         [Header("Fades")]
         [SerializeField] private FadeOverlay fadeOverlay;
         [SerializeField] private SplashSequence splashSequence;
+
+        [Header("Feather Intro")]
+        [Tooltip("Plays once the splash cards finish; the buttons group and the rest of the 3D scene stay hidden until this reports OnLanded. Its own Loop must be off.")]
+        [SerializeField] private FeatherFall introFeatherFall;
+
+        [Tooltip("Second camera, culled to the feather's WorldOverlayFX layer only, rendering into introFeatherCanvas's RawImage while the rest of the scene stays hidden behind fadeOverlay.")]
+        [SerializeField] private Camera introFeatherCamera;
+
+        [Tooltip("Screen-Space-Overlay canvas (sorting order above the main menu canvas) whose RawImage displays introFeatherCamera's output. Active only while the feather is falling.")]
+        [SerializeField] private GameObject introFeatherCanvas;
 
         [Header("Panels")]
         [SerializeField] private CanvasGroup mainButtonsGroup;
@@ -43,8 +72,15 @@ namespace MrMoonlight.UI
             settingsPanel.ApplySavedAudioSettings();
 
             fadeOverlay.SetOpaqueInstant();
-            SetGroupState(mainButtonsGroup, alpha: 1f, interactable: true);
+            // Hidden (not just covered by the overlay) until the feather intro lands - see the
+            // class doc's "Feather intro" section. If introFeatherFall isn't wired up, fall back
+            // to the original MRM-18 behavior of showing immediately with the overlay.
+            bool hasFeatherIntro = introFeatherFall != null;
+            SetGroupState(mainButtonsGroup, alpha: hasFeatherIntro ? 0f : 1f, interactable: !hasFeatherIntro);
             SetGroupState(settingsGroup, alpha: 0f, interactable: false);
+
+            if (introFeatherCanvas != null) introFeatherCanvas.SetActive(false);
+            if (introFeatherCamera != null) introFeatherCamera.enabled = false;
 
             creditsController.OnClosed += HandleCreditsClosed;
         }
@@ -112,7 +148,56 @@ namespace MrMoonlight.UI
                 menuMusicSource.Play();
             }
 
-            yield return fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
+            if (introFeatherFall == null)
+            {
+                // No feather wired up - original MRM-18 behavior: the overlay clearing alone
+                // reveals everything, buttons already visible from Awake.
+                yield return fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
+                yield break;
+            }
+
+            // fadeOverlay stays fully opaque here - it's still covering the main camera's
+            // rendering of everything else. The feather is the only thing visible, via the
+            // separate overlay camera/canvas drawn above it. See the class doc.
+            if (introFeatherCanvas != null) introFeatherCanvas.SetActive(true);
+            if (introFeatherCamera != null) introFeatherCamera.enabled = true;
+
+            bool landed = false;
+            System.Action onLanded = () => landed = true;
+            introFeatherFall.OnLanded += onLanded;
+            introFeatherFall.StartFalling();
+
+            while (!landed)
+            {
+                yield return null;
+            }
+
+            introFeatherFall.OnLanded -= onLanded;
+
+            if (introFeatherCanvas != null) introFeatherCanvas.SetActive(false);
+            if (introFeatherCamera != null) introFeatherCamera.enabled = false;
+
+            // The world and the UI reveal together, as one beat - the main camera already
+            // renders the feather resting exactly where the overlay left it.
+            Coroutine worldReveal = fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
+            yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
+            yield return worldReveal;
+
+            mainButtonsGroup.interactable = true;
+            mainButtonsGroup.blocksRaycasts = true;
+        }
+
+        private static IEnumerator FadeInGroup(CanvasGroup group, float duration)
+        {
+            float start = group.alpha;
+            float elapsed = 0f;
+            while (elapsed < duration)
+            {
+                elapsed += Time.deltaTime;
+                group.alpha = Mathf.Lerp(start, 1f, duration <= 0f ? 1f : Mathf.Clamp01(elapsed / duration));
+                yield return null;
+            }
+            group.alpha = 1f;
         }
 
         private IEnumerator RunStartGame()

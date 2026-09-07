@@ -133,3 +133,58 @@ same bug since they're children of FadeOverlay.
   Shaders Pro absence on a machine that hasn't re-downloaded those two ThirdParty packages.
 - Menu music `AudioSource` has no clip assigned yet (no menu theme exists) — silently plays nothing,
   by design (`PlayOneShot`/`Play()` on a null clip no-ops rather than erroring).
+
+## 2026-09-06/07 session — blood pool water, SSRR removal, Crest reflections, rain ripple port
+
+Backdrop water under the intro feather (`CrestWater_BloodPool`) went through two iterations this
+session: a hand-authored Fresnel plane/shader first, then — per Carlos's own follow-up call — real
+**Crest 5 water** (matching the rest of the project) with **Shiny SSRR** reflections layered on
+top. Both were gotten genuinely working and pixel-diff-verified. Carlos then reported the SSRR/Crest
+combination looked wrong in practice and asked for four things, all done this session:
+
+1. **ShinySSRR removed entirely from Mr. Moonlight** — the renderer feature off `PC_Renderer.asset`,
+   the `GlobalVolume_ShinySSRR` GameObject, `PP_ShinySSRR.asset`, both `ShinySSRR.Reflections` /
+   `ShinySSRR.ShinyTransparentSupport` components off `CrestWater_BloodPool`, and the whole
+   `Assets/ThirdParty/ShinySSRR/` folder. Confirmed zero remaining references, clean compile.
+2. **Crest's own planar reflections maxed out** on `M_CrestBloodPool.mat` and the
+   `CrestWater_BloodPool` → `WaterRenderer.Reflections` object: `_Crest_PlanarReflectionsEnabled`
+   on (float **and** keyword — same two-part gotcha as the RetroLit properties), intensity 1,
+   roughness 0, distortion 0.3, smoothness 0.98, reflection `Resolution` 256→1024,
+   `Layers = -49` (everything except Water(4)/UI(5), so the water doesn't reflect itself or the
+   Canvas). Verified genuinely live via the project's standard frozen-frame pixel-diff test (71%
+   of pixels changed toggling the flag alone).
+3. **Rain ripple replaced with the tuned Dynamic Radial Masks "Ripple" effect**, ported from the
+   Playground project's `RippleTuner` presets (`duration=0.45, maxRadius=2.25, startIntensity=2.0,
+   ringFrequency=18, lineThinness=6, waveTravel=15`) — used as-is, not retuned. New standalone
+   pieces (not a Crest shader-graph edit, lower risk): `RippleOverlay.shader` (hand-authored HLSL,
+   samples the ported `DynamicRadialMasks_Ripple_8_Advanced_Additive_ID1_Local` mask function) +
+   `M_RippleOverlay.mat` on a `RippleOverlay` quad sized to match the water plane, driven by
+   `RippleController` (`DRMController`) + `RippleLiveObjectsPool` (`DRMLiveObjectsPool`). Trigger
+   is the package's own ready-made `DRMOnParticleCollision` on the **Light Rain** particle system —
+   no custom trigger script needed. The old "cartoonish" `RainRipple` sub-emitter is **disabled**
+   (not deleted); `RainBubble`/`RainSplash - 1`/`RainSplash - 2`/the rain drop emission itself are
+   untouched.
+   - **Bug found + fixed:** the rain's `ParticleSystem.collision.collidesWith` was `-1` (Everything),
+     so most collisions landed on the terrain under the dock, not the water plane, wasting ripple
+     pool slots. Set to `1 << 4` (Water layer only) — also correctly restricts the bubble/splash
+     sub-emitters to water-only hits as a side effect. Re-verified live afterward: ripples now
+     visibly cluster on the open water, screenshot on file
+     (`Assets/Screenshots/screenshot-20260907-103038.png`).
+   - **Deferred, per Carlos's own words, not started:** a second, different ripple for the sparrow
+     feather's water impact. `FeatherLandingRipple.cs` still targets the now-disabled `RainRipple`
+     GameObject — calling `.Emit()` on an inactive GameObject silently no-ops. This needs to be
+     re-pointed at the new ripple system (or a dedicated `DRMLiveObject` preset) once Carlos
+     specifies the feather-ripple's own values.
+4. **Vendor-code fix (found during session wrap-up, not requested but necessary):** the ported
+   Dynamic Radial Masks scripts/shaders were initially copied into `Assets/ThirdParty/`, which is
+   **entirely git-ignored** (`.gitignore` line ~256) — meaning none of it would ever reach a commit.
+   Relocated to `Assets/_Project/Code/Vendor/Dynamic Radial Masks/{Scripts,Shaders}` (tracked),
+   matching the existing Burntwax/PolymindGames/etc. precedent for vendor script+shader logic.
+   `RippleOverlay.shader`'s `#include` path updated to match. Verified after the move: no missing
+   script references on `RippleController`/`RippleLiveObjectsPool`, shader still compiles, scene
+   saved.
+
+This session also carried forward earlier main-menu work (feather-fall intro sequence, Eagle/Sparrow
+Feather decorative props) already reflected in the working tree — see `git status` on branch
+`mrm-18` for the current full file list; that work predates this doc section and isn't re-described
+here.

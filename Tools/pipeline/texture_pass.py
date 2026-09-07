@@ -107,7 +107,12 @@ def pixelate(img: Image.Image, levels: int, dither: float, size: int | None) -> 
     cutout edge on foliage.
     """
     if size:
-        img = img.resize((size, size), Image.NEAREST)
+        orig_w, orig_h = img.size
+        if orig_w >= orig_h:
+            new_w, new_h = size, max(1, round(size * orig_h / orig_w))
+        else:
+            new_h, new_w = size, max(1, round(size * orig_w / orig_h))
+        img = img.resize((new_w, new_h), Image.NEAREST)
 
     has_alpha = "A" in img.getbands()
     alpha = np.asarray(img.getchannel("A")) if has_alpha else None

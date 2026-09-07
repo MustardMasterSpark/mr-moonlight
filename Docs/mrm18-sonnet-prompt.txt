@@ -1,0 +1,72 @@
+MRM-18 — Main Menu — session handoff (written 2026-09-07)
+
+READ FIRST: Docs/mrm18-main-menu-build-summary.md, especially the new "2026-09-06/07 session"
+section at the bottom. That doc is the permanent record; this file is just the "start here cold"
+pointer. Also check the Linear comment trail on MRM-18 for the same summary in shorter form.
+
+STATE: branch mrm-18, nothing committed (never commit/push — GitHub Desktop only, per CLAUDE.md).
+`git status` currently shows a large uncommitted diff across MainMenu.unity, MainMenuController.cs,
+new water shaders/materials, new EagleFeather/SparrowFeather art+prefabs, FeatherFall.cs,
+FeatherLandingRipple.cs, RainToggle.cs, and ~70 screenshots under Assets/Screenshots/ (verification
+artifacts from this session and earlier ones — safe to leave, Carlos can clear them, they're not
+referenced by anything at runtime).
+
+WHAT'S DONE AND VERIFIED THIS SESSION (all in Mr. Moonlight, not Playground):
+1. ShinySSRR fully removed from the project (Carlos's call — didn't mix well with Crest).
+2. Crest's native planar reflections maxed out on CrestWater_BloodPool / M_CrestBloodPool.mat.
+   Verified live via frozen-frame pixel-diff.
+3. The old "cartoonish" rain ripple sub-emitter (RainRipple GameObject) is disabled, replaced by a
+   ported Dynamic Radial Masks Ripple effect (RippleOverlay quad + M_RippleOverlay.mat +
+   RippleController/RippleLiveObjectsPool), using the exact tuned preset from Playground's
+   RippleTuner (duration=0.45, maxRadius=2.25, startIntensity=2.0, ringFrequency=18,
+   lineThinness=6, waveTravel=15). Triggered by DRMOnParticleCollision on the "Light Rain"
+   ParticleSystem. Fixed a collision-mask bug (was hitting terrain, now Water-layer-only:
+   collidesWith = 1<<4). Re-verified visually — screenshot at
+   Assets/Screenshots/screenshot-20260907-103038.png shows clean concentric rings on open water.
+4. Vendor-code fix: the ported DRM scripts/shaders were moved from Assets/ThirdParty/
+   DynamicRadialMasks/ (git-ignored, would never have been committed) to
+   Assets/_Project/Code/Vendor/Dynamic Radial Masks/{Scripts,Shaders}/ (tracked). Shader include
+   path updated. Verified no missing script refs, shader still compiles, scene saved.
+
+NOT DONE — EXPLICITLY DEFERRED BY CARLOS, DO NOT START WITHOUT HIS INPUT:
+- A second, different ripple effect for the sparrow feather's water-impact moment. He said "I will
+  then give you a special ripple" — he owns the next spec (likely new DRMLiveObject values, maybe
+  a different shape/count). When he provides it:
+  - FeatherLandingRipple.cs (Assets/_Project/Code/Runtime/World/) currently still targets the
+    disabled RainRipple GameObject as its `ripple` field. Calling .Emit() on an inactive
+    GameObject silently no-ops — this needs to be re-pointed at whatever new ripple mechanism gets
+    built (likely its own RippleOverlay-style quad + DRMController + DRMLiveObjectsPool, wired to
+    fire once on feather landing rather than continuously like the rain).
+
+TRAPS TO REMEMBER (already burned time on these once each):
+- Play Mode edits to scene GameObjects/components are silently discarded on stop. Asset/material
+  edits (SetFloat + SaveAssets) persist fine regardless. Always: confirm
+  EditorApplication.isPlaying == false, edit, manage_scene save, then read back fresh to confirm.
+- Material.HasProperty() gives false negatives for raw HLSL global array uniforms not registered
+  as Shader Graph Blackboard properties (the DRM DATA1/2/3 arrays). Verify with a
+  SetVectorArray/GetVectorArray round-trip instead.
+- Tool round-trip latency between separate calls can be 15-25+ real seconds — too slow to catch a
+  <20s animation across two separate screenshot calls. Either do it in one execute_code call
+  (construct/age objects synchronously) or temporarily stretch lifeLength for the screenshot, then
+  reset it.
+- Assets/ThirdParty/** is entirely git-ignored. Any future vendor package with .cs/.shader/.cginc
+  logic (not just binaries) needs to land in Assets/_Project/Code/Vendor/<Package>/ instead, or it
+  silently never gets committed.
+
+SUGGESTED COMMIT MESSAGE (text only — do not run this, Carlos commits via GitHub Desktop):
+
+    MRM-18: replace SSRR with Crest reflections, port tuned rain ripple
+
+    Remove ShinySSRR (didn't mix well with Crest) and max out Crest's native
+    planar reflections instead. Replace the placeholder rain ripple with the
+    tuned Dynamic Radial Masks effect ported from Playground, triggered on
+    rain-vs-water collision. Move the ported vendor scripts/shaders out of the
+    git-ignored ThirdParty/ folder into tracked Code/Vendor/, matching existing
+    vendor-code convention.
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+
+NEXT STEP FOR THE PICKING-UP SESSION: nothing is blocking — MRM-18 is still "In Review" pending
+Carlos's own hands-on playtest pass (noted as a standing gap in the build-summary doc since
+2026-08-26). If Carlos opens a new session with the sparrow-feather ripple spec, start there; the
+disabled RainRipple GameObject and FeatherLandingRipple.cs are the two things that need touching.
