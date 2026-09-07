@@ -188,3 +188,103 @@ This session also carried forward earlier main-menu work (feather-fall intro seq
 Feather decorative props) already reflected in the working tree — see `git status` on branch
 `mrm-18` for the current full file list; that work predates this doc section and isn't re-described
 here.
+
+## 2026-09-07 afternoon/evening session — ripple tuner, blood rain, feather wobble, RetroLit wind, CRT
+
+Picked up the same afternoon as the session above. Carlos was staging the scene directly (adding
+trees/flowers, reporting what he saw) and asking for behavior/tooling on top of it.
+
+1. **Diagnosed a false alarm, no fix needed.** Carlos reported the water "disappeared" and the
+   plane looked "small." Crest's `WaterRenderer` builds no visible mesh in Edit Mode — only at
+   runtime — so selecting `CrestWater_BloodPool` while stopped shows only its `BoxCollider` gizmo
+   (30×30, sized to catch rain-particle collisions across a wide area, not the visual footprint).
+   Confirmed via a Play Mode screenshot that the pool renders exactly as before.
+
+2. **Ported `RippleTuner.cs`** from the Playground project into
+   `Assets/_Project/Code/Vendor/Dynamic Radial Masks/Scripts/`, retargeted from Playground's demo
+   trigger (`DRMOnMouseRaycast`) to this project's actual trigger (`DRMOnParticleCollision`).
+   Attached as a component on the existing `Light Rain` object (not a new hierarchy entry) with
+   six live sliders defaulted to the already-shipped values, so nothing changed until touched.
+
+3. **Retinted the ripple** (`M_RippleOverlay.mat`'s `_RippleColor`, white → `(1, 0.12, 0.08, 1)`)
+   and **the rain itself** (`Light Rain`/`RainBubble`/`RainSplash - 1`/`RainSplash - 2`'s
+   `main.startColor`, all retargeted to `(1.0, 0.15, 0.12)` at each system's original alpha) —
+   blood rain and blood ripples instead of white/water-colored ones. Verified via
+   `ParticleSystem.GetParticles()` that live particles actually sample the new color.
+
+4. **Fixed "only a few raindrops generate ripples."** Root cause: `DRMLiveObjectsPool.AddItem()`
+   hard-caps concurrent ripples at `DRMController.count`, which was 8 — baked into the ported
+   `.cginc`'s fixed array size (Amazing Assets' shader-per-count naming,
+   `..._Ripple_8_Advanced_...`). Rain collision rate far exceeds 8 ripples per 0.45s lifetime.
+   Hand-authored a new count=200 variant (`DynamicRadialMasks_Ripple_200_Advanced_Additive_ID1_Local.cginc`,
+   same Vendor folder; the unused count=8 file was left in place) and bumped
+   `RippleController`'s `DRMController.count` to 200 — the vendor's own Inspector-slider ceiling.
+   Even 200 stays saturated at the current rain density (would need ~450+ for literally every
+   drop, which risks real GPU/GC cost for diminishing visual return, so not pursued further), but
+   it now reads as continuous, dense rain-dappled water instead of "just a few" rings.
+
+5. **Added `FeatherWaterWobble.cs`** (`Code/Runtime/World/`) to both `Prop_EagleFeather` and
+   `Prop_SparrowFeather` — a gentle two-axis rotational sway to sell "resting on water." Auto-finds
+   a `FeatherFall` on the same object and stays inactive while it's falling (so it never fights the
+   fall animation), capturing whatever pose the fall settles on as its new rest pose the instant it
+   lands. The static Eagle feather (no `FeatherFall`) wobbles from frame one. Four sliders: Pitch
+   Amplitude, Roll Amplitude, Wobble Speed, Randomize Phase.
+
+6. **Built a reusable wind-sway feature for RetroLit vegetation** — explicitly *not*
+   menu-specific, per Carlos's own instruction to keep it separate and documented for reuse on the
+   Island later. Full design writeup: `Docs/retrolit-wind-sway.md`.
+   - Relocated `RetroLit.shader` and its `.hlsl` includes from the git-ignored
+     `Assets/ThirdParty/Retro Shaders Pro/Shaders/` into tracked
+     `Assets/_Project/Code/Vendor/Retro Shaders Pro/Shaders/` (the shader's `CustomEditor` GUI
+     script stayed in `ThirdParty/` — found by class name, not path, so it didn't need to move).
+   - New `RetroWind.hlsl` holds the shared `ApplyMoonlightWind()` vertex-displacement function,
+     called from the main forward pass **and** the shadow-caster/depth-only/depth-normals passes,
+     so a swaying mesh's shadow and depth sway with it instead of staying static.
+   - Per-material properties (`_WindEnabled` off by default — zero cost/visual change for every
+     other RetroLit material in the game unless explicitly opted in): `_WindCategory` (0=Trees,
+     1=Flowers), `_WindHeight` (local-space sway falloff), `_WindFlexibility` (per-species
+     multiplier — the two "dead/burnt" tree species flex less).
+   - `RetroLitWindController.cs` (`Code/Runtime/World/`) on a new `WindController` hierarchy
+     object drives four globals every frame: Wind Direction, Wind Speed, Tree Intensity, Flower
+     Intensity — the two intensity sliders Carlos asked for by name.
+   - All 6 tree species and 3 flower species currently staged in the scene are opted in with
+     per-species tuned height/flexibility. `AP_Flower_001_09` has no renderer yet (a staging
+     placeholder) — nothing to enable wind on until it has a mesh.
+   - Verified live: trunk held pixel-identical between two frames while the canopy visibly shifted.
+
+7. **Added a CRT post-process filter scoped to `MainMenu` only.** New `GlobalVolume_CRT`
+   (`Volume`, `isGlobal=true`) + `VP_MainMenuCRT.asset` profile
+   (`Assets/_Project/Settings/`) — scanlines plus light chromatic aberration, barrel
+   distortion/tracking left off. The renderer feature that runs it (`CRTEffect` on
+   `PC_Renderer.asset`) was already enabled project-wide; this just gave it a Volume to read from,
+   scoped to this one scene (`Island` and the shared `DefaultVolumeProfile` untouched). UI needed
+   no masking work — both Canvases in this scene are Screen Space - Overlay, which Unity always
+   composites after the camera and all post-processing finishes.
+   - **Bug hit and fixed:** the first attempt at building the Volume Profile via script
+     (`VolumeProfile.Add<T>()`) left the `CRTSettings` sub-object un-persisted — it needs an
+     explicit `AssetDatabase.AddObjectToAsset(component, profile)` call before
+     `CreateAsset`/`SaveAssets`, or it silently reads back as a fresh default (`enabled=false`) on
+     next load. Caught by checking live values in Play Mode rather than trusting the write.
+
+**Not hands-on verified:** never got a screenshot with the actual menu title/buttons visible
+alongside the CRT effect — the intro's disclaimer/feather-fall/fade sequence runs longer than the
+verification window, and force-activating the UI Canvas out of sequence just showed its own intro
+black panel rather than the real menu. The Overlay-canvas exemption from CRT is a structural Unity
+guarantee (not something that needs empirical proof), so this isn't treated as an open risk, but a
+real playtest pass would close the loop.
+
+**Incidental, not part of this issue's work:** `git status` shows a one-line diff in
+`Packages/com.waveharmonic.crest/Runtime/Materials/Water Volume.mat` (Crest auto-recording an
+invalid-shader-keyword cache entry from repeated Play Mode sessions this session). Harmless, not
+an intentional edit, flagged for awareness before committing.
+
+**Cross-reference found for the next ask (skybox + clouds + moon, not yet started):** MRM-47's own
+issue text already rules on this — **Altos Volumetric Clouds is parked/rejected for the Island**
+(it replaces `RenderSettings.skybox` and takes over ambient GI outright, colliding with
+`SkyboxSwitcher`/`TimeManager`/the apocalyptic-red swap) **but explicitly adopted for the main
+menu**, since this scene has none of those systems to collide with. MRM-47's progress log also
+notes 6 skies already extracted from the owned AllSky 220 pack at
+`Assets/_Project/Art/Environment/Skyboxes/` (`Skybox/Cubemap` materials, ready to assign) — built
+for the Island, but the same pack/technique is available for a menu-specific sky too. Worth reading
+MRM-47 in full before starting that work; see `Docs/new-asset-list.md` §36/§46 for the fuller
+triage reasoning.
