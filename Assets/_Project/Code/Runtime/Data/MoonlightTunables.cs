@@ -254,6 +254,15 @@ namespace MrMoonlight.Data
         /// <summary>How long each splash card's text stays fully visible before fading out, in seconds. Owner: MRM-18</summary>
         public float SplashCardHoldDuration = 2f;
 
+        /// <summary>Light intensity of the falling sparrow feather's glow while it's still mid-air - meant to read clearly against the dark opening reveal, before the rest of the staged scenario dims it out. Requested by Carlos 2026-09-07: a placeholder-strong value so the glow/bloom pairing can be judged now, to be tuned down once the wider scene is built out. Owner: MRM-18</summary>
+        public float FeatherGlowIntensity = 0.12f;
+
+        /// <summary>Light intensity the feather's glow fades to once it lands (0 = fully off), synced with the moment "everything is revealed". Owner: MRM-18</summary>
+        public float FeatherGlowDimmedIntensity = 0f;
+
+        /// <summary>Seconds the feather's glow takes to fade from <see cref="FeatherGlowIntensity"/> down to <see cref="FeatherGlowDimmedIntensity"/> once it lands. Owner: MRM-18</summary>
+        public float FeatherGlowDimDuration = 1.5f;
+
         [Header("Interaction — MRM-16")]
 
         /// <summary>How close Tracey must be to an interactable for it to register at all, in metres. Owner: MRM-16</summary>

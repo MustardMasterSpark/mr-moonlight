@@ -824,6 +824,27 @@ terrain tree, or be spawned as a real GameObject instead (see
 `mrm70-vegetation-3d-pipeline-kickoff.md`'s Terrain-Tree-vs-GameObject table for that tradeoff).
 **Fixed 2026-08-29**, noted in `SKILL.md`'s prefab step.
 
+### G16 — RetroLit's real (TexelLit) lighting is wrong for a small/singular sky object under one dim light
+
+Discovered on the Moon prop (MRM-18, 2026-09-07): a self-contained celestial sphere lit by a
+single dim directional light in a dark scene renders **correctly** under `TexelLit` (real
+Lambertian shading) but reads as "half the object is completely broken/black," because the
+far hemisphere gets essentially zero light from a physically-accurate single-source setup. Two
+wrong turns before landing on the fix: (1) an interior point Light does nothing for this — a
+light at the center of a solid opaque sphere can't illuminate that sphere's own outward-facing
+surface, the normals point away from it everywhere; (2) switching to `_LightMode = Unlit` fixes
+the coverage but throws away the scene's light color/mood entirely (Unlit ignores every light,
+including whatever glow light gets added later).
+
+**The actual fix**: keep `TexelLit`, but enable RetroLit's own `_USE_AMBIENT_OVERRIDE` toggle with
+a hand-tuned `_AmbientLight` (a flat 0-1 scalar, not a colour) high enough to floor the dark
+hemisphere above black. This keeps real light-direction shading AND keeps the object responsive
+to actual scene lights, while guaranteeing full visibility regardless of viewing/light angle.
+Colour mood (a moon's red tint, etc.) should be carried by `_BaseColor` (multiplied onto the
+texture sample in every light mode) rather than baked into the ambient override, which has no
+colour channel to carry it. Applies to any singular, always-visible sky/background prop lit by
+this project's deliberately sparse night lighting — suns, other planets, distant beacons.
+
 ### Closed gaps
 
 Moved here with the date and what closed them, rather than deleted — knowing a gap existed is
