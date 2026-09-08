@@ -1,0 +1,117 @@
+MRM-18 — Main Menu — still waiting on buttons/font/menu styling scope (written 2026-09-08)
+
+READ FIRST: Docs/mrm18-main-menu-build-summary.md — the whole thing. This picks up right where
+mrm18-sonnet-prompt-5.txt left off; that file's content is still fully accurate, nothing about
+MRM-18 itself changed between it and this one. This prompt only adds what happened in between.
+
+===============================================================================
+WHAT HAPPENED SINCE PROMPT-5 (NOT MRM-18 WORK - READ SO YOU'RE NOT SURPRISED)
+===============================================================================
+The session that read prompt-5 got redirected before touching buttons/font at all. Carlos spent
+the whole session in the **Playground** project (E:\playground\My project, port 8081 - a separate
+Unity project, not this repo) debugging and then art-directing the Highlight Plus 2 asset:
+
+1. Diagnosed why Highlight Plus 2's effects weren't rendering in Playground at all (its render
+   feature was missing from the active URP renderer) - Playground-only, not a Mr. Moonlight bug.
+2. Fixed two "legacy Input System" bugs in Playground's Highlight Plus 2 demo scenes (a stale
+   StandaloneInputModule, and a demo helper script calling raw UnityEngine.Input) - again,
+   Playground-only.
+3. Designed and iteratively tuned, live with Carlos, a specific "punk" stylized outline look
+   (thick, jagged, animated Spider-Punk-style outline) that **Carlos wants used extensively in
+   Mr. Moonlight's actual interaction-highlight system (MRM-16) and inventory UI (MRM-42)** once
+   those get built. Fully documented in the new `Docs/highlight-plus-2-punk-outline.md` - exact
+   settings, the shader math, a real vendor bug found (outlineBlurPasses=0 crashes), and why a true
+   gap between the object and the outline can't coexist with the animated look in this plugin
+   version. Also linked from `Docs/mrm41-items-interaction-kickoff.md`'s "Quick facts" and posted
+   as a comment on MRM-16 in Linear.
+
+**None of this touched MRM-18 or any Mr. Moonlight game code.** The only Mr. Moonlight repo changes
+are the two doc files above (Docs/highlight-plus-2-punk-outline.md new, Docs/mrm41-items-
+interaction-kickoff.md one addition) - text only, not yet committed, suggested message below.
+**Do not start MRM-16/MRM-42 highlight work from this prompt** - that's still queued behind
+MRM-41's other blockers (Carlos's item props, the MRM-42 mockup image) per
+Docs/mrm41-items-interaction-kickoff.md. This prompt's job is still MRM-18.
+
+===============================================================================
+WHAT'S DONE ON MRM-18 - DO NOT REBUILD, THIS ALL WORKS (unchanged from prompt-5)
+===============================================================================
+- `TitleSequenceController.cs` (Code/Runtime/UI/) - music-anchored intro sequence (cross+Greek text,
+  studio logo, two-part disclaimer, feather fall synced to the reference track). Every timing value
+  lives in MoonlightTunables. Committed as 86f60d3, already on this branch.
+- The feather lands at exactly 16.115s of the song (12.115s fall start, 4.0s fall) - load-bearing,
+  don't shorten it without re-reading the build-summary doc's "real scheduling conflict" section.
+- `MoonlightTunables.TitleSequenceStartDelay` (1.5s) black-screen buffer before music starts.
+- URP camera-to-RenderTexture alpha is confirmed broken project-wide - difference matting
+  (`CaptureMattedFeatherSnapshot` in MainMenuController.cs) is the workaround, already applied.
+  Skip straight to this technique for any future transparent-render-to-texture need.
+
+===============================================================================
+THE ASK - STILL NOT SCOPED, ASK CARLOS BEFORE BUILDING (unchanged from prompt-5)
+===============================================================================
+Carlos's own words: "We will change the main menu, the font, and the buttons but first let's build
+this sequence." The sequence is done (prompt-5's session). The buttons/font/menu styling itself has
+STILL not been discussed in detail - same "vague on purpose, ask and he'll pin it down" pattern as
+the title sequence originally was. Ask directly:
+- Does this replace the current plain TMP-default-font Start/Settings/Credits/Quit buttons with
+  something matching the cross/logo/disclaimer aesthetic (blackletter/Orthodox-icon), or a separate
+  direction?
+- Real button art/textures, or still placeholder shapes with just a font swap?
+- Just button labels, or the whole menu's typography (titles, settings labels, credits text)?
+- Is there a reference (slide/mockup/asset folder) like the one that drove the title sequence?
+
+**One new thing to float, not push:** given tonight's Playground work, ask whether the "punk"
+Highlight Plus 2 outline style (now documented and Carlos-approved for MRM-16/42) should also
+inform the main menu's visual language, since Carlos separately called it out for "extensive" use.
+Don't assume yes - the title sequence's established look is blackletter/Orthodox-icon, which may or
+may not be the same direction. This is worth one clarifying question, not a decision to make alone.
+
+===============================================================================
+TRAPS ALREADY KNOWN IN THIS AREA (unchanged from prompt-5, still true)
+===============================================================================
+- Play Mode discards scripted edits on stop - confirm Edit Mode before an edit you need to persist,
+  re-verify after Carlos stops Play. (Confirmed AGAIN this session, in Playground - stop Play Mode
+  before every component edit, every time, no exceptions.)
+- A file copied into Assets/_Project/Audio/ via script lands on the wrong import preset - apply the
+  right Aud_* preset by hand.
+- Deleting a .cs file from disk without removing its component from the scene leaves a dangling
+  "missing script" reference - sweep the scene after deleting a script used as a live component.
+- URP camera-to-RenderTexture alpha is broken project-wide - use difference matting from the start.
+- Screen Space - Overlay Canvases always composite after ALL camera rendering - only a higher-
+  sort-order Canvas sits visually on top of another Canvas, Camera Stacking doesn't help.
+- **New, general Unity-MCP trap confirmed this session:** editing a component's serialized fields
+  does NOT flush to the .unity scene file on disk by itself - an explicit scene save
+  (manage_scene action=save) is required, or the edits vanish if the scene is closed/switched
+  without saving. Cost about 20 minutes of rework tonight when Carlos switched Playground scenes
+  before a save happened. Save the scene explicitly after any batch of component edits you need to
+  survive a scene switch, don't rely on it happening implicitly.
+
+===============================================================================
+SUGGESTED COMMIT MESSAGE (text only - Carlos commits via GitHub Desktop)
+===============================================================================
+This covers ONLY the two doc files touched tonight - cross-issue documentation (MRM-16/MRM-42
+scope) that happened to land on the mrm-18 branch because that's what was checked out. Flagging
+that explicitly per the cross-issue-work convention, same as the one-issue-one-branch exception
+elsewhere in this project.
+
+    Docs: Highlight Plus 2 punk outline reference (MRM-16/MRM-42 prep)
+
+    Documents a stylized outline look designed and tuned live with Carlos in the Playground
+    project - thick, jagged, animated Spider-Punk-style outline, approved for extensive use in
+    the interaction-highlight system (MRM-16) and inventory UI (MRM-42) once those are built.
+    Captures the exact Highlight Plus 2 settings, the shader math behind the distortion
+    parameters (screen-space UV offset, not a 0-1 intensity), a real vendor bug found
+    (outlineBlurPasses = 0 throws IndexOutOfRangeException), and why a true gap between the
+    object and the outline band can't coexist with the animated look in this plugin version
+    without a custom shader edit.
+
+    No Mr. Moonlight game code changed - Playground is a separate, non-git-tracked project used
+    for asset evaluation.
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01YU9nez9h2j4M6XA9TtWiZT
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Wait for Carlos. When he brings up buttons/font/menu styling, ask the scope questions above
+(including the new punk-outline question) before touching anything.
