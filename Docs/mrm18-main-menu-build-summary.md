@@ -288,3 +288,70 @@ notes 6 skies already extracted from the owned AllSky 220 pack at
 for the Island, but the same pack/technique is available for a menu-specific sky too. Worth reading
 MRM-47 in full before starting that work; see `Docs/new-asset-list.md` §36/§46 for the fuller
 triage reasoning.
+
+## 2026-09-07 late session — Crest reflections/Moon/clouds (see `mrm18-sonnet-prompt-2.txt`), then rain/ripple density tuning
+
+Two sessions picked up back-to-back. The first (already committed as `7cc7899`) maxed out Crest's
+planar reflections, replaced Altos with InfiniCloud's "Clouds Single Mesh" for the menu sky, and
+built the Moon prop (live tint + glow aura) — see that commit's message for the full writeup, not
+repeated here.
+
+The second session attempted, then fully reverted, real Crest **Dynamic Waves** displacement for
+rain impacts (layered on top of the existing DRM shader ripple, per Carlos's ask to try it) —
+toggling `WaterRenderer.DynamicWavesLod.Enabled` via scripted Editor automation threw a
+reproducible null-ref inside Crest's own code and, once it did succeed without error, broke the
+water's reflection and left a shader glitch (see `[[mrm18_crest_dynamicwaves_reverted]]` in
+memory). Rolled back via `git checkout` + a forced scene reload, confirmed byte-clean against the
+last commit. **Not attempted again this session** — needs a human clicking the checkbox in an
+already-focused, already-rendering Editor session, not further scripting. A camera-frustum-based
+shrink of the oversized (4838-unit) InfiniCloud plane was tried in the same pass and also reverted
+along with everything else, since it was bundled into the same rollback — worth revisiting on its
+own later if build-size/draw-call headroom becomes a concern; the plane only needs to cover
+roughly a 700×430-unit footprint (measured against the main camera's mirrored reflection frustum,
+with margin), a ~10x reduction from its current size.
+
+Carlos then reported (correctly) that the water still looked too cluttered with raindrops/ripples,
+following up on the same saturation issue this doc already flagged in the 2026-09-07 afternoon
+session above ("even 200 stays saturated at the current rain density"). This time it was actually
+fixed:
+
+- **Raindrop emission rate halved twice**: 1000 → 500 → 250/sec on the `Light Rain`
+  `ParticleSystem` (`EmissionModule.rateOverTime`). The rain's collision-triggered sub-emitters
+  (`RainBubble`, `RainSplash - 1`/`- 2`, the particle-based `RainRipple`) all scale proportionally
+  since they fire per parent-collision-event, not on independent timers — confirmed via each
+  sub-emitter's own `rateOverTime = 0`.
+- **Found and fixed a real regression along the way, self-inflicted:** lowered
+  `DRMController.count` from 200 to 100 to try to reduce ripple density directly — this silently
+  killed every ripple. Root cause: Amazing Assets' DRM system bakes `count` into both the
+  generated shader property names (`DynamicRadialMasks_Ripple_{count}_..._DATA1/2/3`, built as a
+  plain string in `DRMUtility.GetMaterialPropertyName`) and the hand-written
+  `RippleOverlay.shader`'s `#include`/function-call, which is fixed at compile time to the
+  `_200_` variant. Only `count` values with a matching pre-generated `.cginc` (8, 64, 200 exist in
+  `Code/Vendor/Dynamic Radial Masks/Shaders/`) can ever work, and using one other than 200 means
+  also hand-editing `RippleOverlay.shader` to match. Reverted to 200. Full detail in memory
+  (`[[mrm18_drm_ripple_count_baked_into_shader]]`) so this isn't rediscovered.
+- **The actual fix for "still too many ripples" was ripple *lifetime*, not count or raindrop
+  rate.** With `count=200` fixed and unable to move, the pool's turnover capacity is
+  `count / duration` — at the previously-shipped `duration=1.26s` that's only ~159 ripples/sec,
+  well under the raindrop collision rate even after halving it twice, so the pool stayed pinned
+  at its 200-ripple cap regardless of raindrop rate (this is *why* the first halving alone didn't
+  visibly reduce ripples — Carlos's own follow-up report caught exactly this). Carlos then
+  hand-tuned `RippleTuner`'s sliders directly in Play Mode to their current shipped values —
+  `duration=1.51, maxRadius=0.88, startIntensity=0.06, ringFrequency=15.4, lineThinness=11.84,
+  waveTravel=19.6` — a longer-lived but far fainter/thinner ripple than before. Restored twice
+  after being lost to Unity's Play-Mode-discards-script-edits behavior (once fully, once partially
+  — the raindrop rate specifically needed a third re-application since it was edited mid-Play-
+  session and silently reverted on stop). Final values confirmed saved and verified via git diff
+  before this doc was written.
+- **Ruled out as a cause, not a bug:** confirmed only one `DRMOnParticleCollision` exists in the
+  whole scene, and the rain's own collision-triggered sub-emitters don't independently drive it,
+  so the shader ripple system is genuinely 1:1 with actual raindrop/water collisions — no double-
+  triggering. `Prop_SparrowFeather`'s `FeatherLandingRipple.cs` *does* independently fire a
+  ripple (the small particle-based `RainRipple` effect, not the DRM shader ring) whenever the
+  feather finishes a fall-and-land loop, unrelated to rain entirely — flagged to Carlos as a
+  possible source of "ripples with no raindrop," left in place pending his call on whether to keep
+  it (deliberate MRM-18 feature, not obviously broken).
+
+Session closed on Carlos's approval of the current staging ("I think it looks pretty nice").
+**Issue stays open (not closed)** — the next piece of MRM-18 scope is the title screen(s) and
+initial disclaimers; see `Docs/mrm18-sonnet-prompt-4.txt` for that handoff.

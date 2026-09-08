@@ -732,6 +732,10 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2706558444868202877, guid: 91d1a359c50bbbc4aac4f6e600aa56cb, type: 3}
+      propertyPath: EmissionModule.rateOverTime.scalar
+      value: 250
+      objectReference: {fileID: 0}
+    - target: {fileID: 2706558444868202877, guid: 91d1a359c50bbbc4aac4f6e600aa56cb, type: 3}
       propertyPath: CollisionModule.collidesWith.m_Bits
       value: 16
       objectReference: {fileID: 0}
@@ -889,11 +893,11 @@ MonoBehaviour:
     displayAllProperties: 1
     maskShape: 0
     position: {x: 0, y: 0, z: 0}
-    lifeLength: {x: 1.26, y: 1.26}
+    lifeLength: {x: 1.51, y: 1.51}
     radius:
       evolutionType: 3
       startValue: {x: 0.1, y: 0.1}
-      endValue: {x: 1.05, y: 1.05}
+      endValue: {x: 0.88, y: 0.88}
       curve:
         serializedVersion: 2
         m_Curve:
@@ -912,7 +916,7 @@ MonoBehaviour:
       currentValue: 0
     intensity:
       evolutionType: 3
-      startValue: {x: 0.16, y: 0.16}
+      startValue: {x: 0.06, y: 0.06}
       endValue: {x: 0, y: 0}
       curve:
         serializedVersion: 2
@@ -984,7 +988,7 @@ MonoBehaviour:
     phaseSpeed:
       evolutionType: 3
       startValue: {x: 0, y: 0}
-      endValue: {x: 26.6, y: 26.6}
+      endValue: {x: 19.6, y: 19.6}
       curve:
         serializedVersion: 2
         m_Curve:
@@ -1003,7 +1007,7 @@ MonoBehaviour:
       currentValue: 0
     frequency:
       evolutionType: 0
-      startValue: {x: 19.9, y: 19.9}
+      startValue: {x: 15.4, y: 15.4}
       endValue: {x: 2, y: 2}
       curve:
         serializedVersion: 2
@@ -1054,12 +1058,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: AmazingAssets.DynamicRadialMasks::RippleTuner
   target: {fileID: 247802992}
-  duration: 1.26
-  maxRadius: 1.05
-  startIntensity: 0.16
-  ringFrequency: 19.9
+  duration: 1.51
+  maxRadius: 0.88
+  startIntensity: 0.06
+  ringFrequency: 15.4
   lineThinness: 11.84
-  waveTravel: 26.6
+  waveTravel: 19.6
 --- !u!1 &279616364
 GameObject:
   m_ObjectHideFlags: 0

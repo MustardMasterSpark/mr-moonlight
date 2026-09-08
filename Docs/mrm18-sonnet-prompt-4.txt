@@ -1,0 +1,96 @@
+MRM-18 — Main Menu — next piece: title screen(s) + initial disclaimers (written 2026-09-07)
+
+READ FIRST, IN ORDER: Docs/mrm18-main-menu-build-summary.md (the full build history — READ THE
+WHOLE THING, it's long but every section is load-bearing), then mrm18-sonnet-prompt.txt,
+mrm18-sonnet-prompt-2.txt, mrm18-sonnet-prompt-3.txt (superseded/reverted work, read for the traps
+not the state) if you want the blow-by-blow. This file only covers what Carlos asked for NEXT.
+
+STATE: branch mrm-18, main menu staging (water, rain, ripples, clouds, moon, reflections) is
+DONE and Carlos-approved this session ("I think it looks pretty nice"). Issue stays OPEN - this is
+the same issue, next slice of scope, not a new one. Do not close MRM-18 when this is done unless
+Carlos explicitly says so.
+
+===============================================================================
+THE ASK
+===============================================================================
+Carlos's own words: "we're now going to implement the title screens, the initial disclaimers, and
+all that." Vague on purpose - first thing to do is ask him to pin down scope before building
+anything, same as any vague ask. Concretely unclear right now:
+- Is this refining the ALREADY-BUILT splash-card sequence (see below) with real content, or a new/
+  separate system on top of it?
+- Does "title screens" mean plural distinct screens (e.g. studio logo -> publisher logo -> game
+  title logo -> disclaimer, each its own card) or one combined title+disclaimer treatment?
+- Real logo/title art exists yet, or is this still placeholder-text-only for now (matching how the
+  credits roll is still Lorem Ipsum by design)?
+- Any specific real disclaimer text Carlos has in mind (content warnings, epilepsy/photosensitivity
+  notice, engine/asset attribution, age rating placeholder, etc.) or is the bracketed placeholder
+  paragraph already in the scene good enough to just restyle?
+
+===============================================================================
+WHAT ALREADY EXISTS - DO NOT REBUILD THIS, EXTEND IT
+===============================================================================
+A pre-menu splash sequence was already built 2026-08-26 (see build-summary.md's "Pre-menu splash
+cards" section) and is almost certainly the thing to extend:
+
+- `SplashSequence.cs` (Code/Runtime/UI/) - takes a `CanvasGroup[] cards` array, plays them in
+  order: fade in -> hold -> fade out, one after another, using
+  `Tunables.I.SplashCardFadeDuration` (1s) and `Tunables.I.SplashCardHoldDuration` (2s). Generic -
+  adding a third/fourth card is just adding another CanvasGroup to the array, no code change.
+- Lives on `FadeOverlay` in the MainMenu scene's Canvas, riding on top of its already-opaque black
+  background. `MainMenuController.Start()` runs this first, then starts the normal opening reveal
+  once every card has finished.
+- Currently exactly two cards: a studio-name card (placeholder text "[STUDIO NAME]") and a
+  disclaimer card (placeholder bracketed paragraph). Both plain TMP text, no logo art, no styling
+  beyond a fade. Exact GameObject names weren't re-confirmed this session (a quick find-by-name
+  came up empty right before wrap-up - they may be nested deeper or named slightly differently
+  than "StudioNameCard"/"DisclaimerCard"; find them fresh via the scene hierarchy as your first
+  step, don't assume the names from the build-summary doc are exact).
+
+===============================================================================
+TRAPS ALREADY KNOWN IN THIS EXACT AREA
+===============================================================================
+- **FadeOverlay sibling order matters.** It was originally the FIRST child under Canvas, which in
+  Unity UI means it rendered BEHIND everything else - the "opaque black screen" wasn't actually
+  covering the menu. Already fixed (moved to last/topmost sibling), but if a new title-screen
+  object gets added as a Canvas child directly (rather than as a child of FadeOverlay, like the
+  existing cards are), re-check sibling order before assuming it's on top.
+- **This whole sequence has never been watched end-to-end by an automated session.** The Editor
+  doesn't tick Update()/coroutines while its window is unfocused (project-wide limitation, see
+  memory `verification_requires_a_build`), and the sequence + fade + feather-fall intro combined
+  runs longer than any headless verification window tried so far. Confirmed logically correct by
+  reading code/component wiring, never confirmed by actually watching it play. If Carlos hasn't
+  personally watched the current 2-card version play start-to-finish, that's worth doing BEFORE
+  adding more cards on top, so any timing/ordering issue is caught before it compounds.
+- **Play Mode discards scripted edits on stop.** If tuning card fade/hold timing or text live in
+  Play Mode (natural way to iterate on this), remember every such edit vanishes the instant Play
+  stops unless re-applied in Edit Mode afterward and saved. Hit this twice in the immediately-prior
+  session (rain rate, ripple tuner values) - see `[[unity_playmode_edits_discarded_on_stop]]` in
+  memory. Always re-verify `Application.isPlaying == false` before an edit you need to persist, and
+  re-check the value stuck after Carlos stops Play before calling anything final.
+- **CRT post-process filter is scoped to MainMenu already** (`GlobalVolume_CRT`) and Screen Space -
+  Overlay canvases are structurally exempt from post-processing in Unity (composited after the
+  camera finishes) - so title-screen UI will never pick up scanline/CRT distortion regardless of
+  Canvas hierarchy. Not a bug to chase if a title card looks "too clean" next to the CRT-filtered
+  3D background behind it - that's expected, matches how the existing menu buttons/credits already
+  behave.
+
+===============================================================================
+HARD RULES THAT APPLY HERE (from CLAUDE.md, restated because they bite on UI work specifically)
+===============================================================================
+- No hardcoded timing/duration values - anything new (card count, per-card hold/fade durations if
+  they need to differ per-card rather than sharing the two existing global tunables) goes in
+  `MoonlightTunables`.
+- Scene-view/Canvas work in the Editor still needs Carlos's permission per-piece before doing it
+  via the UnityMCP bridge, same as every other session - he's been saying yes throughout MRM-18 so
+  far, but ask again at the start of this piece of work rather than assuming carry-over consent
+  applies indefinitely.
+- Placeholder-content precedent: the credits roll shipped with Lorem Ipsum on purpose, labeled for
+  Carlos to replace by hand. If real disclaimer/title text isn't provided this session either,
+  follow the same pattern - bracketed placeholder, clearly labeled, not blocking on real copy.
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Do not start building. Ask Carlos to pin down the scope questions above first - "title screens,
+disclaimers, and all that" is exactly the kind of vague multi-part ask this project's own working
+style (see CLAUDE.md's Auto Mode guidance) says to clarify before implementing, not guess at.
