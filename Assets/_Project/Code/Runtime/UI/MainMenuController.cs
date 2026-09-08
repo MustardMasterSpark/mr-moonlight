@@ -162,9 +162,10 @@ namespace MrMoonlight.UI
 
         private IEnumerator PlayIntroThenReveal()
         {
-            // Plain black screen, nothing ticking yet - fadeOverlay is already opaque from
-            // Awake(). Gives Play Mode's own load/settle time somewhere safe to happen before
-            // the music starts, since that's the timing anchor every breakpoint reads off of.
+            // Black screen with the cross already visible (TitleSequenceController.Awake sets
+            // it, per Carlos 2026-09-08 - no fade-in, no wait) but nothing else ticking yet.
+            // Gives Play Mode's own load/settle time somewhere safe to happen before the music
+            // starts, since that's the timing anchor every breakpoint reads off of.
             yield return new WaitForSeconds(Tunables.I.TitleSequenceStartDelay);
 
             if (titleSequence == null)
@@ -251,12 +252,26 @@ namespace MrMoonlight.UI
             }
 
             Coroutine worldReveal = fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
-            yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
-            yield return worldReveal;
+            Coroutine buttonsFadeIn = StartCoroutine(FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration));
+
+            // 2026-09-08: switch off the static snapshot once the world fade is mostly through
+            // instead of waiting for it to fully finish - see Tunables.FeatherOverlaySwitchAlphaThreshold's
+            // doc. The live feather (already wobbling since the instant it landed) sat hidden
+            // behind this one static, matted frame for the entire 1.5s fade otherwise, which read
+            // as "frozen" to Carlos. Safe to cut early here (unlike at the very start of the fade
+            // - see the flicker-investigation doc above) because the world is already mostly
+            // visible by this alpha.
+            while (fadeOverlay.Alpha > Tunables.I.FeatherOverlaySwitchAlphaThreshold)
+            {
+                yield return null;
+            }
 
             if (introFeatherCanvas != null) introFeatherCanvas.SetActive(false);
             if (introFeatherCamera != null) introFeatherCamera.enabled = false;
             if (featherSnapshot != null) Destroy(featherSnapshot);
+
+            yield return buttonsFadeIn;
+            yield return worldReveal;
 
             mainButtonsGroup.interactable = true;
             mainButtonsGroup.blocksRaycasts = true;
@@ -294,6 +309,12 @@ namespace MrMoonlight.UI
             cam.backgroundColor = originalBackground;
             cam.clearFlags = originalClearFlags;
 
+            // 2026-09-08: alpha < FeatherMatteAlphaCutoff is treated as fully transparent rather
+            // than un-premultiplied - dividing by a very small alpha amplifies ordinary render
+            // noise/dither into stray fully-saturated pixels (Carlos: "red pixels around the
+            // sparrow feather"), which the old 0.003f cutoff was too permissive to catch. See the
+            // tunable's doc.
+            float alphaCutoff = Tunables.I.FeatherMatteAlphaCutoff;
             Color[] result = new Color[onBlack.Length];
             for (int i = 0; i < result.Length; i++)
             {
@@ -301,8 +322,8 @@ namespace MrMoonlight.UI
                 Color w = onWhite[i];
                 float alpha = 1f - ((w.r - b.r) + (w.g - b.g) + (w.b - b.b)) / 3f;
                 alpha = Mathf.Clamp01(alpha);
-                result[i] = alpha > 0.003f
-                    ? new Color(b.r / alpha, b.g / alpha, b.b / alpha, alpha)
+                result[i] = alpha > alphaCutoff
+                    ? new Color(Mathf.Clamp01(b.r / alpha), Mathf.Clamp01(b.g / alpha), Mathf.Clamp01(b.b / alpha), alpha)
                     : Color.clear;
             }
 

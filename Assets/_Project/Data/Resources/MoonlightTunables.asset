@@ -135,6 +135,8 @@ MonoBehaviour:
   SunIndoorDimTransitionSeconds: 1.5
   TimeManagerDefaultTransitionSeconds: 3
   MenuOpeningFadeDuration: 1.5
+  FeatherOverlaySwitchAlphaThreshold: 0.35
+  FeatherMatteAlphaCutoff: 0.05
   TitleSequenceStartDelay: 1.5
   MenuTransitionFadeDuration: 0.6
   CreditsScrollSpeed: 60
@@ -145,15 +147,17 @@ MonoBehaviour:
   TitleBreakpointCross: 0
   TitleBreakpointLogo: 4.103
   TitleBreakpointDisclaimer1: 8.114
-  TitleBreakpointDisclaimer2: 10.315
+  TitleBreakpointDisclaimerFadeOutStart: 11.5
   TitleBreakpointWorldReveal: 16.115
   TitleGrowStopBeforeNextBreakpoint: 2
   TitleFadeOutBeforeNextBreakpoint: 1
-  TitleElementStartScale: 0.6
+  TitleElementStartScale: 1
+  TitleElementEndScale: 1.0972
+  TitleLogoFadeInDuration: 0.4
+  TitleLogoFadeOutDuration: 0.4
   DisclaimerFadeInDuration: 0.5
   DisclaimerFadeOutDuration: 0.5
-  DisclaimerHoldAfterParagraph2: 0.5
-  TitleGapBeforeFeatherStarts: 0.3
+  TitleGapBeforeFeatherStarts: 0.115
   FeatherGlowIntensity: 0.12
   FeatherGlowDimmedIntensity: 0
   FeatherGlowDimDuration: 1.5

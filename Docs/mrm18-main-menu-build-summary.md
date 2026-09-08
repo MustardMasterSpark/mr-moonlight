@@ -440,3 +440,125 @@ Session closed on Carlos's confirmation the fix worked. **Issue stays open** - s
 is the intro/title sequence up through the feather landing and world reveal; the actual main menu
 buttons/font/styling rework Carlos mentioned wanting eventually ("we will change the main menu, the
 font, and the buttons") has not been started. See `Docs/mrm18-sonnet-prompt-5.txt` for the handoff.
+
+## 2026-09-08 session (continued) - screens 1/2/3 finished, recurring TMP font-atlas bug found and
+## fixed three times, feather intro static/fringe polish
+
+Picked up from `Docs/mrm18-sonnet-prompt-6.txt`. Carlos worked screen-by-screen in the Unity Editor
+(selecting/resizing/repositioning elements live), calling out what to fix after each pass. **All
+three title cards (cross, logo, disclaimer) are now considered done** - next session moves on to
+the actual main menu (title, buttons) per Carlos: "We are done with the initial cards."
+
+**Screen 1 (Cross):** Changed from grow-then-fade to static-then-fade at Carlos's request - no more
+scale animation, and visible from the moment the scene loads (through the pre-music black-screen
+delay too, via a new `TitleSequenceController.Awake()`), not just at breakpoint 0. New `HoldThenFade`
+coroutine added; `crossScaleRoot` field removed (no longer needed). Carlos then manually resized/
+positioned the cross + Greek text elements in-Editor (including a temporary 1.8x scale on a
+`ScaleRoot` wrapper); baked that back into clean absolute per-element sizes at his request
+(`ScaleRoot` scale normalized to 1, `CrossImage`/`GreekText` sized to match exactly).
+
+**Screen 2 (Logo):** Biggest chunk of the session.
+- Replaced the separate `DivineRays`/`Beam`/`Dove` images with one combined art asset Carlos
+  supplied (`T_RaysBeamDove.png`, imported to `Assets/_Project/Art/UI/TitleCards/`) - first import
+  attempt silently capped it to 512px on the long edge (project's default texture max size); fixed
+  by explicitly setting `TextureImporter.maxTextureSize = 2048` before reimporting, confirmed at
+  full native 2038x771.
+- Carlos duplicated the "Master\nSpark" text object to isolate "Master" and "Spark" as separate
+  objects; his Inspector text edits kept reverting (cause not confirmed - possibly Undo). Fixed by
+  setting `.text` directly via script instead, then resized each box tight to its single word using
+  `TMP_Text.GetPreferredValues(text, wideWidth, 0)` - **note:** `preferredWidth`/`preferredHeight`
+  read directly off the component are unreliable right after a `sizeDelta` change (feed back off the
+  *current* rect, producing wildly wrong results like a 373px height for one line) - always pass an
+  explicit wide width constraint instead.
+- Carlos resized/repositioned everything within `GrowingElements` (children's own `localScale`, plus
+  shifted `GrowingElements` itself left) as a "this is the starting grow-in size" pass, then a second
+  pass increasing `GrowingElements`' own scale as "this is the final grown size." Both baked clean:
+  children's per-object scale multipliers folded into `sizeDelta`/`fontSize` (never leave a non-1
+  `localScale` on a static element - see `Docs/unity-conventions.md`-style convention already used
+  for screen 1), `GrowingElements` position zeroed to origin. Technique used both times: capture each
+  child's **world** `transform.position` before changing the parent, do all the scale/position
+  cleanup, then set `transform.position` back to the captured value - lets Unity solve the local
+  offset math instead of hand-computing it, which is far less error-prone.
+- New tunables registered from this: `TitleElementStartScale` changed from the old pre-bake 0.6 to
+  1.0 (matches the now-baked "natural" children pose); new `TitleElementEndScale = 1.0972` (Carlos's
+  subtle final-grown scale). Logo also gained a real fade-in (previously an instant alpha pop, "no
+  fade-in" was literally the original MRM-18 spec) plus its own independent fade-out duration split
+  out from the cross's shared one - new `TitleLogoFadeInDuration`/`TitleLogoFadeOutDuration` (0.4s
+  each), so tuning one card's fade never silently retimes the other's.
+
+**Recurring bug - TMP Dynamic font assets with a dead atlas (hit 3 times this session):**
+`GutenbergTextura SDF`, `GabrieleBandAah SDF`, and `NotoSerif SDF` all turned out to be freshly
+created **Dynamic**-population font assets whose `m_CharacterTable`/`m_GlyphTable` are empty on disk
+and whose runtime glyph generation was silently broken - two different failure faces of the same
+root cause:
+- **Total lookup failure** (Gutenberg, on "Master\nSpark"): every character comes back with zero
+  glyph data, so TMP renders its "missing glyph" placeholder - a solid box - for every character.
+  This is what "boxes of white" looks like.
+- **Metrics resolve, rasterization doesn't** (Gabriele, on "studios"/"2026"; NotoSerif, on both
+  disclaimer paragraphs): TMP successfully finds real glyph metrics and reserves a real atlas rect,
+  so the mesh/UVs/layout are all correct - but the atlas texture pixels at that rect are 100% alpha
+  0. Confirmed by directly sampling `((Texture2D)font.atlasTexture).GetPixels(...)` at the glyph's
+  rect - metrics alone are **not** proof a font is working, sample actual pixel alpha. Text is
+  simply invisible, occupying its layout space normally.
+
+**Fix, both cases, all three fonts:** reimport the source `.ttf` (`manage_asset` action=`import`),
+then call `TMP_FontAsset.ClearFontAssetData(true)` on the `.asset` and save - forces a full clean
+regeneration against the freshly-reimported font. Verified each time by re-sampling atlas pixel
+alpha before/after (0 -> ~0.77-0.82) and a Scene-view screenshot. **If any other TMP font asset in
+this project hasn't been proven to actually render text yet (especially ones for the upcoming main
+menu buttons/title work), check it the same way before trusting it** - this looks like a systemic
+issue with how these font assets got created, not a one-off.
+
+**Screen 3 (Disclaimer):** Originally two paragraphs on staggered breakpoints
+(`TitleBreakpointDisclaimer1`/`2` + a hold + fade-out); Carlos simplified this twice in the same
+session:
+1. First pass: keep `TitleBreakpointDisclaimer1` (8.114s) as the appear time, but retime so the
+   fade-out starts at 11.5s and finishes at exactly 12.0s (was 11.315s/11.815s) - done by adjusting
+   `DisclaimerHoldAfterParagraph2`, and `TitleGapBeforeFeatherStarts` lowered 0.3s->0.115s so the
+   feather's own start (12.115s) and `TitleBreakpointWorldReveal` (16.115s, a fixed musical beat)
+   stayed untouched, same "retime the text, not the feather" precedent already used once on
+   `TitleBreakpointDisclaimer2`.
+2. Second pass: dropped the two-paragraph staggering entirely - both paragraphs now fade in/out
+   together as one slide. `TitleBreakpointDisclaimer2` and `DisclaimerHoldAfterParagraph2` removed;
+   new `TitleBreakpointDisclaimerFadeOutStart = 11.5f` replaces the derived chain.
+   `ComputeFeatherStartSongTime` simplified to match - feather timing (12.115s/16.115s) unaffected
+   either time.
+- What looked like "text not showing" during this retiming was actually the `NotoSerif SDF` dead-
+  atlas bug above, not a timing or overlap issue - found by checking proactively once the same
+  symptom showed up a third time.
+- Per-word rich-text coloring added at Carlos's request - plain TMP `<color=#RRGGBB>...</color>`
+  tags (already supported, `richText` was already on, no extra package needed): "Christianity" ->
+  gold `#FFD700`, "Player discretion is advised" -> red `#FF0000`. Carlos asked whether a Package
+  Manager asset he has (likely Text Animator, per the 2026-09-02 import log) was needed for this -
+  it isn't; that asset is for animated text effects, overkill for static per-word color.
+
+**Feather intro polish (not the title cards, but touched this session):** two follow-ups to the
+already-closed difference-matting fix above, from Carlos noticing the feather "is static for a
+second" after landing with "red pixels around" it before it starts moving:
+- The wobble script (`FeatherWaterWobble`) was already starting immediately on landing (confirmed in
+  code) - the *static matted snapshot* overlay was just hiding the already-moving live feather for
+  the entire 1.5s reveal fade (only switched off once 100% complete). New
+  `FadeOverlay.Alpha` getter + new tunable `FeatherOverlaySwitchAlphaThreshold = 0.35f`: the overlay
+  now switches to the live feather once the world fade is ~65% through instead of waiting for 100%,
+  shortening the static window substantially. Deliberately not switching at 0% - that exact approach
+  was already tried and reverted earlier (see the flicker-investigation doc above).
+- Red fringe pixels: a known difference-matting failure mode - un-premultiplying color at very low
+  recovered alpha amplifies ordinary render noise into stray saturated pixels. Old cutoff (`0.003f`)
+  was far too permissive; new tunable `FeatherMatteAlphaCutoff = 0.05f` plus explicit per-channel
+  clamping in `CaptureMattedFeatherSnapshot`.
+- **Not yet verified live** - this only manifests in Play Mode during the actual feather-fall/reveal,
+  Carlos still needs to test it.
+
+**Other traps confirmed/reconfirmed this session:**
+- `manage_camera` screenshot action, when it auto-picks a specific camera, renders direct-camera
+  (excludes Screen Space - Overlay canvases entirely, so the whole title-sequence UI comes back
+  blank). Use `capture_source: "scene_view"` for anything with Overlay UI in it.
+- `CrestWater_BloodPool`'s `WaterRenderer._FollowSceneCamera` (Editor-only convenience feature) can
+  make the water auto-scale to its max LOD scale and spam "Screen position out of view frustum"
+  console errors when the Scene view camera is parked far from the water (e.g. up near a world-space
+  UI canvas while editing it) - confirmed via source (`#if UNITY_EDITOR` + `!Application.isPlaying`
+  guards in `WaterRenderer.cs`) that this is 100% Editor-only and cannot affect Play Mode or a build.
+  Carlos chose to live with it rather than disable `Follow Scene Camera` - noted here so it isn't
+  re-investigated as a real bug later.
+
+See `Docs/mrm18-sonnet-prompt-7.txt` for the handoff into main menu (title/buttons) work.
