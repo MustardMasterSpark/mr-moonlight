@@ -3,12 +3,13 @@ using MrMoonlight.Data;
 using MrMoonlight.World;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 namespace MrMoonlight.UI
 {
     /// <summary>
-    /// Orchestrates the MainMenu scene (MRM-18): the pre-menu splash cards
-    /// (<see cref="SplashSequence"/>), the opening reveal, and the four buttons - Start,
+    /// Orchestrates the MainMenu scene (MRM-18): the pre-menu title sequence
+    /// (<see cref="TitleSequenceController"/>), the opening reveal, and the four buttons - Start,
     /// Settings, Credits, Quit. Every transition is a fade, never a hard cut, per the issue. Two
     /// fade mechanisms are in play, matching the issue's own wording for each:
     /// <see cref="fadeOverlay"/> (a shared full-screen black CanvasGroup) for the opening reveal,
@@ -34,13 +35,41 @@ namespace MrMoonlight.UI
     /// own layer stays included in the main camera's culling mask throughout, so once revealed it
     /// simply continues existing as a normal part of the scene, already resting where it landed.
     /// <see cref="introFeatherFall"/>'s own Loop must stay off - this sequence expects exactly
-    /// one landing.</para>
+    /// one landing.
+    ///
+    /// <b>2026-09-07/08 flicker investigation:</b> switching the overlay off happens immediately
+    /// on landing, in the same statement block as starting the reveal fade (no yield between
+    /// them, so there is no separately-rendered frame where only one has taken effect) - this can
+    /// still show a very brief, faint dimming on the feather for a single frame (the fade's first
+    /// tiny alpha step), which reads as an almost imperceptible flicker. A different approach was
+    /// tried and reverted: keeping the overlay active for the *entire* reveal fade duration,
+    /// switching it off only once fully faded. That was meant to close even that single-frame gap,
+    /// but caused a much worse regression - Carlos: "it takes like 1 or 2 seconds and then it
+    /// abruptly shows... it doesn't show the fading I wanted." Root cause traced to
+    /// <see cref="introFeatherCamera"/>'s render pipeline: its clear flags/color and target
+    /// texture are correctly configured for a transparent background (SolidColor, alpha 0,
+    /// ARGB32) but URP does not reliably preserve that alpha through its color/post-processing
+    /// pass - the overlay's rendered output ends up opaque across the whole frame regardless, so
+    /// keeping it active blocked the entire reveal from ever being visible until it switched off,
+    /// which then showed the already-fully-faded result all at once. Do not re-attempt "keep the
+    /// overlay alive through the fade" without first fixing that URP alpha behavior (a dedicated
+    /// unlit/transparent shader on the RawImage's material forcing straight-alpha blending is the
+    /// likely fix, not attempted here) - the immediate-switch-off approach above is the current,
+    /// working behavior.</para>
+    ///
+    /// <para><b>Title sequence handoff (2026-09-07 rebuild):</b> <see cref="titleSequence"/> owns
+    /// the music-anchored cross/logo/disclaimer cards and calls back the instant the song reaches
+    /// the exact second the feather should start falling (see
+    /// <see cref="TitleSequenceController.ComputeFeatherStartSongTime"/>) so it lands precisely on
+    /// <see cref="Tunables.TitleBreakpointWorldReveal"/> - <see cref="introFeatherFall"/>'s
+    /// <c>fallDuration</c> must be set to match that computed window in the Inspector; this class
+    /// does not re-derive or enforce it.</para>
     /// </summary>
     public sealed class MainMenuController : MonoBehaviour
     {
         [Header("Fades")]
         [SerializeField] private FadeOverlay fadeOverlay;
-        [SerializeField] private SplashSequence splashSequence;
+        [SerializeField] private TitleSequenceController titleSequence;
 
         [Header("Feather Intro")]
         [Tooltip("Plays once the splash cards finish; the buttons group and the rest of the 3D scene stay hidden until this reports OnLanded. Its own Loop must be off.")]
@@ -133,21 +162,32 @@ namespace MrMoonlight.UI
 
         private IEnumerator PlayIntroThenReveal()
         {
-            if (splashSequence != null)
+            // Plain black screen, nothing ticking yet - fadeOverlay is already opaque from
+            // Awake(). Gives Play Mode's own load/settle time somewhere safe to happen before
+            // the music starts, since that's the timing anchor every breakpoint reads off of.
+            yield return new WaitForSeconds(Tunables.I.TitleSequenceStartDelay);
+
+            if (titleSequence == null)
             {
-                yield return splashSequence.Play();
+                // No title sequence wired up - fall back to just playing music and revealing
+                // everything, same spirit as the original MRM-18 behavior.
+                if (menuMusicSource != null) menuMusicSource.Play();
+                yield return PlayFeatherAndWorldReveal();
+                yield break;
             }
 
-            yield return PlayOpeningReveal();
+            // TitleSequenceController starts the music itself (it's the timing anchor for every
+            // breakpoint) and invokes this callback the instant the song reaches the exact
+            // second the feather should start falling - see the class doc's "Title sequence
+            // handoff" note. Play()'s own coroutine finishes right after invoking the callback,
+            // so by the time the first yield returns, featherReveal is already assigned.
+            Coroutine featherReveal = null;
+            yield return titleSequence.Play(() => featherReveal = StartCoroutine(PlayFeatherAndWorldReveal()));
+            yield return featherReveal;
         }
 
-        private IEnumerator PlayOpeningReveal()
+        private IEnumerator PlayFeatherAndWorldReveal()
         {
-            if (menuMusicSource != null)
-            {
-                menuMusicSource.Play();
-            }
-
             if (introFeatherFall == null)
             {
                 // No feather wired up - original MRM-18 behavior: the overlay clearing alone
@@ -174,17 +214,116 @@ namespace MrMoonlight.UI
 
             introFeatherFall.OnLanded -= onLanded;
 
-            if (introFeatherCanvas != null) introFeatherCanvas.SetActive(false);
-            if (introFeatherCamera != null) introFeatherCamera.enabled = false;
+            // 2026-09-08 real fix: the overlay's camera renders into a RenderTexture through
+            // URP, which does NOT reliably output a usable alpha channel (confirmed empirically -
+            // tried disabling post-processing, disabling HDR, adding a proper
+            // UniversalAdditionalCameraData, a freshly-created RenderTexture, and the pipeline
+            // asset's own "Allow Post-process Alpha Output" toggle; every one of them still read
+            // back alpha=1 everywhere, including empty background pixels that were cleared to
+            // alpha 0). Two things were tried and abandoned because of this:
+            // (1) switch the overlay off immediately at landing, before the fade starts - the
+            //     fully-opaque overlay is gone before the reveal begins, but since the main
+            //     camera's own rendering of the feather is what's then covered by fadeOverlay's
+            //     fade like everything else, the feather visibly dims along with the rest of the
+            //     world (Carlos: "the sparrow feather gets impacted by this black fade-in").
+            // (2) keep the overlay active for the whole fade instead - since its render is opaque
+            //     regardless of the intended transparency, this blocks the ENTIRE reveal from
+            //     ever being visible, then reveals the already-fully-faded result all at once the
+            //     instant it's switched off (Carlos: "it takes like 1 or 2 seconds and then it
+            //     abruptly shows").
+            // The actual fix: the feather is essentially static the instant it lands (resting on
+            // the water), so instead of relying on the camera's continuous, broken-alpha render,
+            // capture ONE snapshot right now via difference matting (render on black, render on
+            // white, recover true per-pixel alpha from the two - see
+            // CaptureMattedFeatherSnapshot) into a plain Texture2D. Regular UI Image/RawImage
+            // alpha blending against a Texture2D works perfectly normally (it's exactly how every
+            // other UI sprite in this menu already renders) - the RenderTexture was the only
+            // broken part, and this sidesteps it entirely rather than working around its timing.
+            // The overlay can then safely stay active for the whole reveal fade (no more "abrupt"
+            // bug, since it now has real alpha) and switches off only once fully faded, so the
+            // handoff to the main camera's live (already-landed, matching) feather is seamless.
+            RawImage featherOverlayImage = introFeatherCanvas != null ? introFeatherCanvas.GetComponentInChildren<RawImage>(true) : null;
+            Texture2D featherSnapshot = null;
+            if (featherOverlayImage != null && introFeatherCamera != null)
+            {
+                featherSnapshot = CaptureMattedFeatherSnapshot(introFeatherCamera);
+                featherOverlayImage.texture = featherSnapshot;
+            }
 
-            // The world and the UI reveal together, as one beat - the main camera already
-            // renders the feather resting exactly where the overlay left it.
             Coroutine worldReveal = fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
             yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
             yield return worldReveal;
 
+            if (introFeatherCanvas != null) introFeatherCanvas.SetActive(false);
+            if (introFeatherCamera != null) introFeatherCamera.enabled = false;
+            if (featherSnapshot != null) Destroy(featherSnapshot);
+
             mainButtonsGroup.interactable = true;
             mainButtonsGroup.blocksRaycasts = true;
+        }
+
+        /// <summary>
+        /// Renders <paramref name="cam"/>'s current view twice - once against a black background,
+        /// once against white - and recovers true per-pixel straight alpha from the difference
+        /// (standard "difference matting": a pixel's rendered color is
+        /// <c>alpha * trueColor + (1 - alpha) * background</c>, so subtracting the white-background
+        /// render from the black-background one isolates <c>(1 - alpha)</c> directly, independent
+        /// of whatever the render pipeline does or doesn't do with the alpha channel itself - only
+        /// RGB needs to survive the render, which URP does correctly). One-time cost (a couple of
+        /// full-resolution renders plus a CPU pixel loop), meant to be called once at a single
+        /// moment (the feather landing), not per-frame.
+        /// </summary>
+        private static Texture2D CaptureMattedFeatherSnapshot(Camera cam)
+        {
+            RenderTexture rt = cam.targetTexture;
+            int width = rt.width;
+            int height = rt.height;
+
+            Color originalBackground = cam.backgroundColor;
+            CameraClearFlags originalClearFlags = cam.clearFlags;
+            cam.clearFlags = CameraClearFlags.SolidColor;
+
+            cam.backgroundColor = Color.black;
+            cam.Render();
+            Color[] onBlack = ReadRenderTexturePixels(rt, width, height);
+
+            cam.backgroundColor = Color.white;
+            cam.Render();
+            Color[] onWhite = ReadRenderTexturePixels(rt, width, height);
+
+            cam.backgroundColor = originalBackground;
+            cam.clearFlags = originalClearFlags;
+
+            Color[] result = new Color[onBlack.Length];
+            for (int i = 0; i < result.Length; i++)
+            {
+                Color b = onBlack[i];
+                Color w = onWhite[i];
+                float alpha = 1f - ((w.r - b.r) + (w.g - b.g) + (w.b - b.b)) / 3f;
+                alpha = Mathf.Clamp01(alpha);
+                result[i] = alpha > 0.003f
+                    ? new Color(b.r / alpha, b.g / alpha, b.b / alpha, alpha)
+                    : Color.clear;
+            }
+
+            Texture2D snapshot = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            snapshot.SetPixels(result);
+            snapshot.Apply();
+            return snapshot;
+        }
+
+        private static Color[] ReadRenderTexturePixels(RenderTexture rt, int width, int height)
+        {
+            RenderTexture previousActive = RenderTexture.active;
+            RenderTexture.active = rt;
+            Texture2D temp = new Texture2D(width, height, TextureFormat.RGBA32, false);
+            temp.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+            temp.Apply();
+            RenderTexture.active = previousActive;
+
+            Color[] pixels = temp.GetPixels();
+            Destroy(temp);
+            return pixels;
         }
 
         private static IEnumerator FadeInGroup(CanvasGroup group, float duration)

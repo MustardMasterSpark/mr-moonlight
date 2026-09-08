@@ -355,3 +355,88 @@ fixed:
 Session closed on Carlos's approval of the current staging ("I think it looks pretty nice").
 **Issue stays open (not closed)** — the next piece of MRM-18 scope is the title screen(s) and
 initial disclaimers; see `Docs/mrm18-sonnet-prompt-4.txt` for that handoff.
+
+## 2026-09-08 session — title sequence built from scratch (cross, logo, disclaimer, feather sync)
+
+Carlos discarded the old placeholder splash cards entirely and specified a precise, music-anchored
+replacement: a reference PowerPoint/screenshots for three screens (Orthodox cross + Greek text,
+studio logo, two-part disclaimer) plus exact second-by-second breakpoints from a reference track
+(`Rising_Storm_2_Layin_Low.wav`) telling exactly when each element appears, grows, and fades. Full
+sequence built, tuned live with Carlos across several rounds, and approved ("Thank you, that
+worked.").
+
+**Assets imported** (`Assets/_Project/Art/UI/Fonts/`: Kurland, GutenbergTextura, NotoSerif,
+GabrieleBandAah + generated TMP SDF Font Assets for each; `Assets/_Project/Art/UI/TitleCards/`:
+T_Cross_ICXCNika, T_DivineRays, T_Beam, T_Dove sprites; `Assets/_Project/Audio/
+MUS_RisingStorm2LayinLow.wav`, routed through the `Aud_Music` preset). Skipped importing
+`hit-me-punk.02.ttf` (byte-identical to the already-present `HitMePunk.ttf`) and `Gothic Mother.ttf`
+(present in the asset folder but unused by any instruction given — Carlos: "don't import anything
+that we don't use right now").
+
+**Bug found and fixed in the source audio file itself:** the WAV's RIFF/data chunk sizes were
+unfinalized placeholders (`0xFFFFFFFF`), which Unity flatly refused to import ("Unspecified error").
+Patched the two size fields directly in the project's copy (pure header metadata, zero audio
+sample bytes touched, confirmed lossless) — Carlos's original file on his Desktop is untouched.
+
+**New `TitleSequenceController.cs`** (`Code/Runtime/UI/`, replaces the deleted `SplashSequence.cs`)
+drives everything off `AudioSource.time` on the music track directly — every breakpoint is a
+literal second read from `MoonlightTunables` (`TitleBreakpointCross`, `TitleBreakpointLogo`,
+`TitleBreakpointDisclaimer1`, `TitleBreakpointDisclaimer2`, `TitleBreakpointWorldReveal`, plus the
+grow/hold/fade-window tunables), not a fixed animation timeline — re-timing anything is a Tunables
+edit. Cross and logo cards share one `GrowThenFade` routine (appear instantly, grow from
+`TitleElementStartScale` to full size, hold, fade out, timed to finish exactly on the next
+breakpoint); the logo's "2026" text sits outside the scaling group so only its alpha animates, per
+spec. The disclaimer's two paragraphs fade in independently and share one fade-out.
+
+**Real scheduling conflict found and resolved, twice, with Carlos's direct input both times:**
+the sparrow feather's fall must land exactly on `TitleBreakpointWorldReveal` (16.115s) but the
+feather's own tuned fall duration (4.0s) didn't fit the original disclaimer timing Carlos gave
+(paragraph 2 at 12.149s left only 3.966s total before landing — less than the fall alone needed).
+First attempt shortened the fall to fit (wrong call - Carlos: "it looks very fast and bad, don't
+change the time it has to fall"). Correct fix: moved `TitleBreakpointDisclaimer2` earlier instead
+(12.149s → 10.315s), preserving the exact fall duration and landing time - see
+`TitleSequenceController.ComputeFeatherStartSongTime()`, which is the single source of truth for
+when the feather should start falling given the disclaimer's timing. **The feather now visibly
+starts falling at exactly 12.115s of the song** — worth knowing if Carlos gives new breakpoints for
+future disclaimer content, since anything after that timestamp needs to be fully cleared off screen
+by then.
+
+**Added `MoonlightTunables.TitleSequenceStartDelay`** (1.5s) - a fixed black-screen buffer before
+the music/sequence starts at all, requested so Play Mode's own load/settle time doesn't eat into
+the first second of music-anchored timing and desync everything Carlos sees from what the numbers
+say should be happening.
+
+**A real, deep rendering bug found and fixed - the most significant technical finding this
+session.** The feather-only intro overlay (a separate camera rendering to a RenderTexture, composited
+via a higher-sort-order Canvas so the feather stays visible while `fadeOverlay` covers everything
+else) needs a transparent background so the world-reveal fade is visible through it without also
+hiding/dimming the feather. **Confirmed empirically that URP does not output a usable alpha channel
+for this camera's render, full stop** - read back individual pixels after rendering and got
+`alpha=1.0` everywhere, including areas cleared to `(0,0,0,0)`. Tried and ruled out: disabling
+post-processing, disabling HDR, adding a proper `UniversalAdditionalCameraData` (was missing
+entirely), a freshly-created RenderTexture, and the URP pipeline asset's own `allowPostProcessAlphaOutput`
+toggle - none of them changed the result. This directly explains BOTH previous bug reports, which
+were two sides of the same broken-alpha coin: switching the overlay off immediately at landing
+(so the fade dims the feather with everything else) vs. keeping it on through the whole fade (so
+its opaque output blocks the entire reveal, then snaps to the final result when switched off).
+**Fix:** since the feather is essentially static the instant it lands, capture ONE snapshot via
+difference matting instead of relying on the broken continuous render - render the camera once
+against pure black, once against pure white, and recover true per-pixel alpha from how the two
+differ (`CaptureMattedFeatherSnapshot`/`ReadRenderTexturePixels` in `MainMenuController.cs`). Only
+RGB needs to survive the render for this to work, which URP does correctly - alpha is reconstructed
+entirely on the CPU side, sidestepping the broken channel rather than fighting it. The resulting
+static `Texture2D` displays via ordinary UI alpha blending (works perfectly, same as every other
+sprite in this menu), so the overlay can now safely stay active for the whole reveal fade with no
+regression. Verified twice in Play Mode: snapshot captures a proper feather-shaped silhouette
+(confirmed via opaque-pixel count during testing, since read on-screen), zero errors, feather stays
+at full brightness throughout, world fades in smoothly, final state (buttons interactive, overlay
+switched off) reached correctly both times. **If this class of bug resurfaces anywhere else in the
+project** (any future "render a 3D object to a transparent texture for UI compositing" need), skip
+straight to difference matting rather than re-diagnosing the URP alpha behavior - it's confirmed
+broken in this project's exact URP/pipeline-asset configuration, at least for a Base-type camera
+manually rendered via `Camera.Render()`.
+
+Session closed on Carlos's confirmation the fix worked. **Issue stays open** - scope covered so far
+is the intro/title sequence up through the feather landing and world reveal; the actual main menu
+buttons/font/styling rework Carlos mentioned wanting eventually ("we will change the main menu, the
+font, and the buttons") has not been started. See `Docs/mrm18-sonnet-prompt-5.txt` for the handoff.
