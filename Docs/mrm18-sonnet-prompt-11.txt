@@ -1,0 +1,73 @@
+MRM-18 — Main Menu, session close-out + handoff into 3D model work (read this, not chat scrollback)
+
+Branch: mrm-18, NOT YET MERGED to main (Carlos merges via GitHub Desktop). Full technical detail
+lives in Docs/mrm18-main-menu-build-summary.md's final dated section ("2026-09-08 session (final)")
+and both 2026-09-08 sections of Docs/highlight-plus-2-punk-outline.md — read those before touching
+this scene again. This file is the short version plus what's next.
+
+WHAT'S DONE (this session, verified live in Play Mode, not just read from code)
+- Imported Carlos's 60-image torn-composition-notebook-paper texture set (two variants, three-lines
+  and two-lines) into Assets/_Project/Art/UI/ButtonPaper/, matching this project's existing T_
+  Sprite import convention exactly. Two-lines set imported, currently unused.
+- All 5 main buttons (Canvas/MainButtons/ButtonGroup/*Button) stripped to a plain Image + a random
+  distinct three-lines background sprite, Button.transition = None.
+- Built a custom "punk" jagged-outline highlight as a uGUI shader
+  (Assets/_Project/Art/UI/Shaders/UI_PunkOutline.shader +
+  Assets/_Project/Code/Runtime/UI/ButtonPunkOutlineHighlight.cs) after confirming Highlight Plus 2
+  has zero uGUI support (HighlightEffect.cs only accepts MeshRenderer/SpriteRenderer/
+  SkinnedMeshRenderer - checked its own source directly). The outline hugs each button's actual
+  torn-paper alpha silhouette, not a rectangle, and renders on a separate larger "HighlightOverlay"
+  child quad per button (not the button's own Image) so it has room to draw beyond the sprite's own
+  tight bounds - by design it can spill onto neighboring buttons, Carlos's explicit call.
+- Added a white-tint brighten on the button's own paper (UI_WhiteTint.shader +
+  M_ButtonWhiteTint.mat) that fades in alongside the outline.
+- Triggers on BOTH mouse hover (IPointerEnter/Exit) and gamepad/keyboard select
+  (ISelect/IDeselect) - this menu's existing gamepad nav is unaffected.
+- Tuned live with Carlos against a Playground reference screenshot and his own hand-drawn
+  reference: M_PunkOutline.mat has _OutlineWidth=45, _DistortionAmount=10, _PatternScale=2.5,
+  overlayPaddingPx=25 (on the component); ButtonPunkOutlineHighlight.highlightTintAmount=0.45.
+- Build 28 made and zipped: E:\Builds\28 - Main Menu - 2026-09-08\Build.zip (windows64, 0 build
+  errors, 143 warnings not investigated - likely pre-existing, not new this session).
+
+MRM-18 STATUS: functional layer + this styling pass are both done and Carlos-approved live via
+direct testing. Comment posted on the Linear issue. Still In Review in Linear (Carlos moves it).
+Gamepad hardware verification has never happened on real hardware across every session that's
+touched this scene - not new, just still outstanding, flag if it ever comes up.
+
+TRAPS FOUND THIS SESSION, DON'T REDISCOVER (full detail in the two docs named above)
+1. A shader loop bounded by a MATERIAL UNIFORM (not a compile-time constant) silently compiles to
+   Unity's magenta error shader with ZERO Console output - no error, no warning. If you ever see an
+   unexplained solid-magenta UI element with a clean Console, check for this first. Fix: loop
+   bounds must be #define compile-time constants.
+2. _MainTex_TexelSize is NEVER populated for a uGUI Image - CanvasRenderer binds sprite textures
+   directly at draw time, bypassing Material.SetTexture (which is what normally auto-populates that
+   companion property). Reads back as the (1,1,1,1) default with no error. Any custom UI shader
+   that needs to know the sprite's real pixel size must get it from script
+   (image.sprite.texture.width/height) and push it in as a custom uniform.
+3. UnityEngine.UI.Graphic.color (Image.color) is packed into the mesh as a byte-precision vertex
+   color - any channel above 1.0 silently clamps to 1.0 with NO visual difference from exactly 1.0.
+   A ">1 multiply to brighten" trick works fine on a real Renderer/Material but can NEVER brighten
+   a uGUI Image via Graphic.color, structurally, on any button in this project. If a "brighter/
+   whiter" ask ever comes up again for UI, reach for a shader that lerps toward white in the
+   fragment stage instead - never Image.color above 1.
+4. The main menu has a pre-existing idle/ambient auto-fade (buttons + title fade out after a
+   stretch of real-time inactivity, unrelated to anything built this session) - if you're testing
+   live and the buttons vanish mid-session, that's this, not a regression. Force
+   ButtonGroup's CanvasGroup.alpha = 1 to keep testing.
+5. Editor screenshots/game-view captures can be unreliable when the Editor window isn't focused
+   (kickstart.md §B.3a, confirmed again this session) - verify behavioral fixes via direct
+   component/material state reads in Play Mode (execute_code) alongside screenshots, not
+   screenshots alone.
+
+NEXT: 3D CHARACTER/ENEMY MODEL PIPELINE
+Carlos is switching focus to 3D models (characters and enemies) and will be asking about pipeline,
+accuracy, and model-specific questions in the next session(s). This is a DIFFERENT domain from
+everything above - a fresh session picking that up should NOT start from this file. Start from:
+- Claude Code Context MDs/kickstart.md (how this project works, as always)
+- Docs/3d-prop-pipeline-wizard.md (MRM-72) via the /prop skill - the executable intake for any
+  prop/character/weapon work, already handles characters (rig + retarget), not just static props
+- Docs/prop-log.md - per-prop history the wizard writes back after each prop
+- Docs/tracey-two-rig-strategy.md and Docs/mrm75_*.md-equivalent memory (AccuRig scale bug,
+  retargeting resolution, equip/hitstate facts) if the work touches Tracey or Blaze specifically -
+  those are already-solved traps for THIS project's specific character rigging setup.
+No open threads from this session block that work - MRM-18 is closed out clean.

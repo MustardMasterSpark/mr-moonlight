@@ -803,3 +803,68 @@ worth chasing:**
 **Not started, next session (per Carlos, 2026-09-08):** button background texture — he'll bring
 custom textures next time — plus a new stylized highlight for the buttons, the same one trialled in
 the Playground project. See `Docs/mrm18-sonnet-prompt-10.txt` for the handoff.
+
+## 2026-09-08 session (final) — button paper textures, punk outline highlight, white tint; MRM-18 closed out
+
+Picked up exactly where `mrm18-sonnet-prompt-10.txt` left off. Full detail, including every trap
+and the reasoning behind each fix, lives in `Docs/highlight-plus-2-punk-outline.md`'s two dated
+2026-09-08 sections — this is the short version.
+
+**Button backgrounds.** Carlos supplied two texture sets on his Desktop (`menu images/three-lines`
+and `two-lines`, 30 torn-composition-notebook-paper images each, 1110×312 / 1110×234, real alpha
+cutouts). Imported both sets into `Assets/_Project/Art/UI/ButtonPaper/{ThreeLines,TwoLines}/` as
+`T_Paper3L_01..30.png` / `T_Paper2L_01..30.png`, Sprite (2D/UI) import settings matching the
+project's existing `T_` convention exactly (`T_Beam.png`'s meta was the reference). Two-lines set
+is imported and unused for now. Stripped all 5 main buttons
+(`Canvas/MainButtons/ButtonGroup/*Button`) down to a plain `Image` + a random, distinct three-lines
+sprite each, `Button.transition = None` (no more color-tint hover — replaced below).
+
+**Highlight — real architecture problem, not just tuning.** Highlight Plus 2 (the "punk" stylized
+outline tuned in Playground the day before) turned out to have **zero uGUI support** — confirmed in
+its own source (`HighlightEffect.cs:2860`): only `MeshRenderer`/`SpriteRenderer`/`SkinnedMeshRenderer`
+are accepted, never `CanvasRenderer`. Carlos chose to reimplement the visual language as a custom UI
+shader rather than restructure the menu into world-space sprites. Built
+`Assets/_Project/Art/UI/Shaders/UI_PunkOutline.shader` (ring-marches outward from the sprite's own
+alpha silhouette, so the outline hugs the torn-paper shape — never a rectangle) +
+`Assets/_Project/Code/Runtime/UI/ButtonPunkOutlineHighlight.cs` (hover AND gamepad/keyboard-select
+both trigger it, via `IPointerEnter/Exit` + `ISelect/Deselect`).
+
+Three real, non-obvious bugs found and fixed this pass (full technical detail + the exact fixes in
+`Docs/highlight-plus-2-punk-outline.md`, don't rediscover):
+1. A shader loop bounded by a material uniform (not a compile-time constant) silently compiled to
+   Unity's magenta error shader with **zero Console output**.
+2. `_MainTex_TexelSize` is never populated for a uGUI Image (CanvasRenderer bypasses
+   `Material.SetTexture`) — reads back as `(1,1,1,1)` instead of the real sprite size, with no
+   error. Fixed with a custom `_SpriteTexelSize` uniform set manually from script.
+3. The source PNGs have almost no transparent margin (the paper shape touches the texture's own
+   edge) — a same-size outline had nowhere to draw. Carlos spotted this independently mid-session
+   and proposed the fix himself before it was finished. Solved with a separate, larger
+   `HighlightOverlay` child quad per button (`overlayPaddingPx`, default 25px) — the real button
+   Image and its sprite are untouched, the overlay just has room around it for the outline to
+   exist, remapped back to the real sprite via a `_PaddingUV` shader uniform.
+
+Iterated live with Carlos on reach/thickness against a Playground screenshot and his own hand-drawn
+reference image, landing on `_OutlineWidth` = 45, `_DistortionAmount` = 10, `_PatternScale` = 2.5,
+`overlayPaddingPx` = 25 on `M_PunkOutline.mat`.
+
+**White tint on the paper itself** — Carlos's follow-up ask, "so it makes a bigger impact." First
+attempt (tweening `Image.color` above 1) silently did nothing: `UnityEngine.UI.Graphic.color` is
+byte-packed into the mesh, so any channel above 1.0 clamps to 1.0 with zero effect — and 1.0 is
+already normal. This is a structural uGUI limitation, not specific to this button. Fixed with a
+second small shader, `UI_WhiteTint.shader` + `M_ButtonWhiteTint.mat`, lerping toward white via a
+plain (non-packed) float uniform on the button's own Image material.
+`ButtonPunkOutlineHighlight.cs` now drives all three effects (outline fade, overlay sizing, white
+tint) per button, purely through material float uniforms — never `Graphic.color` for anything that
+needs to exceed the texture's own brightness.
+
+Verified live throughout via Play Mode + reflection-invoked handlers + screenshots (not just read
+from code) — including catching the main menu's own pre-existing idle/ambient auto-fade
+mid-session (buttons periodically fade out after inactivity; unrelated to this work, just something
+that kept interrupting test screenshots until recognized).
+
+**MRM-18 is done as of this session** — main menu functional layer, title sequence, button reveal,
+paper backgrounds, and the punk-outline + white-tint highlight are all in place and Carlos-approved
+live. Gamepad hardware verification still hasn't happened on real hardware (carried forward from
+every prior session, not new). Next work moves to the 3D asset pipeline (characters/enemies) via
+`/prop` — a fresh session picking that up doesn't need this file, start with
+`Claude Code Context MDs/kickstart.md` and `Docs/3d-prop-pipeline-wizard.md` as usual.
