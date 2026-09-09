@@ -1,0 +1,98 @@
+MRM-18 — Main Menu — title font/animation + gamepad nav done, checkpoint (written 2026-09-08)
+
+===============================================================================
+READ FIRST
+===============================================================================
+`Docs/mrm18-main-menu-build-summary.md` — read the WHOLE thing, especially the newest section
+("2026-09-08 session (continued again) — title font, title letter animation, gamepad nav"). This
+prompt only adds what's different for the NEXT session; the build-summary doc has the actual
+technical detail. Also skim `Docs/debug-tools.md`'s Font section before touching ANY of
+`GutenbergTextura`/`GabrieleBandAah`/`Kurland`/`NotoSerif`/`Mustasurma` — there's a hard-won recipe
+and a real trap documented there from this session.
+
+===============================================================================
+WHAT'S DONE — DO NOT REBUILD (all verified live this session)
+===============================================================================
+- **Title font + animation.** `Title` (under `Canvas/MainButtons`) is now a container GameObject
+  (RectTransform + CanvasGroup(ignoreParentGroups=true) + `TitleLetterReveal`) holding 12 child
+  letter objects (`Letter_0_M` ... `Letter_12_T`), each its own `TextMeshProUGUI` (Mustasurma SDF)
+  + `CanvasGroup`. `TitleLetterReveal.Play()` fades each letter's alpha in (DOTween, custom
+  non-left-to-right order per `revealGroups`, 0.25s group gaps) while pulling its own
+  `fontMaterial`'s `_Sharpness` from -1 (blurred) to 0 (focused) over the same window. To
+  move/resize the whole title as a unit: move/scale `Title` itself (Scale, not sizeDelta — letters
+  use point anchors).
+- **Font-atlas bug fixed** on the 4 title-card fonts (see debug-tools.md for the recipe that
+  actually holds up — the obvious in-place fix breaks scene references, confirmed twice) — Greek
+  text, studio year, disclaimer, Master/Spark logo text all confirmed rendering correctly.
+- **Gamepad navigation** wired on Start/Settings/Credits/Quit — explicit wrap-around, visible gold
+  highlight, initial/return selection via `MainMenuController.SelectForGamepad`. Not yet tested
+  with an actual physical controller (only verified via scripted selection simulation) — worth a
+  real controller test if Carlos has one handy, low risk either way since the underlying Unity
+  systems (Navigation, InputSystemUIInputModule) are standard and well-tested.
+- **Disclaimer timing**: holds 0.5s longer (`TitleBreakpointDisclaimerFadeOutStart` = 12.0).
+  `TitleBreakpointWorldReveal` stays at 16.115 (hard music-sync cue, DO NOT retime this one — see
+  the mistake-and-correction writeup in the build summary before touching any title-sequence
+  breakpoint). Feather `fallDuration` = 3.5s (was 4.0) compensates.
+
+===============================================================================
+REJECTED THIS SESSION — DON'T RE-PROPOSE WITHOUT CARLOS BRINGING IT UP
+===============================================================================
+Per-letter black/white coloring + a rectangle "plate" background behind each letter (matching a
+red/blue annotated reference screenshot Carlos drew). Built, shown, explicitly rejected ("the plain
+rectangles... fucked up everything, man. I don't like it") and fully reverted. Carlos's own plan:
+he'll make a custom font variant himself later. Don't rebuild this from the old reference image
+without him asking again — if he does, the red/blue letter-color mapping and the technical
+constraint that TMP fonts share ONE glyph per character (so both "O"s in MOONLIGHT can't have
+independent per-instance styling without per-instance overlay objects, same as the letter-object
+architecture now already gives you for free) are both still relevant context, just not wanted last
+time in "plain rectangle" form.
+
+===============================================================================
+OPEN THREAD, NOT YET CONFIRMED
+===============================================================================
+There are TWO GameObjects named "Title" in the scene — the real one (`Canvas/MainButtons/Title`,
+now the 12-letter container above) and an unrelated one (`Canvas/Settings/Title`, the Settings
+panel's own "Settings" header text). This caused real confusion once already (Carlos edited the
+wrong one). Flagged a possible rename (`Canvas/Settings/Title` -> `SettingsHeader`) but Carlos
+hasn't confirmed he wants it — ask before renaming, it's a two-second fix once approved.
+
+===============================================================================
+THE ASK — STILL SCOPE-OPEN
+===============================================================================
+Font, title animation, and gamepad nav are placeholder-functional now. Still genuinely open,
+per Carlos's own framing this session: "we might change any UI elements once we have a
+professional artist... right now it's a placeholder that just looks good enough." Don't over-invest
+in polish here without him asking — confirm what's next before building further (real button
+art/textures? more animation tuning on the title? something else entirely?).
+
+===============================================================================
+OTHER TRAPS STILL LIVE (unchanged unless noted)
+===============================================================================
+- Play Mode discards scripted component/scene edits on stop — confirm Edit Mode before an edit you
+  need to persist, re-verify after Carlos stops Play.
+- `manage_scene` edits don't flush to disk by themselves — explicit `manage_scene action=save`
+  after any batch of changes you need to survive a scene switch or Editor restart.
+- Raw file edits (Edit tool) to an already-open scene/asset do NOT hot-reload into the live Editor
+  session — the in-memory object stays stale until something forces a reimport, and even then a
+  domain reload can silently re-read the OLD on-disk value if you saved through the API in between.
+  Prefer live `SerializedObject`/`execute_code` edits over raw YAML edits when the target is already
+  open, and always read a value back after any save to confirm before trusting it.
+- The Unity Editor can go fully unresponsive to the MCP bridge while unfocused mid-operation
+  (confirmed again this session, cost several minutes) — if `editor/state` starts returning "ping
+  not answered" and doesn't recover after a couple of retries, ask Carlos to click into the Unity
+  window rather than continuing to hammer retries.
+- DOTween shortcut extensions (`.DOFade`, etc.) are unreliable in this project — `AudioSource` and
+  now `CanvasGroup` both fail to resolve despite the core engine working fine. Default to
+  `DOTween.To(() => obj.prop, v => obj.prop = v, target, duration)` for any new tween rather than
+  trying the shortcut first.
+- `manage_camera` screenshot with an auto-picked camera excludes Screen Space - Overlay canvases
+  entirely — either omit `camera` (uses ScreenCapture API, includes overlay UI) or use
+  `capture_source: "scene_view"`.
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Wait for Carlos. No specific next task was queued at the end of this session — everything asked
+for is done and checkpointed. If he opens with "test the gamepad nav" or similar, that's a quick
+verification, not new work. If he brings up the Settings/Title rename or the shelved letter-color
+idea, see the sections above first.

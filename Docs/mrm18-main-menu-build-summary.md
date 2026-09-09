@@ -562,3 +562,93 @@ second" after landing with "red pixels around" it before it starts moving:
   re-investigated as a real bug later.
 
 See `Docs/mrm18-sonnet-prompt-7.txt` for the handoff into main menu (title/buttons) work.
+
+## 2026-09-08 session (continued again) — title font, title letter animation, gamepad nav
+
+Picked up from `mrm18-sonnet-prompt-7.txt`'s handoff into actual main menu title/buttons work.
+
+**Title font.** Imported `Mustasurma.ttf` (Carlos-supplied), generated `Mustasurma SDF.asset` with
+atlas texture + material persisted as sub-assets from the start (the fix from the Font-atlas bug
+below, applied correctly from creation this time). Applied to the `Title` object via the real
+`TMP_Text.font` setter.
+
+**While in there, found and fixed the same font-atlas bug a third time** — `GutenbergTextura`,
+`GabrieleBandAah`, `Kurland`, `NotoSerif` (the title-card fonts from the previous session) all had
+dead atlases again, causing the Greek text/studio year/disclaimer to render nothing. Took several
+attempts to actually fix (the straightforward in-place fix broke scene references twice); the
+recipe that finally held up, and a second, unrelated bug found in the same investigation
+(`m_Enabled: 0` on five TMP components, nothing to do with fonts), are both written up in
+`Docs/debug-tools.md`'s Font section — read that before touching any of these four fonts again.
+
+**Title letter-reveal animation — went through three real iterations, Carlos's own words guiding
+each pivot:**
+1. **v1: single `TMP_Text`, per-character vertex alpha** (`TitleLetterReveal.cs`, a hand-rolled
+   coroutine). Needed because Carlos wants the letters revealing in a custom, non-left-to-right
+   order (his own hand-drawn numbering on a screenshot of the Mustasurma logotype: R and the second
+   O first, then M/N/I, etc.) — TMP has no built-in per-letter timed fade, and Text Animator's
+   typewriter can only reveal strictly left-to-right (compiled DLL, confirmed by inspection) so
+   can't do this order regardless. Worked, but read as an abrupt pop rather than a fade even after
+   tuning duration/easing up from the original 0.15s.
+2. **Also tried, then fully reverted at Carlos's explicit rejection:** colouring specific letters
+   black/white to match a second reference image (his own red/blue annotated screenshot,
+   alternating letter-by-letter) with a plain rectangle "plate" behind each for contrast. Carlos:
+   "the plain rectangles... fucked up everything, man. I don't like it." Reverted to plain white
+   Mustasurma, no plates, no per-letter colour — that reference image and idea are shelved, not
+   abandoned; Carlos plans to make a proper custom font variant himself later instead.
+3. **v2 (current): one real GameObject per letter.** Carlos asked for this directly, for smoother
+   animation via DOTween (this project's standard) instead of a hand-rolled vertex hack. `Title` is
+   now a pure container (`RectTransform` + `CanvasGroup(ignoreParentGroups=true)` +
+   `TitleLetterReveal`, no text of its own) holding 12 children (`Letter_0_M` ... `Letter_12_T`,
+   skipping the space), each its own `TextMeshProUGUI` + `CanvasGroup`, positioned/sized from the
+   v1 text's own measured per-character bounds so the rendered layout is unchanged. Moving/resizing
+   the whole title as a group means moving/scaling `Title` itself (scale, not `sizeDelta` — the
+   letters use point anchors, not stretch).
+4. **Blur-to-focus polish, same session.** Carlos: letters should also be blurry when they start
+   revealing and pull into focus as they fade in, asked whether this needs Text Animator. It
+   doesn't — `TextMeshPro/Mobile/Distance Field` (the shader every TMP font asset in this project
+   uses) already exposes `_Sharpness` (range -1..1, default 0) controlling SDF edge crispness.
+   Each letter's own `TMP_Text.fontMaterial` (a real per-object instance, confirmed the shared font
+   asset's own material is untouched) animates `_Sharpness` from -1 to 0 via DOTween, same timing
+   as the alpha fade but a different ease (`InOutSine` vs `OutCubic`) so it reads as the letter
+   settling into place rather than just snapping. Verified with a temporarily-lengthened duration
+   (screenshotting a 0.4s tween mid-flight needs either slow motion or a longer duration - DOTween
+   in this project doesn't respect `Time.timeScale`, so slow motion didn't work; a 6-20s temporary
+   duration did) — confirmed genuinely blurry+translucent mid-fade, sharp+opaque at rest, shared
+   font asset material unaffected.
+`CanvasGroup.DOFade` doesn't resolve in this project (same class of gap as `AudioSource.DOFade`,
+see `Docs/debug-tools.md`'s DOTween section) — used `DOTween.To` directly throughout.
+
+**Disclaimer timing + a real mistake, corrected same session.** Carlos asked to hold the disclaimer
+screen 0.5s longer (`TitleBreakpointDisclaimerFadeOutStart` 11.5 -> 12.0). First attempt also
+shifted `TitleBreakpointWorldReveal` by the same 0.5s (16.115 -> 16.615) to keep the feather's own
+fall duration untouched — **wrong**, Carlos caught it: 16.115 is a hard music-sync cue (a real beat
+in the track) and must never move. Corrected by reverting `TitleBreakpointWorldReveal` to 16.115
+and instead shortening the feather's `fallDuration` (Inspector value on `FeatherFall`, 4.0 -> 3.5s)
+so it still lands exactly on the beat despite starting 0.5s later. Lesson for next time: when a
+breakpoint is described as tied to the actual music track, treat it as immovable and compensate
+elsewhere, don't shift it "to keep the math simple."
+
+**Gamepad navigation for the four main buttons.** Carlos asked whether they should be in a
+CanvasGroup for this — clarified that's a separate concept (CanvasGroup only does alpha/
+interactable/raycast-blocking as a group; gamepad navigation is `Selectable.navigation`, per
+button). The input layer was already fully wired (`InputSystemUIInputModule` on `EventSystem`,
+`<Gamepad>/dpad` already bound to the `Navigate` action in `InputSystem_Actions.inputactions`) —
+nothing to add there. Built: explicit wrap-around navigation (Start<->Settings<->Credits<->Quit<->
+Start) on all four buttons; boosted the highlighted/selected colour (was white 255->245, a 4% tint,
+functionally invisible) to a clearly visible gold; added `MainMenuController.SelectForGamepad(...)`
+called whenever `mainButtonsGroup` (or `settingsGroup`, on Back) becomes interactable, since
+Unity's `EventSystem` starts with no selection at all and D-pad input silently does nothing until
+something is first selected. Verified live: full navigation chain reads correctly, moving selection
+visually re-highlights the correct button.
+
+**Also fixed:** a second, differently-named "Title" object under `Canvas/Settings` (the Settings
+panel's own header, unrelated to the main title) caused real confusion when Carlos tried to
+reposition the wrong one. Left as-is (it's legitimately in use) but flagged for a possible rename
+next session (`Title` -> `SettingsHeader`) to stop this recurring — Carlos hasn't confirmed yet.
+
+**Everything above is explicitly placeholder-quality**, per Carlos: "we might change any UI
+elements once we have a professional artist... right now it's a placeholder that just looks good
+enough." Don't over-invest in pixel-perfect polish here; functional + readable is the bar until a
+real artist pass happens.
+
+See `Docs/mrm18-sonnet-prompt-8.txt` for the handoff.

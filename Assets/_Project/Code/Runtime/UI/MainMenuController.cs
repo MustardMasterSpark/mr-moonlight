@@ -2,6 +2,7 @@ using System.Collections;
 using MrMoonlight.Data;
 using MrMoonlight.World;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -87,6 +88,17 @@ namespace MrMoonlight.UI
         [SerializeField] private SettingsPanel settingsPanel;
         [SerializeField] private CreditsController creditsController;
 
+        [Tooltip("Fades the title's letters in on their own custom-order timeline the instant the world/buttons reveal starts - see the class doc's Feather intro section for that moment. Optional; skipped if not wired up.")]
+        [SerializeField] private TitleLetterReveal titleLetterReveal;
+
+        [Header("Gamepad Navigation")]
+        [Tooltip("Selected automatically whenever mainButtonsGroup becomes interactable - the EventSystem has no selection at all until something sets one, so without this a gamepad's D-pad does nothing on first reveal.")]
+        [SerializeField] private Button startButton;
+        [Tooltip("Re-selected when Credits closes, so focus returns to the button that opened it rather than being lost.")]
+        [SerializeField] private Button creditsButton;
+        [Tooltip("Re-selected when Settings' Back button returns to the main buttons, so focus returns to the button that opened it rather than being lost.")]
+        [SerializeField] private Button settingsButton;
+
         [Header("Audio")]
         [SerializeField] private AudioSource menuMusicSource;
 
@@ -139,7 +151,7 @@ namespace MrMoonlight.UI
         /// <summary>Button hookup: Settings' Back button.</summary>
         public void OnSettingsBackClicked()
         {
-            StartCoroutine(CrossfadePanels(settingsGroup, mainButtonsGroup));
+            StartCoroutine(CrossfadePanels(settingsGroup, mainButtonsGroup, settingsButton));
         }
 
         /// <summary>Button hookup: Credits.</summary>
@@ -158,6 +170,7 @@ namespace MrMoonlight.UI
         private void HandleCreditsClosed()
         {
             mainButtonsGroup.interactable = true;
+            SelectForGamepad(creditsButton);
         }
 
         private IEnumerator PlayIntroThenReveal()
@@ -193,6 +206,7 @@ namespace MrMoonlight.UI
             {
                 // No feather wired up - original MRM-18 behavior: the overlay clearing alone
                 // reveals everything, buttons already visible from Awake.
+                if (titleLetterReveal != null) titleLetterReveal.Play();
                 yield return fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
                 yield break;
             }
@@ -251,6 +265,7 @@ namespace MrMoonlight.UI
                 featherOverlayImage.texture = featherSnapshot;
             }
 
+            if (titleLetterReveal != null) titleLetterReveal.Play();
             Coroutine worldReveal = fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
             Coroutine buttonsFadeIn = StartCoroutine(FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration));
 
@@ -275,6 +290,7 @@ namespace MrMoonlight.UI
 
             mainButtonsGroup.interactable = true;
             mainButtonsGroup.blocksRaycasts = true;
+            SelectForGamepad(startButton);
         }
 
         /// <summary>
@@ -422,7 +438,7 @@ namespace MrMoonlight.UI
             menuMusicSource.volume = 0f;
         }
 
-        private static IEnumerator CrossfadePanels(CanvasGroup from, CanvasGroup to)
+        private static IEnumerator CrossfadePanels(CanvasGroup from, CanvasGroup to, Button selectOnComplete = null)
         {
             from.interactable = false;
             from.blocksRaycasts = false;
@@ -445,6 +461,7 @@ namespace MrMoonlight.UI
             to.alpha = 1f;
             to.interactable = true;
             to.blocksRaycasts = true;
+            SelectForGamepad(selectOnComplete);
         }
 
         private static void SetGroupState(CanvasGroup group, float alpha, bool interactable)
@@ -452,6 +469,19 @@ namespace MrMoonlight.UI
             group.alpha = alpha;
             group.interactable = interactable;
             group.blocksRaycasts = interactable;
+        }
+
+        /// <summary>
+        /// Sets the EventSystem's selected object so a gamepad's D-pad has something to move
+        /// from. Nothing is selected by default (Unity's EventSystem starts with no selection at
+        /// all), so without this, D-pad input silently does nothing the first time the menu - or
+        /// any panel within it - becomes interactable. No-ops if target is null or there's no
+        /// EventSystem (e.g. a unit test context).
+        /// </summary>
+        private static void SelectForGamepad(Button target)
+        {
+            if (target == null || EventSystem.current == null) return;
+            EventSystem.current.SetSelectedGameObject(target.gameObject);
         }
     }
 }

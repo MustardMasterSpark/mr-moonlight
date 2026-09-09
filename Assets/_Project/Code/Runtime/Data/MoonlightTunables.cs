@@ -306,13 +306,26 @@ namespace MrMoonlight.Data
         /// class doc; the old two-paragraph staggered timing (<c>TitleBreakpointDisclaimer2</c> /
         /// <c>DisclaimerHoldAfterParagraph2</c>) is gone). Carlos: fade-out starts "around 11.5
         /// seconds" and is fully gone "at 12 seconds exact" (with the default
-        /// <see cref="DisclaimerFadeOutDuration"/> of 0.5s). See
+        /// <see cref="DisclaimerFadeOutDuration"/> of 0.5s) - **updated 2026-09-08 evening**,
+        /// pushed 0.5s later (11.5 -> 12) at Carlos's request to hold the disclaimer on screen
+        /// longer. <see cref="TitleBreakpointWorldReveal"/> is a hard music-sync cue (a real beat
+        /// in the track) and must NOT move - first attempt shifted it +0.5s to compensate, which
+        /// was wrong and got reverted; the correct compensation is shortening the feather's own
+        /// <c>fallDuration</c> (Inspector value on <c>FeatherFall</c>, 4.0 -> 3.5) so it still
+        /// lands exactly on the same beat despite starting 0.5s later. See
         /// <see cref="MrMoonlight.UI.TitleSequenceController.ComputeFeatherStartSongTime"/>.
         /// Owner: MRM-18
         /// </summary>
-        public float TitleBreakpointDisclaimerFadeOutStart = 11.5f;
+        public float TitleBreakpointDisclaimerFadeOutStart = 12f;
 
-        /// <summary>Breakpoint 4 - the exact moment the intro sparrow feather touches the water and the 3D world fades in. Owner: MRM-18</summary>
+        /// <summary>
+        /// Breakpoint 4 - the exact moment the intro sparrow feather touches the water and the 3D
+        /// world fades in. This is a hard music-sync cue (a real beat in the track Carlos is
+        /// timing against) - 16.115 is fixed and must not be retimed. When something upstream
+        /// (e.g. <see cref="TitleBreakpointDisclaimerFadeOutStart"/>) changes the feather's start
+        /// time, compensate via the feather's own <c>fallDuration</c> (Inspector value on the
+        /// <c>FeatherFall</c> component), not by moving this breakpoint. Owner: MRM-18
+        /// </summary>
         public float TitleBreakpointWorldReveal = 16.115f;
 
         /// <summary>For the logo card (cross is static, no grow, as of 2026-09-08): how many seconds before the next breakpoint the grow-in animation stops (holds at full size) before the fade-out begins. Owner: MRM-18</summary>

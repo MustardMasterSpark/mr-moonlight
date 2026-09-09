@@ -70,6 +70,44 @@ in place (same GUID/path, so no scene references needed updating) and used corre
 for Special Elite. If a future font swap ever brings back the `m_AtlasTextures` exception, this is
 the fix.
 
+**Same bug, worse, hit again 2026-09-08 (title-card fonts) — the in-place fix above is NOT safe,
+use this recipe instead:** `GutenbergTextura SDF`, `GabrieleBandAah SDF`, `Kurland SDF`, and
+`NotoSerif SDF` (the four title-card fonts) all had the identical dead-atlas symptom, but this
+time `AssetDatabase.AddObjectToAsset` on the *existing* asset instance (via `CopySerialized` from a
+temp object, or via `AssetDatabase.CreateAsset` overwriting the same path) **silently broke the
+scene's font references** on every consuming `TMP_Text` — they fell back to `LiberationSans SDF`
+with no error, confirmed twice with two different techniques. Root cause not fully isolated (some
+interaction between Unity's asset-replace-in-place path and already-loaded scene references to the
+old object), not worth re-deriving. **The fix that actually holds up:**
+1. `TMP_FontAsset.CreateFontAsset(...)` with `AtlasPopulationMode.Dynamic` (required for step 2 -
+   `TryAddCharacters` on a freshly-created `Static`-mode asset fails immediately, 0 characters
+   added, `Static` only works as a *lock* applied after populating, not as the creation mode).
+2. `TryAddCharacters(fullCharSet)` — include every character actually used by any text on that
+   font, Greek included for `Kurland`/`NotoSerif` (`Κύριε ἐλέησον`).
+3. `fontAsset.atlasPopulationMode = AtlasPopulationMode.Static;` — locks it, no runtime dependency.
+4. `AssetDatabase.CreateAsset(fontAsset, newPath)` at a **new** file path (`... SDF v3.asset`, not
+   overwriting the broken original) — this is the step that must not target an existing path.
+5. Explicitly re-point every consuming `TMP_Text.font` by direct object reference in script and
+   verify each one read back correctly — do not trust GUID/fileID resolution to carry over
+   correctly from a recreated asset, confirmed unreliable here.
+6. Cold-reload check (exit and re-enter Play Mode with no manual intervention) before trusting it —
+   an early attempt looked fixed while "warm" (same Editor session, object already touched) and
+   then failed on a genuinely cold load.
+The old, broken originals plus one intermediate `v2` attempt were deleted after confirming nothing
+referenced them (`grep` the GUID across `Assets/`) — if a future session finds `... SDF v3.asset`
+files, that versioning is why; feel free to rename back to the plain name in a quiet moment, it's
+cosmetic only.
+
+**Important correction, same session:** the actual bug Carlos reported ("Greek text, the studio
+year, and the disclaimer are missing") turned out to be **two unrelated bugs co-occurring**, not
+one. The atlas bug above was real and did need the fix above — but the text was *still* invisible
+after that fix alone, because `GreekText`, `Year2026`, `StudiosText`, `DisclaimerParagraph1`, and
+`DisclaimerParagraph2`'s `TextMeshProUGUI` components had `m_Enabled: 0` directly in the saved
+scene — a plain disabled-component checkbox, nothing to do with fonts at all. **When "text isn't
+showing" doesn't fully resolve after an atlas fix, check the component's own `m_Enabled` in the
+scene YAML before assuming the atlas fix was incomplete** — don't assume one bug explains 100% of a
+symptom just because it explains most of it.
+
 ## Context-menu tools (not keybound)
 
 | Component | Where | What it does |
@@ -94,7 +132,14 @@ outright — reach for that first.
 shortcut) doesn't resolve in this project — `Light.DOIntensity` and other module shortcuts work
 fine, just not that one. Workaround, used in `LampFireEffect`: call
 `DOTween.To(() => source.volume, v => source.volume = v, target, duration)` directly — it's
-exactly what the shortcut does internally, so nothing is lost.
+exactly what the shortcut does internally, so nothing is lost. **Same gap confirmed on
+`CanvasGroup.DOFade` too** (2026-09-08, `TitleLetterReveal.cs`) — the UI module's shortcut extension
+doesn't resolve despite the module compiling fine and being present on disk (`DOTweenModuleUI.cs`,
+no `DOTWEEN_NOUI` define set); same `DOTween.To(() => group.alpha, a => group.alpha = a, ...)`
+workaround. Treat any DOTween *shortcut extension* (`.DOFade`, `.DOScale`, etc. as a one-liner on a
+component type) as suspect in this project and reach for `DOTween.To` on the raw property first
+rather than debugging the module — the core engine (`DOTween.To`, `Ease`, `.SetDelay` etc.) has
+never had this problem, only the convenience shortcuts.
 
 ## Text Animator for Unity
 
@@ -119,6 +164,22 @@ playbacks, timing presets).
 **Not wired to any text yet** — installed and content-populated only. Carlos's plan is to drive
 some future display text (dialogue/subtitle-style, not decided which) through it, likely alongside
 TextMesh Pro rather than replacing it.
+
+**Evaluated twice for the main menu title letter reveal (2026-09-08), ruled out both times —
+`TitleLetterReveal.cs` is a small custom driver instead, not a gap to fill later:**
+1. **Reveal order.** Febucci's typewriter (`Febucci.TextAnimatorCore`, a compiled DLL) is
+   hard-coded to reveal characters strictly by increasing string index. Carlos's letter order for
+   "MR. MOONLIGHT" jumps around (the 'R' before the first 'M', etc.) — structurally impossible for
+   a typewriter, confirmed by reading the DLL's public surface, not worth re-checking.
+2. **Per-letter blur/colour after the title was rebuilt as one GameObject per letter.** Text
+   Animator's per-character effects operate on multiple *characters within one `TMP_Text`*'s
+   rich-text string — once the title became 12 separate `TextMeshProUGUI` objects (Carlos's own
+   request, for real per-object DOTween control), Text Animator's whole model stopped applying;
+   there's no "one string" for it to tag characters within.
+Both times, plain TMP + a small script covered it: rich-text `<color=...>` for static per-letter
+colour (no package needed, see the Screen 3 disclaimer note above), and `TMP_Text.fontMaterial`'s
+`_Sharpness` SDF property (TextMeshPro/Mobile/Distance Field shader, present on every TMP font
+asset in this project) animated per-object via DOTween for a blur-to-focus reveal.
 
 ## Known gaps
 
