@@ -732,3 +732,74 @@ proven `WaitForSeconds` pattern already used elsewhere in this file (`TitleSeque
 at session start — see `Docs/mrm18-sonnet-prompt-9.txt`.
 
 See `Docs/mrm18-sonnet-prompt-9.txt` for the handoff.
+
+## 2026-09-08 session (continued once more) — button fade-in tuning tool, sequenced with title reveal
+
+Picked up from `mrm18-sonnet-prompt-9.txt`. Opened by verifying last session's `UiElementsRevealDelay`
+work actually gates button clicks correctly (it does — confirmed live via reflection-invoked
+coroutine with `Time.timeScale` slowed down: caught `mainButtonsGroup` mid-fade at alpha 0.35/0.83,
+`interactable`/`blocksRaycasts` both `False` throughout, flipping `True` only the instant alpha hit
+1). Everything below is new work on top of that.
+
+**New `GroupFadeReveal.cs` (`Runtime/UI/`) — Carlos's tuning tool.** He didn't like the fixed
+1.5s linear fade and wanted to tune it himself rather than ask for value changes each time. This
+component exposes **`duration`** (seconds) and a real, Inspector-editable **`AnimationCurve
+fadeCurve`** (X = normalized time, Y = normalized alpha), fed into a genuine DOTween custom ease
+(`Tween.SetEase(AnimationCurve)`, confirmed present via reflection on this project's DOTween build
+— `TweenSettingsExtensions.SetEase(T, AnimationCurve)`) rather than a hand-rolled lerp.
+`MainMenuController.RevealUiElementsAfterDelay` now calls `mainButtonsFadeReveal.FadeIn()` (falls
+back to the old linear `FadeInGroup` if the field is left unwired). **First placed on
+`Canvas/MainButtons`** (the whole title+description+button block) — Carlos corrected this
+immediately: he only wanted it on the buttons. **Moved to `Canvas/MainButtons/ButtonGroup`** — new
+`CanvasGroup` added there, the old one on `MainButtons` removed (nothing else referenced it), and
+`MainMenuController.mainButtonsGroup`/`mainButtonsFadeReveal` repointed to the new location. Title
+was never actually affected either way — its own `CanvasGroup` already has `ignoreParentGroups =
+true` (drives itself via `TitleLetterReveal`). Re-verified live after the move: same alpha
+0.35/0.83 mid-fade → `interactable=False`, same flip to `True` exactly at alpha 1, title's own
+alpha untouched throughout. Carlos has since tuned **`duration` down to 0.5s** (curve left at the
+default smoothstep shape — flat tangents at both ends, not linear).
+
+**Edit-Mode preview, so Carlos can judge the curve without a full playthrough.** DOTween and
+coroutines don't tick outside Play Mode, so `GroupFadeReveal` gained a second, parallel preview
+path guarded by `#if UNITY_EDITOR`: `PreviewFadeInEditor()` resets alpha to 0 and drives it via
+`EditorApplication.update` + `fadeCurve.Evaluate(t)` directly (same curve/duration fields, just
+ticked by the editor loop instead of DOTween's player-loop hook; in Play Mode it just calls the
+real `FadeIn()`). Reachable two ways, both wired to the same method: a **"Preview Fade In" button**
+via a `[CustomEditor(typeof(GroupFadeReveal))]` class in the same file, and the component's
+right-click/kebab **context menu** (`[ContextMenu("Preview Fade In")]`) as the "default Unity way"
+fallback. Verified live in Edit Mode (not just read from code): alpha reset to 0 on trigger, reached
+1 after the duration elapsed, no Play Mode involved.
+
+**Sequenced with the title reveal (this session's last ask).** Buttons used to start fading in at
+the same instant `titleLetterReveal.Play()` was called — Carlos wanted them to wait until the title
+is *fully* done. `TitleLetterReveal.Play()` changed from `void` to returning a `Coroutine` (tracks a
+pending-tween counter across every letter's alpha-fade *and* blur-to-focus tween, completes when it
+hits zero); `MainMenuController.RevealUiElementsAfterDelay` now does
+`yield return titleLetterReveal.Play();` before starting the button fade instead of firing both at
+once. Verified live (slowed `Time.timeScale`, tracked the last-reveal-group letter
+`Letter_10_G` alongside `mainButtonsGroup.alpha`): the last letter hit alpha 1 while buttons were
+still at 0; buttons only started climbing after. Total reveal is now noticeably longer
+(title ~1.4s + button fade, sequential, vs. the old overlap) — intentional per Carlos, not
+re-tuned further this session.
+
+**Two unrelated dirty files investigated, not part of this feature — worth knowing about, not
+worth chasing:**
+- `Assets/_Project/Settings/VP_HazeGlobalFog.asset` (`CRTSettings.active` flipped 1→0) turned out to
+  be a **one-off**, not a recurring Play Mode side effect — isolated with a clean bare Play→Stop
+  cycle that did *not* reproduce it, restored to the committed value, confirmed the reset holds
+  through a repeat bare cycle. It also never affected anything visible even while flipped: the Main
+  Menu's own `GlobalVolume_CRT` uses a *different* profile (`VP_MainMenuCRT.asset`) —
+  `VP_HazeGlobalFog` is what `SceneEffectsToggle`/F6-F7 in `Island.unity` drives for gameplay
+  fog+CRT staging, unrelated to this scene.
+- `Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset` (the debug-overlay font, see
+  `Docs/debug-tools.md`'s Font section) **is** a genuine, reproducible Play Mode side effect —
+  same bare-cycle test still triggered it. Cause: it's a `Dynamic`-atlas TMP font (unlike the
+  title fonts, deliberately locked to `Static` after the "dead atlas" bug that section documents),
+  so newly-seen characters get baked into its atlas texture at runtime and Unity persists that to
+  the asset regardless of Play Mode ending — harmless glyph-cache bookkeeping, not a functional
+  change, expected to keep showing up in `git status` after sessions that render new debug-overlay
+  text. Safe to always exclude from commits.
+
+**Not started, next session (per Carlos, 2026-09-08):** button background texture — he'll bring
+custom textures next time — plus a new stylized highlight for the buttons, the same one trialled in
+the Playground project. See `Docs/mrm18-sonnet-prompt-10.txt` for the handoff.

@@ -9789,6 +9789,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1551071869}
+  - component: {fileID: 1551071871}
+  - component: {fileID: 1551071870}
   m_Layer: 0
   m_Name: ButtonGroup
   m_TagString: Untagged
@@ -9820,6 +9822,56 @@ RectTransform:
   m_AnchoredPosition: {x: -165, y: 42}
   m_SizeDelta: {x: 300, y: 400}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!114 &1551071870
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551071868}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7503d59cd997f6644b696280e0516359, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.UI.GroupFadeReveal
+  canvasGroup: {fileID: 1551071871}
+  duration: 0.5
+  fadeCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!225 &1551071871
+CanvasGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1551071868}
+  m_Enabled: 1
+  m_Alpha: 1
+  m_Interactable: 1
+  m_BlocksRaycasts: 1
+  m_IgnoreParentGroups: 0
 --- !u!21 &1576248988
 Material:
   serializedVersion: 8
@@ -12216,7 +12268,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1751051783}
-  - component: {fileID: 1751051782}
   m_Layer: 0
   m_Name: MainButtons
   m_TagString: Untagged
@@ -12224,18 +12275,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!225 &1751051782
-CanvasGroup:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1751051781}
-  m_Enabled: 1
-  m_Alpha: 1
-  m_Interactable: 1
-  m_BlocksRaycasts: 1
-  m_IgnoreParentGroups: 0
 --- !u!224 &1751051783
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13114,11 +13153,12 @@ MonoBehaviour:
   introFeatherFall: {fileID: 1312662137}
   introFeatherCamera: {fileID: 1824662309}
   introFeatherCanvas: {fileID: 1528685051}
-  mainButtonsGroup: {fileID: 1751051782}
+  mainButtonsGroup: {fileID: 1551071871}
   settingsGroup: {fileID: 2073078234}
   settingsPanel: {fileID: 2073078233}
   creditsController: {fileID: 1844542493}
   titleLetterReveal: {fileID: 1129168583}
+  mainButtonsFadeReveal: {fileID: 1551071870}
   startButton: {fileID: 1219461894}
   creditsButton: {fileID: 789554448}
   settingsButton: {fileID: 1098305683}

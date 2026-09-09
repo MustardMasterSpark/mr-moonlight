@@ -82,6 +82,7 @@ namespace MrMoonlight.UI
         [SerializeField] private GameObject introFeatherCanvas;
 
         [Header("Panels")]
+        [Tooltip("2026-09-08: repointed from the whole MainButtons block to ButtonGroup specifically (Carlos: only wants this fade/gate behavior on the buttons - title and description are unaffected, title already ignores this via its own CanvasGroup's ignoreParentGroups). Still gates click/raycast for all five buttons, same as before.")]
         [SerializeField] private CanvasGroup mainButtonsGroup;
         [SerializeField] private CanvasGroup settingsGroup;
         [SerializeField] private SettingsPanel settingsPanel;
@@ -89,6 +90,9 @@ namespace MrMoonlight.UI
 
         [Tooltip("Fades the title's letters in on their own custom-order timeline the instant the world/buttons reveal starts - see the class doc's Feather intro section for that moment. Optional; skipped if not wired up.")]
         [SerializeField] private TitleLetterReveal titleLetterReveal;
+
+        [Tooltip("Drives mainButtonsGroup's fade-in with an editable duration/curve (Carlos's tuning tool, 2026-09-08) instead of a hardcoded lerp. Lives on the same GameObject as mainButtonsGroup (ButtonGroup). Optional; falls back to the old linear FadeInGroup if not wired up.")]
+        [SerializeField] private GroupFadeReveal mainButtonsFadeReveal;
 
         [Header("Gamepad Navigation")]
         [Tooltip("Selected automatically whenever mainButtonsGroup becomes interactable - the EventSystem has no selection at all until something sets one, so without this a gamepad's D-pad does nothing on first reveal.")]
@@ -369,16 +373,30 @@ namespace MrMoonlight.UI
         }
 
         /// <summary>
-        /// Waits <see cref="Tunables.UiElementsRevealDelay"/> before playing the title letters and
-        /// fading <see cref="mainButtonsGroup"/> in - see the call site's comment. Runs as its own
+        /// Waits <see cref="Tunables.UiElementsRevealDelay"/>, then plays the title letters, then
+        /// (2026-09-08, Carlos: buttons should only start appearing once the title is fully
+        /// revealed rather than at the same time) waits for that reveal to finish before fading
+        /// <see cref="mainButtonsGroup"/> in - see the call site's comment. Runs as its own
         /// coroutine, in parallel with <c>worldReveal</c> and the feather-overlay-switch-off wait,
         /// so this delay doesn't hold up either of those.
         /// </summary>
         private IEnumerator RevealUiElementsAfterDelay()
         {
             yield return new WaitForSeconds(Tunables.I.UiElementsRevealDelay);
-            if (titleLetterReveal != null) titleLetterReveal.Play();
-            yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
+
+            if (titleLetterReveal != null)
+            {
+                yield return titleLetterReveal.Play();
+            }
+
+            if (mainButtonsFadeReveal != null)
+            {
+                yield return mainButtonsFadeReveal.FadeIn();
+            }
+            else
+            {
+                yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
+            }
         }
 
         private static IEnumerator FadeInGroup(CanvasGroup group, float duration)

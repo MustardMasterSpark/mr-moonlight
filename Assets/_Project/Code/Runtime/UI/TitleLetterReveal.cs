@@ -1,3 +1,4 @@
+using System.Collections;
 using DG.Tweening;
 using TMPro;
 using UnityEngine;
@@ -69,11 +70,24 @@ namespace MrMoonlight.UI
             HideAll();
         }
 
-        /// <summary>Starts the reveal from a fully-hidden, unfocused title. Safe to call once per menu open.</summary>
-        public void Play()
+        /// <summary>
+        /// Starts the reveal from a fully-hidden, unfocused title. Safe to call once per menu
+        /// open. Returns a Coroutine that completes once the last letter finishes both its alpha
+        /// fade and its blur-to-focus pull - Carlos's ask (2026-09-08): the button group's own
+        /// fade-in now waits for this instead of starting at the same time (see
+        /// MainMenuController.RevealUiElementsAfterDelay).
+        /// </summary>
+        public Coroutine Play()
+        {
+            return StartCoroutine(PlayRoutine());
+        }
+
+        private IEnumerator PlayRoutine()
         {
             DOTween.Kill(this);
             HideAll();
+
+            int pending = 0;
 
             for (int i = 0; i < letters.Length; i++)
             {
@@ -86,22 +100,31 @@ namespace MrMoonlight.UI
                 // CanvasGroup.DOFade doesn't resolve in this project (same known gap as
                 // AudioSource.DOFade - see Docs/debug-tools.md) - DOTween.To against the raw
                 // property is exactly what the shortcut does internally, so nothing is lost.
+                pending++;
                 DOTween.To(() => letter.alpha, a => letter.alpha = a, 1f, fadeDuration)
                     .SetDelay(delay)
                     .SetEase(fadeEase)
-                    .SetId(this);
+                    .SetId(this)
+                    .OnComplete(() => pending--);
 
                 TMP_Text tmp = letter.GetComponent<TMP_Text>();
                 if (tmp != null)
                 {
                     Material material = tmp.fontMaterial; // per-object instance, not the shared font asset
+                    pending++;
                     DOTween.To(() => material.GetFloat(ShaderUtilities.ID_Sharpness),
                             s => material.SetFloat(ShaderUtilities.ID_Sharpness, s),
                             focusedSharpness, fadeDuration)
                         .SetDelay(delay)
                         .SetEase(focusEase)
-                        .SetId(this);
+                        .SetId(this)
+                        .OnComplete(() => pending--);
                 }
+            }
+
+            while (pending > 0)
+            {
+                yield return null;
             }
         }
 
