@@ -1,0 +1,195 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE: 2026-09-09 (written same night, handoff to the next session — Carlos is about to
+paste a large prompt and wants a fresh context window for it)
+
+===========================================================================
+WHAT HAPPENED THIS SESSION
+===========================================================================
+
+Picked up from `Docs/n64-restyle-tripo-automation-sonnet-prompt.txt` (previous handoff). Carlos
+handed over control of his browser (Claude in Chrome extension) and asked for the full N64/DDR1/
+Mega Man Legends restyle batch to run overnight while he slept: 10 characters (8 enemies + Tracey +
+Holly) × 4 views (front/left/right/back) × 3 models he'd shortlisted.
+
+**GPT Image 2 — complete for all 10 characters.** All 4 views × 4 image variants each = 160
+images, all correctly named and filed. This model turned out to be **free** — it draws from a
+separate monthly free-generation allowance, not Carlos's paid credit balance, and the pass used
+that allowance up completely (confirmed via a screenshot Carlos sent: GPT Image 2 now shows the
+same 80-credit-per-batch cost as every other model). So no more free GPT Image 2 runs available
+this month.
+
+**Nano Banana Pro — tried, then explicitly killed by Carlos.** Got 3 of 10 characters done (Devil,
+Clown, Executioner — 48 images, ~960 real credits spent) before Carlos looked at the output and
+called it: worst proportions of the three models he'd shortlisted, doesn't want it used here again.
+This is a firm decision, not a "maybe later" — **do not run Nano Banana Pro (or the untested Nano
+Banana base) again without Carlos explicitly asking.**
+
+**Credit situation:** Carlos ran out of paid credits mid-session (960 spent on the rejected Nano
+Banana Pro pass dropped him to 425), was surprised by that, then bought a **3,000-credit top-up**
+specifically earmarked for 3D generation — he does not want it eaten by more 2D image experiments.
+Current balance at end of session: **3,425 credits.** Treat this as precious; confirm before any
+image-generation spending, and remember GPT Image 2 is no longer free.
+
+**Working folder moved.** Carlos restructured it this session for the batch run. Current location
+(supersedes any older path referenced in earlier docs):
+
+```
+C:\Users\calva\Desktop\3D Characters\AI IMAGES CONCEPTS\
+  00_PROMPTS\                          — prompt reference docs (unchanged content, just moved)
+                                          + NEW: polishing-notes-2026-09-09.md
+  01_devil\ 02_clown\ 03_executioner\ 04_boxer\ 05_pig\ 06_horned-prosthetic\
+  07_bear\ 08_rabbit\ 09_holly\ 10_tracey\
+      — each holds turnaround.png (source) + generated views
+```
+
+Filename pattern: `<char>_<view>_<01-04>_<model>.png` — e.g. `devil_front_03_gpt2.png`.
+View = front/left/right/back. Model suffix = gpt2 / nbpro (nb = Nano Banana base, unused).
+
+All of this is still **outside git**, same as before — do not try to commit it.
+
+**Docs updated this session (in-repo, no code changes):**
+- `Docs/3d-prop-pipeline-wizard.md` §4.12 — dated update appended with the new folder path, full
+  status, the Nano Banana Pro rejection, and a pointer to the polishing notes.
+- `Docs/character-pipeline-guide.md` — checked, already accurate from last session, no change
+  needed.
+- Linear comment posted on MRM-72 summarizing the above.
+- New file: `polishing-notes-2026-09-09.md` in the `00_PROMPTS` folder (see below).
+
+===========================================================================
+POLISHING NOTES — logged for later, NOT blocking right now
+===========================================================================
+
+Carlos reviewed the GPT Image 2 output and flagged two things to fix in a **future rework pass**
+(explicitly not urgent — "that would be a polishing detail issue so we can now pass on to 3D
+generation" were his words):
+
+1. Proportions read too cartoonish/short on some characters — the N64 exaggeration overshot on a
+   few designs.
+2. **Lateral (left/right) views still show the full arm.** Carlos wants those views cropped/framed
+   to **torso only, no arm in frame at all** — this is a stricter, new framing ask on top of the
+   already-fixed "arms relaxed at sides, not T-pose" convention. Don't confuse the two: the pose is
+   correct now (arms down, not T-pose), but the *framing* still needs to exclude the arm entirely
+   for a future revision.
+
+Full text in `00_PROMPTS/polishing-notes-2026-09-09.md`. Nothing to act on now — just don't lose
+this before the eventual full-game asset rework.
+
+===========================================================================
+WHAT'S NEXT — feeding images into Tripo's 3D generator
+===========================================================================
+
+Carlos said "we can now pass on to 3D generation" — this was in progress, interrupted mid-planning
+when he asked for this handoff instead (he's about to paste a large prompt and wanted fresh
+context for it, so what follows may already be superseded by whatever he's about to say — read his
+next message first, this is just where things stood).
+
+**What was found, ready to use:**
+- Tripo's **Model tab** (left sidebar, "Model" icon) → **HD Model** (not "Smart Mesh" — that's a
+  P2.0 preview, forces public "Sharing Only" visibility instead of Private, skip it) → the second
+  of 4 icons in the upload row switches to **multi-view mode**: separate Front / Left / Right /
+  Back upload slots, exactly matching the 4 views already generated.
+- AI Model setting: **v3.1 — Best Quality** (default, already selected).
+- Cost: **55 credits per character** → 550 for all 10, well inside the 3,425 balance.
+- Output visibility: **Private** (default in HD Model mode — good, keep it that way).
+
+**Open question, unresolved when this session ended:** each view has **4 image variants**
+(`_01` through `_04`). The 3D generator needs exactly one image per view per character. Two ways
+to decide which:
+  (a) Auto-pick `_01` for every view/character — fastest, fully automatable, no review.
+  (b) Carlos hand-picks per character by looking at the 4 variants in each folder first.
+I was mid-way through asking Carlos this via AskUserQuestion when he interrupted for this handoff.
+**Ask him this first thing, don't assume.**
+
+**Once that's answered, the mechanical loop per character is:**
+1. Open Model tab, HD Model, multi-view mode.
+2. Upload the chosen Front / Left / Right / Back images (file_upload tool, same pattern as the
+   image-generation session — see traps below for the upload/reference-accumulation gotcha).
+3. Confirm settings (v3.1 Best Quality, Private, 55 credits shown).
+4. Generate, wait (this will take longer than image generation — budget accordingly).
+5. The result lands in the Assets panel on the right — download or note it for the next pipeline
+   stage per `Docs/character-pipeline-guide.md` (Stage 2: Blender cleanup, scale, T-pose check,
+   gore-ready topology).
+
+10 characters × this loop = another long unattended run if Carlos wants it done the same way.
+Confirm scope with him (all 10 now, or a subset/spot-check first) before committing credits.
+
+===========================================================================
+TRAPS FOUND THIS SESSION — browser automation via Claude in Chrome + Tripo
+===========================================================================
+
+These cost real time/credits to discover. Don't repeat them.
+
+1. **Chrome's native "Save As" dialog cannot be seen or clicked by browser automation tools.**
+   If Chrome is set to "Ask where to save each file before downloading," every image download
+   opens a native OS dialog that the extension has no access to — it just hangs forever, and a
+   stray keypress can even re-trigger a duplicate download. Fix (one-time, already done by
+   Carlos): `chrome://settings/downloads` → turn OFF "Ask where to save each file before
+   downloading." After that, downloads land silently in `C:\Users\calva\Downloads\` as
+   `image_0.png`...`image_3.png`, which a script then moves+renames into the right character
+   folder. **This setting should already be off from this session — verify before assuming it's
+   still off if downloads seem to hang.**
+
+2. **Tripo's reference-image upload is additive, not a replace.** Uploading a new character's
+   turnaround does NOT clear the previous character's reference — both stack as thumbnails, and
+   the model silently used the OLD (first) one for at least one generation this session (wasted a
+   batch on a duplicate Devil instead of Clown). Fix: after every upload, **click the small delete
+   ✕ on the stale thumbnail** (hover reveals it, top-right corner of the thumbnail, roughly
+   (116, 193) in a 1568-wide viewport at the panel's default scroll position) and **visually
+   verify only one thumbnail remains** before clicking Generate. Zooming into that region with the
+   `zoom` action is the fastest check.
+
+3. **A worse failure mode: NO reference attached at all, with no visible error.** At one point the
+   file input's element reference had gone stale (a `find`/`read_page` ref pointed at a detached
+   DOM node) and the upload silently did nothing — no thumbnail appeared, and the resulting
+   generation ignored the character entirely, inventing an unrelated design from the text prompt
+   alone. Symptom: the reference-thumbnail area is completely empty, not just showing the wrong
+   character. **Always re-verify the thumbnail is present (not just "the right one") right after
+   upload, especially after any batch that failed or returned an unexpected error** — stale refs
+   tend to cluster right after a delete/DOM-mutation, so a fresh `find` call for the file input
+   before re-uploading is worth the extra round-trip if anything upstream looked off.
+
+4. **Element refs (from `find`/`read_page`) go stale often on this page** — new generations
+   prepending to the feed, or a delete-confirmation modal, both mutate enough DOM that a ref from
+   even one action ago can 404. Cheap fix: re-run `find` for the textbox/file-input by description
+   rather than trusting a cached ref number across more than one or two actions.
+
+5. **Aspect ratio must be set per-view, not per-character**: FRONT/BACK = 1:1, LEFT/RIGHT = 3:4.
+   Easy to forget when batching — the aspect-ratio buttons don't reset between generations, so if
+   you go FRONT → LEFT without explicitly clicking 3:4, it silently generates LEFT at 1:1 instead.
+
+6. **Scroll position drifts as new generations prepend to the feed.** The download icon for "the
+   batch I just generated" is only at a fixed y-coordinate if you're scrolled to the very top.
+   Always `scroll` to top immediately before clicking the download icon, or you'll download (or
+   worse, delete) the wrong batch. This bit me once — clicked what I thought was the download
+   button on the newest batch but the feed had scrolled and it opened a lightbox on an older image
+   instead.
+
+7. **`form_input` (not `computer` type-simulation) is the fast way to fill the prompt textarea.**
+   The prompts are ~5,000 characters; simulated keystrokes would be far slower and more failure-
+   prone. `form_input` sets the value directly and worked reliably all session.
+
+8. Generation time: **GPT Image 2 took roughly 60–90 seconds per 4-image batch**; budget waits
+   accordingly (used repeated 10s `wait` calls in `browser_batch`, checking with a screenshot every
+   30s). Nano Banana Pro was similar.
+
+===========================================================================
+STILL OPEN FROM EARLIER SESSIONS — untouched again this session
+===========================================================================
+
+**The Zealot → Feral rename is still unresolved.** From two sessions ago: the current sneak+
+backstab melee cultist (called "Zealot" in the glossary) becomes **Feral** everywhere. Zealot stays
+as a name for a **different, new enemy** Carlos hasn't described yet — "two distinct entities," his
+words. He never gave that description. **Nothing has been renamed anywhere** — glossary.md, Linear,
+code, docs all still say "Zealot" for the current melee cultist. Do not do a blind rename if this
+comes up — get the new Zealot's description first, then do the rename+split together in one pass.
+
+===========================================================================
+FILES TOUCHED IN THE REPO THIS SESSION (docs only, no code/assets)
+===========================================================================
+- Docs/3d-prop-pipeline-wizard.md — dated update under §4.12
+- (this file)
+
+Not committed or pushed — Carlos does that himself in GitHub Desktop. Nothing else in the repo
+changed this session (all the actual work — 160+ images, prompt docs, polishing notes — lives
+outside git per the existing convention).

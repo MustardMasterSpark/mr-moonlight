@@ -540,6 +540,43 @@ character (`tracey-prompts.md`, `holly-prompts.md`, `enemy-1-devil-prompts.md` �
 prompts.md`). Ask Carlos for that folder if a future session needs to pick this back up — it is
 not tracked in git.
 
+**Update 2026-09-09 (this session) — the working folder moved, and the full GPT Image 2 pass is
+done.** Carlos restructured the working folder for a batch browser-automation run. The current
+location (supersedes the path above) is:
+
+```
+C:\Users\calva\Desktop\3D Characters\AI IMAGES CONCEPTS\
+  00_PROMPTS\                          — same prompt files as before, plus polishing-notes-2026-09-09.md
+  01_devil\ 02_clown\ ... 10_tracey\   — each holds turnaround.png (source) + generated views
+```
+
+Generated filename pattern per character folder: `<char>_<view>_<01-04>_<model>.png` — e.g.
+`devil_front_01_gpt2.png` (view = front/left/right/back, model suffix = gpt2/nbpro/nb).
+
+**Status: GPT Image 2 pass complete for all 10 characters** — all 4 views × 4 image variants each
+= 160 images, driven live via the Claude in Chrome browser extension (Claude took over Carlos's
+Tripo tab and ran the full batch unattended). Cost was $0 of paid credits — GPT Image 2 draws from
+a separate monthly free-generation allowance, which this pass fully exhausted (confirmed via
+screenshot: GPT Image 2 now shows the same 80-credit cost as every other model going forward).
+
+**Nano Banana Pro was tried and explicitly rejected.** 3 of 10 characters (Devil, Clown,
+Executioner, 48 images) were generated on Nano Banana Pro before Carlos reviewed the output and
+called it: worst proportions of the models tested, don't use it here. ~960 paid credits were spent
+on this before he caught it — do not resume a Nano Banana Pro (or presumably Nano Banana base,
+untested) pass without Carlos explicitly asking for it again. **GPT Image 2 only, going forward.**
+
+**Known polish issues, logged for a later rework pass (not blocking the demo):** see
+`00_PROMPTS/polishing-notes-2026-09-09.md` — proportions read too cartoonish/short on some
+characters, and lateral (left/right) views still frame the full arm where Carlos actually wants
+torso-only framing (a stricter ask than the earlier "arms relaxed, not T-pose" fix).
+
+**Next step, in progress when this note was written:** feeding the 160 images into Tripo's
+Model tab → HD Model → multi-view mode (Front/Left/Right/Back upload slots, exactly matching
+these 4 views) to generate one 3D blockout per character. Cost is 55 credits/character (550 for
+all 10) — cheap relative to the 3,000-credit top-up Carlos just bought specifically to protect for
+3D generation. Each view has 4 image variants; which variant to feed in per view was still an open
+question — pick up from there.
+
 ---
 
 ## 5. Path 2 — Static prop
