@@ -110,6 +110,11 @@ spine, so they physically cannot be retargeted onto a body.
 
 Your step. Tripo → Blender, or modelled from scratch. Follow the four Stage 0 rules.
 
+**Optional concept-art pass before this stage:** Tripo image restyle (N64/DDR1/Mega Man Legends
+look) → Tripo image-to-3D, as a faster blockout starting point than modeling from scratch. Detail
+in wizard §4.12. ⚠️ **Provisional, demo-only** — human-made models are the plan for the full game,
+and the style may still change; nothing from this path is final art direction.
+
 **Hand over:** the `.blend` (or an FBX) with the body in a T-pose.
 
 **If this is the player**, also read Stage 7 now — there's a second, small thing to model, and it's

@@ -491,6 +491,55 @@ starts. Cheapest to build in from the start; expensive to retrofit onto a finish
 character (which is exactly the position the Spotter is in now — the fix there is deferred, not
 done).
 
+**Session 2026-09-09 — concrete findings from reviewing the "old timer" (Spotter base mesh) in
+Blender, confirming and sharpening the above:**
+
+- **The exact 16 cut zones are the auxiliary "gore skeleton" bones**, not a vague "joints" list:
+  hip, spine ×2, both thighs/calves/feet, both upper arms/forearms/hands, head. Loop density
+  should target these positions specifically, not just "somewhere near a joint."
+- **A new, previously-undocumented trap: don't weld small decorative props into the skin.** The
+  old-timer mesh had a small octagonal medallion/amulet modeled as a dense radial patch and welded
+  directly into the neck/collar skin, right at the head cut plane. A dense island of geometry
+  sitting inside otherwise-sparse surroundings is the same failure class as an oversized triangle —
+  the cut plane hits the density *boundary* badly. **Fix: any small attached prop (medallion,
+  buckle, badge) should be its own separate object, not continuous topology with the skin that
+  gets cut** — it can still be parented/skinned to ride along.
+- **Loose decorative geometry near a cut zone is equally risky** — an open jacket collar with
+  dangling ties, a ruffled clown collar, etc. Either keep such geometry entirely clear of the cut
+  plane (skinned only to the bone on one side of it), or give it the same dense/even topology
+  treatment as skin if it must cross the plane.
+- **Hooded/masked characters with no anatomical neck are fine** — Gore cuts at the head bone's
+  world position, not "the neck" anatomically. A loop placed where a hood meets the shoulders
+  works as long as it's at the correct bone height (verify once rigged) and is a clean, even,
+  fully-closed radial ring.
+- Full annotated reference images (cut-line overlays on the old-timer mesh, front/side/arm
+  close-up) live outside the repo at `C:\Users\calva\Desktop\3D Characters\cut lines\` —
+  `cutlines_front.png`, `cutlines_side.png`, `cutlines_arm_closeup.png`. Not copied into the repo;
+  ask Carlos for them if a future session needs the visual reference.
+
+---
+
+### 4.12 Concept-art pass — N64/DDR1/Mega Man Legends restyle via Tripo (provisional, demo only)
+
+**Added 2026-09-09.** Before Stage 1 modeling, Carlos is running each character's existing 2D
+turnaround through Tripo's image models (GPT Image 2 primary) to get a chunkier, more exaggerated
+N64-era low-poly look, then feeding that into Tripo's image-to-3D generator as a faster concept-to-
+blockout path than modeling from scratch. This is optional tooling on top of Stage 1, not a
+replacement for the stage itself — whatever Tripo's 3D generator produces still needs the normal
+Stage 2 cleanup (T-pose check, gore-ready topology per §4.11) before it's usable.
+
+> ⚠️ **HARD NOTE, applies everywhere this is mentioned: these AI-restyled models are provisional,
+> demo-only placeholders.** The plan is human-made models for the full game once funded, and the
+> visual style itself may still change. Do not treat anything produced by this pipeline as final
+> art direction — it's a fast path to a playable demo, not the target look.
+
+Working detail (prompts, model comparison, per-character presence direction, the arm-length/
+finger-count/pose failure modes found and fixed) lives outside the repo at
+`C:\Users\calva\Desktop\3D Characters\cut lines\tripo-n64-restyle-prompts.md` plus one file per
+character (`tracey-prompts.md`, `holly-prompts.md`, `enemy-1-devil-prompts.md` … `enemy-8-rabbit-
+prompts.md`). Ask Carlos for that folder if a future session needs to pick this back up — it is
+not tracked in git.
+
 ---
 
 ## 5. Path 2 — Static prop

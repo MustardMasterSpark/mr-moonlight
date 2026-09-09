@@ -1,0 +1,110 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE: 2026-09-09 (this was written same night, handoff to a future session)
+
+===========================================================================
+WHAT HAPPENED THIS SESSION
+===========================================================================
+
+Two threads, both still open, both documented:
+
+1. GORE-TOPOLOGY REVIEW (Blender, "old timer" = Spotter base mesh)
+   - Reviewed live in Blender via the MCP bridge. Confirmed the 16 gore cut zones are the
+     literal auxiliary "gore skeleton" bones, not a vague joint list.
+   - Found and documented a new trap: a small medallion prop was modeled as a dense radial
+     patch welded directly into the neck skin, right at the head cut plane — same failure
+     class as the oversized-sparse-triangle problem already known from the Spotter's live
+     gore bug. Small attached props should be separate objects, not continuous topology.
+   - Full writeup: `Docs/3d-prop-pipeline-wizard.md` §4.11 (session note) and new §4.12.
+     Pointer added at `Docs/character-pipeline-guide.md` Stage 1.
+   - Linear: comment posted on MRM-72.
+   - Annotated reference images (cut lines drawn on the old-timer mesh) are NOT in the repo —
+     they live at `C:\Users\calva\Desktop\3D Characters\cut lines\`:
+     `cutlines_front.png`, `cutlines_side.png`, `cutlines_arm_closeup.png`.
+
+2. N64/DDR1/MEGA MAN LEGENDS RESTYLE PIPELINE (Tripo, all external to the repo)
+   Carlos is restyling every character's 2D turnaround through Tripo's image models before
+   feeding it into Tripo's image-to-3D generator, as a faster concept-to-blockout path than
+   modeling everything from scratch. **This is provisional, demo-only — human-made models are
+   the plan for the full game, and the visual style itself may still change. Every doc mention
+   of this carries that caveat; keep doing so if you touch this area again.**
+
+   Went through several rounds of real, screenshot-diagnosed failures — this is not
+   theoretical, each fix below was found by generating and looking at the actual output:
+   - Round 1: arms read short → root cause was posture drift (bent/lowered arms), not
+     proportion. Fixed with an explicit T-pose anti-drift clause.
+   - Round 2: hands came back 3-fingered despite the prompt already asking for 5. Fixed with
+     a dedicated, repeated HAND NOTE.
+   - Round 3: arms STILL read short even with a correct T-pose held → root cause was Tripo
+     always outputting a SQUARE image while the prompt asked for 4 views side-by-side in one
+     wide composition, squeezing the widest feature (the arms). Fixed by splitting into 4
+     separate single-view generations (FRONT/LEFT/RIGHT/BACK), each getting the full canvas.
+   - Round 4: LEFT/RIGHT views were still showing T-pose arms — turns out Carlos wants the
+     lateral views to show arms relaxed DOWN at the sides (a clean profile silhouette), not
+     T-pose at all. T-pose is FRONT/BACK only now. Fixed across all templates.
+
+   Current state, believed solid but **NOT YET VALIDATED against a real generation** — the
+   arms-down lateral convention and all 8 enemy prompts have never actually been run:
+   - Model choice: GPT Image 2 primary (reasoning-forward, best at anatomy), Nano Banana Pro
+     as a parallel cross-check, Nano Banana (base) for cheap first-pass batching, GPT Image
+     1.5 as a last-resort fallback. Nano Banana 2 and Midjourney explicitly NOT recommended
+     for the real batch.
+   - Enemies get creative liberty on SURFACE detail only (dirt, wear) — hard limit on no new
+     geometric complexity, since it feeds Gore Simulator. Tracey and Holly are locked exactly,
+     zero liberty.
+   - Enemies also carry a "menacing, not just stylized" layer grounded in
+     `Docs/Design/03-style-guide.md` §3 (ordinary people, chosen identity, snuff-BDSM/Manhunt
+     gritty realism) — Carlos's blunt working descriptions of each character were translated
+     into atmosphere/posture language rather than pasted literally (both because that's how
+     real horror art direction is written, and because literal terms are more likely to get
+     sanitized/refused by an image model).
+
+   ALL WORKING FILES ARE OUTSIDE THE REPO, NOT IN GIT:
+   `C:\Users\calva\Desktop\3D Characters\cut lines\`
+     - `tripo-n64-restyle-prompts.md` — the full reference doc: model comparison, reasoning,
+       all 4 view-templates (enemy + Tracey/Holly), presence-paragraph library, walkthrough.
+     - `tracey-prompts.md`, `holly-prompts.md` — 4 fully-assembled prompts each (no template
+       swapping needed).
+     - `enemy-1-devil-prompts.md` through `enemy-8-rabbit-prompts.md` — same, one file per
+       enemy, presence already baked in.
+   Roster: Tracey, Holly, Devil("old timer")=Spotter, Clown=Spotter, Executioner hood=Spotter,
+   Boxer/flag-pants=Spotter, Pig=Feral, Horned/prosthetic-legs=Feral, Bear=Feral,
+   Rabbit/"Playboy"=Feral.
+
+===========================================================================
+WHAT'S NEXT — TWO THINGS CARLOS FLAGGED FOR THE NEXT SESSION
+===========================================================================
+
+1. **Browser automation in Tripo.** Carlos said explicitly: "I'm going to ask you to automate
+   this process in Triple: take over control of my browser and run the prompts for each of the
+   enemies." He's preparing a folder with the prompts (already exist, see above) and the
+   original turnaround images "in a structured way" so it's easy to find, download outputs,
+   and file them correctly. He said he'll detail this further at the start of that session —
+   **don't assume the plan, ask him to confirm the folder structure and exact scope
+   (which characters, how many views, which model) before starting.** This will need the
+   claude-in-chrome tools (deferred — load with ToolSearch before use) and will spend Carlos's
+   Tripo credits, so confirm before generating anything, same as any consequential action.
+
+   Before running the full 40 (10 characters × 4 views), the recommendation on the table was:
+   spot-check 2-3 first — Tracey's new arms-down LEFT view, and the horned/prosthetic-legs
+   enemy's FRONT (hardest design in the roster) — since the arms-down convention and every
+   enemy prompt are still unvalidated against a real output.
+
+2. **The Zealot → Feral rename is still open, unresolved.** Early this session Carlos said:
+   the old sneak+backstab melee cultist (currently "Zealot" in the glossary) becomes **Feral**
+   everywhere. But he also said **Zealot stays as a name for a different, new enemy** with a
+   different behavior/model he hasn't described yet — "two distinct entities," his words. He
+   never gave that description before the conversation moved to the Blender/topology/restyle
+   work, so **nothing has been renamed anywhere** — glossary.md, Linear, code, docs are all
+   untouched, still say "Zealot" for the current melee cultist. Do not do a blind rename if
+   this comes up — get the new Zealot's description first, then do the rename+split together
+   (glossary, Linear, any code/prefab references) in one pass.
+
+===========================================================================
+FILES TOUCHED IN THE REPO THIS SESSION (docs only, no code/assets)
+===========================================================================
+- Docs/3d-prop-pipeline-wizard.md — session note under §4.11, new §4.12
+- Docs/character-pipeline-guide.md — pointer added at Stage 1
+- (this file)
+
+Not committed or pushed — Carlos does that himself in GitHub Desktop.
