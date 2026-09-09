@@ -231,6 +231,15 @@ namespace MrMoonlight.Data
         public float MenuOpeningFadeDuration = 1.5f;
 
         /// <summary>
+        /// Delay, in seconds, between the feather landing (world reveal starts - fadeOverlay
+        /// clearing, live feather wobbling) and the UI elements (title letters, buttons,
+        /// description text) starting their own fade-in. Both used to start at the exact same
+        /// instant; Carlos 2026-09-08 wanted a beat to look at the revealed 3D scene alone before
+        /// the menu UI appears on top of it. Owner: MRM-18
+        /// </summary>
+        public float UiElementsRevealDelay = 1.5f;
+
+        /// <summary>
         /// <see cref="FadeOverlay.Alpha"/> threshold at which the intro feather's static matted
         /// snapshot overlay (see <see cref="MainMenuController.CaptureMattedFeatherSnapshot"/>)
         /// switches off in favor of the live 3D feather (already wobbling underneath it since the

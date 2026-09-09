@@ -1,0 +1,59 @@
+MRM-18 — Main Menu, session handoff (read this, not chat scrollback)
+
+Branch: mrm-18. Full detail lives in Docs/mrm18-main-menu-build-summary.md — its newest dated
+section ("Legion button, per-button description text, gamepad-vs-mouse input scheme, feather-reveal
+pacing") covers everything this file summarizes. Docs/controls.md's "UI navigation" section
+documents the new MenuInputSchemeController for reuse elsewhere. Read both before touching this
+scene.
+
+WHAT'S DONE (this session)
+- Legion button added (Canvas/MainButtons/ButtonGroup/LegionButton), same onClick as Start (loads
+  the demo scene) since horde mode has no distinct behavior yet — Carlos said "we will talk about
+  that mode later." Start renamed "The Narrow Way". Both use SpecialElite SDF font, black text.
+  Settings/Credits/Quit are unchanged (text, font, behavior).
+- All five buttons live under a new ButtonGroup RectTransform (Canvas/MainButtons/ButtonGroup) so
+  they move/resize as one unit. Title is a sibling, NOT inside ButtonGroup.
+- Canvas/MainButtons/DescriptionText: GabrieleBandAah SDF v3 font, white, auto-sizing 10-96pt,
+  word-wrap on, centered. New Assets/_Project/Code/Runtime/UI/ButtonDescriptionDisplay.cs, one
+  instance per button, shows that button's blurb on hover or gamepad-select, blanks on
+  pointer-exit (restoring whatever's actually EventSystem-selected, or blank if nothing is).
+- New Assets/_Project/Code/Runtime/UI/MenuInputSchemeController.cs on the MainMenuController
+  GameObject: detects Gamepad.current, live device hot-plug via InputSystem.onDeviceChange.
+  Keyboard & Mouse scheme never carries an EventSystem selection (fixes both the "Start stays
+  highlighted forever" bug and the "description text shows on load with no hover" bug at the
+  root — MainMenuController.SelectForGamepad now calls the new inputScheme.SelectIfGamepad(),
+  which is a no-op outside Gamepad scheme, rather than selecting-then-cleaning-up). This class is
+  meant to be reused on other menus (pause menu, etc.) — not main-menu-specific.
+- New MoonlightTunables.UiElementsRevealDelay (1.5f): the world reveal (fadeOverlay fading to
+  clear) still starts the instant the feather lands, but the UI (title letters + button group
+  fade-in) now waits this long first, via MainMenuController.RevealUiElementsAfterDelay(). Gives
+  a beat to look at the revealed scene before the menu UI appears on top of it.
+
+VERIFICATION STATE
+- Everything above was verified live in Play Mode this session (not just read from code) EXCEPT:
+  no gamepad is attached to this dev machine, so Gamepad scheme (auto-select-first-button, D-pad
+  navigation) is implemented and structurally sound but not hands-on confirmed with real hardware.
+  Plug in the Xbox controller and confirm Start highlights and D-pad moves focus correctly.
+- The reveal-delay timing was confirmed via direct coroutine invocation (reflection) rather than
+  watching the full title-card sequence play out in real time (that takes a couple minutes end to
+  end) — the mechanism is proven correct, but nobody has watched the actual 1.5s pause "feel right"
+  in context yet. Worth a real playthrough.
+
+NOT STARTED / WAITING ON CARLOS
+- The button background texture — Carlos was mid-generation on it when this session started
+  ("Right now I'm generating the texture, which I want to have as the background of the buttons").
+  That's the very next piece of work once he hands it over, along with "the general idea" he
+  mentioned wanting to explain alongside it.
+- Broader visual styling pass on the main menu (Carlos's own prior words: "we might change any UI
+  elements once we have a professional artist... right now it's a placeholder that just looks good
+  enough" — still true, don't over-polish ahead of that).
+
+TRAPS ALREADY FOUND, DON'T REDISCOVER
+- GutenbergTextura/GabrieleBandAah/Kurland/NotoSerif SDF font assets have a known dead-atlas
+  failure mode (see Docs/debug-tools.md's Font section) — GabrieleBandAah SDF v3 used this session
+  is the already-fixed version; don't touch it or recreate it without reading that section first.
+- Editor screenshots/UnityStats lie when the Editor window isn't focused (it was unfocused most of
+  this session) — verify behavioral fixes via direct state reads in Play Mode (execute_code) or a
+  real build, not by trusting a screenshot alone.
+- CanvasGroup.DOFade / AudioSource.DOFade don't resolve in this project — use
+  DOTween.To(() => x, v => x = v, target, duration) directly if any new fade is needed.

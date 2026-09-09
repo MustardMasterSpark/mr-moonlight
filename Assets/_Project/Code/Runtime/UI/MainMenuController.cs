@@ -2,7 +2,6 @@ using System.Collections;
 using MrMoonlight.Data;
 using MrMoonlight.World;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
@@ -98,6 +97,9 @@ namespace MrMoonlight.UI
         [SerializeField] private Button creditsButton;
         [Tooltip("Re-selected when Settings' Back button returns to the main buttons, so focus returns to the button that opened it rather than being lost.")]
         [SerializeField] private Button settingsButton;
+
+        [Tooltip("Gates every selection call below to Gamepad scheme only - see its own doc comment. Keyboard & Mouse scheme never auto-selects a button.")]
+        [SerializeField] private MenuInputSchemeController inputScheme;
 
         [Header("Audio")]
         [SerializeField] private AudioSource menuMusicSource;
@@ -265,9 +267,12 @@ namespace MrMoonlight.UI
                 featherOverlayImage.texture = featherSnapshot;
             }
 
-            if (titleLetterReveal != null) titleLetterReveal.Play();
+            // 2026-09-08, Carlos: the world reveal and the UI (title letters + buttons) used to
+            // start at the exact same instant - he wants a beat to look at the revealed 3D scene
+            // alone first. worldReveal still starts immediately; the UI's own fade-in is deferred
+            // by Tunables.UiElementsRevealDelay via RevealUiElementsAfterDelay below.
             Coroutine worldReveal = fadeOverlay.FadeToClear(Tunables.I.MenuOpeningFadeDuration);
-            Coroutine buttonsFadeIn = StartCoroutine(FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration));
+            Coroutine buttonsFadeIn = StartCoroutine(RevealUiElementsAfterDelay());
 
             // 2026-09-08: switch off the static snapshot once the world fade is mostly through
             // instead of waiting for it to fully finish - see Tunables.FeatherOverlaySwitchAlphaThreshold's
@@ -363,6 +368,19 @@ namespace MrMoonlight.UI
             return pixels;
         }
 
+        /// <summary>
+        /// Waits <see cref="Tunables.UiElementsRevealDelay"/> before playing the title letters and
+        /// fading <see cref="mainButtonsGroup"/> in - see the call site's comment. Runs as its own
+        /// coroutine, in parallel with <c>worldReveal</c> and the feather-overlay-switch-off wait,
+        /// so this delay doesn't hold up either of those.
+        /// </summary>
+        private IEnumerator RevealUiElementsAfterDelay()
+        {
+            yield return new WaitForSeconds(Tunables.I.UiElementsRevealDelay);
+            if (titleLetterReveal != null) titleLetterReveal.Play();
+            yield return FadeInGroup(mainButtonsGroup, Tunables.I.MenuOpeningFadeDuration);
+        }
+
         private static IEnumerator FadeInGroup(CanvasGroup group, float duration)
         {
             float start = group.alpha;
@@ -438,7 +456,7 @@ namespace MrMoonlight.UI
             menuMusicSource.volume = 0f;
         }
 
-        private static IEnumerator CrossfadePanels(CanvasGroup from, CanvasGroup to, Button selectOnComplete = null)
+        private IEnumerator CrossfadePanels(CanvasGroup from, CanvasGroup to, Button selectOnComplete = null)
         {
             from.interactable = false;
             from.blocksRaycasts = false;
@@ -475,13 +493,17 @@ namespace MrMoonlight.UI
         /// Sets the EventSystem's selected object so a gamepad's D-pad has something to move
         /// from. Nothing is selected by default (Unity's EventSystem starts with no selection at
         /// all), so without this, D-pad input silently does nothing the first time the menu - or
-        /// any panel within it - becomes interactable. No-ops if target is null or there's no
-        /// EventSystem (e.g. a unit test context).
+        /// any panel within it - becomes interactable. Delegates the actual scheme check to
+        /// <see cref="inputScheme"/> (a no-op in Keyboard &amp; Mouse scheme) rather than
+        /// selecting unconditionally and relying on <see cref="MenuInputSchemeController"/> to
+        /// clean it up afterwards - see that class's <c>SelectIfGamepad</c> doc for why that
+        /// distinction matters (a description-text flash on selection, not just the highlight).
+        /// No-ops if target or <see cref="inputScheme"/> is null.
         /// </summary>
-        private static void SelectForGamepad(Button target)
+        private void SelectForGamepad(Button target)
         {
-            if (target == null || EventSystem.current == null) return;
-            EventSystem.current.SetSelectedGameObject(target.gameObject);
+            if (target == null || inputScheme == null) return;
+            inputScheme.SelectIfGamepad(target);
         }
     }
 }

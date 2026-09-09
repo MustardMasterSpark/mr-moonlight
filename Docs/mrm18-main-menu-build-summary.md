@@ -652,3 +652,83 @@ enough." Don't over-invest in pixel-perfect polish here; functional + readable i
 real artist pass happens.
 
 See `Docs/mrm18-sonnet-prompt-8.txt` for the handoff.
+
+## 2026-09-08 session (continued yet again) — Legion button, per-button description text, gamepad-vs-mouse input scheme, feather-reveal pacing
+
+Picked up from `mrm18-sonnet-prompt-8.txt`. Carlos was mid-generation on the button background
+texture at session start; this session covered everything else on the buttons first.
+
+**New "Legion" button (horde mode, scope TBD later).** Duplicated Start into
+`Canvas/MainButtons/ButtonGroup/LegionButton`, inserted between Start and Settings — identical
+`onClick` (`MainMenuController.OnStartGameClicked()`, confirmed via
+`UnityEventBase.GetPersistentEventCount`/`GetPersistentTarget`, not just visually) since Legion has
+no distinct behavior yet. Start's own button text renamed to **"The Narrow Way"**. Settings/
+Credits/Quit shifted down 80px each to make room; existing wrap-around navigation chain
+(`Quit.selectOnDown → Start`, `Start.selectOnUp → Quit`) untouched and still closes the loop with
+Legion in the middle.
+
+**Button text font.** Both renamed buttons' `TextMeshProUGUI` switched from `LiberationSans SDF` to
+`SpecialElite SDF` (already the project's chosen debug-overlay font, see `Docs/debug-tools.md`),
+color set to pure black. Settings/Credits/Quit deliberately left untouched, per Carlos's own scope
+line ("the rest of the buttons we keep as is").
+
+**`ButtonGroup` parent object.** Carlos remembered wanting the buttons themselves (not the title)
+grouped under one movable/resizable parent. New `Canvas/MainButtons/ButtonGroup` (`RectTransform`
+only, anchored at `MainButtons`' own center so the coordinate frame the buttons already used carries
+over unchanged) now holds all five buttons; `Title` stays a sibling, outside it, since it's driven
+by its own separate letter-reveal system. Verified every button's `anchoredPosition` was bit-for-bit
+identical before/after the re-parent (no visual shift) and that both `onClick` and navigation
+references survived.
+
+**D-pad wrap-around clarified, not built new.** Carlos remembered a Unity "Wrap Around" checkbox
+from a past session; that setting only applies to *Automatic* navigation mode. These buttons use
+*Explicit* mode with hand-wired `selectOnUp`/`selectOnDown`, so the wrap was already there
+(`Quit → Start`, `Start → Quit`) — confirmed still correct after inserting Legion, no code change
+needed.
+
+**Per-button description text (new feature).** New `Canvas/MainButtons/DescriptionText`
+(`TextMeshProUGUI`, font **`GabrieleBandAah SDF v3`** — confirmed by character-table check that
+it already covers everything these five strings need, no atlas regen — white, `enableAutoSizing`
+10-96pt, word-wrap + centered alignment, sized/positioned to match a screen region Carlos circled)
+plus a new **`ButtonDescriptionDisplay.cs`** (`Runtime/UI/`) attached once per button
+(`ISelectHandler` + `IPointerEnterHandler` + `IPointerExitHandler`), all five pointing at the same
+shared text object with their own message (Story Mode / Horde Mode / Difficulty.../ credits / quit
+flavor line — see the component's `description` field on each button for exact copy).
+
+**Two real bugs found in this feature, both fixed and live-verified (not just read from code):**
+1. *Start button stayed highlighted yellow forever, even while hovering another button.* Root
+   cause: `Selectable`'s "Selected" colour state sticks to whatever the EventSystem last selected
+   until deselected, independent of mouse hover, and the reveal sequence selects Start
+   unconditionally for gamepad support. Fixed with a new general-purpose
+   **`MenuInputSchemeController.cs`** (`Runtime/UI/`) — detects `Gamepad.current` on enable, live
+   device-connect/disconnect via `InputSystem.onDeviceChange`, and in Keyboard & Mouse scheme
+   clears any EventSystem selection every `LateUpdate`. In Gamepad scheme it auto-selects a
+   configured `firstSelected`. Documented as reusable in `Docs/controls.md`'s "UI navigation"
+   section (Carlos's explicit ask, "this might be useful for other scenarios") since it's not
+   main-menu-specific.
+2. *Description text showed Start's message on load even with the mouse never having touched a
+   button.* The `LateUpdate` fix above only cleaned up the *visual* highlight after the fact — the
+   `OnSelect` event had already fired once and set the text, with nothing to clear it back. Real
+   fix: `MenuInputSchemeController.SelectIfGamepad(target)` gates the selection itself (a no-op in
+   Keyboard & Mouse scheme, so `OnSelect` never fires there at all), and
+   `MainMenuController.SelectForGamepad` now routes through it instead of calling
+   `EventSystem.SetSelectedGameObject` directly. `ButtonDescriptionDisplay.OnPointerExit` now
+   restores whichever button is actually EventSystem-selected (or blanks the text if none is) —
+   both verified directly in Play Mode via simulated `ExecuteEvents`/`SelectIfGamepad` calls, not
+   just code review, since no gamepad is attached in this dev environment to test the real thing.
+
+**Feather-reveal pacing.** Carlos wanted a beat to look at the revealed 3D scene before the menu UI
+(title letters + buttons) appears on top of it — they used to start fading in at the exact same
+instant the world reveal did. New tunable `MoonlightTunables.UiElementsRevealDelay = 1.5f`; the
+world-reveal fade (`fadeOverlay.FadeToClear`) is untouched, while `titleLetterReveal.Play()` +
+`mainButtonsGroup`'s fade-in now run inside a new `MainMenuController.RevealUiElementsAfterDelay()`
+coroutine that waits that long first. Verified live (reflection-invoked the coroutine directly in
+Play Mode rather than waiting through the full title sequence): alpha stayed at 0 immediately after
+triggering, reached 1 by the next check — confirms it no longer jumps immediately, full duration
+timing not pinned to the exact second due to tool round-trip latency, but the mechanism is the same
+proven `WaitForSeconds` pattern already used elsewhere in this file (`TitleSequenceStartDelay`).
+
+**Not done this session, still waiting on Carlos:** the button background texture he was generating
+at session start — see `Docs/mrm18-sonnet-prompt-9.txt`.
+
+See `Docs/mrm18-sonnet-prompt-9.txt` for the handoff.
