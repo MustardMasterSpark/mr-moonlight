@@ -1,0 +1,246 @@
+MRM-18 — Main Menu — session checkpoint (written 2026-09-07, late evening)
+
+READ FIRST: Docs/mrm18-main-menu-build-summary.md and Docs/mrm18-sonnet-prompt.txt (the prior
+session's handoff) for everything before this one. This file only covers what changed THIS
+session, picking up right where that one left off (skybox/reflection tuning already done).
+
+STATE: branch mrm-18, NOT committed, NOT done. This is a deliberate checkpoint — Carlos wants to
+try one more thing (Crest Dynamic Waves for rain-impact water distortion, see NEXT UP below) and
+asked to check in first specifically so he can roll back if it doesn't land.
+
+IMPORTANT FOR CARLOS, NOT JUST THE NEXT SESSION: nothing below is committed yet. If you want a
+real rollback point before the next session tries Dynamic Waves, commit what's here first via
+GitHub Desktop using the suggested message below — an uncommitted checkpoint doc doesn't by
+itself give you anything to revert TO.
+
+===============================================================================
+WHAT'S DONE THIS SESSION (all in Mr. Moonlight's MainMenu scene unless noted)
+===============================================================================
+
+1. Restored the skybox/lighting/reflection setup from earlier in the session (nebula skybox,
+   red-tinted Trilight ambient, Directional Light color 0.85/0.72/0.70 @ intensity 0.28) after a
+   detour into Altos (see item 3) required a full revert. Verified matching the pre-Altos state.
+
+2. Crest reflections maxed out further: resolution 2048, Fresnel exponent dropped from 5 to 1
+   (this was the actual hidden limiter — at this camera's steep near-top-down angle, Schlick's
+   formula at exponent 5 gave near-zero reflectance regardless of intensity), Smoothness/
+   SmoothnessFar to 1.0, Total Internal Reflection Intensity to 1.0, Planar Reflections
+   Distortion zeroed (ripple-based UV jitter was smearing single-pixel stars into invisibility -
+   confirmed via A/B test they're genuinely present in the reflection capture once distortion is
+   off). Trade-off: the water's reflection is now mirror-flat, no longer visually rippling with
+   the waves (only the geometry does). Also added a new "Rain" layer (slot 28), moved the whole
+   LightRain hierarchy onto it, and excluded it from Crest's reflection camera culling mask -
+   raindrops were being fully double-rendered in their own reflection. Verified this doesn't
+   touch the rain-ripple collision system (that's keyed to the "Water" layer, not the rain's own
+   layer).
+
+3. Altos Volumetric Clouds — fully explored, integrated, then FULLY REVERTED at Carlos's request
+   (he wanted to compare against InfiniCloud instead; see item 4). Nothing from Altos remains in
+   the project - verified: no Packages/com.occasoftware.altos, no Assets/_Project/Settings/Altos,
+   AltosRenderFeature removed from PC_Renderer.asset, no scene objects. Two findings worth
+   keeping even though the asset itself is gone:
+   - Root cause of why Altos never worked in Carlos's own Playground demo either (not just a
+     wrong-renderer issue, which is also real and separate): the package folder there was
+     renamed from its package.json-declared name (com.occasoftware.altos) to "Altos Volumetric
+     Clouds" after import, which breaks every one of its shaders' `Packages/com.occasoftware.
+     altos/...` virtual include path. Confirmed by forcing a reimport there and watching the
+     same "Couldn't open include file" error appear. NOT fixed in Playground (separate project,
+     out of scope) - if Carlos wants Altos working there, renaming the folder back (or properly
+     re-embedding it under Playground's own Packages/) is the fix.
+   - Altos fully replaces RenderSettings.skybox (nulls it) and takes over ambient lighting
+     unconditionally as part of its normal operation - this was already flagged as a risk before
+     this session (MRM-47), now confirmed in practice. Any future attempt to reintroduce Altos to
+     MainMenu means redoing the sky/ambient direction inside Altos's own system, not layering it
+     on top of what's there now.
+
+4. Clouds, final choice: InfiniCloud URP's "Clouds Single Mesh" technique (Playground path:
+   ARTnGAME 1/InfiniCLOUD URP/Scripts/Clouds Single Mesh/). Copied just that self-contained
+   subfolder (not the whole InfiniCloud package - it's a huge, mostly-unrelated asset bundle)
+   into Assets/ThirdParty/InfiniCloud URP - Clouds Single Mesh/.
+   ⚠ Assets/ThirdParty/** is gitignored project-wide (existing convention) - this folder exists
+   locally but is NOT in git. If anyone else pulls this branch, they need this folder copied in
+   separately or the clouds will be missing/broken. Worth a decision at some point on whether
+   this specific asset is small/simple enough to move into a tracked Code/Vendor/ location like
+   RetroLit was, but not done this session.
+   The vendor's own `DrawInfiniCloudSM` script was REMOVED - it disables the real MeshRenderer
+   and redraws everything per-frame via `Graphics.DrawMesh` pointed at one specific camera only,
+   which (a) is invisible in Scene View by design, and (b) doesn't tick reliably in an unfocused
+   editor (same class of problem as the Update()-doesn't-tick issue noted in earlier sessions).
+   Replaced with a plain always-on MeshRenderer (visible in Scene View, Game View, and Crest's
+   reflection camera automatically, like any normal object) plus a new small script,
+   `CloudHeightSync.cs` (Code/Runtime/World/), which just keeps the shader's `_midYValue`
+   property matched to the object's live transform.position.y every frame. This was necessary
+   because the shader computes a vertical falloff band as `_midYValue - worldPositionY`; without
+   something keeping it in sync, moving the CLOUDS object (which Carlos did, by hand, right after
+   this was built) desyncs the band and the falloff math goes negative - the clouds just vanish
+   entirely rather than fading oddly. Confirmed fixed by moving it again afterward.
+   Also worth knowing: the shader samples cloud noise at a fixed real-world scale (~20-30 units
+   per visible "cell"). The vendor demo's own scale (2000+ units, camera ~100 units up) is
+   correct for this, not arbitrary - a small quad sized for a tiny diorama scene just shows a
+   smeared fraction of one noise cell (looks like a flat color, not clouds). Current setup:
+   CLOUDS at roughly world Y=25-ish before Carlos's own adjustment (he's since moved it, not
+   verified where it sits now), scale 300.
+
+5. Moon prop — built through the standard /prop pipeline from a Blender-authored sphere (Carlos's
+   own model, one material, single 8192x4096 photographic texture, no normal/AO). Full pipeline
+   run start to finish:
+   - Exported from Blender (mesh + texture) into Assets/_Project/Art/Environment/Moon/.
+   - Texture: went through several resolution iterations - started at 512 (pipeline default),
+     Carlos asked for a clean, non-pixelated 1024 instead ("just the color... forget normals or
+     emissions"). Required a real pipeline fix, not a one-off override: MoonlightTextureImporter
+     enforces a 512 ceiling for BaseColor textures outside Characters/Weapons, and re-applies it
+     on every reimport regardless of what you set manually. Added a `HeroEnvironmentFolders`
+     exception array (named per-folder, not a blanket Environment/ bump - that would've also
+     affected vegetation textures that are correctly served by 512) in
+     Code/Editor/MoonlightTextureImporter.cs. T_Moon_BaseColor.png is now a clean 1024x512
+     resize, no dithering/quantization pass applied (Carlos's explicit ask for this one texture).
+   - Material (M_Moon.mat) went through several real bugs before landing correctly - see
+     Docs/3d-prop-pipeline-wizard.md G16 and SKILL.md's material section for the full writeup,
+     now baked into the pipeline docs so the next prop doesn't repeat this:
+     (a) TexelLit (real lighting) under this scene's one dim directional light left half the
+         sphere completely black - not an emission issue, just physically-accurate single-source
+         shading on a small self-contained object.
+     (b) Switching to Unlit fixed the coverage but threw away all scene light influence,
+         including the color tint AND any future light Carlos adds to the moon.
+     (c) Real fix: stayed on TexelLit, enabled RetroLit's `_USE_AMBIENT_OVERRIDE` with
+         `_AmbientLight = 0.35` (a flat scalar floor, not a color) so the dark hemisphere isn't
+         fully black, and moved the actual color mood into `_BaseColor` via a new script instead
+         of a baked value (see below).
+     (d) Separately, hit and fixed a much bigger, generally-applicable bug: `Material.GetInt()`
+         returns WRONG/stale values for this shader's Integer-typed properties in this Unity
+         version. Reading M_RF_Trees.mat's `_ColorBitDepth` via the API returned 0; the actual
+         value in the file on disk is 256. Trusting that 0 caused severe colorful static/
+         posterization on the moon (2-level color quantization plus a broken `log2(0)`). Fixed by
+         editing the .mat YAML directly with the correct values (256 / 8192, matching the
+         reference file). This is now documented prominently in SKILL.md - anyone scripting these
+         RetroLit Integer properties needs to read the raw .mat file, not trust GetInt().
+   - `MoonTint.cs` (Code/Runtime/World/) - Carlos explicitly asked for live Hue + Intensity
+     sliders instead of a fixed baked tint, "so I can adjust it to my liking." ExecuteAlways,
+     writes to `_BaseColor` every frame/OnValidate. Hue 0-1 (color wheel), Intensity 0-1 (blend
+     strength from the texture's natural white/grayscale toward the fully-saturated hue - NOT an
+     HDR brightness multiplier, a Lerp, which preserves crater detail across the whole range
+     instead of flattening to a solid color at high values). Defaults: hue=0 (red), intensity=0.4.
+   - `MoonGlowHalo` - Carlos wanted "a perceptible glow... an aura around it... reflected in the
+     water," and asked directly whether the interior point light or an emission map was the right
+     tool. Answer given and acted on: neither. A light at the center of a solid opaque sphere
+     geometrically cannot light that sphere's own outward-facing surface (normals point away from
+     it everywhere) - no light intensity fixes that. Emission maps aren't available (RetroLit).
+     Built a separate additive glow instead: a single persistent Shuriken particle (Billboard
+     render mode - automatically faces whichever camera renders it, so it works correctly in both
+     the main view AND Crest's separate reflection camera with zero extra scripting), a generated
+     soft radial-gradient sprite (T_MoonGlow.png, Bilinear filtered - deliberately NOT run through
+     the RetroLit pixelation pipeline, this is a smooth VFX overlay not a game-facing prop
+     texture), and M_MoonGlow.mat (Universal Render Pipeline/Particles/Unlit, additive blend).
+     Getting the blend right took two tries - `_SrcBlend=One,_DstBlend=One` renders as a hard-
+     edged solid square (alpha not factored into the blend equation at all); the correct additive-
+     with-shaped-falloff blend is `_SrcBlend=SrcAlpha, _DstBlend=One`, confirmed by copying the
+     exact values from PolymindGames' own FireGlow.mat reference material. Verified visually: a
+     real soft aura bleeding into the sky around the moon.
+   - Prefab: Assets/_Project/Prefabs/World/Prop_Moon.prefab, currently at world (0, 70, -5),
+     scale 15, with the interior point light (MoonGlow, still there, still ineffective on the
+     sphere's own surface per the above, left in place since Carlos may still want it for
+     something else once he moves it) and MoonGlowHalo as children.
+   - NOT yet signed off by Carlos per the wizard's own review gate - the write-back protocol
+     (prop-log.md entry) is deliberately NOT done yet, waiting for his confirmation the prop
+     itself is finished. The pipeline-doc fixes (item 5d, the texture ceiling exception) WERE
+     written back already, per shakedown protocol ("fix the pipeline mid-run, not at the end").
+
+===============================================================================
+NEXT UP — Crest Dynamic Waves for rain-impact ripples (Carlos wants to try this, not yet started)
+===============================================================================
+
+Carlos asked, and confirmed after clarification, for real vertex-level water displacement at each
+raindrop impact point (not just the existing DRM shader-image ripple overlay), specifically so the
+distortion is also visible in the water's reflection. Researched and confirmed feasible before any
+implementation - here's the concrete path:
+
+- Crest ships a genuine GPU height-field simulation for exactly this, `DynamicWavesLod`, separate
+  from the DRM overlay system currently in use. It actually perturbs the surface Crest's mesh
+  displacement AND its reflections both read from - real distortion, not a texture trick.
+- Confirmed via direct inspection: `DynamicWavesLod.Enabled` is currently `False` on
+  CrestWater_BloodPool. Turning it on is a real, supported one-toggle step, but adds an always-
+  running grid-based GPU sim (same cost class as the Foam/Flow sims already running on this
+  water) - not free, flag this to Carlos before enabling if perf becomes a concern.
+- The injection building block is `DynamicWavesLodInput` (a `LodInput`-derived component). Crest's
+  own "Ripples" sample (Packages/com.waveharmonic.crest/Samples~/Ripples/Scripts/
+  RippleGenerator.cs) demonstrates it, but as a single periodic repeating trigger at one fixed
+  position - not what we need directly. For rain (many short-lived impacts, potentially dozens
+  per second), the right pattern is a small POOL of these (reused, not one instantiated per
+  raindrop), repositioned to each impact point and briefly enabled/fired. The existing
+  `DRMOnParticleCollision` event (already driving the shader ripple overlay) is the natural
+  trigger source - same "a raindrop just hit the water here" signal, feeding both systems.
+- Recommended approach discussed with Carlos but not yet agreed in detail: keep the existing DRM
+  shader ripple (cheap, already tuned) and layer real displacement in as an additional effect
+  rather than replacing it - image-space ring detail plus real geometric disturbance together.
+  Not implemented, no code written yet. This is where the next session picks up.
+- There's also `SphereWaterInteraction.cs` (Crest's other built-in interaction component) - looked
+  at it first, ruled out for rain specifically: it's built for a few long-lived tracked objects
+  (boats, wading characters), continuously computing velocity via `transform.position` finite
+  difference every frame. Fine for one boat, wrong shape for many one-shot impacts.
+
+===============================================================================
+TRAPS TO REMEMBER (new this session)
+===============================================================================
+- `Material.GetInt()` lies for RetroLit's Integer-typed shader properties in this Unity version -
+  read the raw .mat YAML on disk instead. Full detail above and in SKILL.md/3d-prop-pipeline-
+  wizard.md G16. This likely affects ANY past or future script that read `_ColorBitDepth`,
+  `_ResolutionLimit`, or any of the five `[KeywordEnum]` properties via the API and trusted the
+  result - worth a mental flag if something built that way looks visually wrong later.
+- Renaming a Unity package folder after import breaks its `Packages/<name>/...` virtual include
+  path silently - shaders fail with "Couldn't open include file" only once something forces a
+  reimport, so it can sit broken for a long time unnoticed (this is what happened to Altos in
+  Playground).
+- Graphics.DrawMesh(camera-specific) is invisible in Scene View by design (renders only to the
+  exact camera passed in) - if something built this way "doesn't show up no matter how I move the
+  Scene View camera," that's the mechanism, not a bug in positioning.
+- A flat Unity `Quad` primitive has zero mesh thickness, so "Frame Selected" (F key) on an object
+  using one can auto-zoom the Scene View to an oddly close, disorienting distance regardless of
+  the object's actual transform scale. Not a sign anything is broken.
+- (Process note, not a project trap) A broad `rm` glob on the Screenshots folder this session
+  briefly deleted a large number of already-committed screenshots from prior sessions before being
+  caught and restored via `git checkout --`. Turns out this project commits its screenshots
+  normally across sessions - they're not scratch files to clean up. Don't `rm` anything in
+  Assets/Screenshots/ going forward; if cleanup is ever warranted, use `git status` first and only
+  remove files git itself reports as untracked.
+
+===============================================================================
+SUGGESTED COMMIT MESSAGE (text only — do not run this, Carlos commits via GitHub Desktop)
+===============================================================================
+
+    MRM-18: max Crest reflections, InfiniCloud clouds, Moon prop with live tint + glow aura
+
+    Push Crest's planar reflections to their effective ceiling for this camera angle -
+    the Fresnel exponent was the actual hidden limiter, not intensity/resolution, and
+    dropping it from 5 to 1 is what makes the skybox's stars and the new clouds actually
+    show up reflected in the water. Zero out reflection distortion so single-pixel stars
+    survive the ripple-based UV jitter. Move rain onto its own layer, excluded from the
+    reflection camera, so raindrops stop double-rendering in their own reflection.
+
+    Replace the evaluated-and-reverted Altos Volumetric Clouds with InfiniCloud URP's
+    "Clouds Single Mesh" technique. Swap its fragile per-camera Graphics.DrawMesh script
+    (invisible in Scene View, breaks when repositioned) for a plain persistent
+    MeshRenderer plus a small CloudHeightSync component that keeps the shader's vertical
+    falloff synced to the transform.
+
+    Add the Moon prop end to end through the standard pipeline: Blender export, texture
+    pass, RetroLit material, prefab. Add a live MoonTint component (hue/intensity
+    sliders) instead of a baked color, and a MoonGlowHalo additive billboard particle
+    for a real reflected aura, since neither an interior point light nor an emission map
+    (unavailable in RetroLit) can light a solid sphere's own outward surface. Fix two
+    pipeline bugs surfaced along the way: MoonlightTextureImporter's 512px BaseColor
+    ceiling now has a named per-folder exception for singular hero environment props,
+    and RetroLit's Integer-typed shader properties are confirmed to read back incorrect
+    values via the Material API on this Unity version - documented in the prop wizard so
+    it isn't rediscovered per-prop.
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01WYa6u1Bo5UNzbuYszKMMuZ
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Wait for Carlos. If he opens with "let's try the Dynamic Waves thing," start there using the plan
+above - but confirm with him first whether he wants it layered alongside the existing DRM ripple
+or trialled as a replacement, and whether he's already committed this checkpoint (if not, suggest
+he do that first before any further changes, since that's the actual rollback safety net for this
+experiment, not this document).

@@ -25,6 +25,7 @@
 | `new-asset-list.md` | **Before starting any issue that names an asset.** The 2026-08-27 triage of the 47-package batch: take/park/reject per asset with reasoning, the three cross-cutting conflicts (camera shake, post-process order, navigation fork), and a **per-asset integration brief** written to be read cold | 🔴 **Read first for assets** |
 | `dual-project-workflow.md` | Working with Playground (`E:\playground\My project`), the sandbox project for testing new/bulk-imported assets before they enter Mr. Moonlight — how the two MCP bridges are kept separate, and how assets actually move between the two | 🟡 Reference |
 | `webgl-budget.md` | ⚠️ **Partially historical** (banner added 2026-08-27). Its *verdict and size ceilings are void* — build 21 was 54 MB zipped against 1 GB. Still cite it for the **audio import presets (§9)** and **"ship 4 skyboxes, not 220" (§4.12/§10)** | ⚪ Use with care |
+| `retrolit-wind-sway.md` | Any wind/sway need on RetroLit-shaded vegetation (trees, flowers, grass) in any scene. What the shared shader feature does, where the vendor code now lives, how to opt a new material in, and the `RetroLitWindController` sliders | 🟡 Reference |
 | `glossary.md` | Naming anything. Canonical spellings and terms | 🟢 Quick lookup |
 | `input-map.md` | Need a binding without opening the `.inputactions` asset | 🟢 Quick lookup |
 

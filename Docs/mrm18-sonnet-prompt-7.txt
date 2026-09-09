@@ -1,0 +1,108 @@
+MRM-18 — Main Menu — title cards done, now the actual main menu UI (written 2026-09-08)
+
+===============================================================================
+READ FIRST
+===============================================================================
+`Docs/mrm18-main-menu-build-summary.md` - read the WHOLE thing, especially the newest section
+("2026-09-08 session (continued) - screens 1/2/3 finished..."). This prompt only adds what's
+different for the NEXT session; the build-summary doc has the actual technical detail.
+
+===============================================================================
+SCOPE CHANGE - READ THIS BEFORE TOUCHING ANYTHING
+===============================================================================
+Carlos's own words ending the last session: "We are done with the initial cards... What we're
+going to do in the new session is now finally tweak and fix the UI elements of the actual main
+menu, like the title of MrMoonlight and the buttons and all of that."
+
+Two DIFFERENT things live in this scene - don't conflate them:
+1. **The title sequence / "cards"** (cross, logo, disclaimer) - the music-anchored intro that plays
+   BEFORE the menu. Carlos has explicitly signed off on this as done. Do not touch it unless he
+   brings it up again.
+2. **The actual main menu** (Start/Settings/Credits/Quit buttons, the "Mr. Moonlight" title/logo,
+   general menu styling/layout) - this is what's UNSTARTED and is this session's job. It's a
+   completely separate part of `MainMenu.unity` (the `mainButtonsGroup`/`settingsGroup` CanvasGroups
+   in `MainMenuController.cs`, not `TitleSequenceController.cs`).
+
+===============================================================================
+WHAT'S DONE - DO NOT REBUILD (all verified working / visually confirmed this session)
+===============================================================================
+- Screen 1 (Cross): static (no grow animation), visible from scene load through the pre-music
+  delay, fades out before the logo. Baked to clean absolute values, `ScaleRoot` at scale 1.
+- Screen 2 (Logo): combined `T_RaysBeamDove.png` art asset, real fade-in/fade-out
+  (`TitleLogoFadeInDuration`/`TitleLogoFadeOutDuration`, 0.4s each), grows 1.0 -> 1.0972
+  (`TitleElementStartScale`/`TitleElementEndScale`). `MasterText`/`SparkText` split from one
+  duplicated object, each sized tight to its own word.
+- Screen 3 (Disclaimer): single combined fade (both paragraphs together) - in at 8.114s, fade-out
+  11.5s -> 12.0s exact. Per-word rich-text coloring: "Christianity" gold `#FFD700`, "Player
+  discretion is advised" red `#FF0000`.
+- Feather intro static-window/red-fringe polish - **code done, NOT YET VERIFIED LIVE**. First thing
+  to check in this session if Carlos hasn't already tested it: run Play Mode, watch the feather land
+  and confirm it starts wobbling sooner and has no red fringe pixels. If he reports it's fine, no
+  further action; if not, `MainMenuController.PlayFeatherAndWorldReveal`/`CaptureMattedFeatherSnapshot`
+  and the two new tunables (`FeatherOverlaySwitchAlphaThreshold`, `FeatherMatteAlphaCutoff`) are where
+  to look.
+
+===============================================================================
+BIGGEST TRAP THIS SESSION WILL HIT - CHECK BEFORE TRUSTING ANY TMP FONT
+===============================================================================
+Hit THREE separate times last session: a freshly-created TextMeshPro font asset in Dynamic
+population mode can have a completely dead atlas - `m_CharacterTable`/`m_GlyphTable` empty on disk,
+runtime glyph generation silently failing. Two different symptoms, same root cause:
+- Total lookup failure -> every character renders as a solid "missing glyph" box.
+- Metrics resolve fine, but the atlas texture pixels at the glyph's rect are 100% alpha 0 -> text
+  is fully invisible, occupying its layout space normally (looks like nothing is there at all).
+
+**Before doing ANY work with a font not already proven this session** (i.e. anything other than
+`GutenbergTextura SDF`, `GabrieleBandAah SDF`, `NotoSerif SDF` - those three are now confirmed
+working), check it first:
+```csharp
+UnityEngine.Texture2D tex = (UnityEngine.Texture2D)someTMPFontAsset.atlasTexture;
+// sample a real glyph's rect, check for non-zero alpha - don't trust metrics alone
+```
+If it's dead: reimport the source `.ttf` (`manage_asset` action=`import`), then
+`fontAsset.ClearFontAssetData(true)` + `AssetDatabase.SaveAssets()`, then force a mesh rebuild on
+anything using it and re-check pixel alpha. This is very likely to bite again on whatever font gets
+used for the main menu title/buttons if it's a freshly-created asset nobody has actually rendered
+text with yet.
+
+===============================================================================
+THE ASK - SCOPE NOTES FROM EARLIER (still applies, still not fully pinned down)
+===============================================================================
+From a prior session (still valid, never resolved): "We will change the main menu, the font, and
+the buttons." Ask directly if not already clear from chat context by the time you read this:
+- Blackletter/Orthodox-icon aesthetic (matching the cards) as the base, but Carlos has separately
+  mentioned wanting a "punk aesthetic like a zine magazine" layered on top - he said he'd propose
+  fonts himself. Don't assume a direction, confirm what he has in mind for THIS session's actual
+  buttons/title before building.
+- Real button art/textures, or placeholder shapes with a font swap first?
+- `Docs/highlight-plus-2-punk-outline.md` exists (from an earlier detour) documenting a tuned
+  "punk" stylized outline effect approved for MRM-16/42 (interaction highlights, inventory) - NOT
+  confirmed in scope for the main menu, but worth mentioning once as a possible visual reference
+  given the "punk/zine" comment above. Don't start MRM-16/42 work from this prompt regardless.
+
+===============================================================================
+OTHER TRAPS STILL LIVE (unchanged, still true)
+===============================================================================
+- Play Mode discards scripted component edits on stop - confirm Edit Mode before an edit you need
+  to persist, re-verify after Carlos stops Play.
+- `manage_scene` component edits don't flush to disk by themselves - explicit `manage_scene`
+  action=`save` after any batch of changes you need to survive a scene switch.
+- `manage_camera` screenshot with an auto-picked camera excludes Screen Space - Overlay canvases
+  entirely (comes back blank for any UI-only shot) - use `capture_source: "scene_view"` instead.
+- `CrestWater_BloodPool` Editor-camera-follow console spam (`Screen position out of view frustum`)
+  is cosmetic, Editor-only, confirmed via source it cannot touch Play Mode or a build - don't
+  re-investigate it as a real bug, Carlos already chose to live with it.
+- Baking a manually-resized/repositioned object's transform to clean values (scale->1, folded into
+  sizeDelta/fontSize; position->0, compensated in children): capture each child's WORLD
+  `transform.position` first, do the cleanup, then set `transform.position` back to the captured
+  value - let Unity solve the local offset, don't hand-compute it.
+- `TMP_Text.preferredWidth`/`preferredHeight` read right after a `sizeDelta` change can be stale/
+  wrong (rect-dependent feedback loop) - use `GetPreferredValues(text, wideWidth, 0)` with an
+  explicit wide width instead for reliable single-line measurement.
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Wait for Carlos. When he brings up the main menu title/buttons, confirm the scope questions above
+(aesthetic direction, real art vs placeholder) before building anything. If he opens by asking about
+the feather intro fix from last session, that's a quick "did it look right" check, not new work.

@@ -36,7 +36,18 @@ namespace MrMoonlight.EditorTools
         // halving them is the cheapest quality-neutral saving available.
         private const int CharacterBaseColorSize = 2048;
         private const int WeaponBaseColorSize = 1024;
+        private const int HeroEnvironmentBaseColorSize = 1024;
         private const int DefaultBaseColorSize = 512;
+
+        // Individually named, not a blanket Environment/ bump - most environment
+        // props (vegetation, rocks) are numerous and small onscreen, correctly
+        // served by the 512 default. A handful are singular "hero" background
+        // elements (visually large, one instance) that read as low-res mush at
+        // 512. Carlos's call, MRM-18 2026-09-07 (Moon).
+        private static readonly string[] HeroEnvironmentFolders =
+        {
+            ArtRoot + "Environment/Moon/",
+        };
 
         // Below this, uncompressed beats DXT: a 128 RGBA32 is 64 KB where a
         // 512 DXT1 is 128 KB, and DXT banding fights the colour quantisation.
@@ -126,6 +137,12 @@ namespace MrMoonlight.EditorTools
 
             if (path.StartsWith(ArtRoot + "Weapons/", System.StringComparison.OrdinalIgnoreCase))
                 return WeaponBaseColorSize;
+
+            foreach (string folder in HeroEnvironmentFolders)
+            {
+                if (path.StartsWith(folder, System.StringComparison.OrdinalIgnoreCase))
+                    return HeroEnvironmentBaseColorSize;
+            }
 
             return DefaultBaseColorSize;
         }

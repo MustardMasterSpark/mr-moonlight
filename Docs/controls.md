@@ -70,9 +70,55 @@ intended player experience.
 
 ## UI navigation (menus, when not in gameplay)
 
-| Gamepad | Keyboard/Mouse | Action |
+**Updated 2026-09-08 (MRM-18, Carlos's ask) — the two schemes are no longer symmetric.** A menu now
+picks one of two input schemes at a time based on whether a gamepad is connected, rather than
+accepting D-pad and arrow keys/WASD simultaneously the way gameplay input does:
+
+| Scheme | Navigate | What's selected by default |
 |---|---|---|
-| Left Stick / D-Pad | W/A/S/D or Arrow Keys | Navigate |
-| A / South button | Enter / Space | Submit |
-| B / East button | Escape | Cancel / Back |
-| — | Mouse | Point and click |
+| **Gamepad** (a `Gamepad` is connected) | Left Stick / D-Pad moves focus between buttons | The menu's first button is auto-selected the instant this scheme is entered |
+| **Keyboard & Mouse** (no gamepad connected) | None — arrow keys/WASD do nothing in menus | Nothing. No button is highlighted until the mouse hovers one |
+
+A / South button and Enter/Space still submit; B/East button and Escape still cancel/back, in
+either scheme.
+
+### Why menus behave differently from gameplay here
+
+Every other control in this doc is deliberately scheme-agnostic — gameplay binds keyboard and
+gamepad simultaneously, no toggle, whichever device you touch fires (see `InputMapController`'s
+own doc comment). Menus are the one place that isn't true anymore, because a highlighted button is
+*visible state*, not just an input binding: leaving both schemes live at once means a mouse user
+either sees a permanently-highlighted button they never chose (confusing — looks like a stuck
+focus ring) or has arrow keys silently able to move a highlight they never asked for. Gameplay has
+no such visible-selection artifact, so it doesn't need this.
+
+### `MenuInputSchemeController` — general-purpose, not main-menu-specific
+
+`Assets/_Project/Code/Runtime/UI/MenuInputSchemeController.cs` is the reusable fix, built for the
+main menu (MRM-18) but intended to be dropped onto **any** screen with `Selectable`s (pause menu,
+a future settings-only screen, etc.) — point its `firstSelected` field at whichever button should
+get focus first in gamepad scheme.
+
+**The mechanism is one `LateUpdate` check, not a pile of per-button logic:** in Keyboard & Mouse
+scheme, the controller clears `EventSystem.current.currentSelectedGameObject` back to `null` every
+frame it finds one set. That single check fixes two symptoms that turned out to be the same root
+cause:
+
+1. **A button stuck highlighted yellow even while the mouse hovers a different button.** That
+   persistent tint is `Selectable`'s *Selected* colour state, which sticks to whatever the
+   EventSystem last selected until something deselects it — entirely independent of mouse hover
+   (hover only drives the separate *Highlighted* state). This is what Carlos saw: Start button was
+   selected once by the reveal sequence's gamepad-support code and then never deselected.
+2. **Arrow keys/WASD silently navigating the menu.** Unity's UI Move action can only move focus
+   *away from* a currently-selected object — with nothing ever selected, Move has nothing to act
+   on and does nothing. No need to disable the Move action itself, or touch the input asset at
+   all.
+
+Because the check runs every frame regardless of *what* set the selection, no other script needs
+to know which scheme is active — a menu's own reveal-selection call (`MainMenuController`'s
+`SelectForGamepad`) can keep firing unconditionally in both schemes; in Keyboard & Mouse scheme
+it's simply overwritten back to `null` before the next frame renders, so there's no visible flash.
+
+Scheme detection itself is just `Gamepad.current != null` on enable, plus subscribing to
+`InputSystem.onDeviceChange` so plugging in (or unplugging) a controller mid-menu switches schemes
+live and fires `OnSchemeChanged` for anything that wants to react.

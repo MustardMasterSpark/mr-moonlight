@@ -18,6 +18,8 @@ MonoBehaviour:
   LookSpeedMouse: 0.15
   LookSpeedStick: 180
   LookAcceleration: 900
+  GamepadLookSpeed: 1200
+  GamepadLookAcceleration: 9000
   JumpHeight: 1.2
   JumpSpeed: 6
   CrouchHeightDelta: 0.5
@@ -68,6 +70,8 @@ MonoBehaviour:
   StaminaRegenRate: 15
   StaminaRegenDelayAfterSprint: 1.5
   JumpStaminaCost: 8
+  JumpStaminaCostNormalised: 0.05
+  SprintStaminaDrainPerSecond: 0.035
   SwingStaminaCost: 12
   StaminaTiredThreshold: 50
   StaminaHyperventilateThreshold: 20
@@ -131,14 +135,32 @@ MonoBehaviour:
   SunIndoorDimTransitionSeconds: 1.5
   TimeManagerDefaultTransitionSeconds: 3
   MenuOpeningFadeDuration: 1.5
+  FeatherOverlaySwitchAlphaThreshold: 0.35
+  FeatherMatteAlphaCutoff: 0.05
+  TitleSequenceStartDelay: 1.5
   MenuTransitionFadeDuration: 0.6
   CreditsScrollSpeed: 60
   DefaultMasterVolume: 1
   DefaultVoicesVolume: 1
   DefaultSFXVolume: 1
   MixerMuteDecibels: -80
-  SplashCardFadeDuration: 1
-  SplashCardHoldDuration: 2
+  TitleBreakpointCross: 0
+  TitleBreakpointLogo: 4.103
+  TitleBreakpointDisclaimer1: 8.114
+  TitleBreakpointDisclaimerFadeOutStart: 12
+  TitleBreakpointWorldReveal: 16.115
+  TitleGrowStopBeforeNextBreakpoint: 2
+  TitleFadeOutBeforeNextBreakpoint: 1
+  TitleElementStartScale: 1
+  TitleElementEndScale: 1.0972
+  TitleLogoFadeInDuration: 0.4
+  TitleLogoFadeOutDuration: 0.4
+  DisclaimerFadeInDuration: 0.5
+  DisclaimerFadeOutDuration: 0.5
+  TitleGapBeforeFeatherStarts: 0.115
+  FeatherGlowIntensity: 0.12
+  FeatherGlowDimmedIntensity: 0
+  FeatherGlowDimDuration: 1.5
   InteractionNearbyDistance: 2.5
   InteractionAngleTolerance: 15
   InteractionLayerMask:
@@ -184,6 +206,7 @@ MonoBehaviour:
   EnemyDamageVarianceMultiplierMax: 1.1
   EnemyDismembermentChance: 1
   EnemyDismembermentForce: 4
+  EnemyBloodEffectLifetime: 5
   SpotterMaxHealth: 100
   SpotterShotsBeforeReload: 2
   SpotterMissChance: 0.3
@@ -225,6 +248,7 @@ MonoBehaviour:
   LampFireSettleAngularThreshold: 0.3
   LampFireSettleGraceDuration: 0.4
   LampFireVfxScaleFactor: 2.5
+  LampFireVfxFadeInDuration: 0.6
   LampFireBurnDuration: 15
   LampFireVfxFadeDuration: 2.5
   LampLightFadeDuration: 5
@@ -236,3 +260,18 @@ MonoBehaviour:
   SystemMessageFadeDuration: 0.4
   SystemMessageFontSize: 34
   SystemMessageColor: {r: 0.72, g: 0.85, b: 1, a: 1}
+  WeaponDamageM1911: 30
+  WeaponDamageRevolver: 50
+  WeaponDamageR870: 15
+  WeaponDamageDBShotgun: 20
+  WeaponDamageM1A: 45
+  WeaponDamageAKM: 40
+  WeaponDamageCrossbow: 40
+  WeaponDamageHuntingRifle: 80
+  WeaponDamageCombatKnifeMin: 20
+  WeaponDamageCombatKnifeMax: 25
+  WeaponDamageFireAxeMin: 35
+  WeaponDamageFireAxeMax: 40
+  WeaponDamageClubMin: 25
+  WeaponDamageClubMax: 30
+  WeaponThrowableTestStock: 99

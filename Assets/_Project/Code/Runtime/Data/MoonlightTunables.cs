@@ -230,6 +230,51 @@ namespace MrMoonlight.Data
         /// <summary>How long the opening black screen takes to reveal the staged background scenario when the menu first loads, in seconds. Owner: MRM-18</summary>
         public float MenuOpeningFadeDuration = 1.5f;
 
+        /// <summary>
+        /// Delay, in seconds, between the feather landing (world reveal starts - fadeOverlay
+        /// clearing, live feather wobbling) and the UI elements (title letters, buttons,
+        /// description text) starting their own fade-in. Both used to start at the exact same
+        /// instant; Carlos 2026-09-08 wanted a beat to look at the revealed 3D scene alone before
+        /// the menu UI appears on top of it. Owner: MRM-18
+        /// </summary>
+        public float UiElementsRevealDelay = 1.5f;
+
+        /// <summary>
+        /// <see cref="FadeOverlay.Alpha"/> threshold at which the intro feather's static matted
+        /// snapshot overlay (see <see cref="MainMenuController.CaptureMattedFeatherSnapshot"/>)
+        /// switches off in favor of the live 3D feather (already wobbling underneath it since the
+        /// instant it landed - <see cref="MrMoonlight.World.FeatherWaterWobble"/> reacts
+        /// immediately). Previously this switch waited for the fade to fully finish
+        /// (<see cref="MenuOpeningFadeDuration"/>, 1.5s), during which the feather visibly sat
+        /// frozen on the static snapshot - Carlos 2026-09-08: "I see for a brief moment that the
+        /// sparrow feather is static... it doesn't right away begin its water wobbling." Switching
+        /// early is safe (unlike switching at the very start of the fade - see
+        /// <see cref="MainMenuController"/>'s flicker-investigation doc) because by this alpha the
+        /// world is already mostly revealed, so the live feather's own dimming already matches
+        /// everything else on screen. Owner: MRM-18
+        /// </summary>
+        public float FeatherOverlaySwitchAlphaThreshold = 0.35f;
+
+        /// <summary>
+        /// Minimum recovered alpha a pixel needs in <see cref="MainMenuController.CaptureMattedFeatherSnapshot"/>'s
+        /// difference-matting before its color is trusted - below this, un-premultiplying by such
+        /// a small alpha amplifies ordinary render noise/dither into stray fully-saturated pixels
+        /// instead of real edge color (Carlos 2026-09-08: "there are red pixels around the sparrow
+        /// feather"). Pixels below this cutoff are treated as fully transparent instead. Owner: MRM-18
+        /// </summary>
+        public float FeatherMatteAlphaCutoff = 0.05f;
+
+        /// <summary>
+        /// Fixed black-screen buffer before the title sequence's music and visuals start at all -
+        /// no song playback, no cross/logo/disclaimer, nothing happening yet. Requested 2026-09-08:
+        /// entering Play in the Editor has some load/settle time before everything is actually
+        /// ticking normally, which was racing against the music-anchored breakpoints and throwing
+        /// the whole sequence out of sync with what Carlos saw on screen. This buffer just gives
+        /// that settling time somewhere safe to happen (a plain black screen) before the song - the
+        /// actual timing anchor for every breakpoint - starts. Owner: MRM-18
+        /// </summary>
+        public float TitleSequenceStartDelay = 1.5f;
+
         /// <summary>Duration of every other main menu fade transition - Settings/Credits opening and closing, Start's fade to black before loading the demo scene, and Quit's fade to black. One shared value keeps every transition feeling consistent, per the issue's "every transition a fade, never a hard cut" requirement. Owner: MRM-18</summary>
         public float MenuTransitionFadeDuration = 0.6f;
 
@@ -248,11 +293,104 @@ namespace MrMoonlight.Data
         /// <summary>Decibel value written to an AudioMixer group's exposed volume parameter when its slider sits at 0 (fully muted). Mixer volume is logarithmic and linear 0 has no finite dB equivalent, so this is the floor used instead of -infinity. Owner: MRM-18</summary>
         public float MixerMuteDecibels = -80f;
 
-        /// <summary>How long each pre-menu splash card (studio name, then the disclaimer) takes to fade its text in or out, in seconds - the same duration is used for both the fade-in and fade-out of every card. Requested by Carlos on 2026-08-26. Owner: MRM-18</summary>
-        public float SplashCardFadeDuration = 1f;
+        /// <summary>
+        /// Music-anchored title sequence (replaces the old generic splash cards, 2026-09-07
+        /// rebuild): every timestamp below is a second offset into <c>MUS_RisingStorm2LayinLow</c>,
+        /// specified exactly by Carlos from the reference track ("breakpoints"). Owner: MRM-18
+        /// </summary>
+        [Header("Title Sequence — MRM-18 (breakpoints, in song seconds)")]
 
-        /// <summary>How long each splash card's text stays fully visible before fading out, in seconds. Owner: MRM-18</summary>
-        public float SplashCardHoldDuration = 2f;
+        /// <summary>Breakpoint 0 - the cross + Greek text appear instantly, no fade-in. Owner: MRM-18</summary>
+        public float TitleBreakpointCross = 0f;
+
+        /// <summary>Breakpoint 1 - the studio logo appears instantly, no fade-in. Owner: MRM-18</summary>
+        public float TitleBreakpointLogo = 4.103f;
+
+        /// <summary>Breakpoint 2 - disclaimer paragraph 1 fades in. Owner: MRM-18</summary>
+        public float TitleBreakpointDisclaimer1 = 8.114f;
+
+        /// <summary>
+        /// Song-time the disclaimer's fade-out begins (both paragraphs fade together as one
+        /// slide as of 2026-09-08 - see <see cref="MrMoonlight.UI.TitleSequenceController"/>'s
+        /// class doc; the old two-paragraph staggered timing (<c>TitleBreakpointDisclaimer2</c> /
+        /// <c>DisclaimerHoldAfterParagraph2</c>) is gone). Carlos: fade-out starts "around 11.5
+        /// seconds" and is fully gone "at 12 seconds exact" (with the default
+        /// <see cref="DisclaimerFadeOutDuration"/> of 0.5s) - **updated 2026-09-08 evening**,
+        /// pushed 0.5s later (11.5 -> 12) at Carlos's request to hold the disclaimer on screen
+        /// longer. <see cref="TitleBreakpointWorldReveal"/> is a hard music-sync cue (a real beat
+        /// in the track) and must NOT move - first attempt shifted it +0.5s to compensate, which
+        /// was wrong and got reverted; the correct compensation is shortening the feather's own
+        /// <c>fallDuration</c> (Inspector value on <c>FeatherFall</c>, 4.0 -> 3.5) so it still
+        /// lands exactly on the same beat despite starting 0.5s later. See
+        /// <see cref="MrMoonlight.UI.TitleSequenceController.ComputeFeatherStartSongTime"/>.
+        /// Owner: MRM-18
+        /// </summary>
+        public float TitleBreakpointDisclaimerFadeOutStart = 12f;
+
+        /// <summary>
+        /// Breakpoint 4 - the exact moment the intro sparrow feather touches the water and the 3D
+        /// world fades in. This is a hard music-sync cue (a real beat in the track Carlos is
+        /// timing against) - 16.115 is fixed and must not be retimed. When something upstream
+        /// (e.g. <see cref="TitleBreakpointDisclaimerFadeOutStart"/>) changes the feather's start
+        /// time, compensate via the feather's own <c>fallDuration</c> (Inspector value on the
+        /// <c>FeatherFall</c> component), not by moving this breakpoint. Owner: MRM-18
+        /// </summary>
+        public float TitleBreakpointWorldReveal = 16.115f;
+
+        /// <summary>For the logo card (cross is static, no grow, as of 2026-09-08): how many seconds before the next breakpoint the grow-in animation stops (holds at full size) before the fade-out begins. Owner: MRM-18</summary>
+        public float TitleGrowStopBeforeNextBreakpoint = 2f;
+
+        /// <summary>For the cross card only (logo has its own <see cref="TitleLogoFadeOutDuration"/> as of 2026-09-08, split out so tuning one card's fade-out doesn't retime the other's): how many seconds before the next breakpoint the fade-out starts (so it finishes exactly on the breakpoint). Owner: MRM-18</summary>
+        public float TitleFadeOutBeforeNextBreakpoint = 1f;
+
+        /// <summary>
+        /// Starting scale of the logo's growing elements, relative to their baked layout (see
+        /// <see cref="TitleElementEndScale"/>) - 1.0 means "start exactly at the baked/authored
+        /// size, then grow from there." Carlos's <c>GrowingElements</c> children were re-baked to
+        /// this exact pose at scale 1 on 2026-09-08 (see prop-log-style session notes), which is
+        /// why this is 1 rather than the old pre-bake value of 0.6. Cross is static/baked and
+        /// no longer reads this. Owner: MRM-18
+        /// </summary>
+        public float TitleElementStartScale = 1f;
+
+        /// <summary>
+        /// End (fully-grown, held) scale of the logo's growing elements, relative to their baked
+        /// layout - Carlos tuned this as a subtle overshoot above the 1.0 baked pose on
+        /// 2026-09-08 (was previously hardcoded to 1.0 in code, i.e. "grow back to exactly the
+        /// baked size and stop"). Owner: MRM-18
+        /// </summary>
+        public float TitleElementEndScale = 1.0972f;
+
+        /// <summary>How long the logo card takes to fade in when it first appears (previously instant, no fade-in; changed to a gentle fade at Carlos's request 2026-09-08). Runs concurrently with the grow, not before it. Owner: MRM-18</summary>
+        public float TitleLogoFadeInDuration = 0.4f;
+
+        /// <summary>How long the logo card takes to fade out before the disclaimer appears. Split out from the shared <see cref="TitleFadeOutBeforeNextBreakpoint"/> on 2026-09-08 so the logo's fade can be tuned independently of the cross's. Owner: MRM-18</summary>
+        public float TitleLogoFadeOutDuration = 0.4f;
+
+        /// <summary>How long each disclaimer paragraph's fade-in takes, in seconds. Owner: MRM-18</summary>
+        public float DisclaimerFadeInDuration = 0.5f;
+
+        /// <summary>How long the whole disclaimer slide takes to fade out together, once triggered (see <see cref="TitleBreakpointDisclaimerFadeOutStart"/>). Owner: MRM-18</summary>
+        public float DisclaimerFadeOutDuration = 0.5f;
+
+        /// <summary>
+        /// Pure-black pause between the disclaimer finishing its fade-out and the intro feather
+        /// starting to fall. Lowered from 0.3s to 0.115s on 2026-09-08 when the disclaimer's
+        /// fade-out was retimed to finish at exactly 12s instead of 11.815s - this keeps the
+        /// feather's own start time fixed at 12.115s (and so <see cref="TitleBreakpointWorldReveal"/>
+        /// at 16.115s stays untouched too), same "adjust the previous text, not the feather"
+        /// precedent as <see cref="TitleBreakpointDisclaimerFadeOutStart"/>'s doc. Owner: MRM-18
+        /// </summary>
+        public float TitleGapBeforeFeatherStarts = 0.115f;
+
+        /// <summary>Light intensity of the falling sparrow feather's glow while it's still mid-air - meant to read clearly against the dark opening reveal, before the rest of the staged scenario dims it out. Requested by Carlos 2026-09-07: a placeholder-strong value so the glow/bloom pairing can be judged now, to be tuned down once the wider scene is built out. Owner: MRM-18</summary>
+        public float FeatherGlowIntensity = 0.12f;
+
+        /// <summary>Light intensity the feather's glow fades to once it lands (0 = fully off), synced with the moment "everything is revealed". Owner: MRM-18</summary>
+        public float FeatherGlowDimmedIntensity = 0f;
+
+        /// <summary>Seconds the feather's glow takes to fade from <see cref="FeatherGlowIntensity"/> down to <see cref="FeatherGlowDimmedIntensity"/> once it lands. Owner: MRM-18</summary>
+        public float FeatherGlowDimDuration = 1.5f;
 
         [Header("Interaction — MRM-16")]
 

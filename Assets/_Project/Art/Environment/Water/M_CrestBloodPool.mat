@@ -1,0 +1,199 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &-8444506106772837698
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 639247ca83abc874e893eb93af2b5e44, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.ShaderGraph.Editor::UnityEditor.Rendering.BuiltIn.AssetVersion
+  version: 0
+--- !u!21 &2100000
+Material:
+  serializedVersion: 8
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: M_CrestBloodPool
+  m_Shader: {fileID: -6465566751694194690, guid: 00ffe7d0b7161420897069dc6e12822c, type: 3}
+  m_Parent: {fileID: 0}
+  m_ModifiedSerializedProperties: 0
+  m_ValidKeywords:
+  - _BUILTIN_SURFACE_TYPE_TRANSPARENT
+  - _SURFACE_TYPE_TRANSPARENT
+  m_InvalidKeywords:
+  - _CREST_PLANAR_REFLECTIONS
+  m_LightmapFlags: 2
+  m_EnableInstancingVariants: 0
+  m_DoubleSidedGI: 0
+  m_CustomRenderQueue: -1
+  stringTagMap:
+    RenderType: Transparent
+  disabledShaderPasses:
+  - SHADOWCASTER
+  m_LockedProperties: 
+  m_SavedProperties:
+    serializedVersion: 3
+    m_TexEnvs:
+    - _Crest_CausticsDistortionTexture:
+        m_Texture: {fileID: 2800000, guid: 7aa3f69cfb40b429a865c45a7271c5f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Crest_CausticsTexture:
+        m_Texture: {fileID: 2800000, guid: 1407209016967410da2ae6fdd4d97fc6, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Crest_FoamTexture:
+        m_Texture: {fileID: 2800000, guid: 959dd0505e2c54585865f51257daa0e3, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - _Crest_NormalMapTexture:
+        m_Texture: {fileID: 2800000, guid: 7aa3f69cfb40b429a865c45a7271c5f5, type: 3}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_Lightmaps:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_LightmapsInd:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    - unity_ShadowMasks:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
+    m_Ints: []
+    m_Floats:
+    - _AlphaClip: 0
+    - _AlphaToMask: 0
+    - _BUILTIN_AlphaClip: 0
+    - _BUILTIN_Blend: 0
+    - _BUILTIN_CullMode: 0
+    - _BUILTIN_DstBlend: 10
+    - _BUILTIN_QueueControl: 0
+    - _BUILTIN_QueueOffset: 0
+    - _BUILTIN_SrcBlend: 5
+    - _BUILTIN_Surface: 1
+    - _BUILTIN_TransparentReceiveShadows: 1
+    - _BUILTIN_WorkflowMode: 1
+    - _BUILTIN_ZTest: 4
+    - _BUILTIN_ZWrite: 1
+    - _BUILTIN_ZWriteControl: 1
+    - _Blend: 0
+    - _BlendModePreserveSpecular: 0
+    - _CREST_CUSTOM_MESH: 0
+    - _CREST_FLOW_LOD: 0
+    - _CastShadows: 0
+    - _Crest_AdditionalLightsBlend: 1
+    - _Crest_AlbedoEnabled: 0
+    - _Crest_AlbedoIgnoreFoam: 1
+    - _Crest_AmbientTerm: 1
+    - _Crest_Anisotropy: 0.5
+    - _Crest_ApplyDisplacementNormals: 1
+    - _Crest_ApplyFresnelToVolumeLighting: 0
+    - _Crest_BUILTIN_ShadowCasterZTest: 4
+    - _Crest_CausticsDepthOfField: 6
+    - _Crest_CausticsDistortionScale: 250
+    - _Crest_CausticsDistortionStrength: 0.16
+    - _Crest_CausticsEnabled: 1
+    - _Crest_CausticsFocalDepth: 2
+    - _Crest_CausticsForceDistortion: 0
+    - _Crest_CausticsMotionBlur: 1
+    - _Crest_CausticsScrollSpeed: 1
+    - _Crest_CausticsStrength: 3.2
+    - _Crest_CausticsTextureAverage: 0.07
+    - _Crest_CausticsTextureScale: 50
+    - _Crest_DirectTerm: 1
+    - _Crest_DirectTermAdditional: 1
+    - _Crest_FoamBioluminescenceEnabled: 0
+    - _Crest_FoamBioluminescenceGlowCoverage: 0.4
+    - _Crest_FoamBioluminescenceGlowIntensity: 0.7
+    - _Crest_FoamBioluminescenceIntensity: 1
+    - _Crest_FoamBioluminescenceMaximumDepth: Infinity
+    - _Crest_FoamBioluminescenceSeaLevelOnly: 1
+    - _Crest_FoamBioluminescenceSparklesCoverage: 0.5
+    - _Crest_FoamBioluminescenceSparklesEnabled: 1
+    - _Crest_FoamBioluminescenceSparklesIntensity: 500
+    - _Crest_FoamEnabled: 1
+    - _Crest_FoamFeather: 0.75
+    - _Crest_FoamIntensityAlbedo: 1
+    - _Crest_FoamNormalStrength: 1
+    - _Crest_FoamScale: 5
+    - _Crest_FoamScrollSpeed: 1
+    - _Crest_FoamSmoothness: 0.7
+    - _Crest_Fresnel: 1
+    - _Crest_MinimumReflectionDirectionY: 0
+    - _Crest_NormalMapEnabled: 1
+    - _Crest_NormalMapScale: 3
+    - _Crest_NormalMapScrollSpeed: 1
+    - _Crest_NormalMapStrength: 0.15
+    - _Crest_NormalMapTurbulenceCoverage: 0.9
+    - _Crest_NormalMapTurbulenceEnabled: 1
+    - _Crest_NormalMapTurbulenceStrength: 0.6
+    - _Crest_NormalsStrengthOverall: 1
+    - _Crest_Occlusion: 1
+    - _Crest_OcclusionUnderwater: 0
+    - _Crest_PlanarReflectionsApplySmoothness: 0
+    - _Crest_PlanarReflectionsDistortion: 0
+    - _Crest_PlanarReflectionsEnabled: 1
+    - _Crest_PlanarReflectionsIntensity: 1
+    - _Crest_PlanarReflectionsRoughness: 0
+    - _Crest_RefractionStrength: 1
+    - _Crest_RefractiveIndexOfWater: 1.33
+    - _Crest_SSSDirectionalFalloff: 2
+    - _Crest_SSSEnabled: 0
+    - _Crest_SSSIntensity: 3
+    - _Crest_SSSPinchFalloff: 1.5
+    - _Crest_SSSPinchMaximum: 1.67
+    - _Crest_SSSPinchMinimum: 0.57
+    - _Crest_ShadowCasterThreshold: 0.5
+    - _Crest_ShadowsAffectsAmbientFactor: 0.5
+    - _Crest_ShadowsEnabled: 1
+    - _Crest_Smoothness: 1
+    - _Crest_SmoothnessFalloff: 0.5
+    - _Crest_SmoothnessFar: 1
+    - _Crest_SmoothnessFarDistance: 4000
+    - _Crest_Specular: 0.25
+    - _Crest_TotalInternalReflectionIntensity: 1
+    - _Crest_TransparencyMinimumAlpha: 0.95
+    - _Crest_Version: 0
+    - _Cull: 0
+    - _DstBlend: 10
+    - _DstBlendAlpha: 10
+    - _QueueControl: 0
+    - _QueueOffset: 0
+    - _ReceiveShadows: 1
+    - _SrcBlend: 5
+    - _SrcBlendAlpha: 1
+    - _Surface: 1
+    - _WorkflowMode: 1
+    - _ZTest: 4
+    - _ZWrite: 1
+    - _ZWriteControl: 1
+    m_Colors:
+    - _Crest_Absorption: {r: 0.57206655, g: 6.6778626, b: 7.463328, a: 1}
+    - _Crest_AbsorptionColor: {r: 0.85, g: 0.15, b: 0.12, a: 0.55}
+    - _Crest_FoamBioluminescenceColor: {r: 0, g: 1.55, b: 6, a: 1}
+    - _Crest_Scattering: {r: 0.6, g: 0.04, b: 0.04, a: 1}
+  m_BuildTextureStacks: []
+  m_AllowLocking: 1
+--- !u!114 &5805898888699371649
+MonoBehaviour:
+  m_ObjectHideFlags: 11
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d0353a89b1f911e48b9e16bdc9f2e058, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Unity.RenderPipelines.Universal.Editor::UnityEditor.Rendering.Universal.AssetVersion
+  version: 10

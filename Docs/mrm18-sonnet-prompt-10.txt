@@ -1,0 +1,82 @@
+MRM-18 — Main Menu, session handoff (read this, not chat scrollback)
+
+Branch: mrm-18. Full detail lives in Docs/mrm18-main-menu-build-summary.md — its newest dated
+section ("continued once more — button fade-in tuning tool, sequenced with title reveal") covers
+everything this file summarizes. Read it before touching this scene.
+
+WHAT'S DONE (this session)
+- Verified live (not just read from code) that the button-group fade-in from last session actually
+  blocks clicks correctly: reflection-invoked the reveal coroutine with Time.timeScale slowed down,
+  caught mainButtonsGroup mid-fade at alpha 0.35 and 0.83 with interactable/blocksRaycasts both
+  False the whole time, flipping True only the instant alpha hit 1.
+- New Assets/_Project/Code/Runtime/UI/GroupFadeReveal.cs — Carlos's own tuning tool for the button
+  fade-in. Exposes `duration` (seconds) and a real, Inspector-editable `AnimationCurve fadeCurve`
+  driving a genuine DOTween custom ease (`Tween.SetEase(AnimationCurve)`, confirmed present in this
+  project's DOTween build), replacing the old hardcoded linear lerp. Lives on
+  Canvas/MainButtons/ButtonGroup specifically (NOT on MainButtons — moved there mid-session after
+  Carlos corrected an initial wrong placement; title is unaffected by any of this either way since
+  its own CanvasGroup already has ignoreParentGroups=true, driven separately by TitleLetterReveal).
+  MainMenuController.mainButtonsGroup and .mainButtonsFadeReveal both point at ButtonGroup's
+  CanvasGroup/GroupFadeReveal now. Carlos has since tuned duration down to 0.5s (curve left at the
+  default smoothstep shape - flat tangents both ends, not linear).
+- Edit-Mode preview added to GroupFadeReveal (DOTween/coroutines don't tick outside Play Mode, so
+  this is a second path, #if UNITY_EDITOR only, driven by EditorApplication.update +
+  fadeCurve.Evaluate() directly): a real "Preview Fade In" button in the Inspector (custom Editor,
+  same file) and the component's right-click/kebab context menu, both calling
+  PreviewFadeInEditor(). Verified live in Edit Mode: alpha resets to 0 on trigger, reaches 1 after
+  duration elapses, no Play Mode needed.
+- Buttons now wait for the title to fully finish revealing before starting their own fade-in
+  (previously both started at the same instant). TitleLetterReveal.Play() changed from void to
+  returning a Coroutine (tracks a pending-tween counter across every letter's alpha fade AND
+  blur-to-focus tween, completes at zero). MainMenuController.RevealUiElementsAfterDelay now does
+  `yield return titleLetterReveal.Play();` before starting the button fade. Verified live: the
+  last-reveal-group letter (Letter_10_G) hit alpha 1 while buttons were still at 0; buttons only
+  started climbing after. Total reveal is now noticeably longer than before (title ~1.4s + button
+  fade, sequential, not overlapped) - intentional per Carlos, not re-tuned further.
+
+VERIFICATION STATE
+- Everything above was verified live in Play Mode (reflection-invoked coroutines, Time.timeScale
+  slowed to catch mid-fade snapshots) or live in Edit Mode (the preview button), not just read from
+  code. No gamepad hardware verification happened this session (unchanged from prior sessions -
+  still nobody's confirmed Gamepad scheme on real hardware).
+
+NOT STARTED / NEXT SESSION (Carlos's plan, stated at session end)
+- **Button background texture.** Carlos is bringing custom textures next session for the button
+  backgrounds - no textures exist yet, nothing to build against until he hands them over.
+- **Stylized button highlight.** Carlos wants the SAME highlight effect trialled in the Playground
+  project "yesterday" (2026-09-07) applied to these buttons - this is the Highlight Plus 2 "punk"
+  stylized outline. Full converged settings, the shader math, and every trap already found live in
+  Docs/highlight-plus-2-punk-outline.md - READ THIS FIRST, don't re-tune from scratch. Short
+  version: thick jagged hand-scribbled outline (Spider-Punk/Miles Morales comic look), tuned in
+  Playground (E:\playground\My project, port 8081, not git-tracked), NOT yet ported to Mr.
+  Moonlight at all. That doc's "Migration checklist" section is written for MRM-16/MRM-42
+  (interaction highlight / inventory UI) picking this up eventually, but the same tuned values and
+  traps apply directly to porting it for main-menu buttons too - HighlightPlus works on 3D-rendered
+  objects via a HighlightEffect component + a URP renderer feature, NOT plain uGUI Image/Button
+  components, so expect to figure out how it actually applies to a Screen-Space-Overlay Canvas
+  button (may need the button rendered via a world-space/render-texture trick, or may need a
+  different technique entirely reusing just the visual language - this hasn't been scoped yet,
+  flag it to Carlos early if the direct port doesn't fit uGUI buttons cleanly).
+- Once textures land, expect this to be a normal texture-swap-plus-material pass on the five button
+  Image components under Canvas/MainButtons/ButtonGroup.
+
+TRAPS ALREADY FOUND, DON'T REDISCOVER
+- GutenbergTextura/GabrieleBandAah/Kurland/NotoSerif SDF font assets have a known dead-atlas
+  failure mode (see Docs/debug-tools.md's Font section) - GabrieleBandAah SDF v3 is the
+  already-fixed version; don't touch it or recreate it without reading that section first.
+- SpecialElite SDF.asset (the debug-overlay font) WILL show as modified in git status after any
+  session that renders new debug-overlay text in Play Mode - it's a Dynamic-atlas TMP font that
+  bakes newly-seen glyphs into its own asset at runtime, harmless, safe to always exclude from
+  commits. Confirmed this session via an isolated bare Play->Stop test (no other code running).
+  Don't waste time re-investigating it as a bug.
+- VP_HazeGlobalFog.asset / CRTSettings.active flipping is NOT a recurring issue (was investigated
+  and ruled out this session, confirmed via a clean isolated bare Play->Stop cycle) - if it's ever
+  seen modified again, that's a NEW occurrence worth investigating fresh, not the same non-issue.
+  It also has zero visual effect on this scene regardless (Main Menu's own CRT volume uses
+  VP_MainMenuCRT.asset, a different profile).
+- CanvasGroup.DOFade / AudioSource.DOFade don't resolve in this project - use
+  DOTween.To(() => x, v => x = v, target, duration) directly, or SetEase(AnimationCurve) the way
+  GroupFadeReveal does for a tunable ease.
+- Editor screenshots/UnityStats lie when the Editor window isn't focused - verify behavioral fixes
+  via direct state reads in Play Mode (execute_code) or a real build, not by trusting a screenshot
+  alone. Same applies to background AssetDatabase work stalling unfocused (kickstart.md §B.3a).

@@ -19,6 +19,9 @@ namespace MrMoonlight.UI
 
         private Coroutine _routine;
 
+        /// <summary>Current opacity (1 = fully opaque black, 0 = fully clear) - lets a caller poll fade progress instead of only waiting for a fade to fully finish.</summary>
+        public float Alpha => canvasGroup.alpha;
+
         private void Awake()
         {
             if (canvasGroup == null)

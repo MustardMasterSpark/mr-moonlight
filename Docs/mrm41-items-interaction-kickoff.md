@@ -125,3 +125,9 @@ primitives first.
   Carlos. Don't touch its Linear status or docs; polish backlog for it lives on **MRM-67**.
 - Difficulty selection (built in MRM-18) is intentionally inert — no difficulty-scaling systems
   exist yet for it to affect. Not this branch's concern, just don't be surprised by it.
+- **The Highlight Plus 2 visual for MRM-16's "object highlights" has already been designed and
+  tuned (2026-09-08, in Playground, not yet ported)** — a Spider-Punk-style thick jagged animated
+  outline, Carlos-approved for extensive use in both this issue and MRM-42's inventory UI. Full
+  settings table, the shader math behind it, known traps, and the migration checklist are in
+  `Docs/highlight-plus-2-punk-outline.md`. Use those tuned values instead of vendor defaults when
+  MRM-16's highlight implementation is actually built.

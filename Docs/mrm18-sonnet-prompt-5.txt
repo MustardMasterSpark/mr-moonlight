@@ -1,0 +1,112 @@
+MRM-18 — Main Menu — next piece: buttons/font/overall styling rework (written 2026-09-08)
+
+READ FIRST: Docs/mrm18-main-menu-build-summary.md — READ THE WHOLE THING, it's long but every
+section is load-bearing, especially the "2026-09-08 session" entry at the bottom (the title
+sequence build you're picking up after). Older mrm18-sonnet-prompt*.txt files are superseded/
+reverted-work history, not required reading unless you want the blow-by-blow.
+
+STATE: branch mrm-18, NOT committed (Carlos commits via GitHub Desktop - suggested message below).
+Issue stays OPEN, still "In Review" in Linear. The intro/title sequence (cross, logo, disclaimer,
+feather fall, world reveal) is DONE and Carlos-confirmed working end to end.
+
+===============================================================================
+WHAT'S DONE - DO NOT REBUILD, THIS ALL WORKS
+===============================================================================
+- `TitleSequenceController.cs` (Code/Runtime/UI/) drives a music-anchored sequence off
+  `AudioSource.time` on `MUS_RisingStorm2LayinLow.wav`: cross+Greek text (breakpoint 0, instant
+  show, grows, fades), studio logo (breakpoint 1, same pattern, "2026" text excluded from the
+  scale animation), two-part disclaimer (breakpoints 2/3, independent fade-ins, shared fade-out).
+  Every timestamp/duration lives in `MoonlightTunables` (`TitleBreakpoint*`, `TitleGrowStop...`,
+  `TitleFadeOut...`, `TitleElementStartScale`, `Disclaimer*`, `TitleGapBeforeFeatherStarts`,
+  `TitleSequenceStartDelay`) - re-timing anything is a Tunables edit, not a code change.
+- The feather now visibly starts falling at exactly **12.115s** of the song and lands at
+  **16.115s** (a fixed 4.0s fall, tuned by Carlos, don't shorten it - see the build-summary doc's
+  "real scheduling conflict" section for why that number is load-bearing). If Carlos gives new
+  disclaimer content/timing later, anything after breakpoint 3 needs to fully clear the screen by
+  12.115s - `TitleSequenceController.ComputeFeatherStartSongTime()` is the one place that math
+  lives.
+- `MoonlightTunables.TitleSequenceStartDelay` (1.5s) - a black-screen buffer before the music
+  starts at all, so Play Mode's own load/settle time doesn't desync what Carlos sees from the
+  song-anchored breakpoints.
+- **A real, deep bug found and fixed: URP does not output a usable alpha channel for a camera
+  rendered to a RenderTexture** (confirmed empirically, several standard fixes tried and ruled
+  out - see `[[urp_rendertexture_alpha_broken]]` in memory and the build-summary doc). Fixed via
+  difference matting (`CaptureMattedFeatherSnapshot` in `MainMenuController.cs`) - a one-time
+  snapshot taken the instant the feather lands, not a continuous render. **If any future work
+  needs to render a 3D object to a transparent texture for UI compositing, skip straight to this
+  technique** rather than re-diagnosing the same URP limitation from scratch.
+
+===============================================================================
+THE ASK - NOT YET SCOPED, ASK CARLOS BEFORE BUILDING
+===============================================================================
+Carlos's own words, said in passing while approving the title sequence: "We will change the main
+menu, the font, and the buttons but first let's build this sequence." That "this sequence" is now
+done. The buttons/font/menu styling itself has NOT been discussed in any detail yet - same
+situation as the title-sequence ask originally was (vague on purpose, he pins down specifics once
+you ask). Do not guess at scope. Likely open questions to ask him directly:
+- Does this replace the current plain TMP-default-font Start/Settings/Credits/Quit buttons with
+  something styled to match the cross/logo/disclaimer aesthetic (the blackletter/Orthodox-icon
+  visual language already established), or is it a separate visual direction?
+- Real button art/textures, or still placeholder shapes with just a font swap?
+- Does "the font" mean the button labels specifically, or the whole menu's typography (titles,
+  settings labels, credits text) getting a pass?
+- Is there a reference (another slide, mockup, or asset folder) like the one that drove the title
+  sequence, or is this more open-ended/his call as you go?
+
+===============================================================================
+TRAPS ALREADY KNOWN IN THIS AREA
+===============================================================================
+- **Play Mode discards scripted edits on stop** - hit repeatedly this session (rain rate, ripple
+  tuner values, needed re-applying more than once). Always confirm `Application.isPlaying == false`
+  before an edit you need to persist, and re-verify the value stuck after Carlos stops Play.
+- **A file copied into `Assets/_Project/Audio/` via script (not dragged into the Editor) lands on
+  the wrong import preset** even with the correct filename prefix - apply the right `Aud_*` preset
+  by hand afterward (see `Docs/audio-import-workflow.md`'s own troubleshooting note, now confirmed
+  a second time).
+- **Deleting a `.cs` file from disk without first removing its component from the scene** leaves a
+  dangling "missing script" reference on whatever GameObject had it - caught and fixed once this
+  session (`FadeOverlay` had `SplashSequence`'s ghost after its file was deleted). Always check
+  `GameObjectUtility.RemoveMonoBehavioursWithMissingScript` or a manual scene sweep after deleting
+  a script that's used as a live component, not just a search for remaining code references.
+- **URP camera-to-RenderTexture alpha is broken project-wide** (see above) - don't reach for that
+  technique for anything new without using difference matting from the start.
+- Screen Space - Overlay Canvases always composite after ALL camera rendering (base + any stacked
+  overlay cameras) - Camera Stacking does NOT help make something "immune" to a UI element's
+  coverage; only a separate, higher-sort-order Canvas can sit visually on top of another Canvas.
+
+===============================================================================
+SUGGESTED COMMIT MESSAGE (text only - Carlos commits via GitHub Desktop)
+===============================================================================
+
+    MRM-18: music-anchored title sequence (cross, logo, disclaimer, feather sync)
+
+    Replace the placeholder splash cards with a precise sequence built to Carlos's exact
+    second-by-second spec, driven directly off the reference track's own playback time
+    (TitleSequenceController.cs) rather than a fixed animation timeline - every breakpoint,
+    grow/hold/fade window, and the pre-sequence black buffer live in MoonlightTunables.
+    Imports a Greek-cross image, studio logo elements (rays/beam/dove), four new fonts with
+    generated TMP SDF assets, and the reference music track (patched a broken WAV header
+    that Unity refused to import, losslessly, header metadata only).
+
+    Resolves a genuine scheduling conflict between the feather's tuned 4-second fall and the
+    disclaimer's original timing by moving the disclaimer's second paragraph earlier, keeping
+    the fall duration and the exact landing second both untouched, per Carlos's explicit call.
+
+    Fixes a real URP limitation found and confirmed during this work: a camera rendered to a
+    RenderTexture for UI compositing (used to isolate the intro feather from the rest of the
+    scene during the world-reveal fade) never outputs a usable alpha channel in this project's
+    pipeline configuration, regardless of clear flags, HDR, post-processing, or the pipeline
+    asset's own alpha-output setting - confirmed by reading back individual rendered pixels.
+    Worked around via difference matting: a single snapshot of the feather captured against
+    both a black and a white background the instant it lands, with true per-pixel alpha
+    recovered mathematically from the two, sidestepping the broken channel entirely.
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01VMTeSm5y5dQut3UWPLn5ap
+
+===============================================================================
+NEXT STEP FOR THE PICKING-UP SESSION
+===============================================================================
+Wait for Carlos. When he brings up the buttons/font/menu styling work, ask the scope questions
+above before touching anything - same pattern that worked well for the title sequence (he gave
+exact specs once asked, rather than guessing paying off).

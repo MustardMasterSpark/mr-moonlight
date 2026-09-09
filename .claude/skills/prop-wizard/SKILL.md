@@ -121,6 +121,13 @@ trees. Name the folder for **what it represents**, not the source filename.
 `MoonlightTextureImporter.cs` applies import settings automatically off the suffix.
 **Read the Console and confirm it fired.**
 
+BaseColor ceiling is 512 by category default, 1024 for Weapons, 2048 for Characters/Enemies. A
+rare singular "hero" background prop (large onscreen, one instance - e.g. Moon, MRM-18
+2026-09-07) can outgrow 512 without belonging in Weapons/Characters; `CeilingFor()` in that script
+has a `HeroEnvironmentFolders` array for exactly this - add the prop's specific folder there
+rather than bumping the whole category (numerous small environment props like vegetation are
+correctly served by the 512 default and shouldn't inherit a bump meant for one asset).
+
 Mesh import: **Scale Factor 1 · Materials = None · Tangents Calculate Mikktspace · Read/Write off
 · Optimize Mesh on.**
 
@@ -135,15 +142,28 @@ Mesh import: **Scale Factor 1 · Materials = None · Tangents Calculate Mikktspa
 | `_AffineTextureStrength` | `1.0` |
 | `_LightMode` | `1` — TexelLit |
 | `_DitherMode` | `0` — Screen |
-| `_ResolutionLimit` / `_ColorBitDepth` | Off — in practice this means a high value (8192 /
-256), matching the shader's own math (`log2(_ResolutionLimit)`, `max(2, _ColorBitDepth)`); there
-is no literal "off" state. Copy from an existing material (e.g. `M_RF_Trees.mat`) rather than
-guessing |
+| `_ResolutionLimit` / `_ColorBitDepth` | `8192` / `256` — a real literal value, not an index.
+There is no "off" state; these feed `log2(_ResolutionLimit)` and `max(2, _ColorBitDepth)`
+directly, so `0` is not neutral, it's `log2(0)` (broken) and 2-level posterization (colourful
+static on anything with real gradient detail, e.g. a photographic texture) |
 | `_Glossiness` | `5`; raise to `10–20` for metal |
 | `_AlphaClip` | only for cutout foliage/cloth. **Never** Surface Type = Transparent |
 
-⚠ **`SetInteger`, not `SetFloat`**, on the Integer-typed retro properties — `SetFloat` silently
-fails to persist.
+⚠⚠ **`Material.GetInt()` returns wrong/stale values for this shader's Integer-typed properties —
+confirmed on Unity 6.3, this project's version.** Cost a full material rebuild on the Moon prop
+(MRM-18, 2026-09-07): reading `M_RF_Trees.mat` via `mat.GetInt("_ColorBitDepth")` returned `0`;
+the actual value serialized in that file on disk is `256`. **Never trust `GetInt`/`SetInteger`
+read-back for these properties from script - read the reference material's raw `.mat` YAML file
+directly instead**, and verify a value you just set the same way (or via `mat.shaderKeywords` for
+the `[KeywordEnum]` properties below, which - separately - DO write correctly via `SetInteger`,
+only the *read* is unreliable).
+
+⚠ On the five `[KeywordEnum]` properties (`_LightMode`, `_FilterMode`, `_WrapMode`, `_DitherMode`,
+`_SnapMode`): the shader branches on the **keyword**, not the stored int mirror. Scripting one of
+these needs both calls - `mat.SetInteger("_FilterMode", 1)` **and**
+`mat.EnableKeyword("_FILTERMODE_POINT")` (with the other options in that enum explicitly
+disabled) - or the material may compile into whatever variant was last active. Verify via
+`mat.shaderKeywords`, not `GetInt` (see above).
 
 ⚠ **Setting `_AlphaClip` to 1 via script does nothing on its own.** The shader's actual cutout
 (`clip(baseColor.a - _Cutoff)`) is gated behind `#ifdef _ALPHATEST_ON` — a shader_feature

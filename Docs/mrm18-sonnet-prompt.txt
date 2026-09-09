@@ -1,0 +1,182 @@
+MRM-18 — Main Menu — session handoff (written 2026-09-07, evening checkpoint)
+
+READ FIRST: Docs/mrm18-main-menu-build-summary.md for the older build history, and
+Docs/retrolit-wind-sway.md if the next task touches wind/vegetation at all. This file is just
+the "start here cold" pointer for what changed THIS session (2026-09-07 afternoon/evening),
+picking up from the earlier 2026-09-06/07 session (SSRR removal, Crest reflections, rain
+ripple port) already recorded in the build summary.
+
+STATE: branch mrm-18. Everything below is done and verified live, but NOT committed —
+Carlos commits via GitHub Desktop, never do it from Claude Code. A ready-to-use commit
+message was handed to him alongside this file at the same checkpoint; check the latest git
+log / GitHub Desktop to see whether he's committed since.
+
+WHAT'S DONE AND VERIFIED THIS SESSION (all in Mr. Moonlight's MainMenu scene unless noted):
+
+1. Diagnosed a false alarm: Carlos reported "the water disappeared, the plane looks small."
+   Nothing was broken — Crest's WaterRenderer builds no mesh in Edit Mode (only at runtime),
+   so selecting it while stopped just shows its BoxCollider gizmo (30x30, sized for rain-particle
+   collision catching, not the visual footprint). Confirmed via Play Mode screenshot that the
+   pool renders correctly. No code change.
+
+2. Ported RippleTuner.cs from Playground into Mr. Moonlight
+   (Assets/_Project/Code/Vendor/Dynamic Radial Masks/Scripts/RippleTuner.cs), retargeted from
+   DRMOnMouseRaycast (Playground's demo trigger) to DRMOnParticleCollision (this project's
+   actual rain-ripple trigger). Attached to the "Light Rain" child of LightRain in the
+   hierarchy — NOT a separate hierarchy entry, it's a component on the existing particle system
+   object. Six live sliders (Duration/MaxRadius/StartIntensity/RingFrequency/LineThinness/
+   WaveTravel), defaulted to the already-shipped tuned values, so nothing changed until Carlos
+   drags a slider.
+
+3. Retinted the ripple white->red: M_RippleOverlay.mat's _RippleColor is now (1, 0.12, 0.08, 1)
+   instead of white — the shader already had this property, it just wasn't being used.
+
+4. Fixed "only a few raindrops generate ripples": DRMLiveObjectsPool.AddItem() hard-caps
+   concurrent ripples at DRMController.count, which was 8 (baked into the original ported
+   .cginc's array size — Amazing Assets' shader-per-count naming convention, e.g.
+   "..._Ripple_8_Advanced_..."). Rain collision rate far exceeds 8/0.45s. Hand-authored a new
+   count=200 variant (DynamicRadialMasks_Ripple_200_Advanced_Additive_ID1_Local.cginc, same
+   Vendor/Dynamic Radial Masks/Shaders/ folder — old count=8 file left in place, unused),
+   updated RippleOverlay.shader's #include/function call, bumped RippleController's
+   DRMController.count to 200. Even 200 stays fully saturated under the current rain density,
+   but it now reads as continuous, dense rain-dappled water — a big visual improvement over the
+   original 8. Going higher than 200 (the vendor's own Inspector-slider ceiling) risks real
+   GPU/GC cost for diminishing visual return; flagged to Carlos, not pursued further.
+
+5. Retinted the rain itself blood-red (not just the ripple): Light Rain's main.startColor
+   (both TwoColors endpoints), RainBubble's startColor, RainSplash - 1/2's startColor all
+   changed from white to (1.0, 0.15, 0.12) at their respective original alphas. Verified via
+   ParticleSystem.GetParticles() that live particles actually sample the new color, not just
+   the Inspector default.
+
+6. Added FeatherWaterWobble.cs (Code/Runtime/World/) to both Prop_EagleFeather and
+   Prop_SparrowFeather — gentle two-axis rotational sway (pitch+roll, two sine waves at
+   different speeds) to sell "resting on water." Auto-detects a FeatherFall on the same
+   GameObject via GetComponent in Awake (no manual wiring); while FeatherFall.IsFalling is
+   true it stays fully inactive so it never fights the fall animation, and the instant the
+   sparrow lands it captures whatever orientation the fall settled on as its new rest pose.
+   Eagle feather (no FeatherFall, static prop) wobbles from frame one. Sliders: Pitch Amplitude,
+   Roll Amplitude, Wobble Speed, Randomize Phase.
+
+7. Built a reusable wind-sway system for RetroLit vegetation — NOT menu-specific, this is a
+   general project capability now. Full writeup: Docs/retrolit-wind-sway.md (read this before
+   touching wind on the Island or anywhere else). Short version:
+   - RetroLit.shader + its .hlsl includes moved from git-ignored Assets/ThirdParty/Retro
+     Shaders Pro/Shaders/ into tracked Assets/_Project/Code/Vendor/Retro Shaders Pro/Shaders/
+     (the CustomEditor GUI script stayed in ThirdParty — found by class name, not path, so it
+     doesn't need to move).
+   - New RetroWind.hlsl has the shared ApplyMoonlightWind() function, called from the main
+     forward pass AND the shadow caster / depth-only / depth-normals passes (so shadows/depth
+     sway with the mesh, not separately).
+   - Per-material properties: _WindEnabled (off by default — every material that hasn't opted
+     in is byte-for-byte unaffected), _WindCategory (0=Trees, 1=Flowers), _WindHeight (local
+     units, sway ramps to full strength here), _WindFlexibility (per-species multiplier).
+   - RetroLitWindController.cs (Code/Runtime/World/), on a "WindController" GameObject in the
+     hierarchy: Wind Direction, Wind Speed, Tree Intensity, Flower Intensity sliders — exactly
+     what Carlos asked for by name.
+   - All 6 tree species + 3 flower species currently in the scene are opted in with per-species
+     tuned height/flexibility (dead/burnt trees flex less). AP_Flower_001_09 has no renderer
+     yet (staging placeholder) — nothing to enable wind on until it has a mesh.
+   - Verified live: trunk stayed pixel-identical between two frames while the canopy visibly
+     shifted.
+
+8. Added a CRT post-process filter scoped to MainMenu only: GlobalVolume_CRT (Volume,
+   isGlobal=true) + a new VP_MainMenuCRT.asset profile (Assets/_Project/Settings/), scanlines
+   + light chromatic aberration, barrel distortion/tracking off. The renderer feature that runs
+   it (CRTEffect on PC_Renderer.asset) was already enabled project-wide — this just gave it a
+   Volume to read from, scoped to this one scene (Island and the shared DefaultVolumeProfile
+   untouched). UI is automatically exempt: both Canvases in this scene are Screen Space -
+   Overlay, which Unity always composites after the camera + all post-processing finishes, so
+   no masking work was needed.
+   TRAP HIT AND FIXED: the first attempt at building the Volume Profile via script
+   (VolumeProfile.Add<T>()) left the CRTSettings component un-persisted — it needs an explicit
+   AssetDatabase.AddObjectToAsset(component, profile) call before CreateAsset/SaveAssets, or it
+   silently reads back as a fresh default (enabled=false) on the next load. Caught by checking
+   live values in Play Mode rather than trusting the write, per the project's own "confirm with
+   a screenshot/live-check" rule.
+
+NOT VERIFIED: I never managed to get a screenshot with the actual menu buttons/title visible
+together with the CRT effect — the intro's disclaimer/feather-fall/fade sequence runs longer
+than expected, and force-activating the Canvas out of sequence just showed its own intro black
+panel. The Overlay-mode exemption is a structural Unity guarantee, not something that needs
+empirical proof, so this isn't a real risk — but if Carlos ever sees CRT bleeding onto UI, this
+is the first place to look (check no Canvas got switched to Screen Space - Camera/World Space).
+
+TRAPS TO REMEMBER (new this session, on top of the ones already in the build-summary doc):
+- DRMLiveObjectsPool silently drops new ripples once DRMLiveObjects.Count >= DRMController.count
+  — no warning, no error, they just don't appear. If ripples/effects "mostly don't show up,"
+  check this cap first.
+- The per-count DRM .cginc files (Ripple_8_..., Ripple_200_...) are a purely mechanical
+  template — only the array size and the unrolled loop bound change with count. Safe to
+  hand-author a new count without the actual Amazing Assets editor tool (which isn't installed
+  in this project — only ThirdParty/DynamicRadialMasks/ exists as an empty leftover folder).
+- Building a VolumeProfile + VolumeComponent via script needs an explicit
+  AssetDatabase.AddObjectToAsset() call for the component before saving, or it silently doesn't
+  persist. See CRT section above.
+- Moving a vendor .shader file that has relative #include paths means moving every file it
+  #includes (transitively) into the same new folder together, or the includes break. Custom
+  Editor GUI scripts (CustomEditor "...") are the exception — they're found by class name, not
+  path, so they can stay put even when the shader itself moves.
+
+NEXT UP (Carlos's own words, do NOT start without his go-ahead): a new skybox, clouds using
+another (not-yet-specified) asset, and a moon. Nothing about this has been scoped, chosen, or
+started this session — but a Linear check while wrapping up turned up a major head start, so
+read this before assuming it's a cold start:
+
+- **MRM-47** ("World lighting — global illumination, skybox transitions, apocalyptic red") already
+  ruled on the clouds asset question. **Altos Volumetric Clouds is rejected for the Island**
+  (verified in source: it unconditionally nulls `RenderSettings.skybox` and overrides
+  `ambientMode` to Trilight, colliding with `SkyboxSwitcher`, `TimeManager`, and the apocalyptic-red
+  GI swap — four simultaneous collisions with tuned systems) **but explicitly adopted for the main
+  menu**, since MRM-18 is a separate scene with none of those systems to collide with. MRM-47's own
+  text: "Pairs well with URP Wet Shaders for a rain-and-cloud title backdrop." If Carlos wants
+  Altos, this is likely already the intended asset — confirm with him rather than researching
+  alternatives from scratch.
+- MRM-47's progress log also shows **6 skies already extracted** from the owned AllSky 220 pack,
+  sitting at `Assets/_Project/Art/Environment/Skyboxes/` as ready-to-assign `Skybox/Cubemap`
+  materials (`M_Sky_FishHoekBeach`, `M_Sky_FantasyClouds1Low`, `M_Sky_SpaceNebulaDeepBlack`,
+  `M_Sky_NightSkyglowOvercast`, `M_Sky_NightSkyglowHeavy`, `M_Sky_FantasySkyFire`) — built for the
+  Island, but nothing stops reusing the same pack/technique for a menu-specific sky.
+- No moon asset has been identified anywhere in Linear yet — that part genuinely does look
+  unscoped. Ask Carlos what he has in mind before picking one.
+- Full triage reasoning: `Docs/new-asset-list.md` §36/§46, and MRM-47 itself (read it in full,
+  it's dense — the parked-assets section at the top is the load-bearing part).
+
+Still: wait for Carlos to actually kick this off. This paragraph is prep, not a green light.
+
+SUGGESTED COMMIT MESSAGE (text only — do not run this, Carlos commits via GitHub Desktop):
+
+    MRM-18: ripple tuner + rain retint, feather water wobble, RetroLit wind sway, CRT filter
+
+    Port the Playground RippleTuner into Mr. Moonlight (retargeted to
+    DRMOnParticleCollision) and retint the rain ripple, raindrops, and splash/bubble
+    particles blood-red to match the pool. Raise the ripple pool cap from 8 to 200
+    concurrent instances - 8 was silently dropping most rain-water collisions.
+
+    Add FeatherWaterWobble for the idle floating sway on both main-menu feathers,
+    gated on FeatherFall.IsFalling so the sparrow only wobbles after landing.
+
+    Add a reusable per-vertex wind-sway feature to the shared RetroLit shader
+    (off by default, zero cost/visual change for every other material) with a
+    RetroLitWindController for scene-wide Tree/Flower intensity control. Relocate
+    RetroLit's shader files out of the git-ignored ThirdParty/ into tracked
+    Code/Vendor/, matching existing vendor-code convention. Enable wind on the
+    13 staged tree/flower materials. Documented in Docs/retrolit-wind-sway.md
+    for reuse beyond the main menu.
+
+    Add a CRT post-process filter scoped to MainMenu only (GlobalVolume_CRT +
+    VP_MainMenuCRT profile) - UI is naturally exempt since both canvases are
+    Screen Space - Overlay, which composites after the camera/post-process stack.
+
+    Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_01XyGMv9RRtECPNQcgvLpWi9
+
+ALSO FLAGGED, NOT PART OF THIS ISSUE'S WORK: `git status` shows a one-line incidental diff in
+`Packages/com.waveharmonic.crest/Runtime/Materials/Water Volume.mat` (an auto-recorded invalid
+shader-keyword cache entry, harmless, produced by repeated Play Mode sessions with Crest active
+this session, not an intentional edit). Worth a glance before committing but not investigated
+further.
+
+NEXT STEP FOR THE PICKING-UP SESSION: wait for Carlos. If he opens with the skybox/clouds/moon
+work, start by asking which asset(s) he has in mind for the clouds (he said "another asset,"
+meaning not one already in the project) before doing any research or picking one yourself.
