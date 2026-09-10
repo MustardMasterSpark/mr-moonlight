@@ -28,7 +28,7 @@ Robert = *Chief* (Rylee) · William = *Will*, *Tinman* (Robert) · Vernon = *the
 
 | Canonical | Also seen as | Type |
 |---|---|---|
-| **Spotter** | | Ranged cultist. Lamp + double-barrel shotgun. Flare summons reinforcements |
+| **Spotter** | | Ranged cultist. Lamp + double-barrel shotgun. Flare summons reinforcements. **CURRENT IMPLEMENTATION IS LEGACY, 2026-09-10 (Carlos).** The *Spotter* enemy type continues past the class demo into the capstone — it is not going away — but with changed definitions (behaviour/stats specifics not yet given). **This exact implementation (this AI, this model) ships as-is for the class demo and then gets discarded/rebuilt from scratch for the capstone.** No further feature investment in the current build beyond what the demo needs; don't design new systems assuming this implementation persists |
 | **Zealot** | ~~seller~~ *(dictation error)* | Melee cultist. Sneak + backstab |
 | **Wolf** | | Pack behaviour. First enemy the player meets |
 | **Wendigo** | ~~Furman~~ ~~Fureman~~ ~~Furyman~~ | The boss. Berserker charge. **RENAMED 2026-08-28 (Carlos).** Was "Furman"; the demo now refers to it simply as **the Wendigo**, matching its new form (Wendigo Forest Beast Collection). Use `Wendigo` in code, prefabs, animation states and audio folders. The screenplay still says Furman — it is background-only, this table is the ruling. See MRM-36 |

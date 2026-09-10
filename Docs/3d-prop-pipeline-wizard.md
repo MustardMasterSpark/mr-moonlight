@@ -577,6 +577,68 @@ all 10) — cheap relative to the 3,000-credit top-up Carlos just bought specifi
 3D generation. Each view has 4 image variants; which variant to feed in per view was still an open
 question — pick up from there.
 
+**Update 2026-09-10 (following session) — full 3D generation pass complete for all 10
+characters.** Picked up from the note above. The plan changed on Carlos's direction into a
+**twofold strategy per character**, both halves live via Claude in Chrome browser automation
+against Tripo's 3D Workspace (Smart Mesh, P2.0 Preview, Quad topology, Privacy always Private):
+
+1. **Character Extraction** (Image tab, Nano Banana 2 — cheaper than GPT Image 2 and Tripo's own
+   recommended model for this feature, not the rejected Nano Banana Pro) on the front view only,
+   producing a single contact-sheet image of the character's separate wearable/equipment pieces.
+   A local Python script (`crop_extraction_sheet.py`, written this session, not yet moved into
+   `Tools/`) splits the sheet into individual part images via background-color diffing + row/
+   column band detection — plain connected-component labelling needed for some sheets since a tall
+   item (e.g. pants) can bridge rows and defeat a simpler projection approach. Carlos then gated
+   which parts were worth sending to 3D per character (all of them for Tracey and Holly as the
+   two hero characters; a trimmed judgement-call subset for the eight enemies) — each part becomes
+   its own small FBX via Batch Images to 3D, landing in that character's `separated/` folder.
+2. **MultiView Images to 3D** (front/left/right/back — omitting a missing lateral view where the
+   character's reference set doesn't have one; Tripo's multiview generator tolerates 3 of 4 views
+   fine) at 3000 polycount, producing the full-body T-pose blockout with a 2K baked texture. This
+   is the primary deliverable and lands as `<char>_fullbody.fbx` in the character's root folder.
+
+**Result: all 10 characters done** (Devil, Clown, Executioner, Boxer, Pig, Horned-Prosthetic,
+Bear, Rabbit, Holly, Tracey) — one `<char>_fullbody.fbx` each plus 1–13 separated-part FBXs
+(scaled to what each character's wardrobe actually had; Bear's stitched-teddy design has almost
+nothing removable, Tracey and Holly got the full treatment). Total cost across both sessions:
+**3,235 credits spent of the 6,000 Carlos bought** (two top-ups, one mid-run when the first ran
+low), balance **2,300 left** — earmarked by Carlos for the October static-prop/staging pass rather
+than more character work.
+
+**Traps found this session, worth keeping if this pipeline runs again:**
+
+- **Reload the Tripo tab before starting a new character, every time.** The single-image upload
+  slot can silently keep submitting a *stale* reference from the previous character to the
+  generation backend even after the UI thumbnail visibly updates to the new one — burned 20
+  credits on two duplicate extractions before this fix. A full page navigate (not just clearing
+  the upload slot) resets it reliably. Confirmed this is now the standing procedure.
+- **Batch Images to 3D silently drops one item from N fairly often** — uploading 5–9 images
+  sometimes yields one fewer output tile, no error shown. Always count tiles against upload count
+  before exporting the batch; regenerate the missing one via single-image mode (cheap, same
+  quality) rather than assuming the batch is complete.
+- **The "Upload 3D Model" button sits directly adjacent to asset tiles in the panel** and is easy
+  to mis-click mid-export-loop — it opens a native OS file picker invisible to browser automation
+  and will hang the session if clicked. Costs nothing but time to recover from (just Cancel it),
+  but worth calling out since it happened more than once.
+- **Character Extraction only isolates what's already drawn** — it cannot invent a shirt under an
+  open jacket or extend fingerless gloves to full coverage if the source art doesn't have them.
+  Both came up as Carlos concerns this session; resolution in both cases was **the full-body
+  multiview mesh reconstructs those areas solid anyway**, since it works from the front/left/back
+  views directly rather than from the flat extracted-part cutouts. Confirmed by inspection on the
+  Executioner (shirt collar visible, hands full 5-finger) — the concern doesn't carry through to
+  the actual deliverable.
+- **A source sheet's divider lines/labels can fool naive background-diff cropping** into merging
+  the whole sheet into one blob (or, conversely, detecting the number labels as their own tiny
+  false-positive crops) — happened on Pig, Executioner and Bear's sheets, all recovered by hand
+  once flagged. Worth a smarter connected-component approach if this crop script gets reused.
+
+All of this stays **outside git** in `C:\Users\calva\Desktop\3D Characters\AI IMAGES CONCEPTS\`, per
+the provisional/demo-only note at the top of this section — nothing here is final art direction.
+**Carlos is taking it from here into Blender himself** (cleanup, merging the separated parts with
+the full-body blockout, T-pose verification) rather than handing that stage to Claude this round;
+Stage 2 onward per `Docs/character-pipeline-guide.md` resumes whenever he's ready to hand a
+cleaned mesh back.
+
 ---
 
 ## 5. Path 2 — Static prop

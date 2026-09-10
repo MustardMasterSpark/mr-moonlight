@@ -1,0 +1,98 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session.
+
+===========================================================================
+WHERE THINGS STAND
+===========================================================================
+
+**The N64/DDR1/Mega Man Legends restyle 3D asset pipeline is fully done.** Across two sessions
+(2026-09-09 image pass, 2026-09-09/10 3D generation pass), all 10 characters — Devil, Clown,
+Executioner, Boxer, Pig, Horned-Prosthetic, Bear, Rabbit, Holly, Tracey — now have a full-body
+T-pose blockout FBX (2K texture) plus 1–13 separated-part FBXs each, generated live via Claude in
+Chrome browser automation against Tripo. Full detail, traps found, and the exact folder layout are
+in `Docs/3d-prop-pipeline-wizard.md` §4.12 (search for "2026-09-10" for the final update) and the
+Linear comment trail on MRM-72. Everything lives outside git at
+`C:\Users\calva\Desktop\3D Characters\AI IMAGES CONCEPTS\` — nothing here is committed or ever will
+be directly; it's provisional/demo-only concept art per the hard note at the top of §4.12.
+
+**Carlos is taking it from here himself, in Blender.** He said explicitly: the next changes —
+polishing detail, merging the separated parts with the full-body blockout, cleanup — are his to
+do, not something to pick up automatically. **Do not start Blender/character-pipeline work in the
+next session unless Carlos specifically hands you a cleaned mesh and says so** (the
+`"Stage 2 done"` / `"Stage 3 done"` phrases from `Docs/character-pipeline-guide.md` are the signal
+to watch for). If he hasn't gotten to it yet, that's expected — don't chase it.
+
+Tripo credit balance at end of last session: **2,300 of 6,000 purchased**, plus a **3,000-credit
+subscription refill landing October 1st**. Carlos's explicit call: the October refill is earmarked
+for **static props / level staging**, not more character work. Don't spend Tripo credits on
+characters again without him raising it.
+
+===========================================================================
+WHAT THIS SESSION IS ACTUALLY FOR
+===========================================================================
+
+Carlos wants **small tweaks on the Island scene** to wrap up a shareable demo for class — this is
+the **last assignment for the class**. Scope is explicitly narrow:
+
+- **Bug fixing and quality-of-life improvements only.** Not new systems, not new content.
+- **Carlos is at ~85% of his weekly token budget already.** Keep changes small and targeted. Don't
+  open-endedly explore or refactor — pick the specific thing he names and fix just that.
+- This is Unity/Blender scene work, which means the standing hard rule applies: **ask Carlos for
+  permission before touching Island.unity or any Unity state**, do it, verify by reading the actual
+  component/scene state back, document what changed. Same for Blender if it comes up.
+
+**No specific bug/QoL list was handed off — ask Carlos what he wants tweaked** when the session
+starts, rather than guessing. Candidates that were open as of last session, in case he doesn't have
+a list ready and asks what's outstanding (do not assume any of these are what he means — just
+context if he asks "what's left"):
+
+- MRM-73 "Fix Super Jump" — ground-check/spherecast issue, 3 fix attempts already made, still
+  recurring per `mrm9_groundcheck_spherecast_fix.md` memory. Possibly worth a 4th targeted look if
+  it's still visibly broken, but don't rabbit-hole on it given the token budget.
+- MRM-18 main menu — was "In Review, still open" last touched; title reveal, font-atlas, gamepad
+  nav all placeholder-quality per memory. Low priority unless Carlos specifically flags it for the
+  demo.
+- MRM-16 (Interaction system), MRM-42 (Inventory UI), MRM-47/MRM-69 (world lighting / time
+  manager) were all **In Progress** in Linear as of last session — any of these could be where a
+  QoL pass lands, but again: ask, don't assume.
+- `E:\MrMoonlight\Docs\Design\` design docs are background only per `CLAUDE.md` — Linear is the
+  source of truth if there's any conflict.
+
+===========================================================================
+IMPORTANT — SPOTTER: THE ENEMY TYPE STAYS, THIS IMPLEMENTATION IS LEGACY
+===========================================================================
+
+**Carlos's explicit call, 2026-09-10 — read this carefully, it's a nuance easy to get wrong:**
+*Spotter* as an **enemy type/role continues into the capstone — it is not being cut.** What
+changes is the **definitions** (behaviour/stats specifics — not yet given) and, separately,
+**this exact current implementation** (MRM-34's AI, this model — the one actually built and
+verified live per `mrm34_spotter_ai_built.md`) **is legacy: ships as-is for the class demo, then
+gets discarded and rebuilt from scratch** for the capstone. Do not describe or treat Spotter as an
+enemy that's going away — only this build of it is.
+
+**What this means in practice, starting now:**
+- Don't invest further design or feature work into *this build* beyond what the class demo
+  actually needs working. No new abilities, no behavior refinement beyond fixing something that's
+  visibly broken for the demo.
+- Don't build new systems that assume this specific AI/model as a long-term dependency — but a
+  future "new Spotter" definition is expected, so don't architect anything that would make a
+  from-scratch Spotter rebuild harder than necessary either.
+- If a QoL/bug-fix task touches Spotter, fix only what's needed for the demo to read correctly —
+  resist the urge to polish this implementation further than that.
+- This is noted in `Docs/glossary.md`'s Enemies table (Spotter row) as of this session — that's
+  the canonical place this ruling lives if it needs to be re-confirmed later.
+- The new Spotter definitions for the capstone **have not been given yet** — same situation as the
+  still-unresolved Zealot → Feral rename from earlier sessions (see `CLAUDE.md`-adjacent memory:
+  two distinct things, new Zealot never described). Don't design the new Spotter definitions
+  speculatively; wait for Carlos to bring them up with real specifics.
+
+===========================================================================
+GENERAL REMINDERS CARRIED FORWARD
+===========================================================================
+
+- One issue, one branch, one PR. Never commit or push — Carlos does that in GitHub Desktop.
+- Unity/Blender: ask permission before touching state, verify by reading it back after.
+- If this session also runs long or covers a lot of separate ground, the usual session-hygiene
+  rule applies — suggest a fresh session at a natural stopping point rather than waiting to be
+  asked, especially given the 85% token-budget starting point.
