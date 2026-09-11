@@ -20,11 +20,26 @@ owner of the *feature it stands in for* is noted separately where relevant.
 | **F6** | `SceneEffectsDebugToggle` (`Runtime/DevTools/`) | Toggles HAZE fog on/off at runtime by driving `SceneEffectsToggle` | Judge a look with and without fog without leaving play mode (2026-09-02, MRM-11) |
 | **F7** | `SceneEffectsDebugToggle` (`Runtime/DevTools/`) | Toggles the CRT post effect on/off — same component as F6 | Same reason as F6; the retro filter hides a lot, so turning it off is how you see what's actually on screen |
 | **F8** | `TimeOfDayDebugCycle` (`Runtime/DevTools/`) | Steps to the next `TimeManager` preset and wraps: Morning → Sunset → Night → Apocalypse → Morning | Compare the island's four skies without hunting for the TimeManager's context menu (2026-09-02, MRM-11) |
+| **F9** | `InfiniteAmmoDebugToggle` (`Runtime/Player/`) | Flips PolymindGames' own `GameplayOptions.InfiniteMagazineAmmo` option, which `Firearm.Shoot()` already checks before calling `TryUseAmmo` — magazine ammo is never subtracted while on, so no reload is ever needed | Carlos, 2026-09-10, alongside the magazine-size rebalance (MRM-25) |
+| **F10** | `AudioDebugMixerOverlay` (`Runtime/Audio/`) | Four `GUI.HorizontalSlider`s (menu music, weapon sounds, island music, Spotter SFX) writing straight to the two live `AudioMixer`s' exposed volume params | Carlos, 2026-09-10 — explicitly *not* the final mix, a way to tune levels himself before a build without asking for a code change each time. Present in both MainMenu.unity and Island.unity so whichever slider matters is tunable while actually audible |
 
 All of them follow the same shape: a `[SerializeField] private bool` toggle (or the state they
 drive), an `Update()` check against `Keyboard.current`, and an `OnGUI()` label only while active.
 Copy that pattern for the next one rather than inventing a new shape. Labels are stacked down the
-screen by y-offset (F3/F4 at 40-70, F6/F7 at 100, F8 at 130) so several can be on at once.
+screen by y-offset (F3/F4 at 40-70, F6/F7 at 100, F8 at 130, F9 at 160) so several can be on at once.
+
+### F9 needs no snapshot/restore — it never touches the magazine's ammo count
+
+`InfiniteAmmoDebugToggle` doesn't read or cache each weapon's current ammo before flipping the
+cheat on. It doesn't need to: `GameplayOptions.InfiniteMagazineAmmo` is checked at the point
+`Firearm.Shoot()` decides whether to call `IFirearmReloadableMagazine.TryUseAmmo` at all — when the
+option is true, that call is skipped entirely, so `CurrentAmmoCount` is simply never decremented
+while the cheat is active. Whatever a magazine held when F9 was pressed is exactly what it holds
+when F9 is pressed again — "remembering" the count falls out of not touching it, rather than
+requiring a snapshot. The toggle only calls `Option<bool>.SetValue`, never `UserOptions.Save()`, so
+it's a play-session-only flip like every other F-key here, not a persisted settings-menu change
+(the same option also has a real checkbox in the options menu, `GameplayOptionsUI` — F9 and that
+checkbox drive the same value, so leave F9 off before shipping a build meant to show real settings).
 
 ### F6/F7 restore themselves on exit — do not remove that
 

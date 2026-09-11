@@ -73,7 +73,7 @@ namespace MrMoonlight.Enemies.Spotter
 
             HasCalled = true;
 
-            _audio?.PlayAlerted();
+            _audio?.PlayAlert();
             PanicCalled?.Invoke();
 
             if (spawner == null) return;

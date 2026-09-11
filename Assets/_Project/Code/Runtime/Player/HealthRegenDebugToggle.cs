@@ -10,8 +10,9 @@ namespace MrMoonlight.Player
     /// heal back up gradually while the shipped health system (bandages, no passive regen)
     /// underneath is untouched and resumes normally the moment this is toggled off. Built so
     /// Carlos can recover vision (the red damage tint) quickly between playtest passes on the
-    /// Spotter fight without needing F4 invulnerability or a bandage every time. Toggle with
-    /// <b>F5</b> (keyboard) or the inspector checkbox. Same category as F3/F4 — see
+    /// Spotter fight without needing F4 invulnerability or a bandage every time. On by default
+    /// (island-demo-wrapup, 2026-09-10) — toggle off with <b>F5</b> (keyboard) or the inspector
+    /// checkbox. Same category as F3/F4 — see
     /// <c>Docs/debug-tools.md</c>. Owner: MRM-34 Spotter playtest, 2026-09-02.
     ///
     /// <para>Uses DOTween's own delay (<c>SetDelay</c>) for the wait, rather than a hand-rolled
@@ -25,7 +26,7 @@ namespace MrMoonlight.Player
     [RequireComponent(typeof(PlayerDamageReceiver))]
     public sealed class HealthRegenDebugToggle : MonoBehaviour
     {
-        [SerializeField] private bool regenEnabled;
+        [SerializeField] private bool regenEnabled = true;
 
         [Tooltip("Lives on 'MrMoonlight Systems', a child of Player — not on this object, so it's found rather than required.")]
         [SerializeField] private PlayerStats stats;
@@ -90,7 +91,15 @@ namespace MrMoonlight.Player
             _regenTween?.Kill();
             if (stats == null) return;
 
-            float missing = stats.Health.MaxValue - stats.Health.BaseValue;
+            // MoonlightPlayerRig.CurrentHealth, not stats.Health.BaseValue: this runs
+            // synchronously off PlayerDamageReceiver.Damaged, which fires the instant a hit lands
+            // on HealthManager - before MoonlightPlayerRig's next Update mirrors that hit into the
+            // stat. Reading the stale, pre-hit stat here computed "missing = 0" and silently
+            // skipped every hit-triggered regen; only the F5 manual toggle (which runs on its own
+            // later Update tick, after the mirror catches up) ever actually healed. Found live
+            // 2026-09-10 chasing Carlos's "red tint never clears" report.
+            float currentHealth = rig != null ? rig.CurrentHealth : stats.Health.BaseValue;
+            float missing = stats.Health.MaxValue - currentHealth;
             if (missing <= 0f) return;
 
             // MRM-9: tween through the rig, not into the stat.

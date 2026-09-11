@@ -171,7 +171,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d630bf0b2144c9e49b010756cf25177f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerStats
-  playerController: {fileID: 2700928670180724248}
+  playerRig: {fileID: 0}
 --- !u!114 &3471317500090231372
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -229,7 +229,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.DeathSequence
   playerStats: {fileID: 8727303141439953082}
-  playerController: {fileID: 2700928670180724248}
+  playerController: {fileID: 0}
   deathScreamPool: {fileID: 11400000, guid: 2f6c53755f5bb7646a181e1840eb76a1, type: 2}
   screamAudioSource: {fileID: 6700834157845401598}
   blackScreenImage: {fileID: 0}
@@ -261,6 +261,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerStatsDebugOverlay
   visible: 0
   stats: {fileID: 0}
+  font: {fileID: 0}
 --- !u!1 &158772760178293382
 GameObject:
   m_ObjectHideFlags: 0
@@ -16020,6 +16021,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerDamageReceiver
   stats: {fileID: 8727303141439953082}
   invulnerable: 0
+  rig: {fileID: 0}
 --- !u!114 &4675941928501495045
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16035,6 +16037,7 @@ MonoBehaviour:
   invulnerable: 0
   receiver: {fileID: 6925903888268430509}
   hitFlashDuration: 0.6
+  font: {fileID: 0}
 --- !u!114 &8535949558205373928
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -16047,11 +16050,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9136d887655c7549a8aca8e275af928, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.HealthRegenDebugToggle
-  regenEnabled: 0
+  regenEnabled: 1
   stats: {fileID: 0}
   receiver: {fileID: 0}
+  rig: {fileID: 0}
   delayAfterHit: 2
   regenPerSecond: 25
+  font: {fileID: 0}
 --- !u!1 &1103240093849816445
 GameObject:
   m_ObjectHideFlags: 0

@@ -17,14 +17,19 @@
 # scene-load hitch.
 wait  seconds=1
 
-# Sets the objective AND announces it centre-bottom, in one line, so the words
-# the player reads and the words the pause menu will hold can never drift apart.
-# 20 is the real demo target (Carlos, 2026-09-02). 102 Spotters are placed on the
-# island (doubled from 51, 2026-09-03, to tighten the demo's pace — each original
-# got one scattered duplicate 15-40m away), so there is comfortable slack. If you
-# change this number, change the wording in the same line — nothing keeps them in
-# sync for you.
-objective  kill_spotters  text="Homework: Kill 20 old timers"  kills=20  kind=Spotter  for=8
+# Sets the objective but does NOT announce it (announce=false, Carlos 2026-09-10 —
+# drop the "Homework: Kill N old timers" popup from the demo). text= is kept
+# non-empty anyway: Objective.Text still feeds the pause menu once MRM-19 lands,
+# so it needs to stay in sync with kills= even though nothing shows it today.
+# 100 is the real demo target (raised from 50, Carlos, 2026-09-10). This is no
+# longer a fixed pool to drain — DemoSpotterPopulationManager continuously
+# replenishes Spotters toward a floor (plus flare/panic reinforcement waves), so
+# 100 is reachable over a long enough session regardless of how many are alive
+# at once. Simultaneous alive Spotters are separately hard-capped at
+# MoonlightTunables.SpotterPopulationMax (25) so the population/wave systems
+# don't stack into an unbounded pile. If you change kills=, change the wording
+# in the same line — nothing keeps them in sync for you.
+objective  kill_spotters  text="Kill 100 old timers"  kills=100  kind=Spotter  announce=false
 
 # Waits forever on purpose. This is a player-progress wait: it resolves when the
 # twenty are dead and never otherwise, and timing it out would hand out a win

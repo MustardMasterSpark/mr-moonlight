@@ -1,0 +1,103 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session.
+
+This session is unrelated to Docs/island-demo-wrapup-sonnet-prompt.txt and
+Docs/island-demo-wrapup-2-sonnet-prompt.txt (same day, different task — those cover the Spotter
+population manager, corpse cleanup, death-drop physics, startup preset, and health regen default).
+No Linear issue was opened for this work either; it was a direct ask from Carlos ("go over all the
+weapon sounds, fix the double-fire bug, swap the DBShotgun sound, give Spotters a shotgun sound").
+If a Linear paper trail turns out to matter later, this file plus the diff is the record.
+
+===========================================================================
+WHAT THIS SESSION DID — FILE-EDIT VERIFIED (clean Unity reimport, no console errors),
+NOT AUDIBLY VERIFIED — NOBODY HAS FIRED THESE WEAPONS AND LISTENED YET
+===========================================================================
+
+Carlos's report: AKM, Hunting Rifle, and R870 would play their fire sound once, then a second one,
+unprompted, a couple seconds later, with no second shot fired.
+
+**1) Root cause found and fixed: AudioRandomContainer self-retrigger, not a script bug**
+Every weapon fire/reload/equip/etc. sound is a native Unity `AudioRandomContainer` asset
+(`Assets/_Project/Data/PolymindGames/Audio/Wieldables/AudioRC_*.asset` and a few `FPS_*.asset`).
+These containers have their own built-in `Trigger` mode, independent of any C# code:
+`m_TriggerMode: 0` = Manual (only plays when script calls `AudioSource.Play()`), `m_TriggerMode: 1`
+= Automatic (the container **retriggers itself** on a timer once the first clip finishes, with no
+script involvement at all). 19 containers across the project had `m_TriggerMode: 1` baked in —
+almost certainly a leftover default from whatever step created them (see
+`Docs/weapon-audio-system.md` §4 for the container-creation trap), not a deliberate choice anywhere.
+Flipped all 19 to `m_TriggerMode: 0` via direct YAML edit (the container's own object `fileID`
+never changed, so every prefab reference that already points at it keeps working — same "pure
+asset swap, no code" pattern the doc already used for other audio fixes).
+
+Full list fixed (all in `Assets/_Project/Data/PolymindGames/Audio/Wieldables/`): `AudioRC_Fire_AKM`,
+`AudioRC_FireTail_AKM`, `AudioRC_Fire_HuntingRifle`, `AudioRC_Fire_R870`, `AudioRC_FireTail_R870`,
+`AudioRC_Fire_M1A`, `AudioRC_Fire_Revolver`, `AudioRC_Reload_AKM`, `AudioRC_Reload_M1A`,
+`AudioRC_Reload_Revolver`, `AudioRC_EmptyReload_AKM`, `AudioRC_EmptyReload_HuntingRifle`,
+`AudioRC_EmptyReload_M1A`, `AudioRC_EmptyReload_R870`, `AudioRC_EmptyReload_Revolver`,
+`AudioRC_SwapCartridge_Revolver`, `AudioRC_Equip_CombatKnife`, `AudioRC_Throw_Molotov`,
+`FPS_Firearm_ChangeMode`.
+
+Note: only AKM/HuntingRifle/R870 were reported, but **Revolver and M1A had the identical bug** on
+their Fire containers and weren't mentioned — likely just not fired enough during testing to
+notice. Fixed proactively since Carlos's ask was a blanket "whatever sound they produce, ensure
+it's triggered once," not just the three examples.
+
+Full writeup, including how to recognize this bug again on any future container, is in
+`Docs/weapon-audio-system.md` §6 (new section this session).
+
+**2) DBShotgun fire sound — doc said this was already fixed, it wasn't**
+`Docs/weapon-audio-system.md` §5 claimed `AudioRC_Fire_DBShotgun` was swapped from the flare-gun
+stand-in to real R870 shotgun takes back on 2026-09-04 (MRM-25). Checking the actual asset showed
+it still held `HQFPS_FlareGun_Shoot` — the doc was aspirational/wrong, nobody had actually done it.
+Now genuinely swapped to `HQFPS_R870_Shoot1` + `Shoot2` (same clips the R870 itself uses). Also
+brought the container's `Volume` down from `2` (tuned to compensate for the flare clip being a weak
+match) to `0.7`, matching what the R870 plays those same clips at, since it's the same real
+recording now. That volume field lives in
+`Assets/ThirdParty/PolymindGames/HQFPS/Prefabs/Wieldables/HQFPS_Wieldable_DBShotgun.prefab` — this
+path is **gitignored** (see `Docs/thirdparty-gitignored` convention / memory), so it's live on disk
+but won't show up in `git status`/the commit. Doc corrected in place (§5), with the false-close
+flagged as a lesson (check the asset, not just the doc).
+
+**3) Spotters now have a fire sound**
+`EnemyRangedAttack.cs` was already calling `EnemyAudioHooks.PlayFire()` on every shot — the hook
+just had no clip assigned (`fire: {fileID: 0}` on `Enemy_Spotter.prefab`). Wired it to
+`HQFPS_R870_Shoot1` (same shotgun take used above). Plays through the Spotter's pre-existing
+`AudioSource` on that GameObject, which was already configured 3D (spatial blend 1 via the
+panLevel curve, MinDistance 3m, MaxDistance 40m, linear rolloff) — so it's already positional,
+louder as the player gets closer, no extra setup needed. `EnemyAudioHooks.cs`'s doc comment updated
+to reflect this (it previously said "no clips yet" for everything; `fire` is now the one exception).
+
+===========================================================================
+FILES TOUCHED THIS SESSION
+===========================================================================
+Tracked (will show in `git status`):
+- Edited script: `Assets/_Project/Code/Runtime/Enemies/EnemyAudioHooks.cs` (doc comment only, no
+  logic change)
+- Edited prefab: `Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab` (`fire` clip assigned)
+- Edited doc: `Docs/weapon-audio-system.md` (§5 corrected, new §6 added)
+- Edited 20 audio assets: `Assets/_Project/Data/PolymindGames/Audio/Wieldables/AudioRC_Fire_DBShotgun.asset`
+  (element swap) + the 19 `m_TriggerMode` fixes listed above
+
+Untracked (gitignored, won't show in `git status`, but live on disk and functional):
+- `Assets/ThirdParty/PolymindGames/HQFPS/Prefabs/Wieldables/HQFPS_Wieldable_DBShotgun.prefab`
+  (`_fireAudio.Volume` 2 → 0.7)
+
+===========================================================================
+WHAT'S NEXT
+===========================================================================
+**First**: get in the editor, equip AKM / Hunting Rifle / R870 / Revolver / M1A / Double Barrel one
+at a time, fire each a few times, and confirm by ear that (a) no delayed repeat happens anymore on
+any of them, (b) the Double Barrel now sounds like a real shotgun instead of a flare gun, (c) the
+Double Barrel isn't now too quiet/loud relative to the R870 (the 0.7 volume was a judgment call, not
+measured against Carlos's ears). Also spawn/find a Spotter and get it to fire — confirm the new
+shotgun sound plays, and that it's audibly louder up close than from a distance (should already be
+true from the pre-existing AudioSource 3D settings, but worth actually hearing).
+
+If any weapon still double-fires after all this, the next thing to check is NOT the C# fire code —
+re-read `Docs/weapon-audio-system.md` §6 first, this exact class of bug is fully documented there
+now including how to recognize it (`m_TriggerMode: 1` on the container asset).
+
+Beyond that, no specific next task was queued. Ask Carlos what's next, or check the still-open
+candidates list in `Docs/island-demo-wrapup-sonnet-prompt.txt` (MRM-73 super jump, MRM-18 menu
+polish, MRM-16/42/47/69 in-progress systems) if he doesn't have something specific ready.

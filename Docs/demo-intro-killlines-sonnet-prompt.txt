@@ -1,0 +1,173 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session. Model: Sonnet 5.
+
+No Linear issue — Carlos asked for this directly in chat (ELVTR demo submission polish),
+same pattern as island-demo-wrapup-sonnet-prompt.txt / gameover-tint-restart-sonnet-prompt.txt.
+
+===========================================================================
+WHAT THIS SESSION BUILT — DONE AND VERIFIED LIVE
+===========================================================================
+
+**1. Opening letterbox + subtitle crawl (Carlos's spec).** On Island scene start: two black
+bars (top+bottom, ~150px at 1920x1080) appear instantly, hold 1s, then each line of
+Assets/_Project/Data/Demo/DemoIntroLines.txt fades in/holds (duration computed from word
+count)/fades out in the bottom bar (Gabriel font, white), then both bars retract.
+
+- Assets/_Project/Code/Runtime/UI/LetterboxController.cs — the two bars, static `.Active`
+  accessor (same pattern as EventDirector.Active) so other systems can ask `IsActive`.
+- Assets/_Project/Code/Runtime/UI/DemoIntroSubtitles.cs — drives the sequence.
+- New MoonlightTunables fields for all of it (bar height, fade/hold/gap timings, reading
+  speed, colors) — see the "ELVTR demo intro + kill lines" header near the end of the file.
+
+**2. Red kill lines (Carlos's spec).** On every EnemyHealth.AnyDied, a random line from
+Assets/_Project/Data/Demo/DemoKillLines.txt flashes in red with Text Animator's <shake> tag
+(Gabriel font). Shuffled-bag pool — no repeat until the whole list has shown once.
+
+- Assets/_Project/Code/Runtime/UI/KillLineDisplay.cs.
+- Positioned via KillLineAnchoredYWithLetterbox (210 — clears the bar, sits just above it)
+  vs KillLineAnchoredYWithoutLetterbox (50 — near the true bottom), switching on
+  LetterboxController.Active.IsActive.
+
+**3. Both source text files copied into the project**, marked ELVTR-demo-only via
+Assets/_Project/Data/Demo/README.txt (Carlos's ask — these are NOT permanent game content).
+
+**4. Text Animator wired in for real** — MrMoonlight.Runtime.asmdef now references
+Febucci.TextAnimatorForUnity.Runtime + .TMP.Runtime (wasn't referenced anywhere before this;
+TitleLetterReveal.cs's doc comment explains why it *wasn't* used there — different case, don't
+let that comment mislead you into thinking the package isn't wired up anymore).
+
+**5. Scene wiring (Island.unity, under HUD Canvas)** — Carlos gave explicit permission (per
+CLAUDE.md's Unity-work rule) to build this directly via the UnityMCP bridge:
+- `Letterbox` (Top Bar, Bottom Bar) — LetterboxController
+- `Demo Intro Subtitles` (Label child) — DemoIntroSubtitles
+- `Kill Line` — TextAnimator_TMP + TMP_Text + KillLineDisplay on one GameObject
+All references wired and verified by reading the live component state back, not just
+screenshots (see traps below — screenshots lied at first).
+
+**6. Two rounds of Carlos feedback, both applied and re-verified live:**
+- Intro subtitle text was bottom-jammed in its box → TMP vertical alignment was 1026
+  (Center+**Bottom**, blindly copied from System Message's own setting) → fixed to 514
+  (Center+**Middle**) on both the intro label and the kill-line label.
+- Kill line overlapped the intro subtitle when both were on screen at once →
+  KillLineAnchoredYWithLetterbox raised 110 → 210 (now clears the bar entirely instead of
+  nesting inside it).
+
+**7. Objective script changed (Assets/_Project/Data/Events/IslandEvents.txt):**
+Kill target raised 20 → 50 (102 Spotters placed, still plenty of slack). The "Homework: Kill
+20 old timers" announce popup is now suppressed via the `objective` verb's existing
+`announce=false` flag — NOT by emptying `text=`, because Objective.Text still feeds MRM-19's
+future pause-menu display. `Old Timers remaining: N` (ObjectiveKillCounterHUD, unrelated
+script, untouched) picks up the new target automatically since it reads Objective.KillTarget
+live.
+
+**8. A REAL, pre-existing gameplay bug found and fixed** (Carlos noticed it while testing this
+session's build, unrelated to the UI work above — flagged as "red tint never clears after
+health regen"):
+
+**Root cause:** `HealthRegenDebugToggle.OnDamaged` fires *synchronously* inside
+`PlayerDamageReceiver.TakeDamage`, i.e. in the exact same call where damage lands on
+PolymindGames' HealthManager — which is BEFORE `MoonlightPlayerRig`'s next `Update()` mirrors
+that hit into `PlayerStats.Health.BaseValue`. So `StartRegenTween()`'s `missing = MaxValue -
+stats.Health.BaseValue` always read the STALE, pre-hit (full) health and silently computed
+`missing <= 0` → returned immediately, every single time. The hit-triggered "wait 2s, then
+heal" behavior the component's own doc comment promises has *never* actually worked; only the
+manual F5-toggle path worked (it runs on a later Update tick, after the mirror catches up).
+
+**Fix:** added `MoonlightPlayerRig.CurrentHealth` (reads HealthManager directly, bypassing the
+once-a-frame mirror) and pointed `HealthRegenDebugToggle.StartRegenTween()`'s `missing`
+calculation at it instead of the stat mirror.
+
+**Verified live:** damaged the player via script, took NO further action, and both health and
+the ScreenTint "HealthDamage" contribution returned to full/zero within the documented delay —
+confirmed via `MrMoonlight.VFX.ScreenTint.RedContributions` read back live, not by eyeballing a
+screenshot.
+
+Files: Assets/_Project/Code/Runtime/Player/MoonlightPlayerRig.cs (new `CurrentHealth` prop),
+HealthRegenDebugToggle.cs (StartRegenTween's `missing` calc).
+
+===========================================================================
+TRAPS FOUND THIS SESSION — READ BEFORE DOING SIMILAR MCP/UI WORK
+===========================================================================
+
+1. **manage_gameobject `create` under a Canvas breaks CanvasScaler inheritance.** HUD Canvas's
+   own Transform.localScale is 0.632 (that's how "Scale With Screen Size" actually works in
+   this project — NOT sizeDelta manipulation). `create` parents new children with
+   worldPositionStays=true by default, so Unity auto-compensates the new child's localScale to
+   cancel the parent's 0.632 and preserve "world scale 1" — which is exactly wrong for a UI
+   RectTransform. Every normal HUD sibling (System Message, etc.) has lossyScale 0.632; a
+   freshly `create`d one gets lossyScale 1.0, renders ~1.6x too big, and can end up positioned
+   entirely off-screen (this is EXACTLY what happened: the letterbox bars were invisible on
+   first build because of this, not because anything else was wrong). **Fix: after `create`ing
+   any new top-level child of a CanvasScaler'd Canvas, explicitly set `transform.localScale =
+   Vector3.one`** (matches every sibling). Cheapest via execute_code, not manage_gameobject
+   modify (see #4).
+
+2. **TMP `alignment` enum: 1026 is Center+Bottom, not Center+Middle.** (1024=Bottom,
+   512=Middle, 256=Top for vertical; 2=Center horizontal.) 514 = Center+Middle. Don't copy an
+   existing element's alignment value without checking what it actually decodes to for your
+   layout — System Message's 1026 is correct FOR System Message (bottom-anchored single line),
+   wrong for a box you want text vertically centered in.
+
+3. **manage_camera screenshot cannot be trusted for Screen Space Overlay UI in this
+   environment** — it reported "camera: PlayerCamera" and consistently excluded the HUD Canvas
+   even without a `camera` param passed. Matches the already-known memory
+   (mrm11_event_director_traps.md: "MCP screenshots can drop overlay UI"). **Verify UI state by
+   reading component data back (CanvasGroup.alpha, RectTransform.GetWorldCorners, etc.) via
+   execute_code/resource reads, not by trusting a screenshot** — though once the scale bug (#1)
+   was fixed, screenshots DID start showing the UI correctly, so they're not universally
+   broken, just not reliable as the first line of verification.
+
+4. **`manage_gameobject action=modify` (e.g. set_active) is blocked during Play Mode** ("This
+   cannot be used during play mode") and **target resolution needs `search_method: "by_id"`**
+   when passing a raw instance ID as target, or it tries name-matching first and fails.
+
+5. **Instance IDs do NOT survive a scene reload or domain reload.** Re-resolve every
+   GameObject/component by path (`find_gameobjects` with `by_path`, or `GameObject.Find` in
+   execute_code) after any `refresh_unity`, `EditorSceneManager.OpenScene`, or Play Mode
+   enter/exit if you cached IDs from before it.
+
+6. **`manage_scene action=load` can spuriously report "Current scene has unsaved changes"**
+   immediately after a successful `save` (saw this repeatedly, correlated with domain reloads
+   re-touching the scene's dirty flag). Reliable workaround:
+   `UnityEditor.SceneManagement.EditorSceneManager.OpenScene(path,
+   OpenSceneMode.Single)` via execute_code, after confirming via `git status --short` that a
+   save didn't actually change anything on disk (it didn't, in this case — pure noise).
+
+7. **Two `PlayerDamageReceiver` components exist on the player** — one on `Player_Tracey`
+   (root, the one real shots actually hit, per the collider parent-chain) and one on
+   `MrMoonlight Systems` (child). The class's own doc comment says putting one on Systems is
+   WRONG ("every shot would pass straight through"). It appears unused/dead but I did NOT
+   remove it — didn't confirm nothing else references it, and it wasn't in scope for what
+   Carlos asked. **Worth asking Carlos before deleting it** — flagging, not fixing.
+
+===========================================================================
+NOT DONE / OPEN ITEMS
+===========================================================================
+
+- **Debug overlay label collision, still present, not fixed** (Carlos saw it while testing,
+  didn't explicitly ask for a fix): `HealthRegenDebugToggle.OnGUI()` and
+  `SceneEffectsDebugToggle.OnGUI()` both draw at the *exact same* hardcoded
+  `Rect(Screen.width/2f - 250f, 100f, 500f, 30f)`, so "HEALTH REGEN ON (F5)" and "FOG ON
+  (F6) · CRT ON (F7)" render on top of each other when both are active — garbled text, visible
+  in Carlos's screenshots this session. A real fix is small (stack the rects vertically, one
+  per active toggle) but wasn't requested — ask before spending time on it.
+- The dead second `PlayerDamageReceiver` (see trap #7 above).
+- Nothing else queued. The letterbox/subtitle/kill-line feature and the health-regen fix are
+  both feature-complete and live-verified as of this session.
+
+===========================================================================
+NOTHING COMMITTED
+===========================================================================
+Per the hard rule — Carlos commits via GitHub Desktop. Suggested commit message for this
+session's combined work (one branch, but touches both the ELVTR-demo UI feature and an
+unrelated pre-existing bugfix — flag the cross-scope explicitly if Carlos wants it split):
+
+  Add ELVTR demo intro letterbox + kill lines; fix hit-triggered health regen never firing
+
+  - New letterbox/subtitle-crawl/kill-line system for the ELVTR demo build (Carlos's spec),
+    all timings in MoonlightTunables, source lines marked demo-only.
+  - Raised the demo kill objective 20->50, suppressed its announce popup.
+  - Fixed HealthRegenDebugToggle reading pre-hit (stale-mirrored) health when triggered by
+    PlayerDamageReceiver.Damaged, which silently no-op'd every hit-triggered regen attempt —
+    added MoonlightPlayerRig.CurrentHealth as the authoritative live read.

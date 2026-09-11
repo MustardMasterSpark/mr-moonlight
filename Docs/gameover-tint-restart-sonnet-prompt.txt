@@ -1,0 +1,84 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session.
+
+Unrelated to the other same-day handoffs (Docs/island-demo-wrapup-sonnet-prompt.txt,
+Docs/island-demo-wrapup-2-sonnet-prompt.txt, Docs/weapon-audio-retrigger-sonnet-prompt.txt) —
+those cover Spotter population/corpse cleanup/health regen and the weapon audio retrigger fix
+respectively. This session was a single bug investigation, no code changes made, no Linear issue
+opened (Carlos reported it directly in chat).
+
+===========================================================================
+WHAT THIS SESSION DID — INVESTIGATED, COULD NOT REPRODUCE ON CURRENT CODE
+===========================================================================
+
+**Carlos's report:** after dying and clicking Restart on the Game Over screen, the red damage
+tint on the HUD appears to carry over into the restarted level. He wasn't sure if health actually
+resets to full or if the HUD effect just isn't being cleared.
+
+**What I found by reading the code first:** this exact bug is already known and was already fixed,
+on 2026-09-02, as part of MRM-11 (Event Director). Evidence:
+- `GameOverPanel.LoadNow()` (Assets/_Project/Code/Runtime/UI/GameOverPanel.cs) already calls
+  `MrMoonlight.VFX.ScreenTint.ClearAll()` immediately before `SceneManager.LoadScene()`, with a
+  comment describing this precise symptom ("DeathSequence's Death contribution... stays stuck at
+  full red forever, restart or not").
+- `PauseController.OnDestroy()` has a comment referencing "the same class of bug as the
+  stuck-red-tint static registry found in MRM-11" — i.e. this was a named, tracked bug already.
+- `PlayerStats.Health` is freshly constructed to `Tunables.I.MaxHealth` in `Awake()`, so a reloaded
+  scene's player starts at full health independent of whatever happened before death.
+- Build folder history backs this up: `E:\Builds\22 - Event Director - 2026-09-02` is immediately
+  followed by `E:\Builds\23 - Death HUD Fix - 2026-09-02` — almost certainly the build that shipped
+  this exact fix. The latest build on disk, `28 - Main Menu - 2026-09-08`, postdates it.
+
+**Live verification (Carlos gave permission to enter Play Mode via the UnityMCP bridge):**
+1. Force-killed the player via `execute_code` (HealthManager.ReceiveDamage(99999)) to trigger a
+   real death → DeathSequence → GameOverPanel flow without needing an actual firefight.
+   Confirmed mid-sequence: ScreenTint registry had `Death=1`, `HealthDamage=0.4` (clamped to the
+   0.85 ceiling), health at 0 — the full-red state is real and expected at this point.
+2. Called `GameOverPanel.OnRestartClicked()` directly (same call the Restart button makes),
+   waited through the fade + scene reload.
+3. Read back the reloaded scene's live state: ScreenTint registry has no non-zero contributions
+   (`HealthDamage=0`, `Death` entry gone), the "Red Tint" RawImage, "Red Tint Flat" Image, and
+   "Black Screen" Image are all at alpha 0, `HealthManager.Health` and `PlayerStats.Health` are
+   both back to 100, `Time.timeScale` is back to 1. No console errors during the whole sequence
+   (only pre-existing shadow-atlas noise, unrelated — see memory mrm34_spotter_scatter_doubling).
+4. Also chased a red herring: PolymindGames' vendor `PlayerRigidbodyDeathHandler` (attached to the
+   player's "Health" child object) plays its own post-processing death effect
+   (`Assets/_Project/Data/PolymindGames/PostProcessing/FPS_Effect_Death.asset`) via
+   `PostProcessingManager`, entirely independent of the custom ScreenTint system, and its cleanup
+   path (`OnPlayerRespawn` → `CancelAnimation`) never fires on a scene reload (no old→new health
+   transition to raise the Respawn event) — this looked like a strong candidate for a genuinely
+   separate leftover-tint bug. Ruled out: `PostProcessingManager.Instance.ActiveVolume` is `null`
+   in this project (confirmed via reflection + the console literally logging "No active volume
+   active in the scene." on death) — no URP Volume ever registers itself as active, so
+   `PlayAnimation_Internal` no-ops before touching anything. Matches `ScreenTintRenderer`'s own doc
+   comment that there's no post-processing profile in the project yet. Not a live bug, but if a
+   Volume ever DOES get wired up as ActiveVolume later, this exact leftover-animation-state problem
+   (dangling `_animationHandler` reference to a destroyed player, animation never disposed, so
+   Volume profile overrides could persist across a restart) becomes real and worth remembering.
+
+**Conclusion:** could not reproduce on current HEAD. The mechanism Carlos described was a real,
+previously-fixed bug (MRM-11, 2026-09-02) and the fix is confirmed present and working via live
+Play Mode test, not just code reading.
+
+===========================================================================
+FILES TOUCHED THIS SESSION
+===========================================================================
+None. Read-only investigation + a live Play Mode test (state discarded on Stop, per memory
+unity_playmode_edits_discarded_on_stop.md — nothing to revert anyway since nothing was edited).
+
+===========================================================================
+WHAT'S NEXT
+===========================================================================
+Ask Carlos exactly how he saw this: which build number (or was it in-editor Play Mode?), and
+whether it takes a specific death cause or a second consecutive restart to trigger — my repro was
+a single instant-kill-then-restart via script, which came back completely clean. If he confirms
+he's on build 28 or later (or fresh editor Play Mode) and still sees it, the next session should
+stop guessing from code and get a screen recording or exact repro steps before touching anything
+further — this session already covered the obvious static-analysis suspects (ScreenTint registry,
+PlayerStats/HealthManager reset, the vendor post-processing death effect) and all three came back
+clean.
+
+No other task was queued from this. Check Docs/island-demo-wrapup-sonnet-prompt.txt and
+Docs/weapon-audio-retrigger-sonnet-prompt.txt for other open threads from today if Carlos doesn't
+have something specific ready.

@@ -293,6 +293,23 @@ namespace MrMoonlight.Data
         /// <summary>Decibel value written to an AudioMixer group's exposed volume parameter when its slider sits at 0 (fully muted). Mixer volume is logarithmic and linear 0 has no finite dB equivalent, so this is the floor used instead of -infinity. Owner: MRM-18</summary>
         public float MixerMuteDecibels = -80f;
 
+        [Header("Island Demo Wrap-up Audio — temporary debug sliders, not the final mix (2026-09-10)")]
+
+        /// <summary>Seconds for the island's score (MUS_DownfallTheme) to fade from silence up to full volume on scene start/restart — Carlos's ask: "not very aggressive at the beginning." Owner: island-demo-wrapup</summary>
+        public float IslandMusicFadeInDuration = 4f;
+
+        /// <summary>Default main-menu-music slider value, 0-1 linear, before Carlos has touched the debug mixer overlay (F10). Owner: island-demo-wrapup</summary>
+        public float DefaultMenuMusicVolume = 1f;
+
+        /// <summary>Default weapon-sounds slider value, 0-1 linear — applied to the Polymind FPS_AudioMixer's EffectsVolume, which every weapon fire/reload/equip sound already routes through. Owner: island-demo-wrapup</summary>
+        public float DefaultWeaponVolume = 1f;
+
+        /// <summary>Default island-score slider value, 0-1 linear. Owner: island-demo-wrapup</summary>
+        public float DefaultIslandMusicVolume = 1f;
+
+        /// <summary>Default Spotter-SFX slider value, 0-1 linear — covers every EnemyAudioHooks pool (alert/pain/wound/dismemberment/death) plus fire/reload. Owner: island-demo-wrapup</summary>
+        public float DefaultSpotterVolume = 1f;
+
         /// <summary>
         /// Music-anchored title sequence (replaces the old generic splash cards, 2026-09-07
         /// rebuild): every timestamp below is a second offset into <c>MUS_RisingStorm2LayinLow</c>,
@@ -498,6 +515,69 @@ namespace MrMoonlight.Data
 
         /// <summary>Impulse applied to a detached death drop so it falls and rolls rather than dropping straight down. Owner: MRM-34</summary>
         public float EnemyDropScatterImpulse = 1.5f;
+
+        /// <summary>Safety timeout, in seconds, for a no-scatter death drop (the Spotter's shotgun) to fall asleep on the ground before it gets frozen anyway — covers the case where it never settles (fell off the NavMesh into open space). Owner: island-demo-wrapup, 2026-09-10</summary>
+        public float EnemyDropGroundSnapTimeout = 6f;
+
+        [Header("Demo Spotter population manager — LEGACY, demo-only, 2026-09-10 (see DemoSpotterPopulationManager)")]
+
+        /// <summary>Minimum Spotters kept alive near the player at all times. A flare/panic wave may push the count above this; it is a floor, not a cap.</summary>
+        public int SpotterPopulationMin = 10;
+
+        /// <summary>Hard ceiling on simultaneous alive Spotters, across the population floor AND flare/panic reinforcement waves combined — Carlos, 2026-09-10: too many at once got "very buggy" once aggression tiers stack a raised floor on top of a wave. Enforced in <see cref="DemoSpotterPopulationManager"/>'s top-up/relocation floor and in <see cref="EnemyReinforcementSpawner"/>'s wave size for Spotter waves specifically.</summary>
+        public int SpotterPopulationMax = 25;
+
+        /// <summary>Outer radius, in metres, of the ring around the player where a replacement Spotter may be placed. Shrunk 2026-09-10 (Carlos: population felt too sparse) — same floor count now packs into a much smaller ring.</summary>
+        public float SpotterPopulationSpawnRadius = 65f;
+
+        /// <summary>Inner radius, in metres, of that ring — keeps a replacement from popping in right beside the player, at or past <c>Enemy_Spotter</c>'s own worst-case Blaze vision sight range (40m) so it does not spot him the instant it appears. Left unchanged in the 2026-09-10 density pass — only the outer radius shrank.</summary>
+        public float SpotterPopulationMinSpawnDistance = 40f;
+
+        /// <summary>Seconds between population top-up checks.</summary>
+        public float SpotterPopulationCheckInterval = 5f;
+
+        /// <summary>Attempts per spawn before giving up on finding a valid NavMesh point.</summary>
+        public int SpotterPopulationPlacementAttempts = 12;
+
+        /// <summary>How far a candidate point may be nudged onto the NavMesh before it is discarded.</summary>
+        public float SpotterPopulationNavMeshSampleDistance = 4f;
+
+        /// <summary>Seconds between checks for whether the player has drifted away from every alive Spotter (moved to a part of the island where the floor is all met, but none of them are anywhere near him). Was 20s (four times slower than <see cref="SpotterPopulationCheckInterval"/>); dropped to match it 2026-09-10 (Carlos: relocation felt too slow — the same cadence as TopUp now covers both). Owner: demo-intro-killlines, 2026-09-10</summary>
+        public float SpotterRelocationCheckInterval = 5f;
+
+        /// <summary>A Spotter within this many metres of the player counts as "nearby" for the relocation check. Deliberately larger than <see cref="SpotterPopulationSpawnRadius"/> so a Spotter freshly spawned at the edge of the ring is not immediately flagged as a straggler again next check. Scaled down with the 2026-09-10 spawn radius cut, keeping the same ~1.5x buffer over it. Owner: demo-intro-killlines, 2026-09-10</summary>
+        public float SpotterRelocationNearbyRadius = 95f;
+
+        [Header("Demo Spotter aggression escalation — demo-only, 2026-09-10 (see DemoSpotterPopulationManager)")]
+
+        /// <summary>Total enemy kills (any kind) at which the population floor rises and freshly placed Spotters start heading straight for the player instead of discovering him on their own. Owner: demo-intro-killlines, 2026-09-10</summary>
+        public int SpotterAggressionKillThreshold1 = 15;
+
+        /// <summary>Total enemy kills at which the escalation goes further still — a bigger floor and a faster top-up loop on top of tier 1. Owner: demo-intro-killlines, 2026-09-10</summary>
+        public int SpotterAggressionKillThreshold2 = 30;
+
+        /// <summary>Added to <see cref="SpotterPopulationMin"/> once <see cref="SpotterAggressionKillThreshold1"/> is reached.</summary>
+        public int SpotterAggressionPopulationBonusTier1 = 5;
+
+        /// <summary>Added to <see cref="SpotterPopulationMin"/> once <see cref="SpotterAggressionKillThreshold2"/> is reached (replaces, not stacks with, tier 1's bonus).</summary>
+        public int SpotterAggressionPopulationBonusTier2 = 10;
+
+        /// <summary>Replaces <see cref="SpotterPopulationCheckInterval"/> once tier 1 is reached — a shorter wait between top-ups so the raised floor actually fills in promptly.</summary>
+        public float SpotterAggressionCheckIntervalTier1 = 3f;
+
+        /// <summary>Replaces the tier 1 interval once tier 2 is reached.</summary>
+        public float SpotterAggressionCheckIntervalTier2 = 1.5f;
+
+        /// <summary>Seconds to wait after death before stripping a corpse down to an inert prop (colliders and AI/attack/patrol behaviours disabled). Must stay longer than Blaze's own death animation/ragdoll settle, or the corpse visibly glitches mid-animation. Owner: island-demo-wrapup, 2026-09-10</summary>
+        public float EnemyCorpseCleanupDelay = 3.5f;
+
+        [Header("Island scene startup preset — LEGACY, demo-only, 2026-09-10 (see IslandStartupPreset)")]
+
+        /// <summary>Intensity of the small point light attached to the player's camera, so the player is never standing in total black regardless of which startup preset (or later cheat-key change) is active.</summary>
+        public float PlayerAmbientLightIntensity = 1.2f;
+
+        /// <summary>Range, in metres, of the player's personal light.</summary>
+        public float PlayerAmbientLightRange = 6f;
 
         [Header("Combat — hitbox zones & damage variance, MRM-76")]
 
@@ -783,19 +863,19 @@ namespace MrMoonlight.Data
         // fires eight of them (see WeaponShotgunPelletCount), so its per-shot ceiling is 8x the
         // number below and only lands in full at very close range.
 
-        /// <summary>M1911 .45 ACP, 8-round magazine. The baseline sidearm. Owner: MRM-25</summary>
+        /// <summary>M1911 .45 ACP, 7-round magazine (Carlos, 2026-09-10 — was 8). The baseline sidearm. Owner: MRM-25</summary>
         public float WeaponDamageM1911 = 30f;
 
         /// <summary>.357 Magnum revolver, 6-round cylinder. Hits harder than the M1911, reloads far slower. Owner: MRM-25</summary>
         public float WeaponDamageRevolver = 50f;
 
-        /// <summary>Remington 870 pump shotgun, per pellet, 7-shell tube. Owner: MRM-25</summary>
+        /// <summary>Remington 870 pump shotgun, per pellet, 8-shell tube (Carlos, 2026-09-10 — was 7). Owner: MRM-25</summary>
         public float WeaponDamageR870 = 15f;
 
         /// <summary>Sawn-off double barrel, per pellet, 2 shells. Higher per pellet than the R870 to pay for holding only two shots. Owner: MRM-25</summary>
         public float WeaponDamageDBShotgun = 20f;
 
-        /// <summary>M1A (M14) 7.62x51mm, 7-round magazine, semi-automatic. Owner: MRM-25</summary>
+        /// <summary>M1A (M14) 7.62x51mm, 20-round magazine (Carlos, 2026-09-10 — was 7), semi-automatic. Owner: MRM-25</summary>
         public float WeaponDamageM1A = 45f;
 
         /// <summary>AKM 7.62x39mm, 30-round magazine. Full-auto by default (its Firearm Mode property selects between full and semi). Lower per shot than the M1A because it fires far more of them. Owner: MRM-25</summary>
@@ -834,5 +914,58 @@ namespace MrMoonlight.Data
         /// <see cref="Player.MoonlightInfiniteThrowables"/>. Owner: MRM-25
         /// </summary>
         public int WeaponThrowableTestStock = 99;
+
+        [Header("ELVTR demo intro + kill lines — Carlos's ask, 2026-09-10 (ELVTR demo only, see Assets/_Project/Data/Demo/README.txt)")]
+
+        /// <summary>Height, in pixels at the 1920×1080 reference resolution, of each letterbox bar's fully-extended state. Matches Carlos's reference still (menu images/letterbox.png) closely enough to read as the same shot. Top and bottom currently share one height; split into two fields if the bottom ever needs more room than the top.</summary>
+        public float LetterboxBarHeight = 150f;
+
+        /// <summary>Colour of both letterbox bars. Pure black, per the reference still — a tunable anyway so it can be nudged without a code change.</summary>
+        public Color LetterboxColor = Color.black;
+
+        /// <summary>Seconds both letterbox bars take to shrink to zero height once the intro subtitle sequence finishes.</summary>
+        public float LetterboxRetractDuration = 0.6f;
+
+        /// <summary>Seconds of black bars before the first intro subtitle line appears. Carlos: "give 1 second before showing the first line."</summary>
+        public float DemoIntroFirstLineDelay = 1f;
+
+        /// <summary>Seconds each intro subtitle line takes to fade in and out.</summary>
+        public float DemoIntroLineFadeDuration = 0.5f;
+
+        /// <summary>Reading speed used to size how long each intro line stays fully visible — word count divided by this, in minutes. Carlos asked for a duration Claude judges as readable rather than a fixed per-line time; this is that judgement made adjustable.</summary>
+        public float DemoIntroWordsPerMinute = 220f;
+
+        /// <summary>Floor on how long an intro line holds fully visible, regardless of how short it is — so even "Amen." gets a beat on screen.</summary>
+        public float DemoIntroLineMinHold = 2.5f;
+
+        /// <summary>Ceiling on how long an intro line holds fully visible, regardless of how long it is.</summary>
+        public float DemoIntroLineMaxHold = 8f;
+
+        /// <summary>Gap, fully invisible, between one intro line fading out and the next fading in.</summary>
+        public float DemoIntroLineGap = 0.4f;
+
+        /// <summary>Point size of the intro subtitle text at the 1920×1080 reference resolution.</summary>
+        public float DemoIntroFontSize = 38f;
+
+        /// <summary>Intro subtitle colour. White, per Carlos's ask.</summary>
+        public Color DemoIntroTextColor = Color.white;
+
+        /// <summary>Seconds the red kill-line fades in and out over.</summary>
+        public float KillLineFadeDuration = 0.25f;
+
+        /// <summary>Seconds the red kill-line stays fully visible before fading out.</summary>
+        public float KillLineHoldDuration = 1.6f;
+
+        /// <summary>Point size of the red kill-line text at the 1920×1080 reference resolution.</summary>
+        public float KillLineFontSize = 40f;
+
+        /// <summary>Colour of the red kill-line text.</summary>
+        public Color KillLineColor = new Color(0.82f, 0.05f, 0.05f, 1f);
+
+        /// <summary>Anchored Y (from the bottom of the HUD canvas) the kill-line sits at while the intro letterbox is still up. Carlos, 2026-09-10: the first pass (110, nested inside the bottom bar) overlapped the intro subtitle text — raised above <see cref="LetterboxBarHeight"/> (150) so it clears the bar entirely and sits in the normal game viewport just above it.</summary>
+        public float KillLineAnchoredYWithLetterbox = 210f;
+
+        /// <summary>Anchored Y (from the bottom of the HUD canvas) the kill-line sits at once the letterbox has retracted — down near the actual bottom edge, per Carlos's "put the red text down below."</summary>
+        public float KillLineAnchoredYWithoutLetterbox = 50f;
     }
 }

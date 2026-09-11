@@ -1,0 +1,135 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10 (night), handoff to the next session.
+
+This file replaces its own earlier draft (same filename) — that one was written mid-day as a
+forward-looking "what's next: sounds and music" pointer. This version is the real end-of-day
+wrap: the audio pass happened, plus three more small asks after it, plus a build, plus this is
+the FIRST time in the whole 2026-09-10 demo-tweaks arc that anything has actually been committed
+to git. Read this whole file before touching anything — a lot happened today across ~8 separate
+direct-chat sessions, none of it committed until tonight.
+
+===========================================================================
+STATUS: EVERYTHING BELOW SHOULD BE COMMITTED BY THE TIME YOU READ THIS
+===========================================================================
+Carlos was given a full commit message (subject + body) at the end of tonight's session and told
+he'd paste it into GitHub Desktop and commit directly on `main` himself — same "no branch for
+this small-tweaks phase" pattern as everything else today. **Check `git log -1` first.** If the
+top commit is NOT about the demo wrap-up, he hasn't committed yet — don't re-derive the message,
+ask him whether he still wants it (it was oriented around finishing the class submission, so a
+few days later he may want something different).
+
+===========================================================================
+THE BUILD — #29, ALREADY UPLOADED
+===========================================================================
+`E:\Builds\29 - Demo Wrapup - 2026-09-10\` — Windows x64, MainMenu→Island, 0 build errors, 135
+warnings (routine), 306.5 MB raw / 204.7 MB zipped. Carlos uploaded this to itch.io and submitted
+it for the class tonight. **He mentioned "some optimization problems" in the build in passing but
+did not elaborate or ask for a fix** — this is an open thread, not something resolved. If he
+brings it up again, ask what specifically he saw (frame rate? a visual glitch? load hitch?) rather
+than assuming — nothing in this session's own testing surfaced a specific culprit.
+
+===========================================================================
+WHAT SHIPPED IN BUILD 29 — TODAY'S FULL ARC (all on `main`, direct chat, mostly no Linear issues)
+===========================================================================
+Eight separate pieces of work landed today. Full detail for each still lives in its own handoff
+file if you need more than the summary below — all still in Docs/, all dated 2026-09-10:
+
+1. **island-demo-wrapup-sonnet-prompt.txt** (background only) — N64 restyle 3D pipeline wrap
+   (unrelated to gameplay, lives outside git), Spotter-is-legacy ruling recorded in glossary.md.
+   Already committed as of `b7adc30`, before today's session even started.
+
+2. **island-demo-wrapup-2-sonnet-prompt.txt** — built `DemoSpotterPopulationManager` (floor-based
+   Spotter spawning replacing ~100 hand-placed instances), `EnemyCorpseCleanup`, shotgun
+   death-drop physics fix (ground-snap, no scatter — was launching across the map), day/night
+   startup preset, player ambient light, health regen default-on.
+
+3. **weapon-audio-retrigger-sonnet-prompt.txt** — found and fixed a real bug: 19
+   `AudioRandomContainer` assets had `m_TriggerMode: Automatic` (self-replays on a timer),
+   causing the reported "double-fire" sound. Flipped to Manual. DBShotgun fire sound swapped to
+   real R870 takes. Spotters got a fire sound for the first time (`ENM_Spotter_*` slot, actually
+   wired to a player R870 take).
+
+4. **demo-intro-killlines-sonnet-prompt.txt** — opening letterbox + subtitle crawl
+   (`LetterboxController.cs`, `DemoIntroSubtitles.cs`, reads `Assets/_Project/Data/Demo/DemoIntroLines.txt`),
+   kill-line HUD announcements (`KillLineDisplay.cs`).
+
+5. **gameover-tint-restart-sonnet-prompt.txt** — investigated a reported "red tint carries over
+   after Restart" bug. Could not reproduce; the fix was already in from MRM-11 (2026-09-02). No
+   code changed.
+
+6. **pause-overlay-spotter-tuning-sonnet-prompt.txt** — built the pause overlay itself (dim
+   backdrop + centered controls-reference image, `PauseOverlayUI.cs`), imported at high res.
+
+7. **spotter-relocation-aggression-sonnet-prompt.txt** — added straggler relocation (Spotters
+   left behind when the player crosses the island fast get warped back into range) and a
+   2-tier aggression escalation (population floor + top-up cadence both increase at kill
+   thresholds, tier 1 sends fresh Spotters straight into attack state) to
+   `DemoSpotterPopulationManager`.
+
+8. **THIS session — demo-wrapup-audio-music (the one this file is for)**:
+   - **Music**: `MUS_DownfallTheme` loops on the island with a slow fade-in on start/restart
+     (`IslandMusicController.cs`, new tunable `IslandMusicFadeInDuration`).
+   - **Spotter SFX**: `EnemyAudioHooks.cs` converted from single clips to pools
+     (alert/pain/wound/dismemberment/death — 28 `DEMO_*` clips total), random pick per play.
+     Alert fires on first detection (new `SpotterDetectionAlert.cs`, polls Blaze's own
+     alert/attack state since Blaze has no detection event) and on flare fire. Pain+wound both
+     fire on every non-lethal hit; death fires synchronously in `EnemyHealth.Kill()` so the full
+     clip survives `EnemyCorpseCleanup`'s later component-disable pass; dismemberment fires from
+     `Dismember()`.
+   - **AudioMixer**: 3 new groups on `MoonlightMixer.mixer` (MenuMusic/IslandMusic/SpotterSFX)
+     built via the `UnityEditor.Audio.AudioMixerController` reflection recipe (that type is
+     Editor-internal — no public API for group creation). Hit and fixed a real bug mid-build:
+     an array-position assumption mismatched newly-exposed parameter names to the wrong GUIDs,
+     which briefly renamed the pre-existing `VoicesVolume`/`SFXVolume` params too. Fixed by
+     keying the rename off each group's actual `GetGUIDForVolume()` instead of array order —
+     if you ever touch this mixer via the same reflection technique again, do the GUID-keyed
+     version from the start.
+   - **F10 debug overlay** (`AudioDebugMixerOverlay.cs`, in both scenes): 4 temporary sliders
+     (menu music → `MoonlightMixer.MenuMusicVolume`, weapons → `FPS_AudioMixer.EffectsVolume`,
+     island music → `MoonlightMixer.IslandMusicVolume`, Spotter SFX → `MoonlightMixer.SpotterVolume`).
+     Explicitly NOT the final mix — Carlos's own words, a stopgap so he can tune by ear without a
+     code round-trip. Values persist via `GameSettings`/PlayerPrefs.
+   - **Kill goal**: `IslandEvents.txt`'s `kill_spotters` objective raised 50→100.
+   - **Population cap**: new `MoonlightTunables.SpotterPopulationMax = 25`, enforced in both
+     `DemoSpotterPopulationManager`'s floor and `EnemyReinforcementSpawner.SpawnWave` (shared via
+     new `EnemyIdentity.CountAlive(kind)` helper) — too many simultaneous Spotters was "very
+     buggy." This cap does NOT limit total kills over a session, only concurrent-alive count.
+   - **Controls image**: swapped `T_PauseControls.png` for Carlos's updated version (adds F9
+     Infinite Ammo row), and while doing it found the real import gap: a Standalone-platform
+     texture override was still capped at 2048px independent of the Default platform setting —
+     bumped both to 4096 so the new 3840×2160 source imports at full resolution. **If a future
+     texture swap "looks soft" despite correct-looking Default import settings, check the
+     Standalone platform override specifically — it can silently win.**
+   - **Text fix**: `DemoIntroLines.txt`'s weapon-switch line said "1-6", corrected to "1-5" (no
+     weapon class is bound to 6).
+   - **Docs updated this session**: `Docs/debug-tools.md` (F10 row), `Docs/audio-import-workflow.md`
+     (§4a, the `DEMO_` prefix doesn't auto-route — apply `Aud_EnemyVox` by hand for any future
+     batch on that naming convention). Linear comment posted on MRM-19 (pause overlay/controls
+     image is an incidental touch on its scope, not a completion claim).
+
+===========================================================================
+WHAT'S NEXT — CARLOS'S OWN STATED PLAN, NOT YET STARTED
+===========================================================================
+Carlos was explicit tonight: once the class deadline pressure is off, he wants a **big sit-down
+session**, not more small tweaks, covering three things:
+
+1. **Strategy + documentation gaps** — today's pace (8+ direct-chat sessions, one day, zero
+   Linear issues, zero commits until tonight) worked for hitting a deadline but left a real gap
+   between "what the code does" and "what Linear/the design docs say it does." Expect this to
+   mean an audit pass: which of today's systems need real Linear issues retroactively, which
+   docs are now stale, what got skipped that shouldn't have been.
+2. **Code cleanup** — `DemoSpotterPopulationManager`, the aggression tiers, the F10 debug
+   overlay, and arguably the whole Spotter AI are already flagged LEGACY/demo-only in their own
+   doc comments. This is where that debt gets paid down or deliberately carried forward with a
+   real plan, not just a comment.
+3. **Future development approach** — general strategy conversation, not a specific task. Don't
+   assume you know the agenda; ask him to frame it when that session starts.
+
+Given the Halloween/Kickstarter framing in CLAUDE.md, this is likely the session where "demo
+survived the class gate" work gets reconsidered against "does this survive to October" — read
+CLAUDE.md's Deadlines section again before that conversation if it's been a while.
+
+**Model choice**: this next session is explicitly a planning/architecture conversation first,
+implementation second (if at all) — Opus is the better fit for the strategy portion; if it turns
+into hands-on cleanup of a specific system afterward, that's Sonnet's normal territory.

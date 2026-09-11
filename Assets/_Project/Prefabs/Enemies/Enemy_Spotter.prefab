@@ -1159,6 +1159,8 @@ GameObject:
   - component: {fileID: 3125126428581330960}
   - component: {fileID: 5099984566976082160}
   - component: {fileID: 4091795701585800007}
+  - component: {fileID: 2046724622904657197}
+  - component: {fileID: 2569506990065294519}
   m_Layer: 6
   m_Name: Enemy_Spotter
   m_TagString: Enemy
@@ -1259,7 +1261,7 @@ AudioSource:
   m_GameObject: {fileID: 1499000362912248528}
   m_Enabled: 1
   serializedVersion: 4
-  OutputAudioMixerGroup: {fileID: 0}
+  OutputAudioMixerGroup: {fileID: 9211396225940996179, guid: a0b76a7d9d82df94dbe57bfdfd4094c7, type: 2}
   m_audioClip: {fileID: 0}
   m_Resource: {fileID: 0}
   m_PlayOnAwake: 0
@@ -1901,6 +1903,18 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+      - m_Target: {fileID: 2046724622904657197}
+        m_TargetAssemblyTypeName: MrMoonlight.Enemies.EnemyCorpseCleanup, MrMoonlight.Runtime
+        m_MethodName: Cleanup
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: 
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!114 &7175241145344593340
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1914,13 +1928,43 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyAudioHooks
   source: {fileID: 0}
-  fire: {fileID: 0}
+  fire: {fileID: 8300000, guid: 33528e1dbc0d6844a8788bae6d03de22, type: 3}
   dryFire: {fileID: 0}
   reload: {fileID: 0}
   flareFire: {fileID: 8300000, guid: 923d418f3cb7226468b4e41d6a69900d, type: 3}
-  pain: {fileID: 0}
-  death: {fileID: 0}
-  alerted: {fileID: 0}
+  alert:
+  - {fileID: 8300000, guid: 22553418580f89c4da6ba88f86260bb9, type: 3}
+  - {fileID: 8300000, guid: 2eff6dfdaca09e64693c032ee8268397, type: 3}
+  - {fileID: 8300000, guid: 42828c6b1531a6242b6b63f8449304de, type: 3}
+  - {fileID: 8300000, guid: a3e680332ec39c64488b2e97bdd32fe9, type: 3}
+  pain:
+  - {fileID: 8300000, guid: 0d840a8b3c74cc94d84ec915f4e90410, type: 3}
+  - {fileID: 8300000, guid: 3ec5ec1435c3cf64fb6a3f1436229042, type: 3}
+  - {fileID: 8300000, guid: 4ca7c43e99abd6a4bbbb86e5ddcd0d92, type: 3}
+  wound:
+  - {fileID: 8300000, guid: 5d6284d54ece3a04e8a96da6ecf22665, type: 3}
+  - {fileID: 8300000, guid: 35e4fbd0fde04be48b90469f7922e7eb, type: 3}
+  - {fileID: 8300000, guid: 60670a9a0f1bf5e4a96d134904b582ff, type: 3}
+  dismemberment:
+  - {fileID: 8300000, guid: 14826338d42835c48be649fbb00ae9b9, type: 3}
+  - {fileID: 8300000, guid: 5a2843e67bbe14c4794c986de1005498, type: 3}
+  - {fileID: 8300000, guid: b441b1e1b73e997459c37e57ba627010, type: 3}
+  - {fileID: 8300000, guid: 04745127c4130b64e919520828500cb6, type: 3}
+  - {fileID: 8300000, guid: 86a937bbf0574724e9785bcfba508553, type: 3}
+  - {fileID: 8300000, guid: 3bbd6240b7a96d748aac1bf6d71c0880, type: 3}
+  death:
+  - {fileID: 8300000, guid: ce9057d01739b6148824c3a3bd67682e, type: 3}
+  - {fileID: 8300000, guid: 0b81f5d4fb03cc24a839d6720d6b6806, type: 3}
+  - {fileID: 8300000, guid: d653b285d7303d547bd259c74c1dd875, type: 3}
+  - {fileID: 8300000, guid: 924a571d16b49074a81daecd787cc647, type: 3}
+  - {fileID: 8300000, guid: 6d0a896f7c633b94d9ff19b446096a40, type: 3}
+  - {fileID: 8300000, guid: 0f729cc667fd9014d9882dcbc303f0d8, type: 3}
+  - {fileID: 8300000, guid: e7e08c4ffa102d24f8158115a37573a0, type: 3}
+  - {fileID: 8300000, guid: 321e99db09a95c343820a2d3c997ba1f, type: 3}
+  - {fileID: 8300000, guid: eb56ec9c8b0df8144be4c520d3325942, type: 3}
+  - {fileID: 8300000, guid: 7eed7f8e543a8f54baa1e8d762fdfd34, type: 3}
+  - {fileID: 8300000, guid: 08c77f6477eb7e148a1cc1d7699f1921, type: 3}
+  - {fileID: 8300000, guid: 1d94ecb6f55a45247a3af7d8abcc9ea3, type: 3}
   footstep: {fileID: 0}
 --- !u!114 &9180919272937548288
 MonoBehaviour:
@@ -2051,9 +2095,11 @@ MonoBehaviour:
   - item: {fileID: 3777491173468103847}
     mass: 1.2
     fallbackColliderRadius: 0.12
+    groundSnapNoPhysics: 0
   - item: {fileID: 8657054039667738551}
     mass: 3.2
     fallbackColliderRadius: 0.15
+    groundSnapNoPhysics: 1
   dropParent: {fileID: 0}
 --- !u!114 &7878114975011076296
 MonoBehaviour:
@@ -2683,6 +2729,30 @@ MonoBehaviour:
         rigidbody: 1
         drag: 0.5
         angularDrag: 0.5
+--- !u!114 &2046724622904657197
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 594ac05acb7f1b449bb8280659f1c387, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.EnemyCorpseCleanup
+--- !u!114 &2569506990065294519
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b783f6f33a7f92743b59212b82c8e6d2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.Spotter.SpotterDetectionAlert
 --- !u!1 &1529947185680349093
 GameObject:
   m_ObjectHideFlags: 0

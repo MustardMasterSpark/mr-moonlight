@@ -21,6 +21,13 @@ namespace MrMoonlight.Data
         private const string VoicesVolumeKey = "MrMoonlight.VoicesVolume";
         private const string SFXVolumeKey = "MrMoonlight.SFXVolume";
 
+        // Island demo wrap-up debug mixer overlay (F10) — temporary tuning sliders, not the
+        // Settings panel above. Owner: island-demo-wrapup, 2026-09-10.
+        private const string MenuMusicVolumeKey = "MrMoonlight.MenuMusicVolume";
+        private const string WeaponVolumeKey = "MrMoonlight.WeaponVolume";
+        private const string IslandMusicVolumeKey = "MrMoonlight.IslandMusicVolume";
+        private const string SpotterVolumeKey = "MrMoonlight.SpotterVolume";
+
         public static Difficulty Difficulty
         {
             get => (Difficulty)PlayerPrefs.GetInt(DifficultyKey, (int)Difficulty.Punk);
@@ -57,6 +64,50 @@ namespace MrMoonlight.Data
             set
             {
                 PlayerPrefs.SetFloat(SFXVolumeKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Debug mixer overlay (F10), island demo wrap-up 2026-09-10 — not part of the Settings panel above. Owner: island-demo-wrapup</summary>
+        public static float MenuMusicVolume
+        {
+            get => PlayerPrefs.GetFloat(MenuMusicVolumeKey, Tunables.I.DefaultMenuMusicVolume);
+            set
+            {
+                PlayerPrefs.SetFloat(MenuMusicVolumeKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Debug mixer overlay (F10). Owner: island-demo-wrapup</summary>
+        public static float WeaponVolume
+        {
+            get => PlayerPrefs.GetFloat(WeaponVolumeKey, Tunables.I.DefaultWeaponVolume);
+            set
+            {
+                PlayerPrefs.SetFloat(WeaponVolumeKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Debug mixer overlay (F10). Owner: island-demo-wrapup</summary>
+        public static float IslandMusicVolume
+        {
+            get => PlayerPrefs.GetFloat(IslandMusicVolumeKey, Tunables.I.DefaultIslandMusicVolume);
+            set
+            {
+                PlayerPrefs.SetFloat(IslandMusicVolumeKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Debug mixer overlay (F10). Owner: island-demo-wrapup</summary>
+        public static float SpotterVolume
+        {
+            get => PlayerPrefs.GetFloat(SpotterVolumeKey, Tunables.I.DefaultSpotterVolume);
+            set
+            {
+                PlayerPrefs.SetFloat(SpotterVolumeKey, value);
                 PlayerPrefs.Save();
             }
         }

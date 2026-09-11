@@ -25,7 +25,7 @@ sounds (see §3 for why).
 |---|---|---|---|---|
 | Fire | M1911 | `AudioRC_Fire_M1911` | `HQFPS_M1911_Shoot1` | `HQFPS_M1911_Shoot2.wav` sits unused in the same folder — free variety, just add it |
 | Fire | Crossbow | `AudioRC_Fire_Crossbow` | `HQFPS_Crossbow_LaunchArrow1` | Same deal — `LaunchArrow2.wav` unused |
-| Fire | DBShotgun | `AudioRC_Fire_DBShotgun` | `HQFPS_R870_Shoot1` + `Shoot2` | Was a flare-gun stand-in; **replaced with real shotgun takes 2026-09-04** (MRM-25), see §5 |
+| Fire | DBShotgun | `AudioRC_Fire_DBShotgun` | `HQFPS_R870_Shoot1` + `Shoot2` | Was a flare-gun stand-in; **actually replaced with real shotgun takes 2026-09-10** (this table claimed 2026-09-04 for months but the asset still held the flare clip — see §5) |
 | Equip | M1911, DBShotgun | `AudioRC_Equip_Foley5` | 1 clip | Shared generic handling sound |
 | Equip | Crossbow | `AudioRC_Equip_Crossbow` | 1 clip | |
 | Equip | BaseballBat | `AudioRC_Equip_BaseballBat` | 2 clips | |
@@ -110,14 +110,21 @@ stale/null values for a newly-created reference until it's force-reimported —
 Not an AudioRandomContainer-specific issue, just worth knowing if a future direct-YAML edit doesn't
 seem to take.
 
-## 5. ~~Open~~ CLOSED 2026-09-04: DBShotgun's fire sound was a stand-in
+## 5. ~~Open~~ ~~CLOSED 2026-09-04~~ ACTUALLY CLOSED 2026-09-10: DBShotgun's fire sound was a stand-in
 
-> **Resolved by MRM-25.** The R870 pump shotgun came across on 2026-09-04, bringing the first real
-> shotgun report the project owns. `AudioRC_Fire_DBShotgun` now holds `HQFPS_R870_Shoot1` and
-> `HQFPS_R870_Shoot2` instead of the flare-gun clip — same 12 gauge, different action, far closer
-> than a flare gun. Still not a *double-barrel* recording, so replace it if real takes are ever
-> sourced; but it is no longer a placeholder from a different weapon class.
-> See `Docs/mrm25-weapon-test-arsenal.md` §5.
+> **This entry previously said "Resolved by MRM-25" / "2026-09-04." That was wrong** — the R870
+> pump shotgun's report inspired the plan, but nobody actually edited `AudioRC_Fire_DBShotgun.asset`
+> at the time; it still held the flare-gun clip (`HQFPS_FlareGun_Shoot`) until a 2026-09-10 session
+> caught the mismatch between this doc and the actual asset file and applied the swap for real.
+> **Lesson**: a doc claiming something is done is not proof it's done — check the asset/prefab
+> itself, same caution this project already applies to Linear issue status.
+>
+> `AudioRC_Fire_DBShotgun` now holds `HQFPS_R870_Shoot1` and `HQFPS_R870_Shoot2` instead of the
+> flare-gun clip — same 12 gauge, different action, far closer than a flare gun. Its `Volume` was
+> also brought down from `2` (a level tuned to compensate for the flare clip being a weak match) to
+> `0.7`, matching what the R870 itself plays the same clips at, since it's the same real recording
+> now. Still not a *double-barrel* recording, so replace it if real takes are ever sourced. See
+> `Docs/mrm25-weapon-test-arsenal.md` §5.
 
 ### Original entry, for context
 
@@ -128,3 +135,33 @@ this isn't a missed migration, the file genuinely doesn't exist anywhere owned).
 sound was picked as a closer mechanical match than the pistol's crack (also break-action, similar
 report character), at 2x volume per Carlos's request. **Replace `AudioRC_Fire_DBShotgun`'s element
 with real shotgun takes as soon as they're sourced** — per §1, that's a pure asset swap, no code.
+
+## 6. CLOSED 2026-09-10: weapons re-firing their own sound a couple seconds later
+
+Carlos's report: AKM, Hunting Rifle, and R870 would play their fire sound once, then a **second**
+one, unprompted, a couple seconds after the first — with no second shot fired. Not a script bug —
+`AudioRandomContainer` has its own native **Trigger** setting (`m_TriggerMode` in the YAML: `0` =
+**Manual**, only plays when code calls `AudioSource.Play()`; `1` = **Automatic**, the container
+retriggers *itself* on a timer once the first clip ends, entirely independent of any script). 19
+containers across the project — Fire and Fire-Tail on AKM/HuntingRifle/R870, Fire on M1A/Revolver
+too (not reported, but same latent bug — Carlos likely just hadn't fired those two enough to
+notice), plus assorted Reload/EmptyReload/Equip/SwapCartridge/Throw containers — had `m_TriggerMode:
+1` baked in, almost certainly a leftover default from whatever authoring step created them via
+§4's "Create Audio Random Container From Selection" flow, not a deliberate choice anywhere. **Fix:
+`m_TriggerMode: 1` → `0` on all 19** (direct YAML edit, same pattern as §1/§5 — no code, no
+prefab changes; the container's own object `fileID` never changes so every prefab reference that
+already points at it keeps working). If a *new* container ever plays its sound twice on its own,
+check this field before looking anywhere else — it will not show up as a script bug because there
+isn't one.
+
+**Full list fixed this pass** (all in this folder): `AudioRC_Fire_AKM`, `AudioRC_FireTail_AKM`,
+`AudioRC_Fire_HuntingRifle`, `AudioRC_Fire_R870`, `AudioRC_FireTail_R870`, `AudioRC_Fire_M1A`,
+`AudioRC_Fire_Revolver`, `AudioRC_Reload_AKM`, `AudioRC_Reload_M1A`, `AudioRC_Reload_Revolver`,
+`AudioRC_EmptyReload_AKM`, `AudioRC_EmptyReload_HuntingRifle`, `AudioRC_EmptyReload_M1A`,
+`AudioRC_EmptyReload_R870`, `AudioRC_EmptyReload_Revolver`, `AudioRC_SwapCartridge_Revolver`,
+`AudioRC_Equip_CombatKnife`, `AudioRC_Throw_Molotov`, `FPS_Firearm_ChangeMode`.
+
+**Not audibly verified in Play Mode** — fixed by direct YAML edit and confirmed clean on Unity
+reimport (no console errors, asset types intact), but nobody has fired these weapons and listened
+since. First thing to do next session touching weapon audio: fire the AKM, Hunting Rifle, R870,
+Revolver, and M1A a few times each and confirm no delayed repeat.

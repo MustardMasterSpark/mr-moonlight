@@ -1,0 +1,198 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session. Model: Sonnet 5.
+
+Two unrelated asks, both from Carlos directly in chat (no new Linear work logged this session
+beyond what's noted below). Branch: main, same as everything else in this pre-Sept-1 demo push —
+see the "current tree state" note near the bottom before touching anything.
+
+===========================================================================
+PART 1 — PAUSE OVERLAY (touches MRM-19 scope, still not MRM-19-complete)
+===========================================================================
+
+WHAT CARLOS ASKED FOR (two follow-up turns):
+1. When the game is paused, show a full-screen black overlay with some alpha (see-through, not
+   solid) and a centered image of '/c/Users/calva/Desktop/menu images/controls.png', sized so it
+   doesn't fill the whole screen.
+2. Follow-up after seeing it: too small and pixelated. He marked up a screenshot with a red
+   outline of the size he wanted (~94% of screen width/height) and asked for correct import
+   settings so it's sharp.
+
+WHAT THIS SESSION BUILT — DONE, VERIFIED LIVE (screenshots, both states):
+
+- New `Assets/_Project/Code/Runtime/UI/PauseOverlayUI.cs` — a small `Show()`/`Hide()` component
+  that toggles a GameObject's active state.
+- `PauseController.cs` (Assets/_Project/Code/Runtime/Player/) got a new optional
+  `[SerializeField] private PauseOverlayUI pauseOverlay;` field, called from `Pause()`,
+  `Resume()`, and the `OnDestroy` safety-net path (so a destroyed controller can't leave the
+  overlay stuck visible the way it already guards against a stuck `Time.timeScale`).
+- Imported `controls.png` (source is 3840x2160!) into
+  `Assets/_Project/Art/UI/PauseOverlay/T_PauseControls.png` as a Sprite.
+- Built `HUD Canvas → Pause Overlay` in Island.unity:
+  - `Pause Overlay` (root, starts inactive) — full-stretch RectTransform, holds `PauseOverlayUI`.
+  - `Overlay Background` — full-stretch `Image`, `RGBA(0,0,0,0.75)`.
+  - `Controls Image` — `Image` using the sprite, `preserveAspect = true`, anchored
+    `(0.03,0.03)`-`(0.97,0.97)` (NOT a fixed sizeDelta — see trap below for why).
+- Wired `PauseController.pauseOverlay` to the new component in the scene, saved.
+
+TRAPS HIT AND FIXED — READ BEFORE TOUCHING THIS AGAIN:
+
+1. **`Awake()` does not fire on a GameObject that starts inactive.** First version of
+   `PauseOverlayUI` resolved `root = gameObject` in `Awake()` as a fallback when the inspector
+   field was left empty — same pattern `GameOverPanel.cs` uses. But this object starts disabled
+   in the scene (hidden until Show() is called), so Unity never calls Awake on it, `root` stayed
+   null, and the first live Pause() threw `UnassignedReferenceException`. Fixed by making `root`
+   a lazily-resolved property instead (`root != null ? root : (root = gameObject)`), so it never
+   depends on Awake having run. If you ever see this exact exception on a hidden-by-default UI
+   panel, this is almost certainly why — check whether the object starts active.
+2. **`TextureImporter` default max size in this project is 512, not Unity's usual 2048.**
+   Importing `controls.png` (a 3840x2160 source) at default settings silently downscaled it to
+   512x288 — that's the actual cause of "pixelated," not the display size. Fixed by explicitly
+   setting `maxTextureSize = 2048` on both the Default platform settings AND an explicit
+   Standalone override (`overridden = true`) via `TextureImporter`/`SaveAndReimport()` — a plain
+   `manage_asset modify` properties dict did not touch this, had to go through
+   `execute_code`/`TextureImporterPlatformSettings` directly. **If any other recent UI/prop
+   texture import in this project looks soft, check its max size the same way — this may not be
+   a one-off.**
+3. Sizing was switched from a fixed pixel `sizeDelta` (1152x648, my first guess) to anchor-based
+   sizing (`0.03,0.03`-`0.97,0.97`) once Carlos's marked-up screenshot showed he wanted it much
+   bigger (~94% of the screen). Anchors work here specifically because the canvas is authored at
+   16:9 (1920x1080) and the source image is also 16:9 — a uniform anchor margin on all four sides
+   scales both dimensions by the same ratio, so it doesn't distort. `preserveAspect = true` stays
+   on as a second line of defense regardless.
+
+NOT DONE / OPEN ITEMS:
+
+- **This is still not MRM-19.** MRM-19 ("Pause menu + game over screen (unstyled)") is currently
+  Linear status "In Review" but its actual scope is a full menu: Continue, Restart from
+  checkpoint, Restart the game, and (per the merged issue) a Quit/return-to-menu path, plus the
+  current objective shown at the top — see `mcp__claude_ai_Linear__get_issue` for MRM-19's full
+  description, this file only paraphrases. What exists today is `PauseController`'s bare
+  halt/resume (no buttons, by design per its own doc comment) plus this session's passive
+  backdrop-and-reminder-image overlay. **Do not report MRM-19 as done or update its status** —
+  this was two small demo-polish asks, not a completion of that issue. Flag the status mismatch
+  to Carlos if it comes up (matches the general `linear_status_not_completion` pattern — status
+  says one thing, actual code is narrower).
+- No interactive buttons exist on the pause screen at all. If Carlos asks for Continue/Restart/
+  Quit next, that's the real MRM-19 work, not a tweak to what's here.
+
+===========================================================================
+PART 2 — DEMO SPOTTER POPULATION TUNING (LEGACY, demo-only system)
+===========================================================================
+
+Read `Assets/_Project/Code/Runtime/Enemies/DemoSpotterPopulationManager.cs`'s class doc comment
+first — it's LEGACY (dies with the MRM-34 Spotter rebuild) and already explains the whole
+population/relocation/aggression system in detail. `Docs/spotter-relocation-aggression-sonnet-
+prompt.txt` is the prior session's handoff for that system's *build* — it now has STALE NUMBERS
+in its prose (still says "150m nearby radius, 20s relocation interval" as the shipped defaults).
+Don't trust the numbers in that file; trust `MoonlightTunables.cs` / the asset, both current as
+of this session.
+
+WHAT CARLOS ASKED FOR: population still felt too sparse, and the relocation loop (the thing that
+pulls stragglers back near the player when he's wandered off) felt too slow to notice. Also
+restated (not a new complaint, a constraint to preserve): don't spawn on top of the player, but
+keep them within visual range, not so far they'd be invisible.
+
+WHAT THIS SESSION CHANGED — DONE, VERIFIED LIVE:
+
+In `MoonlightTunables.cs` (and, importantly, also directly in the serialized
+`Assets/_Project/Data/Resources/MoonlightTunables.asset` — see trap below):
+
+| Tunable | Was | Now |
+|---|---|---|
+| `SpotterPopulationSpawnRadius` (outer ring) | 100m | **65m** |
+| `SpotterPopulationMinSpawnDistance` (inner ring) | 40m | 40m — unchanged, see below |
+| `SpotterRelocationCheckInterval` | 20s | **5s** (now matches the top-up loop's 5s) |
+| `SpotterRelocationNearbyRadius` | 150m | **95m** (kept the same ~1.5x buffer over the new outer radius) |
+
+The 40m inner distance was deliberately left alone: it isn't arbitrary, it matches
+`Enemy_Spotter`'s own worst-case Blaze vision `sightRange` (checked the live prefab,
+`Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab` — three tiered sightRange values, the
+largest is 40), so a Spotter placed right at that boundary can't spot the player the instant it
+appears. If Carlos or a future session changes the Spotter's vision cone/sightRange values on
+that prefab, revisit this number to stay just past whatever the new max is.
+
+TRAP HIT — READ BEFORE CHANGING ANY MoonlightTunables VALUE AGAIN:
+
+**`MoonlightTunables` is a ScriptableObject with an already-serialized asset
+(`Assets/_Project/Data/Resources/MoonlightTunables.asset`), and Unity does NOT re-apply a
+changed C# field default to a field that's already been serialized into that asset.** Editing
+the `= 100f` in the class to `= 65f` alone would have done nothing at runtime — the asset had an
+explicit `SpotterPopulationSpawnRadius: 100` line already written. Every tunable edit in this
+project needs the asset itself updated too (via `SerializedObject`/`SaveAndReimport`-style code
+through UnityMCP's `execute_code`, or by hand in the Inspector) — check
+`Assets/_Project/Data/Resources/MoonlightTunables.asset` for the field name before assuming a
+code-only change took effect. Corollary discovered along the way: the whole Relocation/
+Aggression tunable block (added by the previous session) had never actually been serialized into
+this asset at all — it was silently running on C# defaults this whole time. All of it (kill
+thresholds, population bonuses, tiered check intervals) is now explicitly written into the asset
+too, matching the values documented in `Docs/spotter-relocation-aggression-sonnet-prompt.txt`.
+
+VERIFICATION DONE: entered Play mode, let it run ~6 real seconds (the manager tops up immediately
+on enable), queried all alive `EnemyIdentity` Spotters — got 10 alive, distances 44-66m from the
+player (matches the new 40-65m ring, one at 66.5 is just NavMesh-sampling noise), every one in
+Blaze state `normal` (not `attack`) — confirms no immediate engagement. Did not verify the
+relocation loop specifically pulling in a straggler (would need a longer session with the player
+actually moving across the island) or the aggression-tier behavior (unchanged this session,
+already flagged not-yet-verified in the prior handoff — still true).
+
+NOT DONE / OPEN ITEMS:
+
+- These are still first-guess numbers tuned by one person's read of one screenshot/log, not a
+  full playtest. Carlos should be told to keep giving feedback if 65m/5s still isn't dense/fast
+  enough, or overshoots the other way.
+- The relocation loop's actual "pull a straggler back" behavior (not just population count) was
+  not re-verified this session — only inherited from the prior session's live-tested build. If
+  the 5s interval combined with the smaller radii causes visibly janky/frequent warping (a
+  Spotter popping to a new spot every few seconds if the player keeps drifting at the ring edge),
+  that's the first thing to check.
+- Aggression escalation (15/30 kill tiers) untouched and still per the prior handoff's own
+  "NOT DONE" list — not retested this session either.
+
+===========================================================================
+CURRENT TREE STATE — READ BEFORE COMMITTING ANYTHING
+===========================================================================
+
+`git status` on `main` right now shows a large stack of uncommitted changes from several
+different sessions' worth of demo-wrapup work sitting together (kill lines, letterbox, corpse
+cleanup, demo intro subtitles, weapon audio retrigger, game-over tint/restart, island startup
+preset, this session's pause overlay + Spotter tuning, etc.) — this matches the established
+pattern for this pre-Sept-1 push (see `mrm75_branch_scope_exception` / session precedent: direct
+main-branch work, Carlos commits via GitHub Desktop when he chooses). This is not a "someone
+forgot to commit" problem — don't clean it up or reset anything. Just be aware a plain `git diff`
+or `git status` right now will show far more than this session's two pieces of work, and this
+session's actual diff is only: `PauseController.cs`, the new `PauseOverlayUI.cs`,
+`MoonlightTunables.cs`, `MoonlightTunables.asset`, `Island.unity` (the new Pause Overlay
+hierarchy + wiring), and the new `Assets/_Project/Art/UI/PauseOverlay/T_PauseControls.png`
+(+ .meta).
+
+===========================================================================
+NOTHING COMMITTED
+===========================================================================
+Per the hard rule — Carlos commits via GitHub Desktop. Two independent commit messages (these are
+unrelated changes, don't squash them together):
+
+  Add pause overlay: dimmed backdrop + controls reminder image
+
+  - New PauseOverlayUI component (Show/Hide), wired into PauseController's
+    Pause()/Resume() as an optional reference.
+  - Built under HUD Canvas: full-screen black Image at 75% alpha plus a
+    centered, screen-fraction-sized controls image (controls.png, imported
+    as T_PauseControls.png at 2048 max size after the default 512 cap was
+    found silently downscaling it), so the game stays partly visible
+    behind it and the image reads sharp.
+  - Verified live in Play Mode, both shown and hidden states.
+
+  ---
+
+  Tighten demo Spotter spawn radius and relocation cadence
+
+  - Spawn ring outer radius 100m -> 65m (same population floor, denser
+    ring); inner 40m distance kept as-is, it already matches Enemy_Spotter's
+    own max Blaze vision range so it still can't spot the player on arrival.
+  - Relocation nearby radius scaled down to match (150m -> 95m).
+  - Relocation check interval 20s -> 5s (was 4x slower than the top-up
+    loop; matches it now) so stragglers get pulled back near the player
+    more promptly.
+  - Wrote the previously-unserialized relocation/aggression tunables into
+    MoonlightTunables.asset explicitly instead of relying on code defaults.

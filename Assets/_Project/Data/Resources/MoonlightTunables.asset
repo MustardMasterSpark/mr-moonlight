@@ -135,6 +135,7 @@ MonoBehaviour:
   SunIndoorDimTransitionSeconds: 1.5
   TimeManagerDefaultTransitionSeconds: 3
   MenuOpeningFadeDuration: 1.5
+  UiElementsRevealDelay: 1.5
   FeatherOverlaySwitchAlphaThreshold: 0.35
   FeatherMatteAlphaCutoff: 0.05
   TitleSequenceStartDelay: 1.5
@@ -196,6 +197,24 @@ MonoBehaviour:
   EnemyTracerWidth: 0.035
   EnemyDropLifetime: 0
   EnemyDropScatterImpulse: 1.5
+  EnemyDropGroundSnapTimeout: 6
+  SpotterPopulationMin: 10
+  SpotterPopulationSpawnRadius: 65
+  SpotterPopulationMinSpawnDistance: 40
+  SpotterPopulationCheckInterval: 5
+  SpotterPopulationPlacementAttempts: 12
+  SpotterPopulationNavMeshSampleDistance: 4
+  SpotterRelocationCheckInterval: 5
+  SpotterRelocationNearbyRadius: 95
+  SpotterAggressionKillThreshold1: 15
+  SpotterAggressionKillThreshold2: 30
+  SpotterAggressionPopulationBonusTier1: 5
+  SpotterAggressionPopulationBonusTier2: 10
+  SpotterAggressionCheckIntervalTier1: 3
+  SpotterAggressionCheckIntervalTier2: 1.5
+  EnemyCorpseCleanupDelay: 3.5
+  PlayerAmbientLightIntensity: 57.32
+  PlayerAmbientLightRange: 8.25
   EnemyHitboxLimbMultiplier: 1
   EnemyHitboxTorsoMultiplier: 2
   EnemyHitboxHeadMultiplier: 4
@@ -275,3 +294,20 @@ MonoBehaviour:
   WeaponDamageClubMin: 25
   WeaponDamageClubMax: 30
   WeaponThrowableTestStock: 99
+  LetterboxBarHeight: 150
+  LetterboxColor: {r: 0, g: 0, b: 0, a: 1}
+  LetterboxRetractDuration: 0.6
+  DemoIntroFirstLineDelay: 1
+  DemoIntroLineFadeDuration: 0.5
+  DemoIntroWordsPerMinute: 220
+  DemoIntroLineMinHold: 2.5
+  DemoIntroLineMaxHold: 8
+  DemoIntroLineGap: 0.4
+  DemoIntroFontSize: 38
+  DemoIntroTextColor: {r: 1, g: 1, b: 1, a: 1}
+  KillLineFadeDuration: 0.25
+  KillLineHoldDuration: 1.6
+  KillLineFontSize: 40
+  KillLineColor: {r: 0.82, g: 0.05, b: 0.05, a: 1}
+  KillLineAnchoredYWithLetterbox: 210
+  KillLineAnchoredYWithoutLetterbox: 50

@@ -1,5 +1,6 @@
 using MrMoonlight.Events;
 using MrMoonlight.Input;
+using MrMoonlight.UI;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -40,6 +41,10 @@ namespace MrMoonlight.Player
     {
         [Header("References — leave empty to resolve from the player root")]
         [SerializeField] private MoonlightPlayerRig playerRig;
+
+        [Header("UI — optional, demo pause overlay")]
+        [Tooltip("Dimmed backdrop + controls reminder shown while paused. Left empty, pause still works with no visible panel.")]
+        [SerializeField] private PauseOverlayUI pauseOverlay;
 
         /// <summary>
         /// The pause controller in the loaded scene. Same lookup-cache pattern as
@@ -88,6 +93,7 @@ namespace MrMoonlight.Player
             {
                 Time.timeScale = 1f;
                 AudioListener.pause = false;
+                pauseOverlay?.Hide();
             }
         }
 
@@ -136,6 +142,7 @@ namespace MrMoonlight.Player
             AudioListener.pause = true;
             playerRig.SetControlSuspended(true);
             playerRig.Input.SetMode(InputMode.UI);
+            pauseOverlay?.Show();
         }
 
         public void Resume()
@@ -150,6 +157,7 @@ namespace MrMoonlight.Player
             AudioListener.pause = false;
             playerRig.SetControlSuspended(false);
             playerRig.Input.SetMode(InputMode.Gameplay);
+            pauseOverlay?.Hide();
         }
     }
 }

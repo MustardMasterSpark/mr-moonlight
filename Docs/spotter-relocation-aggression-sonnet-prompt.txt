@@ -1,0 +1,110 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session. Model: Sonnet 5.
+
+No Linear issue — Carlos asked for this directly in chat, on top of the same demo-only
+DemoSpotterPopulationManager system built in the demo-intro-killlines session earlier the same
+day (see Docs/demo-intro-killlines-sonnet-prompt.txt for that context if needed, though it's
+unrelated to this work).
+
+===========================================================================
+WHAT CARLOS ASKED FOR
+===========================================================================
+
+Two asks, both on Assets/_Project/Code/Runtime/Enemies/DemoSpotterPopulationManager.cs (the
+system that keeps a floor of ~10 alive Spotters near the player):
+
+1. He'd noticed the population floor is a *global* alive count, not "how many are near the
+   player right now" — so if the player crosses the island fast enough, all 10 Spotters can get
+   left behind in the region he just quit, the floor reads "already met," and he walks into an
+   empty area with nothing to encounter. Wanted periodic relocation of stragglers, not
+   constant/every-frame checking (perf-conscious).
+
+2. Escalating aggression by kill count: at 15 kills, spawn more Spotters and make them
+   aggressive (send them straight at the player instead of waiting to spot him). At 30 kills,
+   escalate further.
+
+===========================================================================
+WHAT THIS SESSION BUILT — DONE, COMPILED CLEAN, **NOT YET LIVE-TESTED**
+===========================================================================
+
+Per feedback_confirm_before_declaring_fixed (memory): only a clean compile was verified this
+session (via UnityMCP read_console — zero errors from the changed files). Nobody has actually
+pressed Play and watched a Spotter relocate or turn aggressive. **Do not tell Carlos this is
+done until it's been run** — verify in Play Mode (or a build, per verification_requires_a_build
+memory if it's anything perf/timing-sensitive) before reporting it working.
+
+**1. Relocation.** A second coroutine, `RelocationLoop`, runs every
+`MoonlightTunables.SpotterRelocationCheckInterval` (20s default — deliberately much slower than
+the 5s population top-up loop). It:
+   - Counts alive Spotters within `SpotterRelocationNearbyRadius` (150m, bigger than the 100m
+     spawn ring on purpose — hysteresis, so a Spotter freshly spawned at the ring's edge isn't
+     immediately re-flagged as a straggler).
+   - If that nearby count is short of the current population floor, warps the farthest
+     stragglers (via `NavMeshAgent.Warp`, not a raw transform set — keeps Blaze's internal nav
+     state consistent) into a fresh spawn-ring point around the player, reusing existing
+     Spotters instead of instantiating more (the global floor is already met, so TopUp wouldn't
+     spawn anything anyway).
+   - Skips any straggler whose `BlazeAI.state == BlazeAI.State.attack` — never yanks a Spotter
+     out of a fight the player can see.
+
+**2. Aggression escalation.** New `_totalKills` counter on the manager itself, incremented via
+its own `EnemyHealth.AnyDied` subscription (not routed through ObjectiveTracker — deliberately
+self-contained, per this file's own doc comment).
+   - Tier 1 at `SpotterAggressionKillThreshold1` (15): population floor +5
+     (`SpotterAggressionPopulationBonusTier1`), top-up interval tightens 5s→3s
+     (`SpotterAggressionCheckIntervalTier1`), and every Spotter placed from then on (fresh spawn
+     *or* relocated straggler) gets `BlazeAI.SetEnemy(player, true, true)` one frame after
+     placement — straight into attack state chasing the player, same call
+     EnemyReinforcementSpawner.EngageNextFrame uses for a flare wave.
+   - Tier 2 at `SpotterAggressionKillThreshold2` (30): floor bonus replaces (does not stack
+     with) tier 1's, going to +10 (`SpotterAggressionPopulationBonusTier2`); interval tightens
+     further to 1.5s (`SpotterAggressionCheckIntervalTier2`).
+   - Escalation only affects Spotters placed *after* a threshold is crossed — an already-alive,
+     already-idle-nearby Spotter does not retroactively flip to attack. This was a deliberate
+     scope call (matches "spawning more + sending them" reading as one action for newly involved
+     Spotters), not confirmed with Carlos either way — flag if he expected the existing ones to
+     go aggressive too.
+
+**3. New tunables**, both in MoonlightTunables.cs under the existing "Demo Spotter population
+manager" header (relocation fields) and a new "Demo Spotter aggression escalation" header
+(aggression fields) — see the file for exact defaults, all listed above.
+
+===========================================================================
+NOT DONE / OPEN ITEMS
+===========================================================================
+
+- **No live verification at all.** This is the single biggest open item. Need to actually:
+  - Confirm relocation fires: put the player far from all Spotters (fly/noclip across the
+    island, or lower SpotterRelocationCheckInterval temporarily for faster iteration), watch the
+    console/scene for a straggler warping in, confirm it doesn't look broken (pops in cleanly on
+    NavMesh, doesn't stack with another, isn't visible mid-teleport if player is looking that
+    way).
+  - Confirm aggression: kill 15 things (debug Kill() calls are fine, doesn't have to be real
+    combat), confirm the next TopUp/relocation cycle sends a Spotter straight into attack state
+    and it actually beelines the player rather than idling.
+  - Confirm tier 2 at 30 kills the same way.
+  - Watch for the obvious failure mode: a relocated Spotter warped into a spot that was valid
+    for TryFindSpawnPoint's NavMesh sample but visible to the player (annulus min-distance
+    should prevent this, same logic TopUp already uses safely, but hasn't been eyeballed with
+    the new relocation path specifically).
+- Numeric defaults (150m nearby radius, 20s relocation interval, +5/+10 floor bonuses, 3s/1.5s
+  intervals, 15/30 kill thresholds) are first-guess, not tuned against actual playtesting — treat
+  them as a starting point Carlos will likely want to adjust after seeing it in motion.
+- Whether escalation should retroactively affect already-alive Spotters (see above) — ask if it
+  comes up.
+
+===========================================================================
+NOTHING COMMITTED
+===========================================================================
+Per the hard rule — Carlos commits via GitHub Desktop. Suggested commit message for this
+session's work:
+
+  Fix Spotter population leaving stragglers behind player movement; add kill-count aggression escalation
+
+  - DemoSpotterPopulationManager now periodically relocates Spotters stranded far from the
+    player instead of only checking a global alive count, which could report the floor met
+    while none were actually near him.
+  - At 15/30 total kills the population floor and top-up cadence escalate, and newly placed
+    Spotters (spawned or relocated) are sent straight into Blaze's attack state on the player.
+  - New tunables in MoonlightTunables for both.

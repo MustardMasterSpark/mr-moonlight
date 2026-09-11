@@ -356,6 +356,21 @@ namespace MrMoonlight.Player
             _stamina.Stamina = Mathf.Clamp01(_stamina.Stamina + amountOnHundredScale / max);
         }
 
+        /// <summary>
+        /// The controller's own live health, straight from <c>HealthManager</c> — not the
+        /// once-per-frame mirror in <see cref="PlayerStats.Health"/>. A hit applies to
+        /// <c>HealthManager</c> immediately (<see cref="ApplyIncomingDamage"/>) but
+        /// <see cref="MirrorPoolsToStats"/> only copies it into the stat on the next
+        /// <c>Update</c>, so anything that reacts to damage <i>in the same call</i> — e.g.
+        /// <see cref="HealthRegenDebugToggle"/>'s hit-triggered regen, which fires from
+        /// <c>PlayerDamageReceiver.Damaged</c> before that Update tick — sees the stat's
+        /// pre-hit value and silently computes zero missing health. Found live 2026-09-10:
+        /// Carlos took damage, the red tint never cleared, and the debug regen's own tween
+        /// reference was non-null but stuck — this is why. Read this instead when the caller
+        /// runs synchronously off the damage event.
+        /// </summary>
+        public float CurrentHealth => _health != null ? _health.Health : 0f;
+
         /// <summary>Push-back for MRM-41's healing items, same reasoning as
         /// <see cref="RestoreStamina"/>.</summary>
         public void RestoreHealth(float amount)

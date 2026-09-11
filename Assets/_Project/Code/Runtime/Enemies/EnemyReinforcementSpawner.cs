@@ -83,6 +83,16 @@ namespace MrMoonlight.Enemies
                 return 0;
             }
 
+            // Spotter-specific hard cap (Carlos, 2026-09-10: too many alive at once got "very buggy"
+            // once an aggression-tier floor stacks with a wave). Checked here, not at each call site,
+            // so both the flare and panic calls are covered by one clamp. No-op for any other enemy
+            // kind until it gets its own population-max tunable.
+            if (enemyPrefab.TryGetComponent(out EnemyIdentity identity) && identity.Kind == EnemyKind.Spotter)
+            {
+                int room = Mathf.Max(0, Tunables.I.SpotterPopulationMax - EnemyIdentity.CountAlive(EnemyKind.Spotter));
+                count = Mathf.Min(count, room);
+            }
+
             _takenPoints.Clear();
             int spawned = 0;
 

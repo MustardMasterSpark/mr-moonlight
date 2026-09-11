@@ -284,12 +284,19 @@ Editing a tunable and re-running tool 1 is the whole tuning loop.
 
 | Weapon | Damage | Magazine | Weapon | Damage | Magazine |
 |---|---|---|---|---|---|
-| Combat Knife | 20–25 / swing | — | M1A | 45 | 7 |
+| Combat Knife | 20–25 / swing | — | M1A | 45 | 20 |
 | Fire Axe | 35–40 / swing | — | AKM | 40 | 30 |
 | Club | 25–30 / swing | — | Crossbow | 40 | 1 |
-| M1911 | 30 | 8 | Hunting Rifle | 80 | 5 |
-| Revolver | 50 | 6 | R870 | 15 / pellet ×8 | 7 |
+| M1911 | 30 | 7 | Hunting Rifle | 80 | 5 |
+| Revolver | 50 | 6 | R870 | 15 / pellet ×8 | 8 |
 | Double Barrel | 20 / pellet ×8 | 2 | | | |
+
+**Magazine sizes rebalanced 2026-09-10 (Carlos).** M1911 8→7, R870 7→8, M1A 7→20; Revolver, AKM
+and Hunting Rifle left as-is (already 6/30/5 — the Hunting Rifle is what Carlos calls "the Mosin
+Nagant"). Damage numbers untouched. Edited directly on each weapon's `_magazineSize` field
+(`FirearmReloadableMagazineBehaviour` and its subclasses) via the UnityMCP bridge — magazine
+capacity was never part of the MoonlightTunables push in §8 above, only damage is; it's prefab
+data like everything else `ApplyWeaponDamage` doesn't touch.
 
 Firearm damage is **per projectile, before** the hitbox zone multipliers (limb ×1, torso ×2,
 head ×4 — MRM-76).

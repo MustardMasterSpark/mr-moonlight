@@ -26,5 +26,19 @@ namespace MrMoonlight.Enemies
         {
             _health = GetComponent<EnemyHealth>();
         }
+
+        /// <summary>Count of alive (non-corpse) enemies of <paramref name="kind"/> currently in the scene. Shared by <see cref="DemoSpotterPopulationManager"/>'s population floor and <see cref="EnemyReinforcementSpawner"/>'s per-kind wave cap, so both enforce the same population ceiling against the same live count. Owner: island-demo-wrapup, 2026-09-10</summary>
+        public static int CountAlive(EnemyKind kind)
+        {
+            var identities = Object.FindObjectsByType<EnemyIdentity>(FindObjectsSortMode.None);
+            int count = 0;
+
+            for (int i = 0; i < identities.Length; i++)
+            {
+                if (identities[i].Kind == kind && identities[i].IsAlive) count++;
+            }
+
+            return count;
+        }
     }
 }

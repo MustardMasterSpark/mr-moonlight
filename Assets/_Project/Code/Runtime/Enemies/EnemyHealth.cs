@@ -99,6 +99,7 @@ namespace MrMoonlight.Enemies
         private BlazeAI _blaze;
         private GoreSimulator _goreSimulator;
         private Animator _animator;
+        private EnemyAudioHooks _audio;
         private bool _lowHealthRaised;
 
         // Defaults cover a direct Kill() call (debug tools, scripted deaths) that never went
@@ -128,6 +129,7 @@ namespace MrMoonlight.Enemies
             _blaze = GetComponent<BlazeAI>();
             _goreSimulator = GetComponent<GoreSimulator>();
             _animator = GetComponent<Animator>();
+            _audio = GetComponent<EnemyAudioHooks>();
             _lastHitPoint = transform.position + Vector3.up;
             CurrentHealth = MaxHealth;
         }
@@ -152,6 +154,12 @@ namespace MrMoonlight.Enemies
 
             SpawnBloodEffect(hitBloodEffect, info.Point, HitEffectRotation(info.Direction), NearestBone(info.Point));
 
+            // A groan of pain and a separate wound reaction, both on every non-lethal hit — never on
+            // the killing blow (that's PlayDeath, called from Kill() instead). Carlos, island demo
+            // wrap-up audio pass 2026-09-10.
+            _audio?.PlayPain();
+            _audio?.PlayWound();
+
             // Blaze owns the flinch/knockdown reaction itself — knockdown is ragdoll physics driven
             // by HitStateBehaviour, not a keyframed state, so there is nothing to trigger here
             // beyond handing it the hit.
@@ -174,6 +182,13 @@ namespace MrMoonlight.Enemies
             IsDead = true;
             CurrentHealth = 0f;
             if (killer != null) LastAttacker = killer;
+
+            // Fired synchronously, before EnemyCorpseCleanup's delayed pass disables EnemyAudioHooks
+            // — PlayOneShot keeps playing on the AudioSource regardless of that later disable (the
+            // AudioSource itself is explicitly left alone by the cleanup), so the full clip is always
+            // heard before "remove everything from the spotter" runs. Carlos, island demo wrap-up
+            // audio pass 2026-09-10.
+            _audio?.PlayDeath();
 
             // Our own listeners run first so the lamp and shotgun detach while the body is still
             // upright — Blaze's death handling may hand the body to a ragdoll on the same frame.
@@ -216,6 +231,7 @@ namespace MrMoonlight.Enemies
         {
             Vector3 force = _lastHitDirection.normalized * Tunables.I.EnemyDismembermentForce;
             _goreSimulator.ExecuteCut(_lastHitPoint, force);
+            _audio?.PlayDismemberment();
 
             // On the body's side of the cut, not the severed piece — Carlos's call 2026-09-03: one
             // spatter for now, revisit spawning a second one on the detached limb later.

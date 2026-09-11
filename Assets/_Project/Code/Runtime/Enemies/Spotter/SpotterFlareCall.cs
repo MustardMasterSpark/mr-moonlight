@@ -183,6 +183,7 @@ namespace MrMoonlight.Enemies.Spotter
             }
 
             _audio?.PlayFlareFire();
+            _audio?.PlayAlert();
             FlareFired?.Invoke();
 
             if (spawner != null)

@@ -151,6 +151,16 @@ the call changes.
 
 ---
 
+## 4a. Exception: Carlos's `DEMO_` batch (2026-09-10, island demo wrap-up)
+
+The 28 Spotter reaction clips (alert/pain/wound/dismemberment/death) were imported as
+`DEMO_<category>_<n>` on Carlos's explicit naming ask, to make a temporary demo-only batch easy to
+identify/grep later — this does **not** match any prefix in the §0 table, so the Preset Manager
+filter landed all 28 on the `Aud_OneShot_General` catch-all instead of the correct
+`Aud_EnemyVox` (they're vocalizations, not one-shots). Fixed by hand: selected all 28, applied
+`Aud_EnemyVox` via `Preset.ApplyTo`/`SaveAndReimport`. If another `DEMO_`-prefixed batch shows up
+later, remember to do the same — the prefix is deliberate and won't auto-route.
+
 ## 5. If you want this automated later
 
 You mentioned maybe wanting a pipeline that treats incoming sound files automatically. The

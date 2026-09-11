@@ -1,0 +1,177 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-10, handoff to the next session.
+
+This is a follow-on to Docs/island-demo-wrapup-sonnet-prompt.txt (same day, same wrap-up arc).
+That file's "WHERE THINGS STAND" section (Tripo/3D-character pipeline, Spotter-is-legacy ruling)
+is still accurate background — this file only covers what changed in THIS session.
+
+===========================================================================
+CARLOS IS TRACKING HIS OWN TOKEN BUDGET NOW
+===========================================================================
+
+Partway through this session Carlos said explicitly: stop trying to estimate/flag remaining
+weekly budget — he's tracking that number himself now. Don't volunteer "we're running low"
+checkpoints anymore; work until he says stop, or until he asks for the README + build (his
+stated next step once this session's changes felt done — do NOT generate those automatically,
+only when he explicitly asks).
+
+===========================================================================
+WHAT THIS SESSION DID — ALL LIVE-VERIFIED IN PLAY MODE, SCENE SAVED
+===========================================================================
+
+Everything below is on Island.unity (uncommitted — Carlos commits via GitHub Desktop, never do
+it for him). No new Linear issue was opened for any of this; it was all "small tweaks for the
+last class assignment" per his framing, done directly against the demo. If a Linear paper trail
+turns out to matter later, this file plus the diff is the record.
+
+**1) Spotter population replaced (was: ~102 hardcoded instances always simulating)**
+- Deleted the "Enemies" GameObject and its 102 hand-placed Enemy_Spotter children.
+- New `DemoSpotterPopulationManager` (Assets/_Project/Code/Runtime/Enemies/, on the recreated
+  empty "Enemies" GameObject) keeps a floor of `Tunables.SpotterPopulationMin` (10) Spotters
+  alive within a `SpotterPopulationMinSpawnDistance`..`SpotterPopulationSpawnRadius` (40–100m)
+  ring around the player, topping up every `SpotterPopulationCheckInterval` (5s). It's a floor,
+  not a cap — a flare/panic wave can push the count above 10 on purpose, per Carlos.
+- Explicitly flagged DEMO-ONLY/LEGACY in its own doc comment, same as MRM-34's Spotter AI itself
+  (see the other handoff file) — replace/remove together when the capstone Spotter rebuild
+  happens.
+- Verified live: 10 spawn on scene start, killing one drops the count, next check cycle tops
+  back up to 10.
+
+**2) Shotgun death-drop fixed — took three real bugs to actually fix, read this before touching
+EnemyDeathDrop.cs again**
+Carlos's ask: the dropped shotgun should fall to the ground and stay exactly where it lands
+(previously it went flying/rolling far away). Chased through three distinct root causes, in
+order:
+  a. **First attempt (raycast snap) was wrong**: tried to just raycast down and teleport the item
+     to the hit point. Failed visibly — left the shotgun floating in mid-air when the raycast
+     missed (screenshot evidence). Replaced with real physics: falls under gravity with a real
+     Rigidbody, then a coroutine (`FreezeWhenSettled`) waits for `Rigidbody.IsSleeping()` and only
+     then disables the collider and destroys the Rigidbody. This part of the design is right and
+     stayed.
+  b. **Real cause #1 — interpenetration explosion**: the new collider was spawning inside the
+     dying enemy's own CapsuleCollider, and PhysX's depenetration response launched it sideways
+     before gravity ever got a say. Fixed by adding the (pre-existing, unused) "DroppedProp"
+     project layer (9) and setting the physics collision matrix — a PERSISTENT project setting in
+     ProjectSettings/DynamicsManager.asset, not a per-instance script fix — to ignore DroppedProp
+     vs Enemy(6), vs Ragdoll(26), and vs Health(10). All death-drops (`EnemyDeathDrop.cs`) now get
+     reassigned to this layer via `AssignDroppedPropLayer`, recursively (multi-part meshes).
+  c. **Real cause #2, the actual one — sphere colliders don't stop rolling**: even after (b), the
+     drop still traveled 30-45m. `EnsureCollider`'s fallback is a SphereCollider, and a sphere has
+     essentially zero rolling resistance — on this island's slopes/cliffs it just rolls downhill
+     forever under gravity alone, no impulse needed at all. This is almost certainly what caused
+     Carlos's ORIGINAL bug report too, not the (modest) scatter impulse he suspected. Fixed by
+     setting `body.constraints = RigidbodyConstraints.FreezeRotation` on the shotgun's rigidbody
+     (ground-snap path only — the lamp already has its own BoxCollider, no sphere, not affected,
+     Carlos never complained about it, left alone). Verified live three times after this fix:
+     lands within centimetres of the death point every time, collider disabled, rigidbody gone.
+  **Lesson for next time a "physics prop launches across the map" bug shows up on this project:
+  check the collider shape before anything else. A sphere fallback on sloped terrain will look
+  exactly like an impulse bug and isn't one.**
+- Found incidentally, NOT fixed (flag if it comes up again): the Spotter has ~33 always-active
+  `Hitbox_*` colliders on layer "Health" wrapping the whole body for damage detection, and they
+  are solid (`isTrigger: false`), not triggers. That's a live physics collision hazard for any
+  prop near an enemy, not just death drops. Out of scope this session, just flagged.
+- Also found incidentally: killing a Spotter via a direct `EnemyHealth.Kill()` call can hit a
+  `NullReferenceException` inside `GoreModuleCut.ExecuteCut` (Pampel Games Gore Simulator) on a
+  random dismemberment roll. Didn't chase it — not something today's changes touched — but it's
+  a real crash path, worth a look if dismemberment ever looks broken in a playtest.
+
+**3) Corpses now go inert (new `EnemyCorpseCleanup`)**
+- New component, wired as a 4th persistent listener on `EnemyHealth.Died` (alongside the existing
+  EnemyDeathDrop.DropAll / EnemyRangedAttack.CancelBurst / EnemyAudioHooks.PlayDeath calls) on the
+  Enemy_Spotter prefab.
+- After `Tunables.EnemyCorpseCleanupDelay` (3.5s — deliberately delayed, see below), disables
+  every collider in the corpse (player walks through it) and every AI/attack/patrol behaviour:
+  BlazeAI, every `BlazeAISpace.BlazeBehaviour`-derived state script, BlazeAISpareState,
+  NavMeshAgent, EnemyRangedAttack, EnemyFirearm, EnemyReinforcementSpawner, SpotterFlareCall,
+  SpotterPanicCall, EnemyPatrolRoute, EnemyAudioHooks, EnemyDebugControls.
+- Leaves Animator, AudioSource, GoreSimulator, EnemyIdentity, EnemyHealth, EnemyDeathDrop alone.
+  The GameObject itself is never destroyed or deactivated — Carlos's explicit ask was a corpse
+  that stays, just inert.
+- **Why the delay**: `Died` fires BEFORE Blaze's own death handling (ragdoll settle, keyframed
+  death animation) runs later in the same `Kill()` call. Disabling BlazeAI/NavMeshAgent
+  immediately would cut that sequence off mid-play. 3.5s is a guess at "long enough" — if a
+  playtest shows the death animation still glitching, or the corpse staying solid/blocking for
+  too long before you can walk through it, this is the tunable to adjust
+  (`MoonlightTunables.EnemyCorpseCleanupDelay`).
+- Verified live: `EnemyRangedAttack` etc. still enabled immediately after death (proves the delay
+  is real), all disabled and all 32 colliders off ~5s later, zero console errors, Animator still
+  enabled throughout.
+
+**4) Island scene startup preset + a personal player light**
+- New `IslandStartupPreset` (Assets/_Project/Code/Runtime/World/), attached to the existing
+  "TimeManager" GameObject. On `Awake`, picks one of exactly two looks at random and applies it
+  instantly, before the player can act: **Morning + fog ON**, or **Night + fog OFF**. Nothing
+  else — Sunset/Apocalypse presets are untouched and still reachable via the existing F8 cheat.
+  Also explicitly flagged DEMO-ONLY/LEGACY in its doc comment.
+- Cheat keys keep working normally afterward: F8 (time cycle) reads `TimeManager.CurrentPresetIndex`
+  live, F6 (fog)/F7 (CRT) read `SceneEffectsToggle`'s live state — neither caches a value at
+  Awake in a way this conflicts with, confirmed by reading both scripts' source rather than
+  guessing.
+- New "PlayerAmbientLight" (Point light, intensity `Tunables.PlayerAmbientLightIntensity` = 1.2,
+  range `Tunables.PlayerAmbientLightRange` = 6m, no shadows, warm-white) as a child of the
+  player's head camera transform (Player_Tracey/Body/Head/Camera), so it moves and looks with the
+  player and is unaffected by which of the two startup presets is active.
+- Verified live across two separate Play Mode runs: got Morning+fog-True once, Night+fog-False
+  the other time — both branches confirmed working, player light confirmed present and enabled
+  in both.
+
+**5) Health regen cheat now ON by default (was OFF by default, F5 to enable)**
+- Carlos's ask: the Call-of-Duty-style health regen debug cheat (`HealthRegenDebugToggle.cs`,
+  F5) should start enabled from scene launch; F5 still toggles it off (and back on) exactly as
+  before — no behaviour change to the toggle logic itself, only the starting value.
+- Three places carry this value and ALL THREE had to change, not just the script — Unity
+  serializes a component's field value explicitly once it's been touched in the Inspector, so a
+  new C# default alone does not override an existing `regenEnabled: 0` baked into a prefab/scene:
+  1. `HealthRegenDebugToggle.cs` — field default `false` → `true` (doc comment updated too).
+  2. `Assets/_Project/Prefabs/Player.prefab` — `regenEnabled: 0` → `1`.
+  3. `Assets/_Project/Scenes/Island.unity` — the `Player` GameObject's own
+     `HealthRegenDebugToggle` instance, `regenEnabled: 0` → `1` (this GameObject is a plain scene
+     object, not a PrefabInstance of Player.prefab — `m_PrefabInstance: {fileID: 0}` — so its
+     value had to be edited separately from the prefab, confirmed by reading the YAML directly).
+- Grepped the whole `Assets/_Project` tree for `regenEnabled` after editing — only those three
+  hits exist, no other scene/prefab overrides this field, so nothing else can silently keep it
+  off.
+- **NOT live-verified this time** — Unity's MCP bridge stopped answering pings partway through
+  (`refresh_unity` timed out after 60s, `read_console`/editor-state both returned "session not
+  ready"). Consistent with the known focus-stall issue (see kickstart.md §B.3a / the
+  unity_editor_focus_traps memory) — the editor window was very likely unfocused. The three file
+  edits were confirmed correct by direct re-read of the YAML/C# (all three agree on `true`/`1`),
+  but nobody has actually pressed Play and watched the green "HEALTH REGEN ON (F5)" label appear
+  at scene start yet.
+- **First thing next session should do**: focus the Unity Editor window, enter Play Mode on
+  Island, and confirm (a) the green label is visible immediately at spawn with no damage taken
+  yet, (b) F5 turns it off, (c) F5 again turns it back on. If the label is missing at spawn,
+  re-check `stats`/`receiver` wiring on the Player's `HealthRegenDebugToggle` (Awake resolves
+  them via `GetComponentInChildren`/`GetComponent` if left null in the Inspector — not touched
+  this session, should be unaffected, but rule it out first).
+
+===========================================================================
+FILES TOUCHED THIS SESSION (for Carlos's own commit — not drafted here, he didn't ask)
+===========================================================================
+New scripts: DemoSpotterPopulationManager.cs, EnemyCorpseCleanup.cs, IslandStartupPreset.cs
+Edited scripts: EnemyDeathDrop.cs (groundSnapNoPhysics path + AssignDroppedPropLayer +
+  FreezeRotation), MoonlightTunables.cs (all new tunables listed above), HealthRegenDebugToggle.cs
+  (regenEnabled default true)
+Edited prefab: Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab (drops[1].groundSnapNoPhysics,
+  new EnemyCorpseCleanup component + Died listener); Assets/_Project/Prefabs/Player.prefab
+  (regenEnabled: 0 → 1)
+Edited project setting: ProjectSettings/DynamicsManager.asset (physics layer collision matrix —
+  DroppedProp now ignores Enemy/Ragdoll/Health)
+Edited scene: Assets/_Project/Scenes/Island.unity (Enemies hierarchy replaced, IslandStartupPreset
+  + PlayerAmbientLight added, Player's HealthRegenDebugToggle.regenEnabled: 0 → 1)
+
+===========================================================================
+WHAT'S NEXT
+===========================================================================
+**First**: live-verify item 5 above (health regen default-on) in Play Mode — it was only
+file-edited, not confirmed running, because the Unity MCP bridge went unresponsive at the end of
+this session.
+
+Beyond that, no specific next task was queued — Carlos ended this session by asking for this
+handoff so he can start fresh. When he's ready he'll ask for a README + a build (his own stated
+next step, explicitly NOT automatic). Otherwise: ask what he wants tweaked, same as last time; the
+still-open candidates list in Docs/island-demo-wrapup-sonnet-prompt.txt (MRM-73 super jump, MRM-18
+menu polish, MRM-16/42/47/69 in-progress systems) is still accurate if he doesn't have a specific
+ask ready.
