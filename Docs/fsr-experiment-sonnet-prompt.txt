@@ -1,0 +1,61 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-15, handoff to the next session.
+
+This file supersedes Docs/demo-wrapup-audio-music-sonnet-prompt.txt (2026-09-10) as the
+current handoff pointer. That file's own work is already committed (`2097b84` on main) — no
+outstanding action from it. Nothing happened between 2026-09-10 and today: Carlos was away
+from the project, and this session is orientation/housekeeping, not new gameplay work.
+
+===========================================================================
+STATUS: reorienting after a multi-day gap, pivoting to solo (post-class) development
+===========================================================================
+Carlos confirmed: from here on, Mr. Moonlight development is solo, aimed at the Halloween/
+Kickstarter target — not another class-deadline sprint. He wants a pause to reorganize and
+polish before diving back into feature work. Today's session deliberately did NOT do that
+reorg — see "after this task" below. Instead he asked for one small experiment first.
+
+===========================================================================
+CURRENT TASK: FSR upscaling spike (curiosity, not scoped for October)
+===========================================================================
+Carlos asked whether NVIDIA DLSS could run on his AMD RX 9070 XT. It can't — DLSS (any
+version) is hardware-locked to NVIDIA Tensor Cores, not a software gate. A third-party
+reimplementation exists (github.com/danielblnc/DLSS-NR-on-AMD, active alpha) but it works by
+DLL-proxying into specific shipped AAA games' own existing FSR pipelines (Cyberpunk 2077,
+GTA V Enhanced, RE Engine titles) one game at a time — it's not an engine plugin and has
+nothing to hook into on a Unity project with no FSR implementation. Not applicable here.
+
+The real, relevant path: Unity 6.3's URP already ships **FSR 1.0** and Unity's own **STP**
+temporal upscaler as built-in "Upscaling Filter" options on the URP render pipeline asset —
+enable Dynamic Resolution Scaling, pick a filter. No third-party SDK, no external package,
+runs on any GPU including the 9070 XT.
+
+Tracked as **MRM-78** ("Spike: FSR upscaling in URP (curiosity/experiment)"), branch name
+`mrm-78`, in Linear project MrMoonlightDemo. Scope is narrow on purpose: get FSR1 and/or STP
+visibly running on the Island scene, compare quality/perf on Carlos's hardware, nothing more.
+Do not let this expand into a real shipped feature branch without Carlos explicitly asking —
+the whole point was curiosity.
+
+===========================================================================
+AFTER THIS TASK: the reorg/cleanup session Carlos actually wants
+===========================================================================
+Once the FSR spike is done — however it turns out — the next work is the "big sit-down"
+session flagged in Docs/demo-wrapup-audio-music-sonnet-prompt.txt's own "what's next"
+section. Nothing in it has been addressed yet, it's still fully live:
+  1. Strategy + documentation gaps — audit which of the 2026-09-10 demo-arc systems need
+     real Linear issues retroactively, which docs are now stale.
+  2. Code cleanup — DemoSpotterPopulationManager, the aggression tiers, the F10 debug
+     overlay, and arguably the whole Spotter AI are self-flagged LEGACY/demo-only in their
+     own doc comments; decide what gets paid down vs. deliberately carried forward.
+  3. Future development approach — open strategy conversation, don't assume the agenda,
+     ask Carlos to frame it when that session starts.
+Carlos explicitly said this round of housekeeping is NOT worth tracking as Linear issues —
+treat it as direct-chat/doc work, same pattern as the 2026-09-10 arc, unless told otherwise.
+
+===========================================================================
+MODEL CHOICE
+===========================================================================
+The FSR spike is Sonnet territory — enabling/tuning an existing URP feature, not building a
+new system. The reorg/cleanup session after it is mixed: the "strategy" portion may be
+better as Opus (per the 2026-09-10 handoff's own note on this), hands-on cleanup after that
+is Sonnet's normal turf.
