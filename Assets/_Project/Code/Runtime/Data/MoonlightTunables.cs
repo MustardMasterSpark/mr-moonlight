@@ -967,5 +967,9 @@ namespace MrMoonlight.Data
 
         /// <summary>Anchored Y (from the bottom of the HUD canvas) the kill-line sits at once the letterbox has retracted — down near the actual bottom edge, per Carlos's "put the red text down below."</summary>
         public float KillLineAnchoredYWithoutLetterbox = 50f;
+
+        [Header("Upscaling — MRM-78 (FSR spike, settings menu 2026-09-15)")]
+        /// <summary>Render Scale applied to the active URP asset when the Settings panel's upscaling toggle is on. Unity upscales the lower-resolution render back to native using whatever Upscaling Filter the URP asset is set to (FSR 1.0 currently). 0.67 matches FSR's own "Quality" tier.</summary>
+        public float UpscalingRenderScale = 0.67f;
     }
 }

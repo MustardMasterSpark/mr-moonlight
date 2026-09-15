@@ -114,9 +114,11 @@ namespace MrMoonlight.UI
 
         private void Awake()
         {
-            // Apply saved (or default) volumes before the reveal even starts - independent of
-            // whether the player ever opens Settings this session. See SettingsPanel's own doc.
+            // Apply saved (or default) volumes and display settings before the reveal even
+            // starts - independent of whether the player ever opens Settings this session. See
+            // SettingsPanel's own doc.
             settingsPanel.ApplySavedAudioSettings();
+            settingsPanel.ApplySavedDisplaySettings();
 
             fadeOverlay.SetOpaqueInstant();
             // Hidden (not just covered by the overlay) until the feather intro lands - see the

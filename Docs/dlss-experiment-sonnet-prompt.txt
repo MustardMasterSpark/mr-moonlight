@@ -1,0 +1,98 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-15, handoff to the next session.
+
+This file supersedes Docs/fsr-experiment-sonnet-prompt.txt (2026-09-15) as the current handoff
+pointer. That file's own task (the FSR spike) is done — see "DONE THIS SESSION" below.
+
+===========================================================================
+DONE THIS SESSION: FSR/STP upscaling spike + Settings menu display options
+===========================================================================
+Tracked as MRM-78 (spike) and MRM-79 (Settings menu follow-on), both now status "In Review" in
+Linear. Branch: mrm-78 (MRM-79's work is also on this branch, not a separate one — flagged as a
+one-issue-one-branch exception in both issues' Linear comments, same pattern as MRM-75's). Nothing
+committed — Carlos commits himself in GitHub Desktop.
+
+What shipped:
+- Unity 6.3 URP's native FSR1 upscaling filter + Dynamic Resolution wired into `PC_RPAsset`
+  (Assets/_Project/Settings/PC_RPAsset.asset), confirmed live in Play Mode.
+- Settings panel (MainMenu.unity) gained a "Display" group: Enable Upscaling (FSR) toggle,
+  resolution dropdown, Fullscreen/Windowed toggle. New `GameSettings` properties
+  (Assets/_Project/Code/Runtime/Data/GameSettings.cs): `UpscalingEnabled`, `FullscreenMode`,
+  `ResolutionWidth`/`ResolutionHeight`. New `MoonlightTunables.UpscalingRenderScale` (0.67).
+  `SettingsPanel.cs` (Assets/_Project/Code/Runtime/UI/) applies live and on launch.
+- Settings panel got a real background (`PanelBackground`) — it had none before, main menu content
+  showed straight through.
+- **FSR now defaults OFF** (Carlos's explicit correction mid-session — opt-in, not out-of-the-box).
+  `PC_RPAsset`'s own serialized default reset to native (1.0/Auto) to match the code default.
+- **Bug found and fixed, unrelated to the ask:** Conformist/Punk difficulty toggles' checkmarks
+  were sprite-less white-on-white, invisible in either state. Pre-existing from the original
+  MRM-18 build. Fixed (green fill) on all four toggles. Confirmed no other Toggle exists anywhere
+  else in the project.
+- FPS counter (`Assets/_Project/Code/Runtime/UI/FpsCounter.cs`) now appends
+  `[FSR ON - some cost expected]` when upscaling is active, allocation-free.
+- Two test builds: `E:\Builds\30 - FSR Settings - 2026-09-15` and
+  `E:\Builds\31 - Toggle Visibility Fix - 2026-09-15` (the one with both fixes — use this one).
+
+Full detail: `Docs/mrm18-main-menu-build-summary.md`'s "Display settings added (MRM-78/MRM-79,
+2026-09-15)" section, and the Linear comments on both issues.
+
+Known gaps, not yet addressed:
+- Fullscreen toggle writes the setting correctly but its real OS-level effect is unverified —
+  Unity's Editor Game View doesn't apply true fullscreen changes, needs eyes-on in the real build.
+- No visual polish on the new Toggle/Dropdown controls (default Unity look) — deliberate, Carlos
+  said not to focus on UI this round.
+- `PlayerPrefs` persistence caveat: a machine that tested build 30 (FSR on) keeps that saved value
+  in build 31 regardless of the new default — only a fresh/never-toggled install starts off.
+
+===========================================================================
+CURRENT TASK: DLSS-NR-on-AMD experiment (curiosity, personal system test)
+===========================================================================
+Tracked as **MRM-80** in Linear, status Backlog (not started — this is Carlos's own hands-on task,
+not Claude Code dev work). Read the full issue before doing anything here.
+
+Short version: this is a DIFFERENT, unrelated tool from the FSR/STP work above.
+`github.com/danielblnc/DLSS-NR-on-AMD` DLL-proxies into a DX12 game's own EXISTING FSR pipeline to
+run NVIDIA's real DLSS 5 neural-rendering runtime on AMD hardware. It needs a game that already
+ships FSR, and Carlos's own copy of NVIDIA's `nvngx_dlssnr.dll`. Confirmed via WebFetch (both the
+GitHub releases page and the igorslab.de article Carlos linked describe the same project). Tested
+titles per the article: Cyberpunk 2077, GTA V Enhanced, Monster Hunter Wilds, Resident Engine
+titles — not Mr. Moonlight, not any Unity project by default.
+
+**Open, genuinely unresolved question** (see the issue for the reasoning): now that Mr. Moonlight
+has its own native URP FSR (from this session's work above), does this DLL-proxy tool have
+anything to attach to on OUR build? Probably not — Unity's URP FSR1 is a custom in-engine shader
+pass, not a wrapper around AMD's official FidelityFX SDK export surface this tool hooks into — but
+it's worth an actual test once the tool is confirmed working on a known-supported title first.
+
+**Scope discipline:** no code changes to Mr. Moonlight are expected from this issue. Carlos runs
+the tool himself, on his own system, against whatever game(s) he picks. Only act on this in a
+Claude Code session if he explicitly asks for something concrete (e.g., "does this attach to our
+build," and only after he's confirmed the tool itself works elsewhere first) — otherwise this is
+his own hands-on time, not a task to proactively pick up.
+
+===========================================================================
+STILL PENDING AFTER BOTH OF THE ABOVE: the reorg/cleanup session
+===========================================================================
+Carlos confirmed 2026-09-15 he still wants this, explicitly deferred it again this session (not
+lost, not forgotten) — same "big sit-down" flagged in
+Docs/demo-wrapup-audio-music-sonnet-prompt.txt's own "what's next" section, still fully live,
+nothing in it addressed yet:
+  1. Strategy + documentation gaps — audit which of the 2026-09-10 demo-arc systems need real
+     Linear issues retroactively, which docs are now stale.
+  2. Code cleanup — DemoSpotterPopulationManager, the aggression tiers, the F10 debug overlay, and
+     arguably the whole Spotter AI are self-flagged LEGACY/demo-only in their own doc comments;
+     decide what gets paid down vs. deliberately carried forward.
+  3. Future development approach — open strategy conversation, don't assume the agenda, ask Carlos
+     to frame it when that session starts.
+Carlos explicitly said this round of housekeeping is NOT worth tracking as Linear issues — treat
+it as direct-chat/doc work, same pattern as the 2026-09-10 arc, unless told otherwise.
+
+===========================================================================
+MODEL CHOICE
+===========================================================================
+MRM-80 (DLSS experiment) needs little to no Claude Code involvement unless Carlos asks something
+concrete — when he does, it's Sonnet territory (investigation/config, not new-system building).
+The eventual reorg/cleanup session is mixed: the "strategy" portion may be better as Opus (per the
+2026-09-10 handoff's own note on this, repeated here since it's carried forward twice now), hands-
+on cleanup after that is Sonnet's normal turf.
