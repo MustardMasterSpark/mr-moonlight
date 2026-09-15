@@ -117,6 +117,42 @@ same bug since they're children of FadeOverlay.
   gameplay (health, enemy behavior, spawn rates, etc.) — no difficulty-scaling systems exist in the
   project yet for it to drive. That's later work, not something missing from this issue.
 
+## Display settings added (MRM-78/MRM-79, 2026-09-15)
+
+Follow-on from the FSR upscaling spike (MRM-78, `Docs/fsr-experiment-sonnet-prompt.txt`). Settings
+panel gained a "Display" group: **Enable Upscaling (FSR)** toggle, resolution `TMP_Dropdown`
+(populated from `Screen.resolutions`, deduped by width x height), **Fullscreen** toggle. Same
+write-through-to-`GameSettings`-and-apply-live pattern as the existing audio controls —
+`SettingsPanel.ApplySavedDisplaySettings()`, called from `MainMenuController.Awake` alongside
+`ApplySavedAudioSettings()`. New `GameSettings` properties: `UpscalingEnabled` (**default off** —
+Carlos, 2026-09-15: upscaling is opt-in, not out-of-the-box), `FullscreenMode`, `ResolutionWidth`/
+`ResolutionHeight`. New tunable: `MoonlightTunables.UpscalingRenderScale` (0.67, FSR's own
+"Quality" tier). `PC_RPAsset`'s own serialized default was reset to native (renderScale 1,
+Auto) to match — it had briefly been left at 0.67/FSR from the spike itself.
+
+Panel also got an opaque background `Image` (`PanelBackground`, first sibling so it draws behind
+everything else) — it had none before, so the staged main-menu background/ribbon buttons showed
+straight through the sliders and toggles, illegible. Full detail and the reasoning trail:
+**MRM-79** in Linear.
+
+**Bug found and fixed while wiring this in, not part of the ask:** the Conformist/Punk difficulty
+toggles' checkmark graphics were sprite-less white-on-white (`Background` and `Checkmark` both
+`sprite: null`, `color: white`) — a checked toggle was a smaller white square sitting on a bigger
+white square, indistinguishable from unchecked. Pre-existing since the original MRM-18 build; only
+became visible once there was a background to contrast against instead of the old transparent
+panel. Fixed by giving `Checkmark` a green fill color on all four toggles (the two difficulty ones
+plus the two new display ones) instead of white — no sprite asset was ever assigned, so color is
+the only lever available without new art. **Confirmed no other `Toggle` exists anywhere else in
+the project** (`grep -r "m_Name: Checkmark" Assets/_Project/Scenes` — MainMenu.unity only), so this
+was fully contained, not a symptom of a wider pattern.
+
+Two builds made testing this pass: **30 - FSR Settings** (FSR default on, pre-checkbox-fix) and
+**31 - Toggle Visibility Fix** (checkboxes fixed, FSR default off) — see `E:\Builds`. Note for
+anyone testing build 31 after having run build 30: `PlayerPrefs` persists across builds (same
+company/product name), so a machine that already toggled upscaling on in build 30 keeps that saved
+value in build 31 regardless of the new code default — the default only governs a value that was
+never explicitly saved.
+
 ## Known gaps / things to flag for Carlos
 
 - **Full interactive verification still needs a hands-on pass or a real build.** Confirmed via

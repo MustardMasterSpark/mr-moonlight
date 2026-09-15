@@ -21,6 +21,12 @@ namespace MrMoonlight.Data
         private const string VoicesVolumeKey = "MrMoonlight.VoicesVolume";
         private const string SFXVolumeKey = "MrMoonlight.SFXVolume";
 
+        // Display — MRM-78 (FSR spike, settings menu 2026-09-15).
+        private const string UpscalingEnabledKey = "MrMoonlight.UpscalingEnabled";
+        private const string FullscreenModeKey = "MrMoonlight.FullscreenMode";
+        private const string ResolutionWidthKey = "MrMoonlight.ResolutionWidth";
+        private const string ResolutionHeightKey = "MrMoonlight.ResolutionHeight";
+
         // Island demo wrap-up debug mixer overlay (F10) — temporary tuning sliders, not the
         // Settings panel above. Owner: island-demo-wrapup, 2026-09-10.
         private const string MenuMusicVolumeKey = "MrMoonlight.MenuMusicVolume";
@@ -108,6 +114,50 @@ namespace MrMoonlight.Data
             set
             {
                 PlayerPrefs.SetFloat(SpotterVolumeKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Whether the active URP asset's Render Scale + Upscaling Filter (FSR) are applied. Default off (Carlos, 2026-09-15) - upscaling is opt-in, not the out-of-the-box experience. Owner: MRM-78/MRM-79</summary>
+        public static bool UpscalingEnabled
+        {
+            get => PlayerPrefs.GetInt(UpscalingEnabledKey, 0) != 0;
+            set
+            {
+                PlayerPrefs.SetInt(UpscalingEnabledKey, value ? 1 : 0);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Default matches the project's display target (see CLAUDE.md): 1920x1080 borderless fullscreen. Owner: MRM-78</summary>
+        public static FullScreenMode FullscreenMode
+        {
+            get => (FullScreenMode)PlayerPrefs.GetInt(FullscreenModeKey, (int)FullScreenMode.FullScreenWindow);
+            set
+            {
+                PlayerPrefs.SetInt(FullscreenModeKey, (int)value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Owner: MRM-78</summary>
+        public static int ResolutionWidth
+        {
+            get => PlayerPrefs.GetInt(ResolutionWidthKey, 1920);
+            set
+            {
+                PlayerPrefs.SetInt(ResolutionWidthKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>Owner: MRM-78</summary>
+        public static int ResolutionHeight
+        {
+            get => PlayerPrefs.GetInt(ResolutionHeightKey, 1080);
+            set
+            {
+                PlayerPrefs.SetInt(ResolutionHeightKey, value);
                 PlayerPrefs.Save();
             }
         }

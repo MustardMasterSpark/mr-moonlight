@@ -1,3 +1,4 @@
+using MrMoonlight.Data;
 using TMPro;
 using UnityEngine;
 
@@ -38,6 +39,12 @@ namespace MrMoonlight.UI
         private static readonly Color Warn = new Color(1.00f, 0.80f, 0.25f);
         private static readonly Color Bad = new Color(1.00f, 0.35f, 0.30f);
 
+        // MRM-79: cached, not rebuilt every frame - same "don't allocate on the frame being
+        // measured" reasoning as the rest of this class. GameSettings.UpscalingEnabled is a
+        // PlayerPrefs read, so it's only checked on the same refreshSeconds cadence as the FPS
+        // reading itself, not per-frame.
+        private const string UpscalingSuffix = "   [FSR ON - some cost expected]";
+
         private float elapsed;
         private int frames;
 
@@ -61,7 +68,12 @@ namespace MrMoonlight.UI
             if (elapsed < refreshSeconds) return;
 
             float fps = frames / elapsed;
-            label.SetText("{0:0} FPS   {1:0.0} ms", fps, 1000f / fps);
+            // Both branches are compile-time constant literals (UpscalingSuffix is a const), so
+            // this stays allocation-free - it isn't runtime string concatenation.
+            if (GameSettings.UpscalingEnabled)
+                label.SetText("{0:0} FPS   {1:0.0} ms" + UpscalingSuffix, fps, 1000f / fps);
+            else
+                label.SetText("{0:0} FPS   {1:0.0} ms", fps, 1000f / fps);
 
             if (colourCode)
                 label.color = fps >= 50f ? Good : fps >= 30f ? Warn : Bad;
