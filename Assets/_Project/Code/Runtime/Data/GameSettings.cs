@@ -27,6 +27,9 @@ namespace MrMoonlight.Data
         private const string ResolutionWidthKey = "MrMoonlight.ResolutionWidth";
         private const string ResolutionHeightKey = "MrMoonlight.ResolutionHeight";
 
+        // Graphics quality preset dropdown, settings menu 2026-09-16.
+        private const string GraphicsQualityLevelKey = "MrMoonlight.GraphicsQualityLevel";
+
         // Island demo wrap-up debug mixer overlay (F10) — temporary tuning sliders, not the
         // Settings panel above. Owner: island-demo-wrapup, 2026-09-10.
         private const string MenuMusicVolumeKey = "MrMoonlight.MenuMusicVolume";
@@ -158,6 +161,23 @@ namespace MrMoonlight.Data
             set
             {
                 PlayerPrefs.SetInt(ResolutionHeightKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>
+        /// Graphics quality preset index: 0 = Minimal, 1 = Medium, 2 = High, 3 = Highest. Default
+        /// is Highest, which is defined to exactly match <c>PC_RPAsset</c>'s own committed values
+        /// (see <see cref="MoonlightTunables"/>'s Graphics Quality Presets header) - a fresh install
+        /// looks identical to today's build until the player deliberately lowers it. Owner:
+        /// settings-menu, 2026-09-16
+        /// </summary>
+        public static int GraphicsQualityLevel
+        {
+            get => PlayerPrefs.GetInt(GraphicsQualityLevelKey, 3);
+            set
+            {
+                PlayerPrefs.SetInt(GraphicsQualityLevelKey, value);
                 PlayerPrefs.Save();
             }
         }

@@ -904,3 +904,91 @@ live. Gamepad hardware verification still hasn't happened on real hardware (carr
 every prior session, not new). Next work moves to the 3D asset pipeline (characters/enemies) via
 `/prop` — a fresh session picking that up doesn't need this file, start with
 `Claude Code Context MDs/kickstart.md` and `Docs/3d-prop-pipeline-wizard.md` as usual.
+
+## 2026-09-16 session — Graphics Quality presets, 16:9 resolution filter, fullscreen mode dropdown, D3D11 pinned, FPS-cap investigation (ongoing)
+
+Branch `mrm-78` (continuation, same one-issue-exception precedent as MRM-79/MRM-80). Also on this
+branch: the full MRM-80 DLSS experiment revert — see `Docs/mrm80-dlss-experiment.md`'s own top
+section and the MRM-80 Linear comment, not repeated here.
+
+**Graphics Quality dropdown added to the Display group** (Minimal/Medium/High/Highest), Carlos's
+ask after noticing Editor-vs-build FPS looked mismatched. New `MoonlightTunables` fields (20 total,
+`Quality<Tier><Param>` naming — shadow distance, shadow cascades, MSAA samples, LOD bias, global
+texture mip limit, per tier). **Highest is deliberately defined to exactly match `PC_RPAsset`'s own
+committed defaults** (90/4/1/2/0), so picking it — or a fresh install's default — never regresses
+today's shipped look; the other three tiers scale down from there for perf testing. New
+`GameSettings.GraphicsQualityLevel` (int 0-3, default 3/Highest). `SettingsPanel.ApplyGraphicsQuality`
+applies the tier to the live URP asset + `QualitySettings`, same pattern as `ApplyUpscaling`. New
+`QualityDropdown` GameObject in `MainMenu.unity` (duplicated from `ResolutionDropdown`, same
+transform-fixup-after-duplicate gotcha as always — `manage_gameobject duplicate` does not preserve
+scale/position correctly for UI RectTransforms, always re-set both explicitly after).
+
+**`GraphicsOptionsUI.cs` deleted** (`Assets/_Project/Code/Vendor/PolymindGames/Runtime/UI/Menu/Options/`).
+Carlos asked whether we could remove PolymindGames' influence beyond weapons; this was the one
+piece confirmed fully safe — its only consumer was a vendor prefab (`FPS_UI_Options.prefab`, under
+gitignored `ThirdParty/`) that is itself never referenced anywhere in `Assets/_Project/`. Verified
+via GUID search before deleting, and a clean recompile after. `GraphicsOptions.cs` (the data class)
+was NOT touched — `CameraFOVHandler`/`CharacterLookHandler` (both actively driving the FP camera)
+read `GraphicsOptions.Instance.FieldOfView` directly, so it's genuinely load-bearing despite having
+no UI hooked up to it.
+
+**Resolution dropdown filtered to 16:9 only.** Carlos found that selecting 1024x768 (4:3) broke the
+UI layout — Canvas Scaler/every HUD and menu element is authored at 1920x1080. Fixed in
+`SettingsPanel.InitializeResolutionDropdown` with an aspect-ratio filter (`16f/9f`, `0.02` tolerance
+for rounding like 1366x768's 1.779). No longer possible to select an off-ratio resolution at all.
+
+**Fullscreen `Toggle` replaced with a 3-way `FullscreenModeDropdown`** (Windowed / Fullscreen
+(Borderless) / Fullscreen (Exclusive)). Default unchanged — still Borderless, CLAUDE.md's committed
+display target. Exclusive was added specifically as a diagnostic option for the FPS investigation
+below, not (yet) a default change; `FullscreenModeToIndex`/`IndexToFullscreenMode` do the explicit
+mapping (deliberately not relying on `FullScreenMode`'s own enum ordinals, which skip a value).
+
+**Windows build pinned to Direct3D11**, no longer "Auto" (`PlayerSettings.SetUseDefaultGraphicsAPIs`
+→ false, `SetGraphicsAPIs` → `[Direct3D11]`). Good practice regardless of the investigation below —
+predictable behavior across players' hardware, D3D11's driver support is the most mature, and D3D12's
+main advantage (lower per-draw-call CPU overhead) matters less now that the WebGL→Windows platform
+switch already solved the project's actual draw-call ceiling problem.
+
+**Builds this session:** `33 - Quality Presets`, `34 - Fullscreen Mode Test` (both `E:\Builds`).
+
+### FPS-cap investigation — resolved as expected display-vsync behavior, but one real open question remains
+
+Carlos noticed the Editor showing ~163-200 FPS against the build holding a flat ~75 (later ~60).
+Long investigation, in order of what was ruled out, each with actual evidence, not assumption:
+
+1. Not FSR/render cost — FSR on vs. off in the build gave **identical** 75 FPS/13.3ms. Four
+   different conditions (two resolutions, two quality tiers, fullscreen and windowed) all landing on
+   the exact same number was the first sign this was a hard ceiling, not GPU/CPU load.
+2. Not `QualitySettings.vSyncCount` — confirmed 0, and `ProjectSettings/QualitySettings.asset` has
+   only one quality level project-wide (no hidden per-platform override).
+3. Not `Application.targetFrameRate` — grepped the **entire** `Assets/` folder (not just our own
+   code) for every call site. Found four candidates (Retro Shaders Pro's `FramerateLimiter`, two in
+   Gaia, PolymindGames' dormant `GraphicsOptions.Apply()`) — none attached to anything in any tracked
+   scene or prefab. All dead code.
+4. Not the AMD driver — Carlos confirmed live in Adrenalin (Spanish UI): VSync/"Espera de
+   actualización vertical" = off-unless-app-specifies, FRTC/Chill/Boost/Enhanced Sync all off.
+5. Not Windows Fullscreen Optimizations — disabled for the exe specifically (`.exe` Properties →
+   Compatibility), no change.
+6. Not the Graphics API — forced D3D11 via `-force-d3d11` launch flag, identical result to Auto
+   (which later got pinned to D3D11 anyway, see above).
+7. **Root cause: Carlos runs three monitors at three different refresh rates** — Pantalla 1 "24E4"
+   60 Hz, Pantalla 2 "Artist 12" 59.94 Hz, Pantalla 3 (main, Samsung "S24D332") 75 Hz. Every observed
+   "cap" exactly matched whichever physical screen the build window happened to be on at that launch
+   (75 early in the session, 60 later once relaunches via PowerShell landed on a different screen).
+   Windows' compositor genuinely vsyncs presented content to the real display's refresh rate — this
+   is correct, expected behavior every properly-behaving Windows app has, not a bug, and not a
+   commercial-release concern. Full detail + why the Editor comparison was never apples-to-apples in
+   memory `carlos_monitor_layout`.
+
+**Not fully closed — real open question.** Carlos pointed out he gets ~120 FPS in War Thunder on
+this exact same three-monitor, ≤75 Hz setup, meaning genuine tearing/uncapped presentation **is**
+achievable on his hardware when an engine does it right — display refresh alone doesn't explain
+everything. Checked `PlayerSettings.useFlipModelSwapchain` (the D3D11 flip-model prerequisite for
+tearing-allowed presents) — **already `true`** project-wide, yet Exclusive Fullscreen still capped
+to the display refresh rate in testing. So there is likely still a real, fixable presentation-layer
+difference between our build and something like War Thunder's engine, not yet identified.
+**Next step, not yet done:** install RTSS (RivaTuner Statistics Server / MSI Afterburner) to get
+real present-call diagnostics — confirm whether tearing is actually occurring, and specifically
+whether War Thunder's 120 FPS was observed in *true* Exclusive Fullscreen (apples-to-apples
+comparison) or some other mode. Carlos said he wants to keep working on this in a future session —
+see `Docs/fps-investigation-sonnet-prompt.txt` for the handoff.
