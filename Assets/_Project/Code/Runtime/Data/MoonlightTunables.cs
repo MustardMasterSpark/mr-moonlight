@@ -971,5 +971,60 @@ namespace MrMoonlight.Data
         [Header("Upscaling — MRM-78 (FSR spike, settings menu 2026-09-15)")]
         /// <summary>Render Scale applied to the active URP asset when the Settings panel's upscaling toggle is on. Unity upscales the lower-resolution render back to native using whatever Upscaling Filter the URP asset is set to (FSR 1.0 currently). 0.67 matches FSR's own "Quality" tier.</summary>
         public float UpscalingRenderScale = 0.67f;
+
+        [Header("Graphics Quality Presets — settings menu, 2026-09-16")]
+        /// <summary>
+        /// First pass at a Minimal/Medium/High/Highest quality dropdown, requested after Carlos
+        /// noticed the Editor running ~200 FPS versus a Windows build holding ~60-70 (most likely
+        /// borderless-fullscreen DWM compositor throttling, not something these presets change -
+        /// they exist so there is a lever to test actual GPU cost against). "Highest" intentionally
+        /// matches PC_RPAsset's own committed defaults (shadowDistance 90 / 4 cascades / MSAA off)
+        /// so choosing it never regresses the currently-shipping look; the other three tiers scale
+        /// down from there. Deliberately a small first knob set (shadows, MSAA, LOD bias, texture
+        /// mip limit) - retune or extend once real budget numbers exist. Owner: settings-menu,
+        /// 2026-09-16
+        /// </summary>
+        public float QualityMinimalShadowDistance = 20f;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public int QualityMinimalShadowCascades = 1;
+        /// <summary>MSAA sample count (1 = off, 2, 4, or 8 - URP's only valid values). See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public int QualityMinimalMsaaSamples = 1;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public float QualityMinimalLodBias = 0.5f;
+        /// <summary>Global texture mip limit (0 = full res, 1 = half, 2 = quarter). See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public int QualityMinimalTextureMipLimit = 2;
+
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public float QualityMediumShadowDistance = 45f;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public int QualityMediumShadowCascades = 2;
+        /// <summary>See <see cref="QualityMinimalMsaaSamples"/>.</summary>
+        public int QualityMediumMsaaSamples = 1;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public float QualityMediumLodBias = 1.0f;
+        /// <summary>See <see cref="QualityMinimalTextureMipLimit"/>.</summary>
+        public int QualityMediumTextureMipLimit = 1;
+
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public float QualityHighShadowDistance = 70f;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public int QualityHighShadowCascades = 3;
+        /// <summary>See <see cref="QualityMinimalMsaaSamples"/>.</summary>
+        public int QualityHighMsaaSamples = 2;
+        /// <summary>See <see cref="QualityMinimalShadowDistance"/>.</summary>
+        public float QualityHighLodBias = 1.5f;
+        /// <summary>See <see cref="QualityMinimalTextureMipLimit"/>.</summary>
+        public int QualityHighTextureMipLimit = 0;
+
+        /// <summary>Matches PC_RPAsset's committed defaults - see the header summary above.</summary>
+        public float QualityHighestShadowDistance = 90f;
+        /// <summary>See <see cref="QualityHighestShadowDistance"/>.</summary>
+        public int QualityHighestShadowCascades = 4;
+        /// <summary>Matches PC_RPAsset's committed default (MSAA off) - see the header summary above.</summary>
+        public int QualityHighestMsaaSamples = 1;
+        /// <summary>See <see cref="QualityHighestShadowDistance"/>.</summary>
+        public float QualityHighestLodBias = 2.0f;
+        /// <summary>See <see cref="QualityMinimalTextureMipLimit"/>.</summary>
+        public int QualityHighestTextureMipLimit = 0;
     }
 }

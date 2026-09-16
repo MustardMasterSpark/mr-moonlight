@@ -904,3 +904,210 @@ live. Gamepad hardware verification still hasn't happened on real hardware (carr
 every prior session, not new). Next work moves to the 3D asset pipeline (characters/enemies) via
 `/prop` — a fresh session picking that up doesn't need this file, start with
 `Claude Code Context MDs/kickstart.md` and `Docs/3d-prop-pipeline-wizard.md` as usual.
+
+## 2026-09-16 session — Graphics Quality presets, 16:9 resolution filter, fullscreen mode dropdown, D3D11 pinned, FPS-cap investigation (ongoing)
+
+Branch `mrm-78` (continuation, same one-issue-exception precedent as MRM-79/MRM-80). Also on this
+branch: the full MRM-80 DLSS experiment revert — see `Docs/mrm80-dlss-experiment.md`'s own top
+section and the MRM-80 Linear comment, not repeated here.
+
+**Graphics Quality dropdown added to the Display group** (Minimal/Medium/High/Highest), Carlos's
+ask after noticing Editor-vs-build FPS looked mismatched. New `MoonlightTunables` fields (20 total,
+`Quality<Tier><Param>` naming — shadow distance, shadow cascades, MSAA samples, LOD bias, global
+texture mip limit, per tier). **Highest is deliberately defined to exactly match `PC_RPAsset`'s own
+committed defaults** (90/4/1/2/0), so picking it — or a fresh install's default — never regresses
+today's shipped look; the other three tiers scale down from there for perf testing. New
+`GameSettings.GraphicsQualityLevel` (int 0-3, default 3/Highest). `SettingsPanel.ApplyGraphicsQuality`
+applies the tier to the live URP asset + `QualitySettings`, same pattern as `ApplyUpscaling`. New
+`QualityDropdown` GameObject in `MainMenu.unity` (duplicated from `ResolutionDropdown`, same
+transform-fixup-after-duplicate gotcha as always — `manage_gameobject duplicate` does not preserve
+scale/position correctly for UI RectTransforms, always re-set both explicitly after).
+
+**`GraphicsOptionsUI.cs` deleted** (`Assets/_Project/Code/Vendor/PolymindGames/Runtime/UI/Menu/Options/`).
+Carlos asked whether we could remove PolymindGames' influence beyond weapons; this was the one
+piece confirmed fully safe — its only consumer was a vendor prefab (`FPS_UI_Options.prefab`, under
+gitignored `ThirdParty/`) that is itself never referenced anywhere in `Assets/_Project/`. Verified
+via GUID search before deleting, and a clean recompile after. `GraphicsOptions.cs` (the data class)
+was NOT touched — `CameraFOVHandler`/`CharacterLookHandler` (both actively driving the FP camera)
+read `GraphicsOptions.Instance.FieldOfView` directly, so it's genuinely load-bearing despite having
+no UI hooked up to it.
+
+**Resolution dropdown filtered to 16:9 only.** Carlos found that selecting 1024x768 (4:3) broke the
+UI layout — Canvas Scaler/every HUD and menu element is authored at 1920x1080. Fixed in
+`SettingsPanel.InitializeResolutionDropdown` with an aspect-ratio filter (`16f/9f`, `0.02` tolerance
+for rounding like 1366x768's 1.779). No longer possible to select an off-ratio resolution at all.
+
+**Fullscreen `Toggle` replaced with a 3-way `FullscreenModeDropdown`** (Windowed / Fullscreen
+(Borderless) / Fullscreen (Exclusive)). Default unchanged — still Borderless, CLAUDE.md's committed
+display target. Exclusive was added specifically as a diagnostic option for the FPS investigation
+below, not (yet) a default change; `FullscreenModeToIndex`/`IndexToFullscreenMode` do the explicit
+mapping (deliberately not relying on `FullScreenMode`'s own enum ordinals, which skip a value).
+
+**Windows build pinned to Direct3D11**, no longer "Auto" (`PlayerSettings.SetUseDefaultGraphicsAPIs`
+→ false, `SetGraphicsAPIs` → `[Direct3D11]`). Good practice regardless of the investigation below —
+predictable behavior across players' hardware, D3D11's driver support is the most mature, and D3D12's
+main advantage (lower per-draw-call CPU overhead) matters less now that the WebGL→Windows platform
+switch already solved the project's actual draw-call ceiling problem.
+
+**Builds this session:** `33 - Quality Presets`, `34 - Fullscreen Mode Test` (both `E:\Builds`).
+
+### FPS-cap investigation — resolved as expected display-vsync behavior, but one real open question remains
+
+Carlos noticed the Editor showing ~163-200 FPS against the build holding a flat ~75 (later ~60).
+Long investigation, in order of what was ruled out, each with actual evidence, not assumption:
+
+1. Not FSR/render cost — FSR on vs. off in the build gave **identical** 75 FPS/13.3ms. Four
+   different conditions (two resolutions, two quality tiers, fullscreen and windowed) all landing on
+   the exact same number was the first sign this was a hard ceiling, not GPU/CPU load.
+2. Not `QualitySettings.vSyncCount` — confirmed 0, and `ProjectSettings/QualitySettings.asset` has
+   only one quality level project-wide (no hidden per-platform override).
+3. Not `Application.targetFrameRate` — grepped the **entire** `Assets/` folder (not just our own
+   code) for every call site. Found four candidates (Retro Shaders Pro's `FramerateLimiter`, two in
+   Gaia, PolymindGames' dormant `GraphicsOptions.Apply()`) — none attached to anything in any tracked
+   scene or prefab. All dead code.
+4. Not the AMD driver — Carlos confirmed live in Adrenalin (Spanish UI): VSync/"Espera de
+   actualización vertical" = off-unless-app-specifies, FRTC/Chill/Boost/Enhanced Sync all off.
+5. Not Windows Fullscreen Optimizations — disabled for the exe specifically (`.exe` Properties →
+   Compatibility), no change.
+6. Not the Graphics API — forced D3D11 via `-force-d3d11` launch flag, identical result to Auto
+   (which later got pinned to D3D11 anyway, see above).
+7. **Root cause: Carlos runs three monitors at three different refresh rates** — Pantalla 1 "24E4"
+   60 Hz, Pantalla 2 "Artist 12" 59.94 Hz, Pantalla 3 (main, Samsung "S24D332") 75 Hz. Every observed
+   "cap" exactly matched whichever physical screen the build window happened to be on at that launch
+   (75 early in the session, 60 later once relaunches via PowerShell landed on a different screen).
+   Windows' compositor genuinely vsyncs presented content to the real display's refresh rate — this
+   is correct, expected behavior every properly-behaving Windows app has, not a bug, and not a
+   commercial-release concern. Full detail + why the Editor comparison was never apples-to-apples in
+   memory `carlos_monitor_layout`.
+
+**Not fully closed — real open question.** Carlos pointed out he gets ~120 FPS in War Thunder on
+this exact same three-monitor, ≤75 Hz setup, meaning genuine tearing/uncapped presentation **is**
+achievable on his hardware when an engine does it right — display refresh alone doesn't explain
+everything. Checked `PlayerSettings.useFlipModelSwapchain` (the D3D11 flip-model prerequisite for
+tearing-allowed presents) — **already `true`** project-wide, yet Exclusive Fullscreen still capped
+to the display refresh rate in testing. So there is likely still a real, fixable presentation-layer
+difference between our build and something like War Thunder's engine, not yet identified.
+**Next step, not yet done:** install RTSS (RivaTuner Statistics Server / MSI Afterburner) to get
+real present-call diagnostics — confirm whether tearing is actually occurring, and specifically
+whether War Thunder's 120 FPS was observed in *true* Exclusive Fullscreen (apples-to-apples
+comparison) or some other mode. Carlos said he wants to keep working on this in a future session —
+see `Docs/fps-investigation-sonnet-prompt.txt` for the handoff.
+
+### FPS-cap investigation — ROOT CAUSE FOUND AND FIXED, same session continued
+
+Carlos installed RTSS and TF2 as instructed above. TF2 in true Exclusive Fullscreen, VSync off,
+hit **1850 FPS / 0.6 ms** on the same 75 Hz monitor — proof the hardware/drivers/OS/Windows
+compositor are all fully capable of uncapped presentation. That ruled out the environment
+entirely and pointed the problem at the project itself.
+
+To isolate further, built a throwaway blank Unity 6.3 project (`E:\playground\fpsTest`, its own
+MCP bridge on port 8084) with identical Player Settings (D3D11, Exclusive Fullscreen, 1920×1080,
+`QualitySettings.vSyncCount = 0`). It hit **1850 FPS** trivially on the same monitor — a blank
+Unity project doesn't cap either. So the cap is specific to something in Mr. Moonlight, not Unity
+6.3 itself, not this machine.
+
+Carlos also reported the cap happened in **Windowed** mode too, not just Exclusive/Borderless —
+ruling out any DWM-compositor-specific theory and pointing at something applying uniformly
+regardless of window mode.
+
+Added a temporary live diagnostic (`DisplayModeDebugOverlay.cs`, see below — this is the F12 cheat
+now) showing the *actual runtime* `Screen.fullScreenMode`/`QualitySettings.vSyncCount`/FPS on
+screen, rather than trusting the Settings menu's displayed selection. Tested Windowed, Borderless,
+and Exclusive in a real build: **all three read `QualitySettings.vSyncCount=1`**, identically,
+regardless of mode. That was the answer — VSync was force-enabled the entire time, uniformly,
+completely independent of fullscreen mode. The "vsync-locked at exactly 13.3 ms / 75 Hz" evidence
+from every earlier test in this doc was VSync being on, not a presentation-layer/DWM issue at all.
+
+**Root cause:** `Assets/_Project/Code/Vendor/PolymindGames/Runtime/Options/GraphicsOptions.cs` — a
+second, completely separate settings system left over from the PolymindGames character-controller
+integration (MRM-9). It self-initializes at boot via
+`[RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]` — before the
+scene even loads — and its `Apply()` runs `QualitySettings.vSyncCount = _frameRateCap.Value > 0 ?
+0 : _vSyncMode.Value;`. `_vSyncMode` defaults to `new(1)` (on), `_frameRateCap` defaults to `0`, so
+every single boot force-set `vSyncCount = 1`. Our own `SettingsPanel`/`GameSettings` (built earlier
+this session) never touched `vSyncCount` at all, so nothing ever overrode it back. This is the same
+class whose `GraphicsOptionsUI.cs` we deleted earlier in this very session (see above) — we
+correctly identified the UI as dead, but didn't realize the underlying data asset's `Apply()` was
+still silently running every boot regardless of whether any UI existed for it.
+
+**⚠️ LESSON FOR NEXT TIME — CHECK THE VENDOR FIRST.** This took the whole session to track down
+because every hypothesis started from "what is *our* code doing wrong," when the actual answer was
+a third-party package quietly overriding global engine state with no UI and no obvious call site.
+**If a future symptom looks inexplicable, environment-independent, or "the same regardless of what
+we change" — grep the vendor folders (`Assets/_Project/Code/Vendor/*`, especially
+`PolymindGames/Runtime/Options/*` and anything with `RuntimeInitializeOnLoadMethod` or a
+`Manager<T>`/singleton `.Instance` pattern) BEFORE spending hours re-testing our own settings.**
+This applies to any future "why is X ignoring what we set" bug, not just graphics/vsync.
+
+**Fix:** added `GameSettings.VSyncEnabled` (new PlayerPrefs setting, **default off** — Carlos's
+explicit call) and a real **VSync checkbox** in Settings → Display. `SettingsPanel.ApplyVSync()`
+sets `QualitySettings.vSyncCount` directly and runs last in `ApplySavedDisplaySettings()`, so it
+always wins over the vendor asset's boot-time `Apply()` regardless of timing. The vendor asset
+itself was left untouched (not neutered) — see the audio flag below for why that matters.
+
+**Audited the other three PolymindGames Options assets** (`AudioOptions`, `GameplayOptions`,
+`InputOptions`) for the same pattern. None have `RuntimeInitializeOnLoadMethod` or an `Apply()`
+override, so none force global state at boot the way `GraphicsOptions` did — that risk is
+contained to `GraphicsOptions` specifically. **But they are NOT inert** — all three are genuinely
+live and load-bearing throughout the vendor's own gameplay code (mouse sensitivity/smoothing,
+run/crouch/lean toggles, auto-run, reload behavior, infinite ammo, autosave, crosshair color,
+weapon/ambient audio volumes), via their own separate JSON-file persistence, completely invisible
+to our own Settings menu.
+
+**🔎 FLAGGED FOR THE AUDIO HOUSEKEEPING SESSION:** `AudioManager.cs` (vendor,
+`Assets/_Project/Code/Vendor/PolymindGames/Runtime/Audio/AudioManager.cs`) writes to a serialized
+`AudioMixer` field using exposed-parameter names `"MasterVolume"`, `"EffectsVolume"`,
+`"AmbienceVolume"`, `"MusicVolume"`, `"UIVolume"` — driven by `AudioOptions.Instance`, a totally
+separate volume source from `GameSettings.MasterVolume`/`VoicesVolume`/`SFXVolume`. `"MasterVolume"`
+is the exact same exposed-param string `SettingsPanel.MasterVolumeParam` writes to on
+`MoonlightMixer.mixer`. **Not confirmed as an active conflict** — didn't verify whether
+`AudioManager` is actually instantiated in our scenes or whether its `_audioMixer` field even
+points at `MoonlightMixer.mixer` vs. some other vendor-only mixer asset — but the shape is
+identical to the vSync bug, and it's an audio-specific instance of exactly the same landmine
+family. Worth a dedicated check before or during the next audio-focused session, not this one.
+
+**Two more builds this session:** `FPS-Diagnostic-2026-09-16` and `-v2` (VSync checkbox added),
+`E:\Builds`. Carlos confirmed live: "It worked... running much more smoothly," no longer hitting
+"the monstrous 14 fps we were getting before." Remaining optimization work exists but is no longer
+blocked by this — separate, lower-priority thread.
+
+### F12 cheat: DisplayModeDebugOverlay promoted from throwaway diagnostic to permanent feature
+
+`DisplayModeDebugOverlay.cs` (`Runtime/DevTools/`) started as a one-off diagnostic for this
+investigation, then Carlos asked to keep it permanently as a cheat toggle. Changed: toggle key
+F9→**F12**, `visible` defaults to **false** (starts hidden, same convention as
+`InvulnerableDebugToggle`/`InfiniteAmmoDebugToggle`). Lives on a persistent
+(`DontDestroyOnLoad`) GameObject in `MainMenu.unity`, survives the scene load into `Island.unity`.
+Shows live `Screen.fullScreenMode`, `QualitySettings.vSyncCount`, `Application.targetFrameRate`,
+`Screen.currentResolution`, and a smoothed FPS counter.
+
+### Settings panel — two-column layout pass (cosmetic only, not final)
+
+Carlos: "it's not looking good... kind of cramped." Everything had been stacked in one long
+vertical column (Difficulty → Master/Voices/SFX → Display header → Upscaling → Resolution →
+Fullscreen → Quality → Back), and the newly-added VSync toggle made it visibly overflow into the
+Back button. Reworked into two columns under a shared Difficulty row: **Audio** (new header,
+Master/Voices/SFX) on the left at x=-360, **Display** (existing header, Upscaling/VSync/
+Resolution/Fullscreen/Quality) on the right at x=+360, Back button centered below both at
+y=-300. All via `manage_gameobject duplicate` + `manage_components set_property` on each
+RectTransform's `anchoredPosition` (Canvas is 1920×1080 reference, so ±360 keeps every element
+comfortably inside the ±960 half-width regardless of column content width).
+
+**Gotcha confirmed a second time:** `manage_gameobject duplicate` does NOT preserve the original's
+`localScale` for UI RectTransforms — both the VSync toggle (duplicated from Upscaling) and the new
+Audio label (duplicated from Display) came out at `scale ≈ 1.567` instead of `1.0`, which is why
+the first VSync toggle screenshot showed its label rendered ~1.5x larger than its sibling. Always
+explicitly reset `localScale` to `(1,1,1)` after any UI duplicate, same as the existing
+position/anchoredPosition-must-be-reset gotcha already documented above for `QualityDropdown`.
+
+**Explicitly not final** — Carlos's own words. A real visual pass (backgrounds, spacing polish,
+maybe scroll/tabs if more settings get added later) is still open work, not done here.
+
+**⚠️ NOT VISUALLY VERIFIED.** The third build (`FPS-Diagnostic-2026-09-16-v3`, meant to confirm the
+two-column layout + F12 cheat) never finished — the Unity Editor lost focus mid-build and the
+session ended with Carlos closing the Editor before it completed. Only the RectTransform math and
+the code changes themselves are confirmed correct (read back via the MCP bridge after every edit);
+nobody has actually seen the two-column layout or the F12 overlay render on screen. **Next session:
+rebuild and screenshot/play-test this before assuming it looks right** — same
+"confirm with a screenshot before declaring fixed" rule that already applies everywhere else in
+this project.

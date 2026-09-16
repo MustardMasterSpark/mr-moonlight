@@ -46,10 +46,15 @@ Known gaps, not yet addressed:
   in build 31 regardless of the new default — only a fresh/never-toggled install starts off.
 
 ===========================================================================
-CURRENT TASK: DLSS-NR-on-AMD experiment (curiosity, personal system test)
+CLOSED 2026-09-16: DLSS-NR-on-AMD experiment (curiosity, personal system test)
 ===========================================================================
-Tracked as **MRM-80** in Linear, status Backlog (not started — this is Carlos's own hands-on task,
-not Claude Code dev work). Read the full issue before doing anything here.
+**This section is now historical — do not act on it.** MRM-80 is Canceled in Linear. Carlos tried
+the tool against Forza Horizon 5, hit an unrelated Steam launch blocker (`Steamwebhelper no
+responde`), gave up, and asked for a full rollback. Everything wired into Mr. Moonlight for this
+(packages, renderer feature, two volume overrides, code, scene toggle) has been reverted — see
+`Docs/mrm80-dlss-experiment.md`'s new top section and the MRM-80 Linear comment for the exact list.
+FSR (MRM-78/79) is untouched and still shipping. Original task description kept below for record
+only.
 
 Short version: this is a DIFFERENT, unrelated tool from the FSR/STP work above.
 `github.com/danielblnc/DLSS-NR-on-AMD` DLL-proxies into a DX12 game's own EXISTING FSR pipeline to

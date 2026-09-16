@@ -44,10 +44,14 @@ namespace MrMoonlight.UI
         [Header("Display — MRM-78")]
         [Tooltip("Applies the active URP asset's Render Scale (Tunables.UpscalingRenderScale) + FSR Upscaling Filter when on; native (1.0, Auto) when off.")]
         [SerializeField] private Toggle upscalingToggle;
-        [Tooltip("Populated at Awake from Screen.resolutions, deduplicated by width x height.")]
+        [Tooltip("Sets QualitySettings.vSyncCount (1 = on, 0 = off). Default off - see GameSettings.VSyncEnabled for why this exists (MRM-78 FPS-cap investigation, 2026-09-16).")]
+        [SerializeField] private Toggle vsyncToggle;
+        [Tooltip("Populated at Awake from Screen.resolutions, deduplicated by width x height and filtered to 16:9 only - the project's UI is authored at 1920x1080 and does not lay out correctly at other aspect ratios.")]
         [SerializeField] private TMP_Dropdown resolutionDropdown;
-        [Tooltip("On = FullScreenWindow (borderless fullscreen, the project's display target). Off = Windowed.")]
-        [SerializeField] private Toggle fullscreenToggle;
+        [Tooltip("Windowed / Borderless Fullscreen / Exclusive Fullscreen. Borderless is the project's committed display target (CLAUDE.md) - Exclusive is exposed here as a diagnostic/testing option for the DWM-compositor frame-cap investigation, 2026-09-16, not (yet) a default change.")]
+        [SerializeField] private TMP_Dropdown fullscreenModeDropdown;
+        [Tooltip("Minimal/Medium/High/Highest graphics quality preset. Options are fixed (not populated at runtime) - order must match MoonlightTunables' Quality* fields and GameSettings.GraphicsQualityLevel's 0-3 indexing.")]
+        [SerializeField] private TMP_Dropdown qualityDropdown;
 
         private List<Vector2Int> availableResolutions;
 
@@ -61,8 +65,10 @@ namespace MrMoonlight.UI
             voicesSlider.onValueChanged.AddListener(OnVoicesVolumeChanged);
             sfxSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
             upscalingToggle.onValueChanged.AddListener(OnUpscalingToggled);
+            vsyncToggle.onValueChanged.AddListener(OnVSyncToggled);
             resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
-            fullscreenToggle.onValueChanged.AddListener(OnFullscreenToggled);
+            fullscreenModeDropdown.onValueChanged.AddListener(OnFullscreenModeChanged);
+            qualityDropdown.onValueChanged.AddListener(OnQualityChanged);
         }
 
         private void OnDestroy()
@@ -73,8 +79,10 @@ namespace MrMoonlight.UI
             voicesSlider.onValueChanged.RemoveListener(OnVoicesVolumeChanged);
             sfxSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
             upscalingToggle.onValueChanged.RemoveListener(OnUpscalingToggled);
+            vsyncToggle.onValueChanged.RemoveListener(OnVSyncToggled);
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
-            fullscreenToggle.onValueChanged.RemoveListener(OnFullscreenToggled);
+            fullscreenModeDropdown.onValueChanged.RemoveListener(OnFullscreenModeChanged);
+            qualityDropdown.onValueChanged.RemoveListener(OnQualityChanged);
         }
 
         /// <summary>Writes the saved (or default) volumes to the mixer. Safe to call before this panel's GameObject has ever been active - the serialized <see cref="mixer"/> reference is populated at scene load regardless. Owner: MRM-18</summary>
@@ -90,6 +98,8 @@ namespace MrMoonlight.UI
         {
             ApplyUpscaling(GameSettings.UpscalingEnabled);
             Screen.SetResolution(GameSettings.ResolutionWidth, GameSettings.ResolutionHeight, GameSettings.FullscreenMode);
+            ApplyGraphicsQuality(GameSettings.GraphicsQualityLevel);
+            ApplyVSync(GameSettings.VSyncEnabled);
         }
 
         private void InitializeFromSavedSettings()
@@ -106,16 +116,31 @@ namespace MrMoonlight.UI
 
             InitializeResolutionDropdown();
             upscalingToggle.SetIsOnWithoutNotify(GameSettings.UpscalingEnabled);
-            fullscreenToggle.SetIsOnWithoutNotify(GameSettings.FullscreenMode == FullScreenMode.FullScreenWindow);
+            vsyncToggle.SetIsOnWithoutNotify(GameSettings.VSyncEnabled);
+            InitializeFullscreenModeDropdown();
+            InitializeQualityDropdown();
 
             ApplySavedDisplaySettings();
         }
 
-        /// <summary>Deduplicates <see cref="Screen.resolutions"/> by width x height (ignoring refresh rate - a per-resolution refresh choice isn't exposed here) and selects whichever entry matches the saved resolution, falling back to the current screen size.</summary>
+        /// <summary>16:9 aspect ratio, with a small tolerance for the rounding a monitor's actual pixel counts introduce (e.g. 1366x768 is 1.779, not the exact 1.778 of 1920x1080).</summary>
+        private const float SixteenByNine = 16f / 9f;
+        private const float AspectRatioTolerance = 0.02f;
+
+        /// <summary>
+        /// Deduplicates <see cref="Screen.resolutions"/> by width x height (ignoring refresh rate -
+        /// a per-resolution refresh choice isn't exposed here) and selects whichever entry matches
+        /// the saved resolution, falling back to the current screen size. Filtered to 16:9 only -
+        /// the project's Canvas Scaler reference resolution and every HUD/menu layout is authored
+        /// at 1920x1080 (CLAUDE.md's display target); a 4:3 or other-ratio resolution stretches
+        /// that layout instead of just scaling it, which is what Carlos saw break at 1024x768.
+        /// Owner: settings-menu, 2026-09-16
+        /// </summary>
         private void InitializeResolutionDropdown()
         {
             availableResolutions = Screen.resolutions
                 .Select(r => new Vector2Int(r.width, r.height))
+                .Where(r => Mathf.Abs((float)r.x / r.y - SixteenByNine) < AspectRatioTolerance)
                 .Distinct()
                 .OrderByDescending(r => r.x * r.y)
                 .ToList();
@@ -144,6 +169,82 @@ namespace MrMoonlight.UI
             urpAsset.renderScale = enabled ? Tunables.I.UpscalingRenderScale : 1f;
             urpAsset.upscalingFilter = enabled ? UpscalingFilterSelection.FSR : UpscalingFilterSelection.Auto;
         }
+
+        /// <summary>Fixed 4-entry list - see <see cref="qualityDropdown"/>'s tooltip for the indexing contract.</summary>
+        private void InitializeQualityDropdown()
+        {
+            qualityDropdown.ClearOptions();
+            qualityDropdown.AddOptions(new List<string> { "Minimal", "Medium", "High", "Highest" });
+            qualityDropdown.SetValueWithoutNotify(Mathf.Clamp(GameSettings.GraphicsQualityLevel, 0, 3));
+        }
+
+        /// <summary>
+        /// Applies one of the four <see cref="MoonlightTunables"/> Quality* preset groups (shadow
+        /// distance/cascades, MSAA, LOD bias, global texture mip limit) to the active URP asset and
+        /// <see cref="QualitySettings"/>. No-ops (with a warning) if the active pipeline isn't URP,
+        /// same guard as <see cref="ApplyUpscaling"/>.
+        /// </summary>
+        private static void ApplyGraphicsQuality(int level)
+        {
+            if (GraphicsSettings.defaultRenderPipeline is not UniversalRenderPipelineAsset urpAsset)
+            {
+                Debug.LogWarning("SettingsPanel: active render pipeline isn't URP - cannot apply graphics quality setting.");
+                return;
+            }
+
+            MoonlightTunables tunables = Tunables.I;
+            float shadowDistance;
+            int shadowCascades;
+            int msaaSamples;
+            float lodBias;
+            int textureMipLimit;
+
+            switch (level)
+            {
+                case 0:
+                    shadowDistance = tunables.QualityMinimalShadowDistance;
+                    shadowCascades = tunables.QualityMinimalShadowCascades;
+                    msaaSamples = tunables.QualityMinimalMsaaSamples;
+                    lodBias = tunables.QualityMinimalLodBias;
+                    textureMipLimit = tunables.QualityMinimalTextureMipLimit;
+                    break;
+                case 1:
+                    shadowDistance = tunables.QualityMediumShadowDistance;
+                    shadowCascades = tunables.QualityMediumShadowCascades;
+                    msaaSamples = tunables.QualityMediumMsaaSamples;
+                    lodBias = tunables.QualityMediumLodBias;
+                    textureMipLimit = tunables.QualityMediumTextureMipLimit;
+                    break;
+                case 2:
+                    shadowDistance = tunables.QualityHighShadowDistance;
+                    shadowCascades = tunables.QualityHighShadowCascades;
+                    msaaSamples = tunables.QualityHighMsaaSamples;
+                    lodBias = tunables.QualityHighLodBias;
+                    textureMipLimit = tunables.QualityHighTextureMipLimit;
+                    break;
+                default:
+                    shadowDistance = tunables.QualityHighestShadowDistance;
+                    shadowCascades = tunables.QualityHighestShadowCascades;
+                    msaaSamples = tunables.QualityHighestMsaaSamples;
+                    lodBias = tunables.QualityHighestLodBias;
+                    textureMipLimit = tunables.QualityHighestTextureMipLimit;
+                    break;
+            }
+
+            urpAsset.shadowDistance = shadowDistance;
+            urpAsset.shadowCascadeCount = shadowCascades;
+            urpAsset.msaaSampleCount = msaaSamples;
+            QualitySettings.lodBias = lodBias;
+            QualitySettings.globalTextureMipmapLimit = textureMipLimit;
+        }
+
+        /// <summary>
+        /// Sets QualitySettings.vSyncCount directly. Runs last in ApplySavedDisplaySettings so it
+        /// always wins over PolymindGames' GraphicsOptions vendor asset, which force-applies its
+        /// own vSyncCount (defaulting to on) at boot via RuntimeInitializeOnLoadMethod - see
+        /// GameSettings.VSyncEnabled's doc comment. Owner: MRM-78
+        /// </summary>
+        private static void ApplyVSync(bool enabled) => QualitySettings.vSyncCount = enabled ? 1 : 0;
 
         private void OnConformistToggled(bool isOn)
         {
@@ -193,11 +294,45 @@ namespace MrMoonlight.UI
             Screen.SetResolution(resolution.x, resolution.y, GameSettings.FullscreenMode);
         }
 
-        private void OnFullscreenToggled(bool isOn)
+        /// <summary>Fixed 3-entry list, in the same index order <see cref="FullscreenModeToIndex"/>/<see cref="IndexToFullscreenMode"/> use. Owner: settings-menu, 2026-09-16</summary>
+        private void InitializeFullscreenModeDropdown()
         {
-            FullScreenMode mode = isOn ? FullScreenMode.FullScreenWindow : FullScreenMode.Windowed;
+            fullscreenModeDropdown.ClearOptions();
+            fullscreenModeDropdown.AddOptions(new List<string> { "Windowed", "Fullscreen (Borderless)", "Fullscreen (Exclusive)" });
+            fullscreenModeDropdown.SetValueWithoutNotify(FullscreenModeToIndex(GameSettings.FullscreenMode));
+        }
+
+        private static int FullscreenModeToIndex(FullScreenMode mode) => mode switch
+        {
+            FullScreenMode.Windowed => 0,
+            FullScreenMode.ExclusiveFullScreen => 2,
+            _ => 1, // FullScreenWindow (borderless) - the project's committed default
+        };
+
+        private static FullScreenMode IndexToFullscreenMode(int index) => index switch
+        {
+            0 => FullScreenMode.Windowed,
+            2 => FullScreenMode.ExclusiveFullScreen,
+            _ => FullScreenMode.FullScreenWindow,
+        };
+
+        private void OnFullscreenModeChanged(int index)
+        {
+            FullScreenMode mode = IndexToFullscreenMode(index);
             GameSettings.FullscreenMode = mode;
             Screen.SetResolution(GameSettings.ResolutionWidth, GameSettings.ResolutionHeight, mode);
+        }
+
+        private void OnQualityChanged(int level)
+        {
+            GameSettings.GraphicsQualityLevel = level;
+            ApplyGraphicsQuality(level);
+        }
+
+        private void OnVSyncToggled(bool isOn)
+        {
+            GameSettings.VSyncEnabled = isOn;
+            ApplyVSync(isOn);
         }
     }
 }

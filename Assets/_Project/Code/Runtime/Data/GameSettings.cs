@@ -27,6 +27,12 @@ namespace MrMoonlight.Data
         private const string ResolutionWidthKey = "MrMoonlight.ResolutionWidth";
         private const string ResolutionHeightKey = "MrMoonlight.ResolutionHeight";
 
+        // Graphics quality preset dropdown, settings menu 2026-09-16.
+        private const string GraphicsQualityLevelKey = "MrMoonlight.GraphicsQualityLevel";
+
+        // VSync checkbox, MRM-78 FPS-cap investigation, 2026-09-16.
+        private const string VSyncEnabledKey = "MrMoonlight.VSyncEnabled";
+
         // Island demo wrap-up debug mixer overlay (F10) — temporary tuning sliders, not the
         // Settings panel above. Owner: island-demo-wrapup, 2026-09-10.
         private const string MenuMusicVolumeKey = "MrMoonlight.MenuMusicVolume";
@@ -158,6 +164,41 @@ namespace MrMoonlight.Data
             set
             {
                 PlayerPrefs.SetInt(ResolutionHeightKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>
+        /// Graphics quality preset index: 0 = Minimal, 1 = Medium, 2 = High, 3 = Highest. Default
+        /// is Highest, which is defined to exactly match <c>PC_RPAsset</c>'s own committed values
+        /// (see <see cref="MoonlightTunables"/>'s Graphics Quality Presets header) - a fresh install
+        /// looks identical to today's build until the player deliberately lowers it. Owner:
+        /// settings-menu, 2026-09-16
+        /// </summary>
+        public static int GraphicsQualityLevel
+        {
+            get => PlayerPrefs.GetInt(GraphicsQualityLevelKey, 3);
+            set
+            {
+                PlayerPrefs.SetInt(GraphicsQualityLevelKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>
+        /// Default off (Carlos, 2026-09-16) - found during the FPS-cap investigation that a
+        /// leftover PolymindGames vendor asset (GraphicsOptions.Apply(), auto-run on every boot)
+        /// was force-setting QualitySettings.vSyncCount = 1 with no UI ever exposing it. This is
+        /// now the single source of truth for vSyncCount; SettingsPanel applies it every launch
+        /// (ApplySavedDisplaySettings) so it always wins regardless of the vendor asset's own boot
+        /// timing. Owner: MRM-78
+        /// </summary>
+        public static bool VSyncEnabled
+        {
+            get => PlayerPrefs.GetInt(VSyncEnabledKey, 0) != 0;
+            set
+            {
+                PlayerPrefs.SetInt(VSyncEnabledKey, value ? 1 : 0);
                 PlayerPrefs.Save();
             }
         }

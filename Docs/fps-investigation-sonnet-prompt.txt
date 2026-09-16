@@ -1,0 +1,124 @@
+Context prompt for the next session — read this first, not chat scrollback.
+
+SESSION DATE WRITTEN: 2026-09-16, handoff to the next session.
+
+This file supersedes Docs/dlss-experiment-sonnet-prompt.txt (2026-09-15) as the current handoff
+pointer. That file's own tasks (FSR spike, DLSS-NR-on-AMD curiosity spike) are both done — MRM-80
+closed/reverted, see Docs/mrm80-dlss-experiment.md. Full detail on everything below:
+Docs/mrm18-main-menu-build-summary.md's "2026-09-16 session" section (newest at the bottom of that
+file), and Linear comments on MRM-78/79 dated 2026-09-16.
+
+Branch: mrm-78 (continuation, one-issue-one-branch exception already flagged/accepted on MRM-79 and
+MRM-80). Nothing committed — Carlos commits himself in GitHub Desktop.
+
+===========================================================================
+DONE THIS SESSION
+===========================================================================
+1. MRM-80 (DLSS-on-AMD curiosity spike) fully reverted — Carlos hit an unrelated Steam launch
+   failure testing the external tool, gave up, asked for a full rollback. Done and verified via
+   clean recompile + raw file reads, not just in-Editor state. Nothing left to do here.
+
+2. Graphics Quality preset dropdown (Minimal/Medium/High/Highest) added to the Settings panel's
+   Display group. `MoonlightTunables` gained 20 `Quality<Tier><Param>` fields (shadow distance,
+   shadow cascades, MSAA samples, LOD bias, global texture mip limit — 5 params x 4 tiers).
+   `GameSettings.GraphicsQualityLevel` (int 0-3, default 3/Highest). **Highest is deliberately
+   defined to exactly match `PC_RPAsset`'s committed defaults** (90/4/1/2/0) so picking it, or a
+   fresh install's default, never regresses today's shipped look — the other three tiers scale down
+   from there. `SettingsPanel.ApplyGraphicsQuality(int level)` applies it to the live URP asset +
+   QualitySettings, same shape as the existing `ApplyUpscaling`. First-pass numbers, not tuned
+   against a real perf budget yet — safe to retune anytime.
+
+3. `GraphicsOptionsUI.cs` deleted (Assets/_Project/Code/Vendor/PolymindGames/Runtime/UI/Menu/
+   Options/). Carlos asked whether PolymindGames' footprint could be reduced beyond weapons — this
+   was the one confirmed-safe piece (verified zero consumers via GUID search across every tracked
+   scene/prefab before deleting, clean recompile after). `GraphicsOptions.cs` itself (the data
+   class) was NOT touched — `CameraFOVHandler`/`CharacterLookHandler` read
+   `GraphicsOptions.Instance.FieldOfView` directly and are actively driving the FP camera, so it's
+   genuinely load-bearing despite having no UI wired to it. If asked to go further on trimming
+   PolymindGames, re-read the full architecture discussion in this session's chat history first —
+   short version: our own code only touches 7 files (the "seam" is real and narrow), but the vendor
+   graph itself (movement/health/stamina/input/save-system) is not cherry-pickable per
+   Docs/mrm9-hqfps-integration.md's own finding — removing more than dead UI means rebuilding the
+   character controller from scratch, not recommended before the Kickstarter deadline.
+
+4. Resolution dropdown filtered to 16:9 only (`SettingsPanel.InitializeResolutionDropdown`, aspect
+   ratio check against 16f/9f with 0.02 tolerance). A 4:3 pick (1024x768) was breaking the
+   1920x1080-authored UI layout — main menu buttons visibly clipped. Not selectable anymore.
+
+5. Fullscreen `Toggle` replaced with a 3-way `FullscreenModeDropdown` (Windowed / Fullscreen
+   (Borderless) / Fullscreen (Exclusive)). Default is still unchanged — Borderless, CLAUDE.md's
+   committed display target. Exclusive exists purely as a diagnostic option for item 6 below; do
+   not treat its presence as a decision to ship Exclusive as the default without Carlos's explicit
+   sign-off (display-target policy is a CLAUDE.md hard rule).
+
+6. Windows Standalone build pinned to Direct3D11 (was "Auto") —
+   `PlayerSettings.SetUseDefaultGraphicsAPIs(StandaloneWindows64, false)` +
+   `SetGraphicsAPIs(StandaloneWindows64, [Direct3D11])`. Confirmed via reflection read-back. Good
+   practice regardless of the FPS investigation — predictable behavior across players' hardware.
+
+7. Builds produced: `33 - Quality Presets - 2026-09-16`, `34 - Fullscreen Mode Test - 2026-09-16`
+   (both E:\Builds, zipped).
+
+===========================================================================
+CURRENT TASK: FPS-cap investigation — mostly resolved, one real thread left dangling
+===========================================================================
+Carlos noticed the Editor running far faster (~163-200 FPS) than the standalone build (looked
+"capped" around 75, later 60). Long back-and-forth investigation this session, ruled out with real
+evidence (not guesses) in this order — do not re-litigate any of these from scratch:
+
+- Not render cost: FSR on/off gave identical 75 FPS/13.3ms in the build across multiple
+  resolutions/quality tiers.
+- Not `QualitySettings.vSyncCount` (confirmed 0; only one quality level exists project-wide, no
+  hidden per-platform override in ProjectSettings/QualitySettings.asset).
+- Not `Application.targetFrameRate` (grepped ALL of Assets/, not just our code; found 4 call sites
+  in vendor packages, none attached to anything in any tracked scene/prefab).
+- Not the AMD driver (Carlos confirmed live in Adrenalin: VSync/FRTC/Chill/Boost/Enhanced Sync all
+  off/correct).
+- Not Windows Fullscreen Optimizations (disabled for the exe specifically, no change).
+- Not the Graphics API (forced D3D11 via `-force-d3d11`, identical to Auto).
+
+**Root cause, confirmed:** Carlos runs three monitors at three different refresh rates — see memory
+`carlos_monitor_layout` for the exact layout (Pantalla 1 "24E4" 60Hz, where Claude Code runs;
+Pantalla 2 "Artist 12" 59.94Hz, his file-dump screen; Pantalla 3 "S24D332" 75Hz, his main monitor).
+Every "cap" we measured across the whole session matched exactly whichever physical screen the
+build window happened to be on at that launch. This is genuine, correct Windows-compositor
+vsync-to-display behavior — not a bug, not a shipping concern, and explains why the Editor
+comparison was never fair (the Editor Game View doesn't observe the same display-vsync a real
+build's window does).
+
+**Not fully closed.** Carlos pointed out he gets ~120 FPS in War Thunder on this exact same
+three-monitor, ≤75Hz setup — meaning genuine tearing/uncapped presentation IS achievable on his
+hardware when an engine does it right, so display refresh alone isn't the complete story. Checked
+`PlayerSettings.useFlipModelSwapchain` (the D3D11 prerequisite for tearing-allowed/uncapped
+presents) — already `true` project-wide — yet Exclusive Fullscreen still capped to the display
+refresh rate in every test. **The real remaining difference between our build's presentation and
+something like War Thunder's has not been found.**
+
+**Next steps, not yet done — pick up here:**
+1. Ask Carlos to install RTSS (RivaTuner Statistics Server, free, ships with MSI Afterburner). It
+   hooks actual present calls, independent of everything tested so far, and can show real frame
+   timing plus visually confirm whether tearing is occurring at all.
+2. Get an apples-to-apples comparison: is War Thunder's 120 FPS specifically in TRUE Exclusive
+   Fullscreen mode (not Borderless)? If War Thunder itself also caps to refresh rate in its own
+   Borderless/Windowed modes, that's expected and consistent — the real test is Exclusive vs.
+   Exclusive.
+3. If RTSS shows Mr. Moonlight genuinely isn't getting a tearing-allowed present even in Exclusive
+   Fullscreen with D3D11 + flip-model swapchain already on, the next research direction is Unity's
+   own DXGI present-flag handling for `FullScreenMode.ExclusiveFullScreen` specifically — whether it
+   actually passes `DXGI_PRESENT_ALLOW_TEARING` on Present() calls, or whether Unity 6.3's Windows
+   Player only uses that path in Windowed/Borderless and always vsyncs true Exclusive. This may
+   need an actual Unity forum/release-notes check, not just PlayerSettings reflection (already
+   exhausted what reflection alone can tell us — `useFlipModelSwapchain` and
+   `vulkanNumSwapchainBuffers` were the only tearing/sync-related PlayerSettings properties found).
+4. Consider testing on different hardware if Carlos has access to any (a laptop, a friend's PC) —
+   if the same build runs uncapped elsewhere, the remaining piece is specific to this one machine's
+   environment, not the project.
+
+Carlos explicitly said he wants to keep working on this ("we're still going to keep working on
+this") — this is a live, ongoing task, not closed.
+
+===========================================================================
+MODEL CHOICE
+===========================================================================
+Sonnet territory throughout — this is investigation/diagnostics/tuning on systems that already
+exist (Settings panel, build pipeline, Windows/DXGI presentation), not new-system architecture.

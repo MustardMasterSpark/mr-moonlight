@@ -133,3 +133,45 @@ CLAUDE.md's Deadlines section again before that conversation if it's been a whil
 **Model choice**: this next session is explicitly a planning/architecture conversation first,
 implementation second (if at all) — Opus is the better fit for the strategy portion; if it turns
 into hands-on cleanup of a specific system afterward, that's Sonnet's normal territory.
+
+===========================================================================
+UPDATE — 2026-09-16, read this before starting the housekeeping session
+===========================================================================
+This file's original "some optimization problems" open thread (line ~28 above, from build 29,
+2026-09-10) is now explained and fixed: it was VSync being silently force-enabled by a vendor
+asset, not a real performance ceiling. Full story in
+`Docs/mrm18-main-menu-build-summary.md`'s "2026-09-16 session" section (two long subsections near
+the bottom: root cause + fix, then the F12 cheat + Settings layout pass). Branch `mrm-78` — should
+already be merged to `main` by the time you read this (Carlos asked for a commit message and said
+he'd merge himself); check `git log` if anything below seems to not exist yet.
+
+**⚠️ THE ONE THING TO CARRY INTO THIS SESSION: CHECK THE VENDOR FIRST.** The 2026-09-16 FPS
+investigation burned an entire session chasing "what is our code doing wrong" — QualitySettings,
+Application.targetFrameRate, driver settings, DXGI presentation modes, three-monitor refresh rates
+— before finding the real answer was a PolymindGames vendor asset
+(`GraphicsOptions.cs`, `[RuntimeInitializeOnLoadMethod]` + `Apply()`) silently force-setting
+`QualitySettings.vSyncCount = 1` on every boot, invisible because its UI (`GraphicsOptionsUI.cs`)
+had already been deleted as "dead" without realizing the underlying data asset was still live.
+**For this housekeeping session specifically:** item 2 below ("Code cleanup") should explicitly
+include auditing `Assets/_Project/Code/Vendor/*` for the same pattern — anything with
+`RuntimeInitializeOnLoadMethod`, a `Manager<T>` singleton, or a `UserOptions<T>.Instance` access
+that silently applies its own values with no UI or Linear issue tracking it. Don't re-derive this
+from scratch; the grep pattern that found it is in the mrm18 doc section referenced above.
+
+**Audio-specific thread to check, since this session is audio-scoped:** `AudioManager.cs`
+(vendor, `Assets/_Project/Code/Vendor/PolymindGames/Runtime/Audio/AudioManager.cs`) writes to a
+serialized `AudioMixer` field using exposed-parameter names `"MasterVolume"`, `"EffectsVolume"`,
+`"AmbienceVolume"`, `"MusicVolume"`, `"UIVolume"`, driven by a completely separate
+`AudioOptions.Instance` settings source — not `GameSettings`/`SettingsPanel`'s sliders.
+`"MasterVolume"` is the exact same exposed-param string our own sliders write to on
+`MoonlightMixer.mixer`. **Not confirmed as a live conflict** — nobody checked yet whether
+`AudioManager` is actually instantiated in `MainMenu.unity`/`Island.unity`, or whether its
+`_audioMixer` field even points at `MoonlightMixer.mixer` vs. some other vendor-only mixer asset.
+Same bug shape as the vSync one — worth checking early in this session before doing any other
+audio work, since if it IS live, any audio tuning done without knowing about it could get
+silently overwritten.
+
+**Unrelated small note, in case it comes up:** MRM-80 (DLSS-on-AMD curiosity spike) was fully
+reverted 2026-09-15 after an unrelated Steam launch failure — Carlos gave up on that spike, not
+because DLSS itself was bad. He may want to revisit DLSS later; nothing about the vSync fix above
+changes that. See `Docs/mrm80-dlss-experiment.md` if it comes up.
