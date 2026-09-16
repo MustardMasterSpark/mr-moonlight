@@ -30,6 +30,9 @@ namespace MrMoonlight.Data
         // Graphics quality preset dropdown, settings menu 2026-09-16.
         private const string GraphicsQualityLevelKey = "MrMoonlight.GraphicsQualityLevel";
 
+        // VSync checkbox, MRM-78 FPS-cap investigation, 2026-09-16.
+        private const string VSyncEnabledKey = "MrMoonlight.VSyncEnabled";
+
         // Island demo wrap-up debug mixer overlay (F10) — temporary tuning sliders, not the
         // Settings panel above. Owner: island-demo-wrapup, 2026-09-10.
         private const string MenuMusicVolumeKey = "MrMoonlight.MenuMusicVolume";
@@ -178,6 +181,24 @@ namespace MrMoonlight.Data
             set
             {
                 PlayerPrefs.SetInt(GraphicsQualityLevelKey, value);
+                PlayerPrefs.Save();
+            }
+        }
+
+        /// <summary>
+        /// Default off (Carlos, 2026-09-16) - found during the FPS-cap investigation that a
+        /// leftover PolymindGames vendor asset (GraphicsOptions.Apply(), auto-run on every boot)
+        /// was force-setting QualitySettings.vSyncCount = 1 with no UI ever exposing it. This is
+        /// now the single source of truth for vSyncCount; SettingsPanel applies it every launch
+        /// (ApplySavedDisplaySettings) so it always wins regardless of the vendor asset's own boot
+        /// timing. Owner: MRM-78
+        /// </summary>
+        public static bool VSyncEnabled
+        {
+            get => PlayerPrefs.GetInt(VSyncEnabledKey, 0) != 0;
+            set
+            {
+                PlayerPrefs.SetInt(VSyncEnabledKey, value ? 1 : 0);
                 PlayerPrefs.Save();
             }
         }

@@ -44,6 +44,8 @@ namespace MrMoonlight.UI
         [Header("Display — MRM-78")]
         [Tooltip("Applies the active URP asset's Render Scale (Tunables.UpscalingRenderScale) + FSR Upscaling Filter when on; native (1.0, Auto) when off.")]
         [SerializeField] private Toggle upscalingToggle;
+        [Tooltip("Sets QualitySettings.vSyncCount (1 = on, 0 = off). Default off - see GameSettings.VSyncEnabled for why this exists (MRM-78 FPS-cap investigation, 2026-09-16).")]
+        [SerializeField] private Toggle vsyncToggle;
         [Tooltip("Populated at Awake from Screen.resolutions, deduplicated by width x height and filtered to 16:9 only - the project's UI is authored at 1920x1080 and does not lay out correctly at other aspect ratios.")]
         [SerializeField] private TMP_Dropdown resolutionDropdown;
         [Tooltip("Windowed / Borderless Fullscreen / Exclusive Fullscreen. Borderless is the project's committed display target (CLAUDE.md) - Exclusive is exposed here as a diagnostic/testing option for the DWM-compositor frame-cap investigation, 2026-09-16, not (yet) a default change.")]
@@ -63,6 +65,7 @@ namespace MrMoonlight.UI
             voicesSlider.onValueChanged.AddListener(OnVoicesVolumeChanged);
             sfxSlider.onValueChanged.AddListener(OnSFXVolumeChanged);
             upscalingToggle.onValueChanged.AddListener(OnUpscalingToggled);
+            vsyncToggle.onValueChanged.AddListener(OnVSyncToggled);
             resolutionDropdown.onValueChanged.AddListener(OnResolutionChanged);
             fullscreenModeDropdown.onValueChanged.AddListener(OnFullscreenModeChanged);
             qualityDropdown.onValueChanged.AddListener(OnQualityChanged);
@@ -76,6 +79,7 @@ namespace MrMoonlight.UI
             voicesSlider.onValueChanged.RemoveListener(OnVoicesVolumeChanged);
             sfxSlider.onValueChanged.RemoveListener(OnSFXVolumeChanged);
             upscalingToggle.onValueChanged.RemoveListener(OnUpscalingToggled);
+            vsyncToggle.onValueChanged.RemoveListener(OnVSyncToggled);
             resolutionDropdown.onValueChanged.RemoveListener(OnResolutionChanged);
             fullscreenModeDropdown.onValueChanged.RemoveListener(OnFullscreenModeChanged);
             qualityDropdown.onValueChanged.RemoveListener(OnQualityChanged);
@@ -95,6 +99,7 @@ namespace MrMoonlight.UI
             ApplyUpscaling(GameSettings.UpscalingEnabled);
             Screen.SetResolution(GameSettings.ResolutionWidth, GameSettings.ResolutionHeight, GameSettings.FullscreenMode);
             ApplyGraphicsQuality(GameSettings.GraphicsQualityLevel);
+            ApplyVSync(GameSettings.VSyncEnabled);
         }
 
         private void InitializeFromSavedSettings()
@@ -111,6 +116,7 @@ namespace MrMoonlight.UI
 
             InitializeResolutionDropdown();
             upscalingToggle.SetIsOnWithoutNotify(GameSettings.UpscalingEnabled);
+            vsyncToggle.SetIsOnWithoutNotify(GameSettings.VSyncEnabled);
             InitializeFullscreenModeDropdown();
             InitializeQualityDropdown();
 
@@ -232,6 +238,14 @@ namespace MrMoonlight.UI
             QualitySettings.globalTextureMipmapLimit = textureMipLimit;
         }
 
+        /// <summary>
+        /// Sets QualitySettings.vSyncCount directly. Runs last in ApplySavedDisplaySettings so it
+        /// always wins over PolymindGames' GraphicsOptions vendor asset, which force-applies its
+        /// own vSyncCount (defaulting to on) at boot via RuntimeInitializeOnLoadMethod - see
+        /// GameSettings.VSyncEnabled's doc comment. Owner: MRM-78
+        /// </summary>
+        private static void ApplyVSync(bool enabled) => QualitySettings.vSyncCount = enabled ? 1 : 0;
+
         private void OnConformistToggled(bool isOn)
         {
             if (isOn)
@@ -313,6 +327,12 @@ namespace MrMoonlight.UI
         {
             GameSettings.GraphicsQualityLevel = level;
             ApplyGraphicsQuality(level);
+        }
+
+        private void OnVSyncToggled(bool isOn)
+        {
+            GameSettings.VSyncEnabled = isOn;
+            ApplyVSync(isOn);
         }
     }
 }
