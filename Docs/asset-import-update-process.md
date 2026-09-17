@@ -223,4 +223,19 @@ The Complete UI Sound Effects Library, Zombie Voices Audio Pack, Monster Sounds 
 Realistic Blood VFX, Technie Collider Creator 2, Cat - Simple) — renamed into `01_DOWNLOAD` under
 their existing IDs, moved into the new "OWNED (FROM WISHLIST)" section, **not installed anywhere**.
 Technie Collider Creator 2 (AST-116) is the next one scheduled to actually go through Step 3, for
-the vegetation-collider work — see the next-session context prompt.
+the vegetation-collider work — that's an **interim task**, not a version update, so its handoff
+lives in `Docs/interim-small-tasks-prompt.txt`'s Task Slot, not a separate file. See "Which kind of
+task is this?" below.
+
+## Which kind of task is this? (process doc vs. interim-task prompt)
+
+This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —
+it applies regardless of what the asset is for. It does **not** decide whether the resulting work
+needs its own Linear issue or folds into the `MRM-81` interim-tasks umbrella. That classification
+is `Docs/interim-small-tasks-prompt.txt`'s job (§2 there draws the line): trying out a new asset
+for something additive (vegetation, VFX, staging) is an interim task and gets a sub-issue of
+MRM-81, filed and closed inside that file's process — **don't write this doc's steps up as a new
+one-off handoff file**, that's exactly the mistake this note is here to prevent. Upgrading an
+*already-installed* package's version, on the other hand, is explicitly called out as **not** an
+interim task (GUIDs are load-bearing) — that gets a normal standalone issue, the way the four
+version updates in the worked example above did (`MRM-83`).

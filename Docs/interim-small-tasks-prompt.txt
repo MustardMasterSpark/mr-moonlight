@@ -50,7 +50,10 @@ either a narrower version or parking it for the cleanup.
 - Keep hooks one-directional: the new thing may listen to existing systems, but existing systems
   shouldn't be modified to call the new thing, except for a one-line hook you record in the log.
 - New asset: evaluate in Playground first (`Docs/dual-project-workflow.md`), extract lean, and
-  copy only what ships. Record it in `Docs/external-assets.md` → "2026-09-16 audit" table.
+  copy only what ships. Mechanics (rename, extract, GUID-match sync, verify, spreadsheet update)
+  are all written up in `Docs/asset-import-update-process.md` (added 2026-09-17) — follow that
+  instead of re-deriving it. Record the result in `Docs/external-assets.md` → "2026-09-16 audit"
+  table.
 
 ===========================================================================
 4. HOW TO RUN THE SESSION CHEAPLY
@@ -83,7 +86,8 @@ either a narrower version or parking it for the cleanup.
 5. WHERE TO LOOK THINGS UP
 ===========================================================================
 - Assets (owned, wishlist, purpose, priority): `C:\Users\calva\Desktop\assets\ASSETS - Index
-  2026-09-16.xlsx` (outside the repo, `AST-###` IDs). What's installed:
+  2026-09-16.xlsx` is the editable master (outside the repo, `AST-###` IDs); `Docs/asset-index/
+  ASSETS-Index.xlsx` is a git-tracked read-only mirror, added 2026-09-17. What's installed:
   `Docs/external-assets.md` → "2026-09-16 audit".
 - Debug keys and cheats: `Docs/debug-tools.md`. Build process: memory "Build process".
 - 3D/prop work: `/prop` wizard (`Docs/3d-prop-pipeline-wizard.md`).
@@ -91,16 +95,25 @@ either a narrower version or parking it for the cleanup.
 ===========================================================================
 6. TASK SLOT: Carlos fills this in, or states the task in chat
 ===========================================================================
-Task:
-Asset(s) involved (AST-### if any):
-Linear issue (leave blank and Claude creates a sub-issue of MRM-81):
-Done when:
+Task: try Technie Collider Creator 2, see how it behaves, change the colliders of the vegetation
+  assets on the vegetation gallery scene (Carlos, stated in chat 2026-09-17).
+Asset(s) involved (AST-### if any): AST-116 (Technie Collider Creator 2). Downloaded and renamed to
+  `AST-116.zip` in `01_DOWNLOAD` 2026-09-17, moved from wishlist to the spreadsheet's new "OWNED
+  (FROM WISHLIST) — not yet in project" section — owned but NOT YET extracted or installed
+  anywhere. Extract/import it per `Docs/asset-import-update-process.md` Steps 2–4 (this is a first
+  install, not a version sync, so there's no existing GUID map to match against).
+Linear issue (leave blank and Claude creates a sub-issue of MRM-81): blank — create at session start.
+Done when: tried against the vegetation actually in `Assets/_Project/Scenes/VegetationGallery.unity`
+  (as of 2026-09-17: Ground, HAZE Global Fog/Explorable Area Fog, a few unnamed roots, 453 KB, last
+  touched 2026-09-04 — verify what's actually in it before trusting this description) with a
+  concrete before/after measurement, plus a verdict (adopt / reject / needs more evaluation) logged
+  below and reflected in the spreadsheet.
 
 ---------------------------------------------------------------------------
 EXAMPLE TASK (the first one Carlos plans): better tree collisions with Technie Collider Creator 2
 ---------------------------------------------------------------------------
-Spreadsheet row: "Technie Collider Creator 2", wishlist P1. Starting facts, verify each before
-relying on it:
+Spreadsheet row: "Technie Collider Creator 2", now AST-116 in the "OWNED (FROM WISHLIST)" section
+(no longer plain wishlist — see Task Slot above). Starting facts, verify each before relying on it:
 - Collidable vegetation species are GameObject + FloraInstanceRenderer prefabs in
   `Assets/_Project/Art/VegetationPrefabs/` (memory "MRM-70 vegetation + Flora pipeline"). The
   island has ~5,900 vegetation GameObject colliders and zero terrain trees (memory "Island NavMesh
