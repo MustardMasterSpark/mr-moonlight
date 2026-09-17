@@ -75,6 +75,13 @@ Claude Code reaches both through `E:\MrMoonlight\.mcp.json`:
 New MCP servers only load at Claude Code session start — after editing this file, the session has
 to be restarted before the new tools appear.
 
+## Updating an already-owned asset to a new version
+
+See `Docs/asset-import-update-process.md` for the full repeatable process — download, extract,
+GUID-matched sync into whichever project already has it, verify, spreadsheet update. It also covers
+the recurring "vendor demo script still uses the legacy `Input` class" runtime failure (below,
+under "Known Playground-only console errors", is the compile-time half of that same family).
+
 ## Moving an asset from Playground into Mr. Moonlight
 
 **Not through the Package Manager.** The chosen method is a direct filesystem copy of the asset's

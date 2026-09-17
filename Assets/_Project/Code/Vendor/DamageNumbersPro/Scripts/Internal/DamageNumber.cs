@@ -309,16 +309,16 @@ namespace DamageNumbersPro
 
         // Pooling
         DamageNumber originalPrefab;
-        ulong prefabID = 0;
+        int prefabID = 0;
         public static Transform poolParent;
-        static Dictionary<ulong, HashSet<DamageNumber>> pools;
-        ulong poolingID;
+        static Dictionary<int, HashSet<DamageNumber>> pools;
+        int poolingID;
         bool performRestart;
         bool destroyAfterSpawning;
 
         // Active instances
         public static HashSet<DamageNumber> activeInstances = new HashSet<DamageNumber>();
-        static Dictionary<ulong, Queue<DamageNumber>> activeInstancesQueue = new Dictionary<ulong, Queue<DamageNumber>>();
+        static Dictionary<int, Queue<DamageNumber>> activeInstancesQueue = new Dictionary<int, Queue<DamageNumber>>();
         bool removedFromActiveInstanceQueue;
 
         // Fallback font fix
@@ -453,7 +453,7 @@ namespace DamageNumbersPro
             // Get instance ID
             if (prefabID == 0)
             {
-                prefabID = (ulong)GetInstanceID();
+                prefabID = GetInstanceID();
             }
 
             // Check Pool
@@ -882,7 +882,7 @@ namespace DamageNumbersPro
             // Spam Group
             if (modifySpamGroup)
             {
-                spamGroup += (ulong)followedTransform.GetInstanceID();
+                spamGroup += followedTransform.GetInstanceID();
             }
         }
         public void SetColor(Color newColor)
@@ -1103,7 +1103,7 @@ namespace DamageNumbersPro
                 // Initialize
                 if (pools == null)
                 {
-                    pools = new Dictionary<ulong, HashSet<DamageNumber>>();
+                    pools = new Dictionary<int, HashSet<DamageNumber>>();
                 }
                 if (!pools.ContainsKey(poolingID))
                 {
@@ -1205,12 +1205,12 @@ namespace DamageNumbersPro
             if (enablePooling)
             {
                 // Get instance ID
-                prefabID = (ulong)GetInstanceID();
+                prefabID = GetInstanceID();
 
                 // Initialize Dictionary
                 if (pools == null)
                 {
-                    pools = new Dictionary<ulong, HashSet<DamageNumber>>();
+                    pools = new Dictionary<int, HashSet<DamageNumber>>();
                 }
 
                 // Initialize Pool
@@ -1242,7 +1242,7 @@ namespace DamageNumbersPro
             if(pools != null)
             {
                 // Iterate through pools
-                foreach (KeyValuePair<ulong, HashSet<DamageNumber>> entry in pools)
+                foreach (KeyValuePair<int, HashSet<DamageNumber>> entry in pools)
                 {
                     // Check if pool contains popups
                     if (entry.Value != null)
@@ -1706,7 +1706,7 @@ namespace DamageNumbersPro
             enablePush = originalPrefab.enablePush;
         }
 
-        bool PoolAvailable(ulong id)
+        bool PoolAvailable(int id)
         {
             if (pools != null && pools.ContainsKey(id))
             {
@@ -1719,14 +1719,14 @@ namespace DamageNumbersPro
             return false;
         }
 
-        void SetPoolingID(ulong id)
+        void SetPoolingID(int id)
         {
             poolingID = id;
 
             // Initiate Dictionaries
             if (pools == null)
             {
-                pools = new Dictionary<ulong, HashSet<DamageNumber>>();
+                pools = new Dictionary<int, HashSet<DamageNumber>>();
             }
 
             // Initiate Pool Parent
@@ -2204,7 +2204,7 @@ namespace DamageNumbersPro
                 if (currentFade >= 1f)
                 {
                     // Disable second mesh renderer after fading in
-                    if(meshRendererB != null)
+                    if (meshRendererB != null)
                     {
                         meshRendererB.gameObject.SetActive(false);
                     }
@@ -2226,13 +2226,13 @@ namespace DamageNumbersPro
             if (isFadingOut == false)
             {
                 isFadingOut = true;
+                OnFadeOut?.Invoke();
 
                 // Enable second mesh renderer during fade out
                 if (meshRendererB != null)
                 {
                     meshRendererB.gameObject.SetActive(true);
                 }
-                OnFadeOut?.Invoke();
 
                 // Remove from active popups queue
                 RemoveFromActivePoolQueue();

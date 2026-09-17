@@ -40,7 +40,7 @@ namespace DamageNumbersPro
             // Only damage numbers of the same parent can interact with each other
             if (spamGroup != "" && transform.parent != null)
             {
-                spamGroup += (ulong)transform.parent.GetInstanceID();
+                spamGroup += transform.parent.GetInstanceID();
             }
 
             // GUI Alpha Fix

@@ -1,0 +1,87 @@
+CONTEXT PROMPT — Technie Collider Creator 2 evaluation on vegetation (start of next session)
+
+Read this file first, not chat scrollback. Written 2026-09-17 at the end of a session that did
+asset-update maintenance work; this is what Carlos wants to start next.
+
+## What Carlos asked for
+
+"We're going to try to see how [Technie Collider Creator 2] behaves and change the colliders of
+the vegetation assets on the vegetation gallery scene." This is an EVALUATION, not a committed
+adoption yet — go in expecting to learn whether the tool is worth keeping, not to ship it.
+
+## Housekeeping first
+
+MRM-81 ("Interim small tasks before the big cleanup (umbrella)") is the parent issue for exactly
+this kind of task — its own description literally names "trying an asset like better tree
+colliders" as an example, and its process is: **create a sub-issue of MRM-81 at the start of the
+session**, before doing any work, so this has its own branch (one issue, one branch). Do that
+first.
+
+## What Technie Collider Creator 2 is, and where it is right now
+
+- **AST-116** in the spreadsheet (`Docs/asset-index/ASSETS-Index.xlsx`, mirrors the Desktop
+  master). Downloaded and renamed to `AST-116.zip` in
+  `C:\Users\calva\Documents\Asset Collection\01_DOWNLOAD` on 2026-09-17, but **not extracted or
+  installed anywhere yet** — it was moved from wishlist to the new "OWNED (FROM WISHLIST)" section,
+  which specifically means owned-but-untouched.
+- Publisher: Triangular Pixels. Purpose per the spreadsheet's own notes: automatic + hand-tuned
+  accurate colliders for rigid and skinned meshes — the stated reason Carlos flagged it was
+  "optimize and improve the colliders of the trees on the island."
+- To bring it in: follow `Docs/asset-import-update-process.md` Steps 2–4 (extract, this time a
+  genuinely first install rather than a version sync, so there's no existing GUID map to match
+  against — just import it wherever you decide to test it). Given `Docs/dual-project-workflow.md`'s
+  "prove it first" instinct, default to staging it in **Playground** first unless Carlos says
+  otherwise when you check in with him — but note the actual target scene
+  (`VegetationGallery.unity`) already lives inside **Mr. Moonlight**, not Playground, so ask him
+  directly which he'd rather do before assuming.
+
+## The target scene
+
+`Assets/_Project/Scenes/VegetationGallery.unity` (Mr. Moonlight). As of 2026-09-17 (not yet
+touched this session) it's a small scene — Ground, HAZE Global Fog, HAZE Explorable Area Fog, and a
+handful of unnamed root objects, 453 KB file, last modified 2026-09-04. It's presumably a staging
+scene from the MRM-70 vegetation pipeline for testing species placement in isolation, not the real
+Island terrain. Load it and look at what's actually in it before assuming its content matches the
+Island's real vegetation setup — verify, don't guess from this description.
+
+## Facts already known about vegetation colliders on this project (don't re-derive)
+
+- The Island's vegetation is **~5,900 individual GameObject colliders** (memory: [[mrm27_island_navmesh_facts]],
+  [[mrm70_vegetation_spawner_facts]]) — collidable species are GameObject + FloraInstanceRenderer,
+  not TerrainDetail (that's reserved for decorative grass with no collision).
+- **Unity terrain trees reject MeshColliders outright** (memory: [[webgl_gles3_gotchas]]) — this is
+  still true post-platform-switch, not a WebGL-only limitation. If Technie's output is a
+  MeshCollider and any vegetation is still placed as a terrain tree (rather than a GameObject), it
+  will silently fail to collide. Check which placement method each species actually uses before
+  assuming a collider swap will work.
+- **A terrain tree prefab's root transform is ignored by Unity's terrain system** (memory:
+  [[mrm70_terrain_tree_transform_bug]]) — irrelevant if everything here is GameObject-placed, but
+  verify that assumption rather than inherit it blind.
+- Vegetation placement tooling lives at `Tools/MrMoonlight/Vegetation` in the Unity menu (memory:
+  [[mrm70_vegetation_flora_pipeline]]).
+- Carlos's stated goal for adopting this was **performance** (fewer/cheaper colliders than
+  whatever's there now), not correctness — so the evaluation should measure something (collider
+  count, draw calls, or profiler numbers), not just "does it visually look right."
+
+## What "good" looks like for this session
+
+1. MRM-81 sub-issue created.
+2. Technie Collider Creator 2 extracted and imported (Playground or Mr. Moonlight, per Carlos's
+   answer) via the documented process.
+3. Tried on the vegetation actually present in `VegetationGallery.unity`, with before/after
+   collider counts or a similar concrete comparison — not just "it ran."
+4. A verdict, even a soft one: worth pursuing further vs. not worth the integration cost. If it
+   looks promising, the natural next step is applying it to the real Island terrain's ~5,900
+   colliders, but that's a separate, bigger piece of work — don't attempt it in the same sitting
+   unless Carlos explicitly asks to keep going.
+5. Spreadsheet + Linear updated to reflect whatever the outcome was (adopted, rejected, or
+   "needs more evaluation") — same adoption protocol as any other asset
+   ([[feedback_asset_adoption_protocol]]).
+
+## Traps carried over from this session, still live
+
+- Any Unity scene-view/inspector/prefab edit needs Carlos's go-ahead first, then verify by reading
+  the actual state back afterward — this is a hard rule in `CLAUDE.md`, not a suggestion.
+- If Playground's Editor window isn't OS-focused, `refresh_unity`/`read_console` calls will time
+  out — not a real failure, just ask Carlos to click into the window.
+- Component edits made while in Play Mode silently revert on Stop — check Edit Mode first.

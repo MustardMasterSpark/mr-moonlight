@@ -72,7 +72,7 @@ history. **Where they disagree with this section, this section wins.**
 | Gore Simulator + Blood Factory (+ PampelGames Shared) | ThirdParty `Pampel Games` + Vendor | 1.8.8 / 1.3 | 1.8.8 / 1.4 |
 | Ultimate Animation Collection | ThirdParty | 1.65 | 1.65 |
 | Dynamic Radial Masks | ThirdParty + Vendor | 2025.3 | 2026.5 |
-| Damage Numbers Pro | ThirdParty + Vendor | 4.55 | 4.56 |
+| Damage Numbers Pro | ThirdParty + Vendor | 4.56 | 4.56 |
 | InfiniCLOUD (URP single mesh) | ThirdParty | 2.0.4 | 2.0.5 |
 | Northern Lights Pack · Ian's Fire Pack · Cartoon Rain & Blood Rain | ThirdParty | 1.1.1 · 2.3 · 1.1 | same |
 | Flying Birds VFX (**Realtime VFX Store, not Fab**) | ThirdParty + Vendor | 1.0 | 1.0 |
@@ -94,6 +94,11 @@ Gaia biome spawners, MRM-70). The load-bearing table below still lists it; ignor
 **Not installed (despite older wording elsewhere):** Highlight Plus 2 (look reimplemented as a uGUI
 shader, MRM-18), Sounds Good, Shots VFX URP, Spice Up ×4, Artistic Radial Blur, Wendigo, Procedural
 Lightning, and every environment/prop pack. All of them are Playground-staged or still in the store cache.
+
+> **2026-09-17:** Highlight Plus 2, Sounds Good, and Procedural Lightning were updated to their
+> latest downloaded versions in Playground (still not installed in Mr. Moonlight). See
+> `Docs/asset-import-update-process.md` for the repeatable update workflow and
+> `Docs/asset-index/ASSETS-Index.xlsx` (mirrors the Desktop master) for current per-asset versions.
 
 **Upgrades are not cleanup.** The version gaps above are informational. A different package version
 can reassign GUIDs (see the note below), and packages with logic copied into
