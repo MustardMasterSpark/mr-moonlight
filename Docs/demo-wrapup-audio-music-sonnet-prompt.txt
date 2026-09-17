@@ -175,3 +175,107 @@ silently overwritten.
 reverted 2026-09-15 after an unrelated Steam launch failure — Carlos gave up on that spike, not
 because DLSS itself was bad. He may want to revisit DLSS later; nothing about the vSync fix above
 changes that. See `Docs/mrm80-dlss-experiment.md` if it comes up.
+
+===========================================================================
+UPDATE 2 — 2026-09-16 (later): THE ASSET INDEX EXISTS NOW — use it for the cleanup
+===========================================================================
+Carlos and Claude built a master asset spreadsheet. This session changed no project code and no
+Unity/Blender state; the only repo changes are this section, a dated audit section in
+`Docs/external-assets.md`, and a pointer in `Docs/new-asset-list.md`.
+
+**Where it is:** `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`. It is **outside the
+repo** on purpose: it's Carlos's general toolkit, not just for Mr. Moonlight. His original
+`ASSETS.xlsx` in the same folder is untouched. Sheets: "Asset Index" (263 rows) + "Legend".
+- Stable IDs `AST-001`…`AST-263`. Refer to assets by ID + name when talking to Carlos.
+- Columns: name, category, description, collection url, store link, full USD price (green = has a
+  collection URL, red = store only), **in Mr Moonlight? (Yes = installed today)**, purpose (ticket
+  first), notes (Claude's additions prefixed `[Claude]`), docs link, downloaded file,
+  **up to date?**, status (Owned/Wishlist), priority, publisher, latest store version, store date.
+- AST-001…077 = owned from his list. **AST-078…100 = yellow rows**: owned or installed but
+  missing from his list. AST-101…263 = wishlist in priority order, tiers P1 (get first for the
+  demo) → P5 (personal anime/gooner library, never for this project).
+- Store data was read on 2026-09-16 by scraping each Asset Store page's embedded product JSON
+  (scripts only lived in the session scratchpad, not in the repo). Prices and versions go stale.
+  Re-check the store before acting on a version gap.
+
+**Carlos's stated next step:** later this week he may come back to **start improving the project
+with assets from this index**. If a session opens with "let's use asset X", look it up in the
+spreadsheet first (purpose + notes columns already hold the reasoning). Adopting any asset still
+follows the asset adoption protocol (fix Linear + leave a per-asset brief). The spreadsheet is a
+shortlist, not approval.
+
+---------------------------------------------------------------------------
+FINDINGS THAT FEED THE HOUSEKEEPING / CODE-CLEANUP SESSION (item 2 above)
+---------------------------------------------------------------------------
+Verified 2026-09-16 against `Assets/ThirdParty/`, `Assets/_Project/Code/Vendor/`, `Packages/`,
+`Assets/Plugins/` and `Assets/_Project/Art/`. **Nothing was deleted or changed. These are
+candidates only, and every removal is Carlos's call.** Use Asset Cleaner Pro's *find references*
+(MRM-64 rule: never its bulk delete) or a GUID grep before proposing any of them.
+
+A. **Removal candidates (dead or superseded, still on disk):**
+   1. **Burntwax FPS Engine.** `Assets/ThirdParty/Burntwax Collective/` (72 MB) +
+      `Assets/_Project/Code/Vendor/Burntwax FPS Engine/` (382 KB). Superseded by PolymindGames
+      FPSCore (MRM-9 HQFPS swap). `Player.prefab` is its dead leftover; `Player_Tracey` is the real
+      player. Its Vendor code is **tracked**, so removal shows up in git.
+   2. **Simple Water Shader URP.** `Assets/ThirdParty/SimpleWaterShaderURP/` (2.8 MB). Crest
+      replaced it on `M_Sea.mat` (MRM-71). A quick GUID grep of `_Project` found no references, but
+      that grep was shallow, so confirm before deleting.
+   3. **Vegetation Spawner FREE.** Already gone from disk, and no scene references its script GUID
+      `1f710250…` any more. `external-assets.md` still listed it as a load-bearing package. The
+      2026-09-16 audit section there now marks it removed.
+   4. **Terrain Sample Asset Pack.** `Assets/ThirdParty/TerrainSampleAssets/` is **1.9 GB**, by far
+      the biggest thing in the project. MRM-70 vegetation prefabs reference meshes *inside* it, so
+      it can't just be deleted. The long-standing plan is to copy the meshes that ship into
+      `_Project/Art/` and then drop the pack. It's git-ignored, so a mistaken deletion can't be
+      recovered from git.
+
+B. **`Docs/external-assets.md` WAS stale. The dated audit section added today is now the truth:**
+   its "Adopted — owned, not yet installed" table still said "None is installed yet," but Blaze AI,
+   HQ FPS Weapons (PolymindGames), Gaia Pro VS, Crest 5, Ultimate Animation Collection, Gore
+   Simulator + Blood Factory (Pampel), Northern Lights, Ian's Fire Pack, Flying Birds VFX, Low Poly
+   Plant Collections and TopDown Nature Library are **all installed**. Also installed but never
+   registered anywhere: Dynamic Radial Masks, Damage Numbers Pro, Cartoon Rain & Blood Rain,
+   InfiniCLOUD, DOTween Pro (`Assets/Plugins/Demigiant`), Text Animator (embedded package,
+   `Packages/com.febucci.text-animator-unity`, v3.14.2). The load-bearing table's version column
+   is still mostly "(as of date)". Filling in real versions is housekeeping work.
+
+C. **Installed packages with a newer store version** (installed → store, 2026-09-16):
+   InfiniCLOUD 2.0.4→2.0.5 · Dynamic Radial Masks 2025.3→2026.5 · Damage Numbers Pro 4.55→4.56 ·
+   Blood Factory 1.3→1.4 · Blaze AI 3.4.21→3.4.22 · Gaia Pro VS 4.2.4→4.2.5 · Crest 5 5.9.2→5.10.1 ·
+   Flora 6.3.35→6.4.4 · Text Animator 3.14.2→3.20.1.
+   ⚠ **Do NOT bulk-upgrade as "cleanup."** `external-assets.md` says versions are load-bearing
+   (a different `.unitypackage` version can reassign GUIDs and silently break references). Also,
+   DRM's ripple count is baked into generated shader includes, and Blaze/Gore/Blood Factory/DRM
+   have logic copied into tracked `_Project/Code/Vendor/`, which an upgrade would NOT update. Treat
+   each upgrade as its own task with a reason (a bug fix you need), not a sweep.
+
+D. **The same vendor-audit pattern applies (see UPDATE 1 above).** The vendor code copied into
+   `_Project/Code/Vendor/` is: Blaze AI Engine, Blood Factory, Burntwax FPS Engine,
+   DamageNumbersPro, Dynamic Radial Masks, Flying Birds VFX, Gore Simulator, PampelGames Shared,
+   PolymindGames, Retro Shaders Pro. That's the full list to grep for
+   `RuntimeInitializeOnLoadMethod` / self-applying singletons.
+
+E. **Small corrections recorded in the index (for whoever reads older docs):**
+   - Highlight Plus 2 is **not installed**. The punk outline was reimplemented as a uGUI shader
+     (MRM-18); the real component is still only planned for 3D interaction highlights (MRM-16/42).
+   - Retarget Pro stays Playground-only by design (0 bytes in this project).
+   - The owned "Flying Birds VFX" comes from Realtime VFX Store, **not Fab** as
+     `external-assets.md` said.
+   - PSX Flashlight / Lantern Pack 6 (itch.io, Retro Assets Library) is the source of
+     `Art/Props/Lamp`.
+
+---------------------------------------------------------------------------
+WISHLIST P1: the most useful to acquire for the demo (full reasoning in the spreadsheet)
+---------------------------------------------------------------------------
+Blaze AI Hearing + Predator modules (cheap extensions of the AI already in use) · Feel (game
+feel) · PSX flashlight cookies (hazardpay / bypell on itch.io) · free packs: Free Horror Ambience 2,
+Zombie Mutant Free, The Shed · PSX Med Pack · Complete UI SFX Library · Zombie Voices + Monster
+Sounds Vol II · Realistic Blood VFX / SplatterFX / Character Deformer (all extend Gore Simulator) ·
+Technie Collider Creator 2 (the island has ~5,900 vegetation colliders) · Cat Simple (Mr. Whiskers)
+· Vertex AO Generator (RetroLit has no AO map, so bake AO into vertices) · Final IK · a set of
+horror enemy models + animation packs for Legion mode. Wishlist cost at full price: P1 ≈ $936,
+P2 ≈ $1.3k.
+
+**Model choice for "start improving the project with assets":** each adoption is integration
+work on existing systems, which is Sonnet's normal territory. A new system built from scratch
+around an asset (for example, a hearing-driven stealth layer on top of Blaze) suits Opus.

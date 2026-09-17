@@ -9,6 +9,58 @@ brought back to a working state.
 > (scenes, prefabs, renderer assets) survives. Import a *different* version and Unity may assign new
 > GUIDs, silently breaking those references. Treat the versions below as load-bearing.
 
+## ⭐ 2026-09-16 audit — what is ACTUALLY installed (supersedes the "not yet installed" tables below)
+
+Verified against `Assets/ThirdParty/`, `Assets/_Project/Code/Vendor/`, `Packages/`, `Assets/Plugins/`
+and `Assets/_Project/Art/` while building Carlos's master asset spreadsheet
+(`C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`, outside the repo, with stable `AST-###`
+IDs, store prices/versions and the wishlist priority order). The tables further down are kept as
+history. **Where they disagree with this section, this section wins.**
+
+**Installed and in use:**
+
+| Package | Where | Installed version | Store version 2026-09-16 |
+|---|---|---|---|
+| Flora Renderer 6 | `Packages/com.ma.flora` (embedded) | 6.3.35 | 6.4.4 |
+| Crest Water 5 | `Packages/com.waveharmonic.crest` (embedded) | 5.9.2 | 5.10.1 |
+| Text Animator for Unity | `Packages/com.febucci.text-animator-unity` (embedded) | 3.14.2 | 3.20.1 |
+| DOTween Pro | `Assets/Plugins/Demigiant` | not recorded | 1.0.430 |
+| HAZE | ThirdParty | not recorded | 1.2.5 |
+| Retro Shaders Pro | ThirdParty + Vendor | not recorded | 1.5.6 |
+| Gaia Pro VS | `Assets/Procedural Worlds` + ThirdParty | 4.2.4 | 4.2.5 |
+| HQ FPS Weapons 2.0 (PolymindGames FPSCore) | ThirdParty + Vendor | 2.0.3 | 2.0.3 |
+| Blaze AI Engine | Vendor | 3.4.21 | 3.4.22 |
+| Gore Simulator + Blood Factory (+ PampelGames Shared) | ThirdParty `Pampel Games` + Vendor | 1.8.8 / 1.3 | 1.8.8 / 1.4 |
+| Ultimate Animation Collection | ThirdParty | 1.65 | 1.65 |
+| Dynamic Radial Masks | ThirdParty + Vendor | 2025.3 | 2026.5 |
+| Damage Numbers Pro | ThirdParty + Vendor | 4.55 | 4.56 |
+| InfiniCLOUD (URP single mesh) | ThirdParty | 2.0.4 | 2.0.5 |
+| Northern Lights Pack · Ian's Fire Pack · Cartoon Rain & Blood Rain | ThirdParty | 1.1.1 · 2.3 · 1.1 | same |
+| Flying Birds VFX (**Realtime VFX Store, not Fab**) | ThirdParty + Vendor | 1.0 | 1.0 |
+| Low Poly Plant Collections · TopDown Nature Library | `Art/Environment/Vegetation` | 2.1 · 1.0 | same |
+| AllSky 220 (6 skies extracted) | `Art/Environment/Skyboxes` | not recorded | 5.2.0 |
+| Terrain Sample Asset Pack | ThirdParty (1.9 GB) | not recorded | 2.0.1 |
+| PSX Flashlight / Lantern Pack 6 (itch.io) | `Art/Props/Lamp` | — | — |
+| MCP for Unity (CoplayDev) | `manifest.json` git dependency | main | — |
+
+**Still on disk but superseded, so they're removal candidates.** Nothing has been deleted. Confirm
+references first, and deleting is Carlos's call:
+- **Burntwax FPS Engine.** ThirdParty (72 MB) + Vendor (382 KB). Replaced by FPSCore (MRM-9). `Player.prefab` is its dead leftover.
+- **Simple Water Shader URP.** ThirdParty (2.8 MB). Replaced by Crest on `M_Sea.mat` (MRM-71).
+- **Terrain Sample Asset Pack.** Not removable yet: MRM-70 prefabs reference meshes inside it. Copy the shipped meshes into `_Project/Art/` first.
+
+**Gone:** Vegetation Spawner FREE is no longer on disk and no scene references its GUID (replaced by
+Gaia biome spawners, MRM-70). The load-bearing table below still lists it; ignore that row.
+
+**Not installed (despite older wording elsewhere):** Highlight Plus 2 (look reimplemented as a uGUI
+shader, MRM-18), Sounds Good, Shots VFX URP, Spice Up ×4, Artistic Radial Blur, Wendigo, Procedural
+Lightning, and every environment/prop pack. All of them are Playground-staged or still in the store cache.
+
+**Upgrades are not cleanup.** The version gaps above are informational. A different package version
+can reassign GUIDs (see the note below), and packages with logic copied into
+`_Project/Code/Vendor/` won't pick up upstream fixes automatically. Upgrade one package at a time,
+and only for a concrete reason.
+
 ## Restore procedure on a fresh clone
 
 1. Open Package Manager → **My Assets**, download each package below (**Download**, not Import).

@@ -7,7 +7,13 @@
 remains the register of what is installed and how to restore a machine. This one is the **reasoning
 log**: for each asset, take it or not, why, and what it changes.
 
-> **Status: feasibility + preparation only.** Nothing here has been imported, and no asset has been
+> **2026-09-16 — master asset index.** Every owned and wishlisted asset (263 rows, stable `AST-###`
+> IDs, store price/version, "in Mr Moonlight?", purpose, wishlist priority P1–P5) now lives in
+> `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`. It's outside the repo because it's
+> Carlos's general toolkit. Check it first when picking an asset to adopt. What's actually installed
+> today is recorded in `Docs/external-assets.md` → "2026-09-16 audit".
+
+> **Status (as of 2026-08-27): feasibility + preparation only.** Nothing here had been imported, and no asset had been
 > integrated. The work happens inside the individual Linear issues, each of which now carries a
 > **Related assets** header naming exactly what to stage before starting it.
 
