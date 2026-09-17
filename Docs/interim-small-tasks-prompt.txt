@@ -1,0 +1,127 @@
+Context prompt: INTERIM SMALL TASKS (reusable). Read this instead of the big handoff.
+
+WRITTEN: 2026-09-16. Reuse it for any small, self-contained task Carlos picks while he builds 3D
+models and the big cleanup session hasn't happened yet. When the big cleanup session starts, this
+file retires. That session reads the "Interim work log" at the bottom.
+
+===========================================================================
+1. THE SITUATION IN FIVE LINES
+===========================================================================
+- Mr. Moonlight is a first-person horror shooter (Unity 6.3 URP, Windows, PSX look). The demo is
+  playable; October (the Kickstarter demo) is the real quality bar.
+- A BIG CLEANUP IS PLANNED BUT NOT STARTED. It will refactor code, remove unused packages, and
+  rework the enemy system (Spotter / Blaze AI / DemoSpotterPopulationManager), the weapon system
+  (PolymindGames FPSCore + HQ FPS Weapons) and audio (mixer, EnemyAudioHooks, vendor AudioManager).
+  Its handoff is `Docs/demo-wrapup-audio-music-sonnet-prompt.txt`. DO NOT read that file for an
+  interim task; its existence is all you need to know.
+- Carlos is working on 3D models in parallel. These sessions exist so he can use his weekly token
+  budget without stalling, so keep them short and cheap.
+- Carlos is the only one who touches Unity. Scene/inspector work through the Unity MCP bridge needs
+  his permission first (CLAUDE.md, kickstart.md §B.3).
+- Never commit or push. Carlos uses GitHub Desktop.
+
+===========================================================================
+2. WHAT COUNTS AS AN INTERIM TASK
+===========================================================================
+Fair game (additive, self-contained, survives the cleanup untouched):
+- New HUD/screen effects, UI polish, post-process additions.
+- Trying out or integrating an asset that doesn't depend on a system scheduled for rework
+  (collisions, VFX, environment props, sky, vegetation, shaders).
+- Level dressing, staging and lighting, with permission.
+- Small bug fixes that stay inside one component.
+
+NOT an interim task. Stop and tell Carlos it belongs to the cleanup:
+- Anything that changes how enemies think, spawn or take damage, how weapons fire or reload, or
+  how audio is routed or mixed.
+- Deleting packages, folders or vendor code, even if obviously dead (Burntwax, Simple Water Shader).
+- Upgrading any installed package version (GUIDs are load-bearing, see `Docs/external-assets.md`).
+- Refactoring existing code "while you're there."
+If a task starts pulling you into one of these, stop, say so in one or two sentences, and offer
+either a narrower version or parking it for the cleanup.
+
+===========================================================================
+3. HOW TO BUILD IT SO THE CLEANUP DOESN'T HAVE TO UNDO IT
+===========================================================================
+- Make it a drag-and-drop component or prefab. Don't hardcode anything to the Island scene.
+- Put numbers in `MoonlightTunables` when they are gameplay values. Early visual/staging numbers
+  can stay on the component while prototyping.
+- Put new code in its own file under `Assets/_Project/Code/Runtime/<Area>/`. Don't edit vendor
+  code in `_Project/Code/Vendor/`. If you'd have to, that's a cleanup task (see 2).
+- Keep hooks one-directional: the new thing may listen to existing systems, but existing systems
+  shouldn't be modified to call the new thing, except for a one-line hook you record in the log.
+- New asset: evaluate in Playground first (`Docs/dual-project-workflow.md`), extract lean, and
+  copy only what ships. Record it in `Docs/external-assets.md` → "2026-09-16 audit" table.
+
+===========================================================================
+4. HOW TO RUN THE SESSION CHEAPLY
+===========================================================================
+1. Read ONLY: this file, `CLAUDE.md`, and the one or two docs the task names. Look up memories
+   that match the task. Don't sweep the Docs folder.
+2. Confirm the plan with Carlos in a few lines before building: what gets added, where, and how
+   he'll test it.
+3. LINEAR + BRANCH, before the first code or scene edit:
+   - Umbrella issue: **MRM-81 "Interim small tasks before the big cleanup"**.
+   - If the task already has its own Linear issue, use that issue and its branch as normal, and add
+     "related to MRM-81" so the cleanup can find it.
+   - If it has NO issue: create a **sub-issue of MRM-81** (team MrMoonlight, project
+     MrMoonlightDemo, parent MRM-81) with a one-paragraph description and a "Done when" line.
+     Tell Carlos the new ID and its git branch name (e.g. `mrm-82`). He creates the branch in
+     GitHub Desktop. Don't ask whether to make one; this is the default.
+   - Check `git status` and the current branch before editing anything.
+   - Progress and findings go as comments on that sub-issue, not on MRM-81 itself.
+4. Verify for real. Editor screenshots and "no console errors" aren't proof (see memory
+   "Confirm with a screenshot before 'fixed'"). Anything visual or performance-related gets checked
+   in a build or Play Mode with Carlos.
+5. Wrap up with Carlos's "final instructions" in a light form:
+   - commit message text for the sub-issue's branch;
+   - a closing comment on the sub-issue (what changed, how it was verified, any hook into an
+     existing system), then move it to In Review. Carlos decides Done;
+   - one entry in the Interim work log below, with the sub-issue ID.
+   Don't write a new handoff file for an interim task. The sub-issue + log entry ARE the handoff.
+
+===========================================================================
+5. WHERE TO LOOK THINGS UP
+===========================================================================
+- Assets (owned, wishlist, purpose, priority): `C:\Users\calva\Desktop\assets\ASSETS - Index
+  2026-09-16.xlsx` (outside the repo, `AST-###` IDs). What's installed:
+  `Docs/external-assets.md` → "2026-09-16 audit".
+- Debug keys and cheats: `Docs/debug-tools.md`. Build process: memory "Build process".
+- 3D/prop work: `/prop` wizard (`Docs/3d-prop-pipeline-wizard.md`).
+
+===========================================================================
+6. TASK SLOT: Carlos fills this in, or states the task in chat
+===========================================================================
+Task:
+Asset(s) involved (AST-### if any):
+Linear issue (leave blank and Claude creates a sub-issue of MRM-81):
+Done when:
+
+---------------------------------------------------------------------------
+EXAMPLE TASK (the first one Carlos plans): better tree collisions with Technie Collider Creator 2
+---------------------------------------------------------------------------
+Spreadsheet row: "Technie Collider Creator 2", wishlist P1. Starting facts, verify each before
+relying on it:
+- Collidable vegetation species are GameObject + FloraInstanceRenderer prefabs in
+  `Assets/_Project/Art/VegetationPrefabs/` (memory "MRM-70 vegetation + Flora pipeline"). The
+  island has ~5,900 vegetation GameObject colliders and zero terrain trees (memory "Island NavMesh
+  facts"). Decorative grass is TerrainDetail and has no colliders.
+- Scope it as a prefab-level collider swap: generate better convex/compound colliders on the
+  vegetation prefabs, so every placed instance benefits without touching the Gaia spawners.
+- Evaluate in Playground first. Technie is an editor tool; ideally only the generated collider
+  data ships, not the tool.
+- Before touching anything, check whether the vegetation prefabs are baked into NavMesh
+  obstacles and whether Spotter vision raycasts hit tree colliders. New collider shapes change
+  both. If either would need enemy-AI changes, stop: that's the cleanup (section 2). Rebaking the
+  NavMesh is fine with Carlos's permission.
+- Measure before and after in a build (collider count, physics time in the profiler, FPS on the
+  same route). MRM-64 wants real numbers for any optimization.
+- Gaia respawn caveat: regenerating biomes re-instantiates prefabs, so a prefab-level change is
+  durable but a per-instance edit isn't (memory "MRM-70 'generate new Gaia' trigger").
+
+===========================================================================
+INTERIM WORK LOG: append one entry per session, newest last
+===========================================================================
+Format: date · MRM-## (sub-issue of MRM-81) · task · files/prefabs/scenes touched · any hook added
+into an existing system · anything the cleanup session must know.
+
+(no entries yet)
