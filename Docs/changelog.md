@@ -5,6 +5,49 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-9 — Player_Tracey prefab completed, Burntwax fully removed (2026-09-17)
+
+Full record: Linear comment on MRM-9. Asset audit: `Docs/external-assets.md` → "Removed".
+
+**BUILT**
+
+- **`Player_Tracey.prefab` is now a real, complete drag-and-drop prefab.** The Island scene
+  instance carried scene-only additions (F2–F9 debug toggles, `PlayerDamageReceiver`,
+  `DeathSequence`, `HealthRedTintSource`, `PauseController`) the prefab asset itself never had.
+  Applied all 10 as component-level overrides onto the asset (not a blanket "Apply All," which
+  would've baked the Island spawn transform in too). Verified zero remaining overrides.
+- `VegetationGallery.unity` and `Sandbox.unity` still had the old Burntwax placeholder rig Island
+  used to have. Both swapped to real `Player_Tracey` instances at the old objects' transforms.
+- **Burntwax FPS Engine removed entirely**, at Carlos's explicit request. Gone: the vendor asset
+  folder (`ThirdParty/AST-085/`), the tracked vendor script folder + `Burntwax.Core.asmdef`, the
+  dead `Player.prefab`, the three inert `Player (OLD Burntwax...)` scene instances, the four
+  `Burntwax*Bridge.cs` scripts, and the `Burntwax.Core` reference in `MrMoonlight.Runtime.asmdef`.
+
+**DECISIONS**
+
+- This removal is normally "big cleanup" scope per `Docs/interim-small-tasks-prompt.txt` (which
+  names Burntwax by example as out of bounds for interim work). Flagged that to Carlos; he
+  confirmed doing it now anyway since it was directly related to the player-prefab work already in
+  progress. One-time exception, not a precedent for other cleanup-scoped work.
+- Logged against MRM-9 rather than a new issue — MRM-9 already owns the player-controller lineage
+  and its own doc (`Docs/mrm9-hqfps-integration.md`) already tracked "Remove Burntwax" as
+  outstanding work.
+
+**FAILED / NOTABLE FRICTION**
+
+- The Unity MCP bridge repeatedly re-marked already-saved, non-active loaded scenes as dirty on
+  every scene-switch, with no underlying data change (diffed the on-disk YAML each time to
+  confirm). Worked around by re-saving defensively; not a data problem, just slower.
+
+**NEXT**
+
+- `MRM-73` ("Fix Super Jump") still describes the bug against the now-deleted Burntwax
+  `PlayerStateMachine`; its description should be rewritten against the current FPSCore controller.
+- Teki/Technie Collider Creator 2 (AST-116) evaluation is queued next — see
+  `Docs/interim-small-tasks-prompt.txt` §6.
+
+---
+
 ## MRM-11 — Event Director built, 51 Spotters placed, input leak fixed (2026-09-02)
 
 Full record: **`Docs/event-director.md`**. Handoff: **`Docs/mrm11-refinement-sonnet-prompt.txt`**.

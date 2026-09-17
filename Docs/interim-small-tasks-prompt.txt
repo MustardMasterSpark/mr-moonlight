@@ -91,6 +91,12 @@ either a narrower version or parking it for the cleanup.
   `Docs/external-assets.md` → "2026-09-16 audit".
 - Debug keys and cheats: `Docs/debug-tools.md`. Build process: memory "Build process".
 - 3D/prop work: `/prop` wizard (`Docs/3d-prop-pipeline-wizard.md`).
+- Player controller: `Assets/_Project/Prefabs/Player/Player_Tracey.prefab` is now a complete,
+  self-contained drag-and-drop prefab (finished 2026-09-17 — it used to be missing debug toggles
+  and a few systems that only existed on the Island scene instance). Burntwax FPS Engine is fully
+  removed from the project as of the same date — don't propose removing it again, and don't treat
+  it as still-present in any doc that predates 2026-09-17. See `Docs/external-assets.md` →
+  "Removed" and the `Docs/changelog.md` MRM-9 entry for detail.
 
 ===========================================================================
 6. TASK SLOT: Carlos fills this in, or states the task in chat

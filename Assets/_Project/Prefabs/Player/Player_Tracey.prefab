@@ -452,6 +452,15 @@ GameObject:
   - component: {fileID: 1142838449529283752}
   - component: {fileID: 6295421072967545109}
   - component: {fileID: 1433194803542880612}
+  - component: {fileID: 6165324597707876012}
+  - component: {fileID: 5163900326829998181}
+  - component: {fileID: 8362786754441424981}
+  - component: {fileID: 5741497201084149296}
+  - component: {fileID: 6717942209019756338}
+  - component: {fileID: 3323247613412561733}
+  - component: {fileID: 5785077073358573030}
+  - component: {fileID: 5291568807536958296}
+  - component: {fileID: 8132850266223441850}
   m_Layer: 0
   m_Name: MrMoonlight Systems
   m_TagString: Untagged
@@ -500,6 +509,145 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Items.Inventory
   hasBackpack: 0
+--- !u!114 &6165324597707876012
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19636eb7ee79ac3419cc6f8621e34db0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerDamageReceiver
+  stats: {fileID: 6295421072967545109}
+  invulnerable: 0
+  rig: {fileID: 0}
+--- !u!114 &5163900326829998181
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dbf3766e4b0f6c8478d15ff08d68eca5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.DeathSequence
+  playerStats: {fileID: 6295421072967545109}
+  playerController: {fileID: 0}
+  deathScreamPool: {fileID: 11400000, guid: 2f6c53755f5bb7646a181e1840eb76a1, type: 2}
+  screamAudioSource: {fileID: 0}
+  blackScreenImage: {fileID: 0}
+  gameOverPanel: {fileID: 0}
+--- !u!114 &8362786754441424981
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 926fe526eca01ab4995ca349e8ff0898, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.VFX.HealthRedTintSource
+  playerStats: {fileID: 6295421072967545109}
+--- !u!114 &5741497201084149296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3f4481e39c279c747a3af84ea623c47c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerStatsDebugOverlay
+  visible: 0
+  stats: {fileID: 6295421072967545109}
+  font: {fileID: 12800000, guid: 066017e45ef050a46a45c97a531463ef, type: 3}
+--- !u!114 &6717942209019756338
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62da49d11be30e44b839afd82afbf2bd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.InfiniteStaminaDebugToggle
+  infiniteStamina: 0
+  stats: {fileID: 6295421072967545109}
+  font: {fileID: 12800000, guid: 066017e45ef050a46a45c97a531463ef, type: 3}
+--- !u!114 &3323247613412561733
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 32c7962c8eef9c343bdad83e4cbd9cc6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.InvulnerableDebugToggle
+  invulnerable: 0
+  receiver: {fileID: 6408206748284926068}
+  hitFlashDuration: 0.6
+  font: {fileID: 12800000, guid: 066017e45ef050a46a45c97a531463ef, type: 3}
+--- !u!114 &5785077073358573030
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b9136d887655c7549a8aca8e275af928, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.HealthRegenDebugToggle
+  regenEnabled: 1
+  stats: {fileID: 6295421072967545109}
+  receiver: {fileID: 6408206748284926068}
+  rig: {fileID: 0}
+  delayAfterHit: 2
+  regenPerSecond: 25
+  font: {fileID: 12800000, guid: 066017e45ef050a46a45c97a531463ef, type: 3}
+--- !u!114 &5291568807536958296
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 860ad5e85b5868f40b4c37ecf50a4c10, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PauseController
+  playerRig: {fileID: 0}
+  pauseOverlay: {fileID: 0}
+--- !u!114 &8132850266223441850
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2456645418589887943}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6e4e004be54c13541aa9449bf8e85766, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.InfiniteAmmoDebugToggle
+  infiniteAmmo: 0
+  font: {fileID: 0}
 --- !u!1 &2609192611071606937
 GameObject:
   m_ObjectHideFlags: 0
@@ -3645,6 +3793,7 @@ GameObject:
   - component: {fileID: 528740670202620645}
   - component: {fileID: 6738614639202900606}
   - component: {fileID: 2014100555629426021}
+  - component: {fileID: 6408206748284926068}
   m_Layer: 3
   m_Name: Player_Tracey
   m_TagString: Player
@@ -3937,6 +4086,21 @@ MonoBehaviour:
   - Molotov Cocktail
   stockCount: 99
   containerName: Holster
+--- !u!114 &6408206748284926068
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8441296488908999749}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 19636eb7ee79ac3419cc6f8621e34db0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Player.PlayerDamageReceiver
+  stats: {fileID: 6295421072967545109}
+  invulnerable: 0
+  rig: {fileID: 0}
 --- !u!1 &8462469175359537751
 GameObject:
   m_ObjectHideFlags: 0

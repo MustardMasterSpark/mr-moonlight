@@ -150,9 +150,15 @@ never load at all.)
 
 > **`HazeRendererFeature.cs:546` bails out entirely when `!cameraData.postProcessEnabled`.**
 > The Main Camera had post-processing off, so fog rendered in Scene view (on by default there) and
-> not in Game view. Fixed on **`Player.prefab`**, not the scene instance — otherwise `Sandbox` and
+> not in Game view. Fixed on the player prefab, not the scene instance — otherwise `Sandbox` and
 > every future scene keeps the bug. This is the first thing to check if a full-screen effect ever
 > "works in Scene view but not in game".
+>
+> **2026-09-17: the player prefab this applies to is now `Assets/_Project/Prefabs/Player/
+> Player_Tracey.prefab`.** The old Burntwax `Player.prefab` this note originally referred to has
+> been deleted entirely (see `Docs/external-assets.md` → "Removed"). `Player_Tracey.prefab` is now
+> a complete, self-contained drag-and-drop prefab — any fix that needs to survive across scenes
+> belongs on it, the same way this one did.
 
 Which parameters actually matter, in order:
 

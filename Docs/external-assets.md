@@ -82,11 +82,28 @@ history. **Where they disagree with this section, this section wins.**
 | PSX Flashlight / Lantern Pack 6 (itch.io) | `Art/Props/Lamp` | — | — |
 | MCP for Unity (CoplayDev) | `manifest.json` git dependency | main | — |
 
-**Still on disk but superseded, so they're removal candidates.** Nothing has been deleted. Confirm
-references first, and deleting is Carlos's call:
-- **Burntwax FPS Engine.** ThirdParty (72 MB) + Vendor (382 KB). Replaced by FPSCore (MRM-9). `Player.prefab` is its dead leftover.
+**Still on disk but superseded, so they're removal candidates.** Confirm references first, and
+deleting is Carlos's call:
 - **Simple Water Shader URP.** ThirdParty (2.8 MB). Replaced by Crest on `M_Sea.mat` (MRM-71).
 - **Terrain Sample Asset Pack.** Not removable yet: MRM-70 prefabs reference meshes inside it. Copy the shipped meshes into `_Project/Art/` first.
+
+**Removed:**
+- **Burntwax FPS Engine, 2026-09-17.** Fully deleted at Carlos's request, not just superseded.
+  Removed: `Assets/ThirdParty/AST-085/Burntwax FPS Engine/` (vendor assets, git-ignored so it never
+  showed in git status), `Assets/_Project/Code/Vendor/Burntwax FPS Engine/` (tracked vendor scripts
+  + `Burntwax.Core.asmdef`), the dead `Assets/_Project/Prefabs/Player.prefab` and its three
+  deactivated `Player (OLD Burntwax - delete after verification)` scene instances (Island,
+  VegetationGallery, Sandbox — all three had already been swapped to `Player_Tracey` earlier the
+  same session), the four Mr. Moonlight bridge scripts that only ever talked to it
+  (`BurntwaxPlayerBridge/InputBridge/HealthBridge/StartingLoadoutBridge.cs`), and the
+  `"Burntwax.Core"` reference from `MrMoonlight.Runtime.asmdef`. Verified clean: `Burntwax.Core` no
+  longer appears in the loaded assemblies, `MrMoonlight.Runtime` still compiles
+  (`MoonlightPlayerRig` resolves), and a full `grep -r Burntwax Assets/` turns up nothing but
+  historical comments in `MoonlightTunables.cs`, `MoonlightPlayerRig.cs`,
+  `MoonlightStartingLoadout.cs`, `PlayerDamageReceiver.cs`, `EnemyFirearm.cs` and
+  `PolymindPlayerBuild.cs` (all just explain what replaced it — no functional dependency) plus one
+  stray hit inside an old `Assets/_Recovery/*.unity` crash-snapshot file (Unity's own recovery
+  cache, not live project state, left untouched).
 
 **Gone:** Vegetation Spawner FREE is no longer on disk and no scene references its GUID (replaced by
 Gaia biome spawners, MRM-70). The load-bearing table below still lists it; ignore that row.
@@ -132,7 +149,6 @@ These are referenced by GUID from tracked assets. **Without them the project doe
 | **Vegetation Spawner FREE** | Staggart Creations | (free) | `Assets/ThirdParty/VegetationSpawner/` | `Island.unity` — guid `1f710250abab6f24a954bdf3c3c1ac64` |
 | **Simple Water Shader URP** | IgniteCoders | (free) | `Assets/ThirdParty/SimpleWaterShaderURP/` | `Island.unity` (Sea) |
 | **Terrain Sample Asset Pack** | Unity Technologies | (free) | `Assets/ThirdParty/TerrainSampleAssets/` | MRM-70 TSA vegetation prefabs reference meshes in `Models/` |
-| **Burntwax FPS Engine** | Burntwax Collective | (as of 2026-08-29) | `Assets/ThirdParty/Burntwax Collective/` | `Player.prefab` — the whole player controller, weapon, pickup and pause stack (MRM-9) |
 
 ### Extraction notes
 
@@ -144,14 +160,6 @@ These are referenced by GUID from tracked assets. **Without them the project doe
   Decline the "install the additional Shader Graph package" popup unless authoring custom PSX shaders.
 - **Vegetation Spawner FREE** — 3.5 MB full, **212 KB** installed. Keep `Runtime/`, `Editor/`,
   asmdefs; drop `_Demo/`.
-- **Burntwax FPS Engine** — 103 MB download, **73 MB** installed. ⚠️ **This is a Complete Project
-  export, not a systems package: it ships all 19 `ProjectSettings/*.asset` files plus
-  `Packages/manifest.json`.** Importing it through the normal dialog would clobber the URP renderer
-  assignment, physics, and the tag/layer table. **Extract only the `Assets/` subtree** — read the
-  `.unitypackage` out of the Asset Store cache and pull the paths you want, rather than using the
-  import dialog at all (same technique as AllSky). It also requires **Cinemachine 3.1.7** and
-  **Animation Rigging 1.4.1**, both installed via Package Manager. Wall-running, the save system and
-  its menus were stripped; see `Docs/mrm9-burntwax-integration.md`.
 - **Terrain Sample Asset Pack** — **1.9 GB**. This is the one genuinely large dependency.
   ⚠️ The MRM-70 TSA prefabs reference meshes *inside* it, which is fragile. Anything from it that
   actually ships should be copied into `Assets/_Project/Art/` with attribution.

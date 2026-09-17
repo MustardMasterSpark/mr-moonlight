@@ -572,7 +572,7 @@ switching is a renderer swap on the arms wieldable.
 |---|---|---|
 | 1 | **Swap the Player in `Island.unity`** | Needs Carlos's go-ahead — scene work |
 | 2 | **Play-mode verification** | Nothing below is proven until the game actually runs |
-| 3 | **Remove Burntwax** | Must come *after* 1–2, or the scene breaks. Delete the 4 `Burntwax*.cs` bridges (already unreferenced), `Code/Vendor/Burntwax FPS Engine/`, `ThirdParty/Burntwax Collective/`, and the old `Player.prefab` |
+| 3 | ~~**Remove Burntwax**~~ | **✅ Done 2026-09-17** (items 1 and the FPSCore swap were already long complete by then). Deleted the 4 `Burntwax*.cs` bridges, `Code/Vendor/Burntwax FPS Engine/`, `ThirdParty/AST-085/Burntwax FPS Engine/`, the old `Player.prefab`, and the `Burntwax.Core` asmdef reference. See `Docs/external-assets.md` → "Removed" |
 | 4 | **HUD** | Ammo counter, "no ammo" message, stamina bar — replace the ones on the old `Player.prefab` |
 | 5 | **`RetroLitViewModel.shader`** | §3 — the FP materials' outstanding item |
 | 6 | **Interaction unification** | Our `InteractionDetector` and FPSCore's `InteractionHandler` both read Interact. Exactly the split Carlos warned against; FPSCore's should win since it drives weapon pickup |

@@ -220,10 +220,13 @@ candidates only, and every removal is Carlos's call.** Use Asset Cleaner Pro's *
 (MRM-64 rule: never its bulk delete) or a GUID grep before proposing any of them.
 
 A. **Removal candidates (dead or superseded, still on disk):**
-   1. **Burntwax FPS Engine.** `Assets/ThirdParty/AST-085/` (was `Burntwax Collective`) (72 MB) +
-      `Assets/_Project/Code/Vendor/Burntwax FPS Engine/` (382 KB). Superseded by PolymindGames
-      FPSCore (MRM-9 HQFPS swap). `Player.prefab` is its dead leftover; `Player_Tracey` is the real
-      player. Its Vendor code is **tracked**, so removal shows up in git.
+   1. ~~**Burntwax FPS Engine.**~~ **✅ DONE 2026-09-17, do not re-scope this.** Carlos asked for it
+      explicitly mid-session (out of the normal interim-task scope, one-time exception). Both
+      `Assets/ThirdParty/AST-085/` and `Assets/_Project/Code/Vendor/Burntwax FPS Engine/` are gone,
+      along with the dead `Player.prefab`, the four `Burntwax*Bridge.cs` scripts, the three inert
+      `Player (OLD Burntwax...)` scene instances, and the `Burntwax.Core` reference in
+      `MrMoonlight.Runtime.asmdef`. Verified compiling clean. Full detail in `Docs/external-assets.md`
+      → "Removed" and the comment on Linear MRM-9.
    2. **Simple Water Shader URP.** `Assets/ThirdParty/AST-083/` (was `SimpleWaterShaderURP`) (2.8 MB). Crest
       replaced it on `M_Sea.mat` (MRM-71). A quick GUID grep of `_Project` found no references, but
       that grep was shallow, so confirm before deleting.
@@ -257,9 +260,9 @@ C. **Installed packages with a newer store version** (installed → store, 2026-
    each upgrade as its own task with a reason (a bug fix you need), not a sweep.
 
 D. **The same vendor-audit pattern applies (see UPDATE 1 above).** The vendor code copied into
-   `_Project/Code/Vendor/` is: Blaze AI Engine, Blood Factory, Burntwax FPS Engine,
-   DamageNumbersPro, Dynamic Radial Masks, Flying Birds VFX, Gore Simulator, PampelGames Shared,
-   PolymindGames, Retro Shaders Pro. That's the full list to grep for
+   `_Project/Code/Vendor/` is: Blaze AI Engine, Blood Factory, DamageNumbersPro, Dynamic Radial
+   Masks, Flying Birds VFX, Gore Simulator, PampelGames Shared, PolymindGames, Retro Shaders Pro.
+   (Burntwax FPS Engine was on this list; removed 2026-09-17, see A.1 above.) That's the full list to grep for
    `RuntimeInitializeOnLoadMethod` / self-applying singletons.
 
 E. **Small corrections recorded in the index (for whoever reads older docs):**
