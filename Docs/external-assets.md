@@ -17,6 +17,45 @@ and `Assets/_Project/Art/` while building Carlos's master asset spreadsheet
 IDs, store prices/versions and the wishlist priority order). The tables further down are kept as
 history. **Where they disagree with this section, this section wins.**
 
+> **`Assets/ThirdParty/` renamed to asset-index IDs (2026-09-16, later the same day).** Every
+> vendor folder is now named with its bare ID, and assets that were spread over several folders
+> are consolidated:
+>
+> | New folder | Was |
+> |---|---|
+> | `AST-001` | `Pampel Games/Gore Simulator` |
+> | `AST-002` | `InfiniCloud URP - Clouds Single Mesh` |
+> | `AST-004` | `CartoonRainBloodRain` |
+> | `AST-009` | `DamageNumbersPro` |
+> | `AST-015` | `Ian's Fire Pack` |
+> | `AST-033` | `Flying Birds VFX` |
+> | `AST-040` | `Pampel Games/Blood Factory` |
+> | `AST-043` | `Northern Lights Pack` |
+> | `AST-044` | `Ultimate Animation Collection` |
+> | `AST-046` | `PolymindGames` (FPSCore + HQFPS) |
+> | `AST-049` | `Gaia Pro VS` + `Procedural Worlds Frameworks` (nested) |
+> | `AST-078` | `HAZE - Volumetric Fog & Lighting for URP` |
+> | `AST-079` | `Retro Shaders Pro` |
+> | `AST-083` | `SimpleWaterShaderURP` |
+> | `AST-084` | `TerrainSampleAssets` |
+> | `AST-085` | `Burntwax Collective` |
+>
+> - An empty `DynamicRadialMasks` folder was removed; its logic lives in `_Project/Code/Vendor/`.
+> - Moves were done with `AssetDatabase.MoveAsset`, so GUIDs are unchanged. `PC_Renderer.asset` and
+>   `Enemy_Spotter.prefab` were verified resolving to the new paths, and the console is clean.
+> - Six editor migration scripts in `_Project/Code/Editor/Migration/` had
+>   `Assets/ThirdParty/PolymindGames` hardcoded. They now point at `AST-046`.
+>
+> **Not renamed, on purpose:**
+> - `Assets/Procedural Worlds/` and `Assets/Gaia User Data/`: Gaia hardcodes both paths.
+> - `Assets/Plugins/Demigiant` (DOTween) and `Assets/Plugins/Febucci`: Plugins-folder packages.
+> - Embedded packages under `Packages/` (Flora, Crest, Text Animator): renaming breaks the package ID.
+> - Tracked vendor code in `_Project/Code/Vendor/<Package>/`: kept by name so git history and the
+>   cleanup handoff stay readable. The big cleanup can decide.
+>
+> Older docs that give `Assets/ThirdParty/<vendor name>/` paths are stale; translate them with the
+> table above.
+
 **Installed and in use:**
 
 | Package | Where | Installed version | Store version 2026-09-16 |
@@ -173,7 +212,7 @@ exact version in the tables above when each one lands.
 
 | Package | Publisher | Version | Lives at | Why it never crosses over |
 |---|---|---|---|---|
-| **Retarget Pro V5** | KINEMATION | 5.2.1 | `E:\playground\My project\Assets\PLAYGROUND\Retarget Pro V5\` | It is an **editor bake tool**. Clips are baked in Playground and only the resulting `.anim`/`.fbx` files are migrated, so Mr. Moonlight's footprint is **zero bytes**. Full ruling and procedure: `Docs/retarget-pro-strategy.md` |
+| **Retarget Pro V5** | KINEMATION | 5.2.1 | `E:\playground\Playground\Assets\PLAYGROUND\AST-013\` | It is an **editor bake tool**. Clips are baked in Playground and only the resulting `.anim`/`.fbx` files are migrated, so Mr. Moonlight's footprint is **zero bytes**. Full ruling and procedure: `Docs/retarget-pro-strategy.md` |
 
 **What it is for:** the Wendigo (MRM-36), the wolf — a **quadruped**, which Unity's Humanoid
 retargeting cannot do at all (MRM-33), Tracey's full body (MRM-9's unmet look-down criterion), and

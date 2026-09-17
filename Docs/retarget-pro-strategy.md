@@ -1,7 +1,7 @@
 # Retarget Pro V5 — adoption ruling and working strategy
 
 **Ruled 2026-08-31. Written to be read cold by Sonnet.** Everything below was verified by reading the
-real files in Playground (`E:\playground\My project`), not from store pages or memory.
+real files in Playground (`E:\playground\Playground`), not from store pages or memory.
 
 ---
 
@@ -28,7 +28,7 @@ real files in Playground (`E:\playground\My project`), not from store pages or m
 
 ## 1. What Retarget Pro actually is (verified from source)
 
-Package: `E:\playground\My project\Assets\PLAYGROUND\Retarget Pro V5\` — 16 MB, 111 C# files,
+Package: `E:\playground\Playground\Assets\PLAYGROUND\AST-013\` — 16 MB, 111 C# files,
 plus an 8.8 MB `RetargetPro/Documentation.pdf` inside the package.
 
 It transfers animation from a **source rig** to a **target rig** and bakes the result to a
@@ -201,7 +201,7 @@ This is the whole strategy in one line, and it is the same shape as the Gaia Pro
 (*editor-tools only*) and the dual-project workflow.
 
 ```
-  PLAYGROUND  (E:\playground\My project)          MR. MOONLIGHT  (E:\MrMoonlight)
+  PLAYGROUND  (E:\playground\Playground)          MR. MOONLIGHT  (E:\MrMoonlight)
   ────────────────────────────────────────        ──────────────────────────────
   Retarget Pro V5          ← the tool
   Ultimate Animation Coll. ← 3,068 clips
@@ -387,7 +387,7 @@ that MRM-9 just completed. **Retarget Pro is the editor-only, bake-out half. Tha
 ## 11. Method B — importing an external clip and baking it via Unity's built-in Humanoid
 retarget, no Retarget Pro GUI (proven, MRM-75, 2026-09-01)
 
-**Everything in this section happens in Playground (`E:\playground\My project`), never in
+**Everything in this section happens in Playground (`E:\playground\Playground`), never in
 Mr. Moonlight — same rule as §5.** Use this when the source and target are both Humanoid avatars
 (fingers not required to match) and you don't need IK foot-sliding correction. It sidesteps
 Retarget Pro's bone-chain GUI entirely, which matters because that GUI has no safe way to drive

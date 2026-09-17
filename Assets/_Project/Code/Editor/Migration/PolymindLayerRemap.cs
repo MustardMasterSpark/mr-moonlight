@@ -35,7 +35,7 @@ namespace MrMoonlight.EditorTools.Migration
 
         private static readonly string[] Roots =
         {
-            "Assets/ThirdParty/PolymindGames",
+            "Assets/ThirdParty/AST-046",
             "Assets/_Project/Data/PolymindGames",
         };
 

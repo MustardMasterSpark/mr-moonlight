@@ -25,7 +25,7 @@ namespace MrMoonlight.EditorTools.Migration
     /// </summary>
     public static class PolymindPlayerBuild
     {
-        private const string Source = "Assets/ThirdParty/PolymindGames/FPSCore/Prefabs/Core/FPS_Player.prefab";
+        private const string Source = "Assets/ThirdParty/AST-046/FPSCore/Prefabs/Core/FPS_Player.prefab";
         private const string Target = "Assets/_Project/Prefabs/Player/Player_Tracey.prefab";
         private const string OurActions = "Assets/InputSystem_Actions.inputactions";
 

@@ -144,7 +144,7 @@ any HDR-style multiply) in the fragment stage instead.
 # Highlight Plus 2 — "punk" stylized outline (reference config)
 
 **Written 2026-09-08.** Built and tuned live in the **Playground** project
-(`E:\playground\My project`, port 8081 — not this repo, not git-tracked), NOT yet ported to
+(`E:\playground\Playground`, port 8081 — not this repo, not git-tracked), NOT yet ported to
 Mr. Moonlight. This doc is the "where it is / how to bring it over" reference for whenever
 **MRM-16** (interaction highlight) or **MRM-42** (inventory UI) picks this up.
 
@@ -161,7 +161,7 @@ Iterated live with Carlos across several passes (see session history below) — 
 
 ## Where it lives right now
 
-- **Project:** Playground (`E:\playground\My project`), NOT git-tracked, Carlos does not commit it.
+- **Project:** Playground (`E:\playground\Playground`), NOT git-tracked, Carlos does not commit it.
 - **Scene:** `Assets/PLAYGROUND/Highlight Plus 2/Demo/Demo5_Effects.unity`
 - **GameObject:** `Barrel` (labelText on its `HighlightEffect`: `"Outline Stylized Effect"`) — one
   of several showcase objects in the vendor's own effects-gallery demo scene.

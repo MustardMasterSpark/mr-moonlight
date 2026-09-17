@@ -42,7 +42,7 @@ what this one already settled, and doesn't repeat two mistakes just caught in th
   species through the pipeline is a shakedown run, not the start of a batch. Narrate every step,
   stop at every boundary, one prop, before touching the rest of the list.
 - **`SKILL.md` had a stale Playground path** (`E:\playground\test`, pre-2026-08-28-move). Fixed
-  to `E:\playground\My project`.
+  to `E:\playground\Playground`.
 - **Added the eye-height silhouette check** that `Docs/new-asset-list.md` promised for
   **Topdown Nature Library (1000)** and **Low Poly Plant Collections** — both adopted for MRM-70,
   both authored to be seen from above, so undersides/sides are often unfinished or flat
@@ -94,7 +94,7 @@ Full list of what's adopted for MRM-70 vegetation and why: `Docs/new-asset-list.
 >
 > **Goal this session:** run the 3D prop pipeline (`/prop`) over the vegetation assets Carlos
 > needs for MRM-70's biomes, most of which currently live in the **Playground** project
-> (`E:\playground\My project`) rather than as finished Mr. Moonlight prefabs.
+> (`E:\playground\Playground`) rather than as finished Mr. Moonlight prefabs.
 >
 > **Do not batch.** Nothing has cleared shakedown yet (`Docs/prop-log.md` is empty) — the first
 > vegetation species through this pipeline is a shakedown run of the static-prop path: narrate

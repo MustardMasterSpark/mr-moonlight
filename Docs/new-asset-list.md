@@ -31,7 +31,7 @@ Five rules, applied to every row. They are recorded because several of them **ov
 that were reasonable a week ago**.
 
 1. **Download size is not a criterion.** Carlos's explicit direction, 2026-08-27. Every package is
-   staged in **Playground** (`E:\playground\My project`) first; only the files we actually use are copied
+   staged in **Playground** (`E:\playground\Playground`) first; only the files we actually use are copied
    into Mr. Moonlight. A 4.8 GB tool can cost ~0 MB in the build. Build 21 was **54 MB zipped**
    against a 1 GB limit. See `Docs/dual-project-workflow.md`.
 2. **Texture size is not a criterion either.** Carlos's direction, 2026-08-27: **no 4K texture will
@@ -564,7 +564,7 @@ project.
 
 **Universal rules that apply to every brief — not repeated in each one:**
 
-1. **Stage in Playground first** (`E:\playground\My project`), evaluate, then copy only the needed files +
+1. **Stage in Playground first** (`E:\playground\Playground`), evaluate, then copy only the needed files +
    their `.meta` into Mr. Moonlight. File+meta copy, never Package Manager. See
    `Docs/dual-project-workflow.md`.
 2. **Every mesh and texture routes through the prop wizard** (`/prop`). Textures land at ≤512, Point
@@ -840,7 +840,7 @@ weeks.
 # ⭐ ROUND 2 — verified against the actual files, 2026-08-28
 
 **Everything above was written from documentation and store pages. This section was written with the
-packages open in Playground** (`E:\playground\My project`, a fresh project Carlos created and
+packages open in Playground** (`E:\playground\Playground`, a fresh project Carlos created and
 imported everything into). **Where Round 2 disagrees with Round 1, Round 2 wins.**
 
 Six verdicts changed. Four assets were found that were not in the original list. One decision
@@ -1157,7 +1157,7 @@ manual fix is remapping to `Universal Render Pipeline/Particles/Unlit`.
 **Written 2026-08-28 from the real files.** Carlos's requirement: *"just the necessary files, so we
 don't clutter the Moonlight project."*
 
-**How to read these.** Source paths are relative to `E:\playground\My project\Assets\PLAYGROUND\`.
+**How to read these.** Source paths are relative to `E:\playground\Playground\Assets\PLAYGROUND\`.
 Destination paths are inside Mr. Moonlight. **Copy the file *and* its `.meta`** — the GUID is what
 keeps references intact. Nothing here moves until its issue is actually opened.
 

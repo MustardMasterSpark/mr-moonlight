@@ -39,7 +39,7 @@ While a path is in shakedown:
 
 1. **Which path?** character · static prop · weapon · special case
 2. **Which prop, and where is it?** `E:\Props` (a *dump* — nothing in it is game-ready by
-   default) · the Playground project (`E:\playground\My project` — moved 2026-08-28, not
+   default) · the Playground project (`E:\playground\Playground` — renamed from `My project` 2026-09-16, not
    `E:\playground\test`) · fresh Tripo output. **If it's in Playground**, it is likely a
    pre-built asset-pack mesh (already textured, possibly already low-poly) rather than a raw
    Tripo source — copy it into Mr. Moonlight per `Docs/dual-project-workflow.md` (folder +

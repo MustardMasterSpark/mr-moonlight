@@ -41,7 +41,7 @@ namespace MrMoonlight.EditorTools.Migration
     public static class MoonlightWeaponAudioBuild
     {
         private const string ContainerFolder = "Assets/_Project/Data/PolymindGames/Audio/Wieldables";
-        private const string ClipFolder = "Assets/ThirdParty/PolymindGames/HQFPS/Audio/SFX/Wieldables";
+        private const string ClipFolder = "Assets/ThirdParty/AST-046/HQFPS/Audio/SFX/Wieldables";
 
         /// <summary>Matches every container built in the 2026-09-04 session.</summary>
         private static readonly Vector2 PitchRange = new Vector2(-75f, 75f);

@@ -331,7 +331,7 @@ namespace MrMoonlight.EditorTools.Migration
         private static int RestoreBodyLean(GameObject root, StringBuilder log)
         {
             var source = AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/ThirdParty/PolymindGames/FPSCore/Prefabs/Core/FPS_Player.prefab");
+                "Assets/ThirdParty/AST-046/FPSCore/Prefabs/Core/FPS_Player.prefab");
             if (source == null)
             {
                 log.AppendLine("  WARNING: FPS_Player not found, lean not restored");
@@ -847,7 +847,7 @@ namespace MrMoonlight.EditorTools.Migration
             }
 
             var source = AssetDatabase.LoadAssetAtPath<GameObject>(
-                "Assets/ThirdParty/PolymindGames/FPSCore/Prefabs/UI/Wieldables/FPS_UI_Wieldables.prefab");
+                "Assets/ThirdParty/AST-046/FPSCore/Prefabs/UI/Wieldables/FPS_UI_Wieldables.prefab");
             if (source == null)
             {
                 log.AppendLine("  WARNING: FPS_UI_Wieldables not found, scope overlay not added");

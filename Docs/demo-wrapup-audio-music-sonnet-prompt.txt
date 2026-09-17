@@ -220,17 +220,17 @@ candidates only, and every removal is Carlos's call.** Use Asset Cleaner Pro's *
 (MRM-64 rule: never its bulk delete) or a GUID grep before proposing any of them.
 
 A. **Removal candidates (dead or superseded, still on disk):**
-   1. **Burntwax FPS Engine.** `Assets/ThirdParty/Burntwax Collective/` (72 MB) +
+   1. **Burntwax FPS Engine.** `Assets/ThirdParty/AST-085/` (was `Burntwax Collective`) (72 MB) +
       `Assets/_Project/Code/Vendor/Burntwax FPS Engine/` (382 KB). Superseded by PolymindGames
       FPSCore (MRM-9 HQFPS swap). `Player.prefab` is its dead leftover; `Player_Tracey` is the real
       player. Its Vendor code is **tracked**, so removal shows up in git.
-   2. **Simple Water Shader URP.** `Assets/ThirdParty/SimpleWaterShaderURP/` (2.8 MB). Crest
+   2. **Simple Water Shader URP.** `Assets/ThirdParty/AST-083/` (was `SimpleWaterShaderURP`) (2.8 MB). Crest
       replaced it on `M_Sea.mat` (MRM-71). A quick GUID grep of `_Project` found no references, but
       that grep was shallow, so confirm before deleting.
    3. **Vegetation Spawner FREE.** Already gone from disk, and no scene references its script GUID
       `1f710250…` any more. `external-assets.md` still listed it as a load-bearing package. The
       2026-09-16 audit section there now marks it removed.
-   4. **Terrain Sample Asset Pack.** `Assets/ThirdParty/TerrainSampleAssets/` is **1.9 GB**, by far
+   4. **Terrain Sample Asset Pack.** `Assets/ThirdParty/AST-084/` (was `TerrainSampleAssets`) is **1.9 GB**, by far
       the biggest thing in the project. MRM-70 vegetation prefabs reference meshes *inside* it, so
       it can't just be deleted. The long-standing plan is to copy the meshes that ship into
       `_Project/Art/` and then drop the pack. It's git-ignored, so a mistaken deletion can't be

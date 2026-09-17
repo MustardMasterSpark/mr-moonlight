@@ -14,8 +14,24 @@
 | Project | Path | Role |
 |---|---|---|
 | **Mr. Moonlight** | `E:\MrMoonlight` (this repo) | The shipping game. Git-tracked. Nothing untested lands here. |
-| **Playground** | `E:\playground\My project` | Sandbox. Not this repo, not git-tracked by it. Where new/bulk-imported assets get opened, checked, and proven out *before* anything moves into Mr. Moonlight. |
+| **Playground** | `E:\playground\Playground` | Sandbox. Not this repo, not git-tracked by it. Where new/bulk-imported assets get opened, checked, and proven out *before* anything moves into Mr. Moonlight. |
 | **Weapons** | `E:\playground\weapon` | **Third project, added 2026-08-28.** HQ FPS Weapons 2.0 in isolation. It ships `ProjectSettings` overrides that clobber a host project, so it gets its own. MCP port **8082**. This is where weapon models/animations are pulled from when MRM-22/23/24/25/52 are worked. |
+
+> **2026-09-16: Playground renamed and reorganized.**
+> - The folder moved from `E:\playground\My project` to **`E:\playground\Playground`**, and Unity's
+>   product name is now "Playground". The MCP port (8081) is unchanged. Unity Hub needed the
+>   project re-added from disk.
+> - Every evaluation package under `Assets/PLAYGROUND/` now sits in **one folder named with its
+>   asset-index ID** (`AST-001` = Gore Simulator, `AST-013` = Retarget Pro V5, …). Look IDs up in
+>   `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`.
+> - Assets that had two top-level folders are nested inside one ID folder: AST-002 InfiniCLOUD
+>   (both `ARTnGAME` folders), AST-003 Dynamic Radial Masks (original + modified copy), AST-005
+>   Shiny SSR, AST-006 PIDI, AST-055 Highlight Plus.
+> - AllSky moved into `AST-086`, and the Drunk Color Pulse shader into `AST-093/Resources`.
+> - Still at the `Assets/` root because their paths are hardcoded or special: `SoundsGood/`,
+>   `Gaia User Data/`, `Gizmos/`. Also `Standard Assets/Image Effects`, which nothing references.
+> - Older docs that name package folders like `Assets/PLAYGROUND/Blaze AI Engine/` are stale.
+>   Translate them through the spreadsheet.
 
 Why: Carlos is about to bring in a batch of new assets (scope described in a later prompt — no
 Linear issue yet). Testing them in an isolated project first, instead of importing straight into

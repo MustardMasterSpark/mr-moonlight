@@ -48,7 +48,7 @@ namespace MrMoonlight.EditorTools.Migration
     public static class MoonlightTraceyArmsBuild
     {
         private const string ArmsPrefab =
-            "Assets/ThirdParty/PolymindGames/HQFPS/Prefabs/Wieldables/HQFPS_Wieldable_Arms.prefab";
+            "Assets/ThirdParty/AST-046/HQFPS/Prefabs/Wieldables/HQFPS_Wieldable_Arms.prefab";
 
         private const string TraceyFbx =
             "Assets/_Project/Art/Characters/Tracey/Arms/Tracey_FP_Arms.fbx";
@@ -251,7 +251,7 @@ namespace MrMoonlight.EditorTools.Migration
         private static Material BuildMaterial(StringBuilder log)
         {
             var donorMat = AssetDatabase.LoadAssetAtPath<Material>(
-                "Assets/ThirdParty/PolymindGames/HQFPS/Art/Meshes/Wieldables/Arms/Materials/FP_Arm_Standard.mat");
+                "Assets/ThirdParty/AST-046/HQFPS/Art/Meshes/Wieldables/Arms/Materials/FP_Arm_Standard.mat");
             if (donorMat == null)
             {
                 log.AppendLine("ABORT: vendor material FP_Arm_Standard.mat not found.");

@@ -21,7 +21,7 @@ namespace MrMoonlight.EditorTools.Migration
         public const string VariantRoot = "Assets/_Project/Prefabs/Weapons";
 
         /// <summary>Where the raw vendor wieldables live (git-ignored, per the ThirdParty policy).</summary>
-        public const string VendorRoot = "Assets/ThirdParty/PolymindGames/HQFPS/Prefabs/Wieldables";
+        public const string VendorRoot = "Assets/ThirdParty/AST-046/HQFPS/Prefabs/Wieldables";
 
         /// <summary>Which number key a weapon answers to. Matches
         /// <c>MoonlightWeaponCategorySwitcher.CategoryKey</c>, and doubles as the folder name under

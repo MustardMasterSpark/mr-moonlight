@@ -63,7 +63,7 @@ Sources the wizard must ask about, every time:
 | Source | What it means |
 |---|---|
 | **`E:\Props`** | The download/generation dump. Treat as raw |
-| **Playground project** (`E:\playground\My project`) | A pack Carlos staged there for testing. Extract the working files out — see `Docs/dual-project-workflow.md` |
+| **Playground project** (`E:\playground\Playground`) | A pack Carlos staged there for testing. Extract the working files out — see `Docs/dual-project-workflow.md` |
 | **Fresh Tripo output** | Carlos just generated it. Ask *where he put it* |
 
 ---
@@ -949,7 +949,7 @@ sources are typically **pre-built asset-pack meshes** (already textured, sometim
 low-poly) rather than raw geometry needing the full Tripo-style treatment, nor that
 `Docs/dual-project-workflow.md`'s folder+`.meta` copy has to happen *before* the wizard's own
 step 1. Also caught: `SKILL.md` still named the pre-move Playground path
-(`E:\playground\test`) — stale since the 2026-08-28 move to `E:\playground\My project`. **Fixed
+(`E:\playground\test`) — stale since the 2026-08-28 move to `E:\playground\My project` (renamed `E:\playground\Playground` 2026-09-16). **Fixed
 2026-08-29.**
 
 ### G14 — The Topdown-pack eye-height check was promised but never written down
