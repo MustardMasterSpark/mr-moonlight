@@ -205,10 +205,19 @@ namespace MrMoonlight.EditorTools.Migration
 						}
 					}
 
-					// Require a confident jump (top gaps at least ~2x bigger than the rest) and
-					// that the smallest "real" gap is still a meaningful fraction of the whole
-					// selection's span - otherwise treat the whole hull as one piece.
-					if (elbowCount > 0 && bestRatio >= 2f && gapsDesc[elbowCount - 1] >= totalRange * 0.02f)
+					// Require a confident jump (top gaps at least ~2.5x bigger than the noise tier
+					// right below them) and a tiny absolute floor to reject pure floating-point
+					// noise. NOTE: this used to also require the smallest "real" gap be >=2% of
+					// the WHOLE selection's span - that assumed few, large seams (true for a log
+					// welded from a handful of separate mesh pieces, e.g. AP_ENV_tree_Nokmyung's
+					// 3 segments). It wrongly rejected meshes built as one continuous tube with
+					// many evenly-spaced loop cuts along its length (e.g. AP_AlaskaCedar_001_2:
+					// 18 real ring gaps, each only ~0.7% of the total span, but a clean 6x jump
+					// above the same-ring noise floor) - those got left as one un-split piece
+					// that overshoots the taper/curve badly. The ratio check alone is the real
+					// noise-vs-signal test; a fixed percent-of-span floor doesn't scale with how
+					// many genuine rings a limb has.
+					if (elbowCount > 0 && bestRatio >= 2.5f && gapsDesc[elbowCount - 1] >= totalRange * 0.002f)
 					{
 						gapThreshold = gapsDesc[elbowCount - 1] - 1e-9f;
 					}
@@ -320,6 +329,204 @@ namespace MrMoonlight.EditorTools.Migration
 			rigidWindow.GenerateColliders();
 
 			EditorCoroutines.Execute(WaitForGenerateThenLog(rigidWindow));
+		}
+
+		// Debug helper: reports the current Prefab Stage's hull/collider state without changing
+		// anything. Exists so ad-hoc inspection from outside this assembly (e.g. the MCP
+		// execute_code tool, which can't reference the Technie namespace directly) can still see
+		// what's painted.
+		public static string DescribeCurrentPrefabStage()
+		{
+			PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+			if (stage == null)
+				return "No prefab stage open.";
+
+			GameObject root = stage.prefabContentsRoot;
+			Transform visual = root.transform.Find("Visual");
+			if (visual == null)
+				return "Prefab: " + root.name + " | No 'Visual' child found.";
+
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			sb.AppendLine("Prefab: " + root.name + " (" + stage.assetPath + ")");
+
+			RigidColliderCreator creator = visual.GetComponent<RigidColliderCreator>();
+			if (creator == null)
+			{
+				sb.AppendLine("No RigidColliderCreator on Visual.");
+			}
+			else if (creator.paintingData == null)
+			{
+				sb.AppendLine("RigidColliderCreator exists but paintingData is null.");
+			}
+			else
+			{
+				PaintingData pd = creator.paintingData;
+				sb.AppendLine("Hull count: " + pd.hulls.Count);
+				foreach (Hull h in pd.hulls)
+				{
+					sb.AppendLine("  Hull '" + h.Name + "' type=" + h.type + " selectedFaces=" + h.GetSelectedFaces().Length);
+				}
+			}
+
+			MeshFilter mf = visual.GetComponent<MeshFilter>();
+			if (mf != null && mf.sharedMesh != null)
+				sb.AppendLine("Mesh tris: " + (mf.sharedMesh.triangles.Length / 3));
+
+			Collider[] existing = visual.GetComponents<Collider>();
+			sb.AppendLine("Existing colliders on Visual: " + existing.Length);
+
+			return sb.ToString();
+		}
+
+		// Diagnostic: dumps the same PCA-axis projection & gap analysis used by
+		// SplitPaintedHullsAtRingSeams for one named hull, without changing anything. Used to
+		// understand why a given mesh did/didn't produce real ring seams.
+		public static string DumpRingProjection(string expectedRootName, string hullName)
+		{
+			PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+			if (stage == null) throw new System.InvalidOperationException("Not in a Prefab Stage.");
+			GameObject root = stage.prefabContentsRoot;
+			if (root.name != expectedRootName) throw new System.InvalidOperationException("Wrong prefab open.");
+			Transform visual = root.transform.Find("Visual");
+			RigidColliderCreator creator = visual.GetComponent<RigidColliderCreator>();
+			Mesh mesh = visual.GetComponent<MeshFilter>().sharedMesh;
+			Vector3[] verts = mesh.vertices;
+			int[] tris = mesh.triangles;
+			PaintingData paintingData = creator.paintingData;
+
+			Hull h = null;
+			foreach (Hull cand in paintingData.hulls)
+				if (cand.Name == hullName) h = cand;
+			if (h == null) return "Hull '" + hullName + "' not found.";
+
+			int[] faces = h.GetSelectedFaces();
+			Vector3[] centroids = new Vector3[faces.Length];
+			for (int i = 0; i < faces.Length; i++)
+			{
+				int t = faces[i];
+				centroids[i] = (verts[tris[t * 3]] + verts[tris[t * 3 + 1]] + verts[tris[t * 3 + 2]]) / 3f;
+			}
+			Vector3 mean = Vector3.zero;
+			foreach (Vector3 c in centroids) mean += c;
+			mean /= centroids.Length;
+
+			float xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+			foreach (Vector3 c in centroids)
+			{
+				Vector3 d = c - mean;
+				xx += d.x * d.x; xy += d.x * d.y; xz += d.x * d.z;
+				yy += d.y * d.y; yz += d.y * d.z; zz += d.z * d.z;
+			}
+			Vector3 axis = new Vector3(1, 1, 1).normalized;
+			for (int iter = 0; iter < 50; iter++)
+			{
+				Vector3 next = new Vector3(
+					xx * axis.x + xy * axis.y + xz * axis.z,
+					xy * axis.x + yy * axis.y + yz * axis.z,
+					xz * axis.x + yz * axis.y + zz * axis.z
+				);
+				if (next.sqrMagnitude < 1e-12f) break;
+				axis = next.normalized;
+			}
+
+			HashSet<int> usedVerts = new HashSet<int>();
+			foreach (int t in faces)
+			{
+				usedVerts.Add(tris[t * 3]);
+				usedVerts.Add(tris[t * 3 + 1]);
+				usedVerts.Add(tris[t * 3 + 2]);
+			}
+
+			List<float> projList = new List<float>();
+			foreach (int vi in usedVerts)
+				projList.Add(Vector3.Dot(verts[vi] - mean, axis));
+			projList.Sort();
+
+			float totalRange = projList[projList.Count - 1] - projList[0];
+
+			List<float> gaps = new List<float>();
+			for (int i = 1; i < projList.Count; i++)
+				gaps.Add(projList[i] - projList[i - 1]);
+			List<float> gapsDesc = new List<float>(gaps);
+			gapsDesc.Sort();
+			List<float> gapsAsc = new List<float>(gapsDesc);
+			gapsDesc.Reverse();
+
+			System.Text.StringBuilder sb = new System.Text.StringBuilder();
+			sb.AppendLine("Hull '" + hullName + "': " + faces.Length + " tris, " + usedVerts.Count + " verts, axis-range=" + totalRange.ToString("F4"));
+			sb.AppendLine("Bounds along axis: min=" + projList[0].ToString("F4") + " max=" + projList[projList.Count - 1].ToString("F4"));
+			sb.AppendLine("Total gap count: " + gaps.Count + " (verts along axis: " + projList.Count + ")");
+			sb.AppendLine("Top 25 gaps (descending): ");
+			for (int i = 0; i < Mathf.Min(25, gapsDesc.Count); i++)
+				sb.AppendLine("  [" + i + "] " + gapsDesc[i].ToString("F5") + " (" + (gapsDesc[i] / totalRange * 100f).ToString("F2") + "% of range)");
+			sb.AppendLine("Bottom 15 gaps (ascending, smallest first): ");
+			for (int i = 0; i < Mathf.Min(15, gapsAsc.Count); i++)
+				sb.AppendLine("  [" + i + "] " + gapsAsc[i].ToString("F5"));
+			return sb.ToString();
+		}
+
+		// Debug helper: re-runs just the "generate colliders from existing hulls" step on the
+		// currently open Prefab Stage (non-blocking, via the same editor-coroutine polling used
+		// elsewhere), and logs whether it actually produced colliders. Used to isolate
+		// collider-generation failures from the split step itself. Check Log / console after a
+		// short wait (does not block the calling thread).
+		public static void RegenerateCollidersOnly(string expectedRootName)
+		{
+			PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+			if (stage == null) throw new System.InvalidOperationException("Not in a Prefab Stage.");
+			GameObject root = stage.prefabContentsRoot;
+			if (root.name != expectedRootName) throw new System.InvalidOperationException("Wrong prefab open.");
+			Transform visual = root.transform.Find("Visual");
+
+			RigidColliderCreatorWindow.ShowWindow();
+			RigidColliderCreatorWindow rigidWindow = RigidColliderCreatorWindow.instance;
+			Selection.activeGameObject = visual.gameObject;
+			Log.Clear();
+			rigidWindow.GenerateColliders();
+
+			EditorCoroutines.Execute(WaitForRegenerateThenLog(rigidWindow, root));
+		}
+
+		private static IEnumerator WaitForRegenerateThenLog(RigidColliderCreatorWindow rigidWindow, GameObject root)
+		{
+			int frames = 0;
+			do
+			{
+				yield return null;
+				frames++;
+			}
+			while (rigidWindow.IsGeneratingColliders && frames < 600);
+
+			int colliderCount = root.GetComponentsInChildren<Collider>(true).Length;
+			Log.Add("REGENERATE COMPLETE after " + frames + " frames, stillGenerating=" + rigidWindow.IsGeneratingColliders + ", collidersFound=" + colliderCount);
+			Debug.Log("AST116_REGENERATE_COMPLETE colliders=" + colliderCount);
+		}
+
+		// Renames a hull in the currently open Prefab Stage and clears any generated colliders -
+		// used to reset naming back to a clean base name before re-running a split with corrected
+		// logic (avoids "log_1_1_1"-style name stacking from re-running on an already-renamed hull).
+		public static string RenameHullAndClearColliders(string expectedRootName, string oldName, string newName)
+		{
+			PrefabStage stage = PrefabStageUtility.GetCurrentPrefabStage();
+			if (stage == null) throw new System.InvalidOperationException("Not in a Prefab Stage.");
+			GameObject root = stage.prefabContentsRoot;
+			if (root.name != expectedRootName) throw new System.InvalidOperationException("Wrong prefab open.");
+			Transform visual = root.transform.Find("Visual");
+			RigidColliderCreator creator = visual.GetComponent<RigidColliderCreator>();
+			PaintingData paintingData = creator.paintingData;
+
+			Hull h = null;
+			foreach (Hull cand in paintingData.hulls)
+				if (cand.Name == oldName) h = cand;
+			if (h == null) return "Hull '" + oldName + "' not found.";
+
+			h.name = newName;
+
+			foreach (Collider c in visual.GetComponents<Collider>())
+				Object.DestroyImmediate(c);
+
+			EditorUtility.SetDirty(paintingData);
+			return "Renamed '" + oldName + "' -> '" + newName + "', cleared generated colliders.";
 		}
 
 		// Recovery helper: merges every hull named "<base>" or "<base>_<n>" back into a single
