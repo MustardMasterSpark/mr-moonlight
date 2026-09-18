@@ -91,8 +91,12 @@ Each painted hull is one or more limbs (tubes that may fork). For each:
    or hard-normal seam; without welding, a continuous log looks like hundreds of islands.
 2. **Connected parts** are processed separately.
 3. **Start point:** where the limb is nearest the tree's base (the `Visual`'s local origin). If an
-   open edge of the paint is there (a branch where it leaves its parent), start from that whole ring;
-   otherwise (a trunk with a closed bottom) from that vertex.
+   open edge of the paint is there (a branch where it leaves its parent), start from that whole ring.
+   Otherwise, if the part stands on the ground (its nearest point is in its bottom quarter): a
+   **closed-bottom trunk** — start from every ground-level vertex inside the trunk's footprint, so
+   distance grows as height and slices are level rings (2026-09-18; starting from one vertex made
+   slanted strips, DeadTree01). Otherwise (a drooping branch) from that one vertex. The footprint
+   rule is **the unsolved part** — see Troubleshooting "Roots fused into the trunk at the ground".
 4. **Geodesic distance** from the start, along the limb's own surface (Dijkstra over welded edges,
    metric units, the `Visual`'s non-uniform scale applied).
 5. **Arms and forks (join tree).** Sweeping from the farthest vertex inward, every tip starts an arm
@@ -105,12 +109,29 @@ Each painted hull is one or more limbs (tubes that may fork). For each:
    on; its tube (axis through the fork, radius = 95th percentile of its surface distance in clean
    stretches ±15%) keeps its vertices, and any vertex sticking out of that tube and closer to a side
    branch's axis goes to that side branch.
-7. **Cutting each arm** walks bands along the geodesic distance and cuts when the centerline stops
-   being straight (sag > `StraightnessTolerance` × radius — a hull over a bend fills the inside of
-   the bend) or the piece passes `MaxLengthPerDiameter`. The piece that ends at a fork is capped at
-   `JunctionPieceDiameters`.
+7. **Cutting each arm** walks bands (0.75 mesh edges wide) along the geodesic distance and cuts at
+   the first of:
+   - **Outline fit (2026-09-18, the main cover rule).** Around the straight axis of the candidate
+     piece, the outline is sampled in `ProfileSectors` directions (outermost vertex per direction,
+     binned every ¼ edge along the axis). If a convex hull would stand more than
+     `ProfileTolerance` (5 cm, less on thin limbs) off any dent in that outline — a waist, a flare,
+     a kink — cut. This runs before the minimum-length gate. Result: straight limbs keep long pieces,
+     curved ones get sliced ring by ring (Carlos's "calculus" rule).
+   - The centerline stops being straight (sag > `StraightnessTolerance` × radius).
+   - The piece passes `MaxLengthPerDiameter`.
+
+   The piece that ends at a fork gets a cut `JunctionPieceDiameters` below the fork (only cuts right
+   next to that one are dropped; it used to drop *every* cut above it, which erased Deadtree06's
+   waist cuts).
+   **Slice floor:** hulls are built from whole triangles, so no piece can be thinner than one
+   triangle row (0.4–0.7 m tall on batch-1 trunks).
 8. **Tiny or flat pieces** (< `MinTrisPerPiece`, or no thickness) merge into a piece they actually
    touch, same arm preferred.
+9. **Lobe split (2026-09-18, EXPERIMENTAL — not yet applied to any tree).** Each piece is viewed
+   down its axis in `LobeSectors` wedges; runs of wedges reaching well past the core radius become
+   separate pieces, so a star-shaped cross-section (roots fused into the base, two arms fused under
+   a fork) becomes a round core + one hull per lobe. On Deadtree06 alone it didn't clear the root
+   plates (the start-region problem dominates there); untested on anything else.
 
 **Paint ownership** (in `TreeColliderTool.BuildPlans`, across all hulls even when planning one):
 exact duplicate hulls are dropped (first kept); a triangle painted in several hulls belongs to the
@@ -129,6 +150,9 @@ hull with the fewest triangles — "the branch wins" (Carlos, 2026-09-17).
 | `TubeRadiusTolerance` | 0.15 | Slack on the carrying-on limb's tube |
 | `MinTrisPerPiece` | 6 | Smaller pieces merge into a touching neighbour |
 | `GapWarningRadii` / `GapFloorMetres` | 0.5 / 0.03 | Report flag: hull face stands off its paint by more than this |
+| `ProfileTolerance` / `ProfileToleranceRadius` / `ProfileToleranceFloor` | 0.05 m / 0.25 / 0.015 m | Outline-fit cut: max hull stand-off over a dent = min(5 cm, ¼ radius), never below 1.5 cm (2026-09-18) |
+| `ProfileSectors` | 8 | Directions the outline is sampled in around the axis |
+| `LobeSectors` / `LobeCoreQuantile` / `LobeExcessRadius` / `LobeMinExcess` | 24 / 0.3 / 0.3 / 0.08 m | Lobe split (experimental) |
 
 **Gap** (report column, `<-- CHECK`): the farthest any hull face stands off the piece's own painted
 surface, with the piece's open ends capped first. On a fluted trunk, 0.15–0.3 m on trunk rings is
@@ -146,6 +170,29 @@ bark grooves — expected. On a branch or at a fork it means empty space is bein
 - **A hull covers two separate places:** shouldn't happen any more (pieces are single bands of
   single arms). If it does, compare the left and right columns of the image: the left shows the
   piece's actual triangles in its colour.
+- **Trunk outline bridged — waist, flare or zigzag (batch 1, Carlos's screenshots 2026-09-18):**
+  fixed by the outline-fit cut (step 7). If it recurs, check the trunk pieces' length in the report:
+  a trunk piece much longer than one triangle row across a visibly curved stretch means a cut was
+  lost (the fork-cap bug did exactly that).
+- **Slanted strips instead of level rings on a trunk:** the start was a single vertex on a
+  closed-bottom trunk (report `NOTE: ... no open edge at its base`). The closed-bottom rule (step 3)
+  should catch trunks; look at its `NOTE: closed bottom, started from N ...` line.
+- **Roots fused into the trunk at the ground — UNSOLVED (Deadtree06, 2026-09-18).** Flat roots
+  spreading from the base on the ground: the lowest rings hold the trunk *and* every root base, and
+  their hulls are plates joining root to root (Carlos found it from a top view). Tried and failed,
+  so the next attempt doesn't repeat them:
+  1. Footprint = median ground-ring radius × 1.3 → 3.8 m on Deadtree06, low ~0.3 m plates between
+     roots (this is what was applied, then undone).
+  2. Lower quartile of the ground ring → a tall sliver hull standing off the trunk side.
+  3. Footprint from the trunk radius at 10% height (current code) + lobe split → still a filled
+     square between root bases from above.
+  4. Same + ground band 1.2% of height instead of 3% → sliver hull again (reverted).
+  **Workaround that works today:** paint the trunk and each root as separate hulls, overlapping a
+  little where they meet — separately painted limbs split cleanly. Carlos repainted Deadtree06 on
+  2026-09-18 (one hull); next session decides the approach.
+- **Always check a rooty or forked base from above.** The preview image now has a top-down view as
+  its last row (a close-up hides everything above the focused pieces so the crown doesn't cover
+  the base). The side views hid the root plates.
 - **`VERIFY PROBLEM`:** run `Regenerate`. Generation is synchronous now; the old window-driven
   generate could silently do nothing while logging "complete".
 
@@ -191,8 +238,35 @@ Per batch: for each tree run the full order above (Plan -> look -> PlanFocus whe
 PAINT lines to Carlos -> Apply -> Inspect -> look), one short summary per tree, all questions for
 Carlos collected into one round, the tracker updated at the end.
 
-## Known gaps (2026-09-17) — not solved yet
+## Batch 1 — 2026-09-17/18 (Opus)
 
+Carlos picked 5 hard trees. First pass (old cutter) applied all five; Carlos then checked live and
+found the "clean" three still bridged the trunk outline badly — the thing that matters for cover
+(an enemy behind a tree; a shot that looks clear must not hit an invisible collider). Second pass
+rebuilt the cutting (outline fit, level rings on closed bottoms, fork-cap fix, top-down preview).
+
+| Tree | State at end of session |
+|---|---|
+| `AP_Tree_Lake_RoundTree_01_SM` | Applied, 128 colliders, trunk ring-sliced. Awaiting Carlos. |
+| `AP_Tree_DeadTree01_SM` | Applied, 69 colliders. **Carlos flagged the upper-left fork crotch** still filled. |
+| `AP_Tree_Deadtree06_SM` | **No colliders.** Base unsolved (root plates). Carlos repainted it as one hull. |
+| `AP_Tree_Curse_H01_2` | Applied with the OLD cutter, 442. Braided trunk strands wedge. Carlos: "fine for what they are". |
+| `AP_M6_Tree_MonsterTreeBark_SM_PHJ_2` | Applied with the OLD cutter, 321. Looping root wedge. Same verdict. |
+
+**Code state vs what's applied:** Lake_RoundTree and DeadTree01 were applied with the outline-fit
+cutter + the "median ground ring × 1.3" footprint and **no** lobe split. The code now has the
+10%-height footprint and the lobe split, neither verified on those two. Re-plan them before
+trusting the current code.
+
+Painting lessons for Carlos: separate hulls per limb still give the cleanest result; where roots
+lie flat and fuse into the trunk at the ground, paint each root as its own hull.
+
+## Known gaps (2026-09-17, updated 2026-09-18) — not solved yet
+
+- **Fused ground roots** (Deadtree06) — see Troubleshooting.
+- **Fork crotches on thick trunks** (DeadTree01 upper-left, Carlos 2026-09-18) — the fused
+  cross-section just below a fork is still one hull. The lobe split is meant for this; untested.
+- **Braided / looping strands in one paint** (Curse_H01, MonsterTreeBark) — read as one fat tube.
 - **Tested on one tree.** Settings and the fork logic were tuned on Juniper02 (coarse mesh, 18 cm
   median edge, fluted trunk, closed bottom). Untested: dense meshes, conifers with many whorls,
   drooping limbs that go lower than where they start (the start point is "nearest the tree base"),

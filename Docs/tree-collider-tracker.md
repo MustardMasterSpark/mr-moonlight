@@ -18,9 +18,21 @@ Rules:
 | `AP_ENV_tree_SaGeeSukRim` | old ring-seam splitter | 15 | 2026-09-17 | Not redone. Data: `Visual 273` |
 | `AP_AlaskaCedar_001_2` | old ring-seam splitter | 18 | 2026-09-17 | Not redone. Data: `Visual 381` |
 
-## In progress
+## In progress — batch 1 (state verified from disk 2026-09-18, end of session)
 
-(none)
+Details and what was tried: `Docs/technie-vegetation-collider-process.md` "Batch 1".
+
+| Prefab | Colliders | Notes |
+|---|---|---|
+| `AP_Tree_Deadtree06_SM` | **0** | Split undone while testing. **Carlos repainted it 2026-09-18 as one hull (`Hull 1`)** — untouched since. Base (flat roots fused into the trunk at ground) is the open problem. |
+| `AP_Tree_DeadTree01_SM` | 69 | Outline-fit cutter, level rings. **Carlos flagged: upper-left fork crotch still filled** — fix next session. |
+| `AP_Tree_Lake_RoundTree_01_SM` | 128 | Outline-fit cutter, trunk 5 -> 39 ring slices. One tight crown curl filled (out of reach). Awaiting Carlos's OK. |
+| `AP_Tree_Curse_H01_2` | 442 | OLD cutter. Braided trunk strands wedge. Carlos: fine for what they are. Could be re-run with the new cutter. |
+| `AP_M6_Tree_MonsterTreeBark_SM_PHJ_2` | 321 | OLD cutter. Looping-root wedge. Same verdict. |
+
+**Carlos started painting batch 2 during this session** (many other prefabs in the folder show as
+modified in git). Don't assume the "Reset — waiting for paint" list below is still paint-free;
+check each prefab's Technie hull count before planning.
 
 ## Reset 2026-09-17 — clean, waiting for paint
 

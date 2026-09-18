@@ -659,11 +659,14 @@ namespace MrMoonlight.EditorTools.Migration
 				Bounds b = paintRenderers[0].bounds;
 				foreach (Renderer r in paintRenderers) b.Encapsulate(r.bounds);
 				float radius = Mathf.Max(b.extents.magnitude, 0.05f);
-				Vector3[] viewDirs = { new Vector3(0f, -0.15f, 1f), new Vector3(-1f, -0.15f, 0f), new Vector3(0.7f, -0.9f, -0.7f) };
+				// Last view is straight down: roots and fused bases only show their bridging from
+				// above (Carlos found Deadtree06's root plates that way; the side views hid them).
+				Vector3[] viewDirs = { new Vector3(0f, -0.15f, 1f), new Vector3(-1f, -0.15f, 0f), new Vector3(0.7f, -0.9f, -0.7f), Vector3.down };
 				float frame = radius * 1.02f;
+				float topCut = float.MaxValue;
+				Bounds fb = new Bounds();
 				if (focused)
 				{
-					Bounds fb = new Bounds();
 					bool first = true;
 					foreach (int i in focusPieces)
 					{
@@ -675,8 +678,11 @@ namespace MrMoonlight.EditorTools.Migration
 					{
 						b.center = fb.center;
 						frame = Mathf.Max(fb.extents.magnitude * 1.4f, 0.1f);
+						// Top view of a close-up: hide whatever starts above the focused pieces,
+						// or the crown covers the base being checked.
+						topCut = fb.max.y + 0.1f;
 					}
-					viewDirs = new[] { new Vector3(0f, -0.2f, 1f), new Vector3(-1f, -0.2f, 0f), new Vector3(0f, -0.2f, -1f), new Vector3(1f, -0.2f, 0f) };
+					viewDirs = new[] { new Vector3(0f, -0.2f, 1f), new Vector3(-1f, -0.2f, 0f), new Vector3(0f, -0.2f, -1f), new Vector3(1f, -0.2f, 0f), Vector3.down };
 				}
 
 				RenderTexture rt = new RenderTexture(tile, tile, 24, RenderTextureFormat.ARGB32);
@@ -691,7 +697,8 @@ namespace MrMoonlight.EditorTools.Migration
 				{
 					Vector3 fwd = viewDirs[v].normalized;
 					camGo.transform.position = b.center - fwd * radius * 3f;
-					camGo.transform.rotation = Quaternion.LookRotation(fwd, Vector3.up);
+					bool top = Mathf.Abs(fwd.y) > 0.95f;
+					camGo.transform.rotation = Quaternion.LookRotation(fwd, top ? Vector3.forward : Vector3.up);
 					cam.orthographicSize = frame;
 					cam.nearClipPlane = 0.01f;
 					cam.farClipPlane = radius * 6f;
@@ -699,8 +706,9 @@ namespace MrMoonlight.EditorTools.Migration
 
 					for (int col = 0; col < 2; col++)
 					{
-						foreach (Renderer r in paintRenderers) r.enabled = col == 0;
-						foreach (Renderer r in hullRenderers) r.enabled = col == 1;
+						float cut = top ? topCut : float.MaxValue;
+						foreach (Renderer r in paintRenderers) r.enabled = col == 0 && r.bounds.min.y < cut;
+						foreach (Renderer r in hullRenderers) r.enabled = col == 1 && r.bounds.min.y < cut;
 						cam.Render();
 						RenderTexture.active = rt;
 						sheet.ReadPixels(new Rect(0, 0, tile, tile), col * tile, (viewDirs.Length - 1 - v) * tile);

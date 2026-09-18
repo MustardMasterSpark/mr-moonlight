@@ -39,6 +39,22 @@ namespace MrMoonlight.EditorTools.Migration
 			// Near a fork, vertices within the carrying-on limb's radius times (1 + this) stay with it.
 			public float TubeRadiusTolerance = 0.15f;
 			public int MinTrisPerPiece = 6;
+			// Cover precision (Carlos, 2026-09-18): a piece is cut as soon as its hull would bridge
+			// a dent in the limb's outline (waist, flare, kink) by more than this many metres, seen
+			// from any of ProfileSectors directions around the axis. Capped at a fraction of the
+			// local radius so thin branches aren't held to trunk-sized slack.
+			public float ProfileTolerance = 0.05f;
+			public float ProfileToleranceRadius = 0.25f;
+			public float ProfileToleranceFloor = 0.015f;
+			public int ProfileSectors = 8;
+			// Cross-section lobes (SplitLobes): looked at down the piece's axis in LobeSectors
+			// wedges, a run of wedges reaching more than max(LobeMinExcess, LobeExcessRadius x core
+			// radius) past the core becomes its own piece. Core radius = LobeCoreQuantile of the
+			// wedge radii (low, because on a rooty base most wedges are roots).
+			public int LobeSectors = 24;
+			public float LobeCoreQuantile = 0.3f;
+			public float LobeExcessRadius = 0.3f;
+			public float LobeMinExcess = 0.08f;
 		}
 
 		public class Piece
@@ -216,6 +232,12 @@ namespace MrMoonlight.EditorTools.Migration
 			// 6. Merge tiny/flat pieces into a piece they share a node with.
 			MergeSmallPieces(connected, fn, nodePos, s, result.Notes);
 
+			// 7. Split star-shaped cross-sections (roots fused into the trunk base, two arms fused
+			// under a fork) into a round core plus one piece per lobe.
+			List<Piece> lobed = new List<Piece>();
+			foreach (Piece p in connected) lobed.AddRange(SplitLobes(p, result.Arcs[p.Arc], fn, nodeArc, dist, nodeCount, nodePos, medianEdge, s, result.Notes));
+			connected = lobed;
+
 			connected.Sort((x, y) =>
 			{
 				int c0 = x.Component.CompareTo(y.Component);
@@ -299,8 +321,74 @@ namespace MrMoonlight.EditorTools.Migration
 				return;
 			}
 
+			// Closed bottom on a part that stands on the ground (a trunk): start from every vertex
+			// in the bottom slab, so distance grows as height and bands are level rings. Starting
+			// from one vertex made the bands slanted strips up the trunk's sides, and each strip's
+			// hull bridged the flare (Carlos's DeadTree01 screenshots, 2026-09-18). A part whose
+			// nearest point isn't at its bottom (a drooping branch) keeps the single start point.
+			// "Ground level" = the start point's height; roots can dip below it, so everything at
+			// or under that level is start too.
+			float minY = float.MaxValue, maxY = float.MinValue;
+			foreach (int n in nodes) { minY = Mathf.Min(minY, nodePos[n].y); maxY = Mathf.Max(maxY, nodePos[n].y); }
+			float slab = 0.3f * Mathf.Max(1e-3f, MedianEdgeOf(nodes, fn, faceCount, comp, c, nodePos));
+			// Only the trunk's own footprint: roots lying flat on the ground are at ground level
+			// too, and starting from them fused every root into one flat disc (Deadtree06). The
+			// footprint reaches a bit past the nearest vertex's horizontal distance from the base
+			// point - on a capped trunk with no centre vertex that vertex sits on the rim.
+			// Footprint = the trunk's radius on a horizontal slice above the root flare (10% up),
+			// times 1.3 for the flare itself. Measured on the ground ring instead, flat roots made
+			// it 3.8 m and every root base started at distance 0, so the first rings were plates
+			// joining root to root (Carlos's Deadtree06 top view). Centre = the ground ring's median
+			// point, not the slice's: on a leaning trunk (DeadTree01) the slice centre is off to
+			// one side at the ground.
+			float ground = nodePos[nearestNode].y;
+			float groundBand = Mathf.Max(slab, 0.03f * (maxY - ground));
+			List<float> xs = new List<float>(), zs = new List<float>();
+			foreach (int n in nodes)
+				if (nodePos[n].y <= ground + groundBand) { xs.Add(nodePos[n].x); zs.Add(nodePos[n].z); }
+			Vector2 centreXZ = Vector2.zero;
+			float footprint = 0f;
+			float sliceY = ground + 0.1f * (maxY - ground);
+			List<Vector2> slice = new List<Vector2>();
+			foreach (int n in nodes)
+				if (Mathf.Abs(nodePos[n].y - sliceY) <= 3f * slab) slice.Add(new Vector2(nodePos[n].x, nodePos[n].z));
+			if (xs.Count >= 3 && slice.Count >= 3)
+			{
+				xs.Sort(); zs.Sort();
+				centreXZ = new Vector2(xs[xs.Count / 2], zs[zs.Count / 2]);
+				Vector2 sc = Vector2.zero;
+				foreach (Vector2 p in slice) sc += p;
+				sc /= slice.Count;
+				List<float> rs = new List<float>();
+				foreach (Vector2 p in slice) rs.Add(Vector2.Distance(p, sc));
+				rs.Sort();
+				footprint = 1.3f * rs[rs.Count * 3 / 4];
+			}
+			if (footprint > 0f && ground - minY <= 0.25f * (maxY - minY))
+			{
+				sources = new List<int>();
+				foreach (int n in nodes)
+					if (nodePos[n].y <= ground + groundBand && Vector2.Distance(new Vector2(nodePos[n].x, nodePos[n].z), centreXZ) <= footprint) sources.Add(n);
+				if (sources.Count == 0) sources.Add(nearestNode);
+				notes.Add("part " + c + ": closed bottom, started from the " + sources.Count + " ground-ring vertices within " + footprint.ToString("F2") + " m of the trunk centre");
+				return;
+			}
+
 			sources = new List<int> { nearestNode };
 			notes.Add("part " + c + ": no open edge at its base, started from the vertex nearest the tree base");
+		}
+
+		private static float MedianEdgeOf(List<int> nodes, int[] fn, int faceCount, int[] comp, int c, List<Vector3> nodePos)
+		{
+			List<float> lengths = new List<float>();
+			for (int i = 0; i < faceCount; i++)
+			{
+				if (comp[fn[i * 3]] != c) continue;
+				for (int e = 0; e < 3; e++) lengths.Add(Vector3.Distance(nodePos[fn[i * 3 + e]], nodePos[fn[i * 3 + (e + 1) % 3]]));
+			}
+			if (lengths.Count == 0) return 0f;
+			lengths.Sort();
+			return lengths[lengths.Count / 2];
 		}
 
 		private static void Dijkstra(List<int> sources, List<List<KeyValuePair<int, float>>> adj, float[] dist)
@@ -493,18 +581,23 @@ namespace MrMoonlight.EditorTools.Migration
 			List<float> cuts = new List<float> { arc.Base, arc.Peak + 1e-4f };
 			if (length <= 0f) return cuts;
 
-			float bandWidth = Mathf.Max(1.5f * medianEdge, length / 200f);
+			// 0.75 edges: fine enough that a cut can land on every triangle ring, so a curved limb
+			// can be sliced ring by ring when the outline check asks for it.
+			float bandWidth = Mathf.Max(0.75f * medianEdge, length / 400f);
 			int bandCount = Mathf.Max(1, Mathf.CeilToInt(length / bandWidth));
 			bandWidth = length / bandCount;
 
 			Vector3[] sum = new Vector3[bandCount];
 			int[] count = new int[bandCount];
+			List<int>[] members = new List<int>[bandCount];
 			for (int n = 0; n < nodeCount; n++)
 			{
 				if (nodeArc[n] != arcIndex) continue;
 				int b = Mathf.Clamp((int)((dist[n] - arc.Base) / bandWidth), 0, bandCount - 1);
 				sum[b] += nodePos[n];
 				count[b]++;
+				if (members[b] == null) members[b] = new List<int>();
+				members[b].Add(n);
 			}
 			Vector3[] centre = new Vector3[bandCount];
 			for (int b = 0; b < bandCount; b++) centre[b] = count[b] > 0 ? sum[b] / count[b] : Vector3.zero;
@@ -545,6 +638,16 @@ namespace MrMoonlight.EditorTools.Migration
 				for (int i = startIdx; i <= end; i++) rSum += radius[valid[i]];
 				float meanR = Mathf.Max(rSum / (end - startIdx + 1), 1e-5f);
 
+				// Outline check runs before the minimum-length gate: on a fat trunk that gate is
+				// metres long, and a waist or flare inside it is exactly what a hull bridges.
+				float tol = Mathf.Max(s.ProfileToleranceFloor, Mathf.Min(s.ProfileTolerance, s.ProfileToleranceRadius * meanR));
+				if (ProfileOvershoot(members, valid, startIdx, end, smooth, nodePos, s.ProfileSectors, 0.25f * medianEdge) > tol)
+				{
+					cuts.Add(arc.Base + valid[end] * bandWidth);
+					startIdx = end;
+					continue;
+				}
+
 				if (segLength < s.MinLengthPerDiameter * 2f * meanR) continue;
 
 				float sag = 0f;
@@ -574,12 +677,84 @@ namespace MrMoonlight.EditorTools.Migration
 				float forkCut = arc.Peak - junction;
 				if (forkCut - arc.Base > 0.5f * junction)
 				{
-					cuts.RemoveAll(c => c > forkCut - 0.25f * junction && c < arc.Peak);
+					// Only drop cuts that would leave a sliver next to forkCut. Dropping every cut
+					// above it (as before) erased the outline cuts through a waist below a fork and
+					// left one 1.8 m hull bridging it (Deadtree06, 2026-09-18).
+					cuts.RemoveAll(c => Mathf.Abs(c - forkCut) < 0.5f * bandWidth);
 					cuts.Insert(cuts.Count - 1, forkCut);
 					cuts.Sort();
 				}
 			}
 			return cuts;
+		}
+
+		// How far a convex hull over bands [startIdx..end] would stand off the surface, along the
+		// limb. Around the straight axis between the two end centres, the outline is sampled in
+		// `sectors` directions: per band and sector, the outermost vertex (t along the axis, r
+		// from it). A hull can't dip into that outline, so the gap at each sample is the outline's
+		// upper convex envelope minus the sample. Per-sector maxima ignore bark grooves (those are
+		// dents around the ring, which slicing along the limb can't fix anyway).
+		private static float ProfileOvershoot(List<int>[] members, List<int> valid, int startIdx, int end, Vector3[] smooth, List<Vector3> nodePos, int sectors, float binWidth)
+		{
+			Vector3 a = smooth[startIdx];
+			Vector3 dir = smooth[end] - a;
+			if (dir.sqrMagnitude < 1e-10f) return 0f;
+			dir.Normalize();
+			Vector3 u = Vector3.Cross(dir, Mathf.Abs(dir.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
+			Vector3 v = Vector3.Cross(dir, u);
+
+			// Outline samples are binned along the axis at binWidth, finer than the cutting bands:
+			// a trunk's bands can be 0.7 m, and a waist inside two of them must still show.
+			float worst = 0f;
+			Dictionary<int, Vector2>[] cells = new Dictionary<int, Vector2>[sectors];
+			for (int k = 0; k < sectors; k++) cells[k] = new Dictionary<int, Vector2>();
+			for (int i = startIdx; i <= end; i++)
+			{
+				foreach (int n in members[valid[i]])
+				{
+					Vector3 d = nodePos[n] - a;
+					float t = Vector3.Dot(d, dir);
+					Vector3 radial = d - dir * t;
+					float r = radial.magnitude;
+					float ang = Mathf.Atan2(Vector3.Dot(radial, v), Vector3.Dot(radial, u));
+					int k = Mathf.Clamp((int)((ang + Mathf.PI) / (2f * Mathf.PI) * sectors), 0, sectors - 1);
+					int bin = Mathf.FloorToInt(t / binWidth);
+					Vector2 cur;
+					if (!cells[k].TryGetValue(bin, out cur) || r > cur.y) cells[k][bin] = new Vector2(t, r);
+				}
+			}
+			List<Vector2>[] outline = new List<Vector2>[sectors];
+			for (int k = 0; k < sectors; k++) outline[k] = new List<Vector2>(cells[k].Values);
+
+			List<Vector2> hull = new List<Vector2>();
+			for (int k = 0; k < sectors; k++)
+			{
+				List<Vector2> pts = outline[k];
+				if (pts.Count < 3) continue;
+				pts.Sort((p, q) => p.x.CompareTo(q.x));
+				hull.Clear();
+				foreach (Vector2 p in pts)
+				{
+					// Upper hull: drop the last point while it lies on or below the new chord.
+					while (hull.Count >= 2)
+					{
+						Vector2 h0 = hull[hull.Count - 2], h1 = hull[hull.Count - 1];
+						if ((h1.x - h0.x) * (p.y - h0.y) - (h1.y - h0.y) * (p.x - h0.x) >= 0f) hull.RemoveAt(hull.Count - 1);
+						else break;
+					}
+					hull.Add(p);
+				}
+				int h = 0;
+				foreach (Vector2 p in pts)
+				{
+					while (h < hull.Count - 2 && hull[h + 1].x < p.x) h++;
+					Vector2 h0 = hull[h], h1 = hull[Mathf.Min(h + 1, hull.Count - 1)];
+					float span = h1.x - h0.x;
+					float env = span > 1e-6f ? Mathf.Lerp(h0.y, h1.y, Mathf.Clamp01((p.x - h0.x) / span)) : Mathf.Max(h0.y, h1.y);
+					worst = Mathf.Max(worst, env - p.y);
+				}
+			}
+			return worst;
 		}
 
 		private class Axis
@@ -810,6 +985,113 @@ namespace MrMoonlight.EditorTools.Migration
 			foreach (Piece p in pieces)
 				if (p.Faces.Count < s.MinTrisPerPiece || IsFlat(p.Faces, fn, nodePos))
 					notes.Add("isolated tiny/flat piece kept (" + p.Faces.Count + " tris) - nothing touching it to merge into");
+		}
+
+		// Carlos's Deadtree06 top view (2026-09-18): every ring near the ground held the trunk
+		// plus the bases of the flat roots fused into it, and each ring's hull was a plate spanning
+		// root to root. Slicing along the limb can't fix that - the concavity is across the ring.
+		// Looked at down the piece's axis, the ring is a round core with lobes sticking out; faces
+		// in a lobe's wedges and outside the core radius become that lobe's own piece.
+		private static List<Piece> SplitLobes(Piece p, ArcInfo arc, int[] fn, int[] nodeArc, float[] dist, int nodeCount, List<Vector3> nodePos, float medianEdge, Settings s, List<string> notes)
+		{
+			List<Piece> result = new List<Piece> { p };
+			if (p.Faces.Count < 2 * s.MinTrisPerPiece) return result;
+
+			// Axis: centroid just below the piece to centroid just above it; straight up if that
+			// is degenerate (a ground ring has nothing below it).
+			float w = Mathf.Max(p.End - p.Start, 2f * medianEdge);
+			Vector3 c0, c1;
+			bool has0 = Centroid(p.Arc, p.Start - w, p.Start + 0.5f * (p.End - p.Start), nodeCount, nodeArc, dist, nodePos, out c0);
+			bool has1 = Centroid(p.Arc, p.Start + 0.5f * (p.End - p.Start), p.End + w, nodeCount, nodeArc, dist, nodePos, out c1);
+			Vector3 dir = (has0 && has1) ? c1 - c0 : Vector3.up;
+			if (dir.sqrMagnitude < 1e-6f) dir = Vector3.up;
+			dir.Normalize();
+			Vector3 u = Vector3.Cross(dir, Mathf.Abs(dir.y) < 0.9f ? Vector3.up : Vector3.right).normalized;
+			Vector3 v = Vector3.Cross(dir, u);
+
+			HashSet<int> ns = NodesOf(p.Faces, fn);
+			Vector3 centre = Vector3.zero;
+			foreach (int n in ns) centre += nodePos[n];
+			centre /= ns.Count;
+
+			int S = s.LobeSectors;
+			float[] sectorR = new float[S];
+			int[] faceSector = new int[p.Faces.Count];
+			float[] faceR = new float[p.Faces.Count];
+			for (int i = 0; i < p.Faces.Count; i++)
+			{
+				int f = p.Faces[i];
+				Vector3 fc = Vector3.zero;
+				float rMax = 0f;
+				for (int k = 0; k < 3; k++)
+				{
+					Vector3 d = nodePos[fn[f * 3 + k]] - centre;
+					fc += d;
+					Vector3 rad = d - dir * Vector3.Dot(d, dir);
+					rMax = Mathf.Max(rMax, rad.magnitude);
+				}
+				fc /= 3f;
+				Vector3 frad = fc - dir * Vector3.Dot(fc, dir);
+				float ang = Mathf.Atan2(Vector3.Dot(frad, v), Vector3.Dot(frad, u));
+				int sec = Mathf.Clamp((int)((ang + Mathf.PI) / (2f * Mathf.PI) * S), 0, S - 1);
+				faceSector[i] = sec;
+				faceR[i] = frad.magnitude;
+				sectorR[sec] = Mathf.Max(sectorR[sec], rMax);
+			}
+
+			List<float> filled = new List<float>();
+			for (int k = 0; k < S; k++) if (sectorR[k] > 0f) filled.Add(sectorR[k]);
+			if (filled.Count < 3) return result;
+			filled.Sort();
+			float core = filled[Mathf.Clamp((int)(filled.Count * s.LobeCoreQuantile), 0, filled.Count - 1)];
+			float limit = core + Mathf.Max(s.LobeMinExcess, s.LobeExcessRadius * core);
+
+			bool[] lobe = new bool[S];
+			int lobeSectors = 0;
+			for (int k = 0; k < S; k++) if (sectorR[k] > limit) { lobe[k] = true; lobeSectors++; }
+			if (lobeSectors == 0 || lobeSectors == S) return result;
+
+			// Label circular runs of lobe sectors.
+			int[] run = new int[S];
+			for (int k = 0; k < S; k++) run[k] = -1;
+			int startK = 0;
+			while (lobe[startK]) startK++;
+			int runCount = 0;
+			for (int step = 1; step <= S; step++)
+			{
+				int k = (startK + step) % S;
+				if (!lobe[k]) continue;
+				int prev = (k - 1 + S) % S;
+				run[k] = (lobe[prev] && run[prev] >= 0) ? run[prev] : runCount++;
+			}
+
+			Piece coreP = new Piece { Component = p.Component, Arc = p.Arc, IndexInArc = p.IndexInArc, Start = p.Start, End = p.End };
+			Piece[] lobes = new Piece[runCount];
+			for (int i = 0; i < p.Faces.Count; i++)
+			{
+				int r = run[faceSector[i]];
+				// Faces reaching past the core radius belong to the lobe; the trunk wall between
+				// lobes stays with the core.
+				if (r >= 0 && faceR[i] > core)
+				{
+					if (lobes[r] == null) lobes[r] = new Piece { Component = p.Component, Arc = p.Arc, IndexInArc = p.IndexInArc, Start = p.Start, End = p.End };
+					lobes[r].Faces.Add(p.Faces[i]);
+				}
+				else coreP.Faces.Add(p.Faces[i]);
+			}
+
+			result.Clear();
+			int made = 0;
+			foreach (Piece l in lobes)
+			{
+				if (l == null) continue;
+				if (l.Faces.Count < s.MinTrisPerPiece || IsFlat(l.Faces, fn, nodePos)) { coreP.Faces.AddRange(l.Faces); continue; }
+				result.Add(l);
+				made++;
+			}
+			if (coreP.Faces.Count > 0) result.Insert(0, coreP);
+			if (made > 0) notes.Add("lobes: piece at " + p.Start.ToString("F2") + "-" + p.End.ToString("F2") + " m on arm " + p.Arc + " split into core (r " + core.ToString("F2") + ") + " + made + " lobe(s)");
+			return result;
 		}
 
 		private static HashSet<int> NodesOf(List<int> pieceFaces, int[] fn)

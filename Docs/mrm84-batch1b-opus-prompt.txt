@@ -1,0 +1,101 @@
+Context prompt: MRM-84 tree colliders, BATCH 1 continued. For an Opus session.
+WRITTEN 2026-09-18. Read this cold instead of chat scrollback. Supersedes mrm84-batch1-opus-prompt.txt.
+
+===========================================================================
+0. FIRST
+===========================================================================
+- Branch `mrm-84`. Never commit or push - Carlos uses GitHub Desktop.
+- Check the Unity MCP bridge answers (execute_code `return Application.productName;` ->
+  "MrMoonlight") BEFORE anything else. If it's refused, tell Carlos; he restarts the chat.
+- Don't start on kickoff. Read, in order:
+  1. Docs/tree-collider-tracker.md      - per-tree state (verified from disk at end of last session)
+  2. Docs/technie-vegetation-collider-process.md - algorithm (steps 3, 7, 9 changed), Settings,
+     Troubleshooting ("Roots fused into the trunk at the ground" lists 4 failed attempts - don't
+     repeat them), section "Batch 1".
+  3. Code: Assets/_Project/Code/Editor/Migration/LimbSegmenter.cs (FindRoot closed-bottom rule,
+     CutArc + ProfileOvershoot, SplitLobes), TreeColliderTool.cs (RenderPreview has a top view now).
+- Then wait for Carlos to say go.
+
+===========================================================================
+1. WHAT CARLOS CARES ABOUT (the bar)
+===========================================================================
+COVER. An enemy hides behind a tree; the player shoots where the bark visibly isn't; the shot must
+not hit an invisible collider. So: every collider surface must sit on the visible bark. Many small
+hulls are fine ("slice it like calculus"); long hulls only on straight limbs. These dead trees will
+be COMMON on the island, so they get the highest polish. Carlos checks every tree live, including
+FROM ABOVE - he found the Deadtree06 root plates from a top view that my side views never showed.
+"Clean" from me has been wrong twice this batch: don't call a tree clean without the top view and
+close-ups where limbs meet.
+
+===========================================================================
+2. STATE AT HANDOFF
+===========================================================================
+- Deadtree06: 0 colliders. Carlos REPAINTED it as a single hull `Hull 1` (whole tree). Open
+  problem: flat roots fused into the trunk at ground level -> lowest rings = trunk + all root bases
+  -> hulls are plates joining root to root. Carlos also TURNED OFF THE GROUND object in the scene so
+  the tree can be seen whole (remember it's off; ask before turning it back on).
+- DeadTree01: 69 colliders, trunk good. Carlos flagged: UPPER-LEFT FORK CROTCH (where the trunk
+  splits into the big left limb) is still filled - the fused cross-section just below the fork is
+  one hull.
+- Lake_RoundTree_01: 128 colliders, trunk follows its zigzag. Awaiting Carlos's OK.
+- Curse_H01_2 (442) / MonsterTreeBark (321): OLD cutter; braided/looping strand wedges. Carlos:
+  "fine for what they are". Optional re-run with the new cutter once it's trusted.
+- Carlos started painting batch 2 (many prefabs modified in git). Leave them alone this session
+  unless he says.
+
+CODE STATE != APPLIED STATE. Lake + DeadTree01 were applied with: outline-fit cut, 0.75-edge bands,
+fork-cap fix, closed-bottom footprint = 1.3 x MEDIAN ground-ring radius around the ground-ring
+median centre, NO lobe split. Current code instead has footprint = 1.3 x r75 of a slice at 10%
+height (centre still ground-ring median) + SplitLobes (step 7 in Segment). Neither verified on
+Lake/DeadTree01. Before trusting the code: Restore + Plan both and compare against their applied
+images (Temp/TreeColliders/*_applied.png may be overwritten - look at the new plan).
+
+===========================================================================
+3. SUGGESTED ORDER (confirm with Carlos)
+===========================================================================
+1. Build a real COVER METRIC first, so success stops depending on eyeballing: sample points on
+   every hull's surface and measure the distance to the nearest triangle of the WHOLE tree mesh
+   (spatial grid over mesh triangles). Report max / p95 per hull and list the worst hulls with
+   their height. A hull point > ~5 cm from any bark = collider where the player sees air. The
+   existing "gap" column measures against the piece's own paint only (and fires on bark grooves),
+   so it can't see a root-to-root plate. Use it to verify each change on all three good trees.
+2. Deadtree06 base. Carlos's new one-hull paint is the test case. Ideas not yet tried:
+   - drive cuts / splits with the cover metric (split a piece whose hull stands off the mesh,
+     across the ring, until it doesn't)
+   - per-ring 2D convex decomposition of the cross-section near the ground (star -> core + arms)
+   - treat downward-facing ground-contact faces separately (they're never visible)
+   Fallback that works today: Carlos paints the trunk and each root as separate hulls.
+   Ask him which he wants before sinking a lot of time.
+3. DeadTree01 upper-left crotch: PlanFocus that fork, check from all sides + top. SplitLobes was
+   written for exactly this cross-section; check whether it fires there (NOTE: lobes: lines).
+4. Re-verify Lake + DeadTree01 with the final code, Apply, Carlos checks live.
+
+===========================================================================
+4. TRAPS (learned this session)
+===========================================================================
+- After every script compile, the first execute_code returns {"success":false,data:null}.
+  Send a throwaway `return "ping";` first, then the real call.
+- Plan skips hulls already split into _s01.. pieces. On an applied tree: Restore first, then Plan.
+- Prefab Mode Auto Save did NOT reliably save after Apply (the stage stayed dirty). After Apply:
+  if stage.scene.isDirty -> PrefabUtility.SaveAsPrefabAsset(stage.prefabContentsRoot,
+  stage.assetPath). Verify from disk with LoadPrefabContents (collider count on `Visual`).
+- Report "radius" is nonsense for flat pieces (e.g. 11 m on a ground disc) and "vol" totals go UP
+  when slicing finer (neighbouring hulls overlap because triangles are taller than slices). Neither
+  number means the result got worse; judge from images / the cover metric.
+- Hulls are built from WHOLE painted triangles: nothing thinner than one triangle row (0.4-0.7 m on
+  these trunks), and a piece's hull includes the full triangles even past its cut.
+- The image's last row is a top-down view; in PlanFocus it hides everything whose bounds start
+  above the focused pieces. Snippet to focus the base (pieces starting below 0.4 m), after Plan:
+    read Temp/TreeColliders/<prefab>_plan.txt, for each "sNN  arm A  a-b m" line with a < 0.4 add
+    NN to an int[], then PlanFocus(<prefab>, "<hull name>", ids).
+  (Deadtree06's hull is now named "Hull 1", not log_1.)
+- Parameter-twiddling on the ground footprint went in circles for 4 rounds (see process doc).
+  Don't do round 5 - change the approach or the measurement.
+- execute_code is CodeDom C# 6: no `using`, fully qualify, call the tool by reflection (snippet in
+  the process doc).
+
+===========================================================================
+5. AFTER
+===========================================================================
+Tracker + process doc (dated section), Linear comment on MRM-84, handoff file for the next
+session. Carlos's trigger for all three: "run the final instructions".
