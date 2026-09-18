@@ -1,6 +1,16 @@
 Context prompt: MRM-84 Technie Collider Creator vegetation colliders (ongoing, not done).
 
-WRITTEN: 2026-09-17. Read this instead of chat scrollback if resuming this work cold.
+WRITTEN: 2026-09-17. UPDATED: 2026-09-18. Read this instead of chat scrollback if resuming this
+work cold.
+
+===========================================================================
+0. BRANCH — READ THIS FIRST
+===========================================================================
+Work happens on branch `mrm-84` now, NOT `main`. The "Add Technie Collider Creator 2 (AST-116)..."
+commit had already landed on `main` (and been pushed to origin) before this was caught -
+`mrm-84` was created off that commit on 2026-09-18; that commit was NOT rewound off main (would
+need a force-push, Carlos's call, not done). All new collider work commits go on `mrm-84` from
+here on. `git status` / `git branch --show-current` to confirm before doing anything.
 
 ===========================================================================
 1. WHAT THIS IS
@@ -73,3 +83,29 @@ Session hygiene: this file exists because Carlos used his "final instructions" t
 mid-session (work is continuing, not ending) - CLAUDE.md's process says to do this regardless.
 Update this file's Progress section (§3) as more trees get done, rather than writing a new one
 each time, until the big cleanup session or this issue closes.
+
+===========================================================================
+6. INCIDENTAL CROSS-ISSUE WORK DONE ON THIS BRANCH (2026-09-18)
+===========================================================================
+While waiting for the first painted tree this session, Carlos flagged that Main Menu's wind-sway
+effect (built under MRM-18) was showing up on vegetation in Island/VegetationGallery too - not
+just the two species he named as visibly swaying, but 11 shared materials / ~17 species, because
+`_WindEnabled` was a flag on shared production material assets, not menu-scoped. Fixed on this
+`mrm-84` branch (Carlos's explicit go-ahead: "change scenes and do whatever to fix this"):
+duplicated the 11 wind-enabled materials as `_MainMenu` copies, turned wind off on all 11
+originals, repointed the 7 actually-staged MainMenu renderers at the duplicates. Full writeup:
+`Docs/retrolit-wind-sway.md` (2026-09-18 section). Logged as a comment on MRM-18, not a new
+issue - flagging here per CLAUDE.md's cross-issue-scope-exception rule since it landed on the
+`mrm-84` branch rather than its own.
+
+If resuming cold: this is DONE and verified (read back `_WindEnabled` on both the original and
+`_MainMenu` copy of `M_AP_AlaskaCedar_001_2_extra0` - confirmed 0 and 1 respectively). No open
+thread here. The two scenes touched (`MainMenu.unity`, then back to
+`VegetationGallery_TechnieColliderTest.unity`) were both saved properly; nothing was discarded.
+
+**Forward-looking, no action yet:** Carlos is thinking about vegetation reacting to more than
+wind eventually - weather states (windy, rainy) and destructible fire on trees were named
+explicitly (2026-09-18) as future directions, not yet scoped. Keep this in mind if touching the
+wind system again: the per-material-asset boolean flag is already the wrong shape (that's what
+caused this leak) - don't extend that pattern for a second effect. See "Forward-looking" section
+in `Docs/retrolit-wind-sway.md` for the specific caution.
