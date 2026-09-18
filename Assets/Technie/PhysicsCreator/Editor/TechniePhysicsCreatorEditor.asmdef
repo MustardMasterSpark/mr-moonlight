@@ -1,0 +1,31 @@
+{
+    "name": "TechniePhysicsCreatorEditor",
+    "rootNamespace": "",
+    "references": [
+        "TechniePhysicsCreator",
+        "Unity.Burst",
+        "Unity.Collections"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.collections",
+            "expression": "2.5.7",
+            "define": "TCC_HAS_COLLECTIONS"
+        },
+        {
+            "name": "com.unity.burst",
+            "expression": "1.8.0",
+            "define": "TCC_HAS_BURST"
+        }
+    ],
+    "noEngineReferences": false
+}

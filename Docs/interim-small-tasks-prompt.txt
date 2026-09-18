@@ -143,4 +143,14 @@ INTERIM WORK LOG: append one entry per session, newest last
 Format: date · MRM-## (sub-issue of MRM-81) · task · files/prefabs/scenes touched · any hook added
 into an existing system · anything the cleanup session must know.
 
-(no entries yet)
+2026-09-17 · MRM-84 · Evaluated Technie Collider Creator 2 (AST-116) for vegetation colliders on
+an isolated copy (never touched the live scene/prefabs) · added `Assets/Technie/PhysicsCreator/`
+(lean install, demo content skipped), `Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/`
+(154 duplicated prefabs + Play Mode test evidence), `Assets/_Project/Scenes/
+VegetationGallery_TechnieColliderTest.unity`, `Assets/_Project/Code/Editor/Migration/
+AST116TechnieBatchCollider.cs` (reusable batch tool) · no hook into any existing system · verdict:
+REJECT for leafy vegetation (VHACD "Auto" exploded to 31,485 colliders / ~254x baseline, worst
+case 820-1024 per tree), ADOPT candidate for solid props only (rocks/logs/stumps got a clean 1
+collider each). Full numbers in `Docs/performance-log.md` and the MRM-84 comment. The
+`AST116_ColliderTest` folder + test scene are safe to delete if Carlos rejects outright, or reuse
+if he wants to try a capped VHACD preset / non-Auto hull type on rocks only.
