@@ -1,188 +1,296 @@
 # Vegetation collider process — Technie Collider Creator 2 (AST-116)
 
-**Status: validated workflow, in active use.** Started 2026-09-17 under MRM-84. This is the
-process for giving trees tight, accurate colliders — not a one-off experiment writeup (see
-`Docs/performance-log.md` for that history and the numeric before/after data). This doc is the
-"how to do the next tree" reference.
+**Status: rebuilt 2026-09-17 (Opus session), in active use under MRM-84.** This is the "how to do
+the next tree" reference. The first version of this process (ring-seam splitter, 2026-09-17 Sonnet
+sessions) is superseded; its full record is kept under **History** at the bottom. Performance
+numbers and the original VHACD evaluation live in `Docs/performance-log.md`.
 
 ## Why this exists
 
-Two real problems, not just a performance exercise:
-1. **Gameplay bug:** a clean rifle shot at an enemy on Island visually passed straight through a
-   tree trunk, because the old hand-placed capsule collider didn't actually cover that geometry.
-2. Technie's automated VHACD ("Auto") decomposition, tried first, explodes on leafy/branchy
-   meshes (up to 31,485 colliders across 154 test objects — see performance-log.md). It's fine for
-   solid single-mesh props (rocks/logs/stumps, which get a clean 1 collider) but wrong for trees.
+1. **Gameplay bug:** a rifle shot passed straight through a tree trunk on Island because the old
+   hand-placed capsule didn't cover that geometry.
+2. Technie's automatic VHACD ("Auto") mode explodes on branchy meshes (up to 31,485 colliders across
+   154 objects). It's still right for solid props — rocks, logs, stumps get one clean collider each
+   (`AST116TechnieBatchCollider.RunOnNames`) — but not for trees.
 
-The validated fix for trees: **manually mark the main limbs, then auto-split each one at the
-mesh's real geometry joints** — tight, low-count, matches the visible silhouette.
+Goal for trees (Carlos): colliders **one-to-one with the wood, or as tight as possible**, in
+manageable pieces, and **never a hull that wraps empty space** (between roots, in a crotch, inside a
+bend). Leaves and twigs nobody paints get no collider — that's intended.
 
-## The workflow, step by step
+## Doing a tree
 
-1. **Open the prefab in Prefab Mode** (double-click it in `AST116_ColliderTest/`, or the
-   subfolder it's in). Persistence depends on saving/exiting Prefab Mode when done — same as any
-   other prefab edit.
-2. **Clear anything already there.** Select the "Visual" child (the object with the MeshFilter —
-   colliders always attach there, not the root, for this asset library). In the Inspector, if a
-   "Rigid Collider Creator" component exists, open it and use **"Delete generated colliders and
-   game objects"** (top Tools row, right side) to clear old output — or ask Claude to run
-   `RemoveCollidersOnly` for a full reset including the painting data itself.
-   - **Do NOT use "🗙 All" in the Hulls list** — that deletes the hull *definitions* (your painted
-     selections), not just the generated colliders. Confirmed via source: it calls
-     `PaintingData.RemoveAllHulls()`, a different and much more destructive operation than
-     "Delete generated colliders and game objects" (`RigidColliderCreator.RemoveAllGenerated()`).
-3. **Rough-paint each major limb as one whole selection.** One hull per log/branch, using the
-   paint tool:
-   - Brush size **Precise** (not Small/Medium/Large) — avoids grabbing nearby leaf triangles.
-   - Rotate the camera between clicks — the picker hits whatever's frontmost on screen, so an
-     overlapping leaf steals the click even when you're aiming at the trunk behind it.
-   - Hold **Shift** while painting to force "add" (can't accidentally deselect). Hold **Ctrl** to
-     force "remove" (fixes a mistaken leaf click without starting over).
-   - Name each hull sensibly (`log`, `branch_1`, `branch_2`, ...). Leave Type as the default —
-     it gets overwritten anyway in the next step.
-4. **Hand off for the real split.** Tell Claude which prefab and that you're ready. It runs
-   `AST116TechnieBatchCollider.SplitPaintedHullsAtRingSeams(prefabName)` from inside your open
-   Prefab Stage, which:
-   - Finds each hull's long axis (PCA on its selected triangles).
-   - Finds the mesh's **real ring seams** along that axis — actual jumps in vertex height, not an
-     even/approximate split — by looking for the biggest *relative* jump in gap sizes between
-     sorted vertex positions (an "elbow" in the gap distribution), not a fixed noise threshold.
-   - Splits each limb into one Convex Hull per real segment, named `<original>_<n>`.
-   - A hard safety net merges any segment under 4 triangles into its neighbor, so a noisy
-     ring-detection can't produce a degenerate/unbuildable hull.
-   - Generates all colliders in one pass.
-5. **Verify (mandatory — see checklist below), then review visually.** Don't save on the strength
-   of "GENERATE COMPLETE" in the log alone; the 2026-09-17 AlaskaCedar incident shipped a broken
-   result that logged completion normally. If a spot looks wrong or uncovered after the checklist
-   passes, check first whether it was ever part of your original painted selection — see
-   "Verification checklist" below before assuming the split step is at fault.
-6. **Adding something you missed:** paint the missing bit as a new named hull (e.g. `branch_5`),
-   then re-run the split **with a name filter** so already-split pieces aren't touched again:
-   `SplitPaintedHullsAtRingSeams(prefabName, new[] { "branch_5" })`. Without the filter it
-   reprocesses every hull in the file, including ones already split into small pieces, and
-   over-fragments them further.
-7. **Save / exit Prefab Mode** to persist. Nothing here writes to the file until you do.
+### 1. Carlos paints (Technie, Prefab Mode, on the `Visual` child)
 
-## Verification checklist (mandatory, every tree, before saying "done")
+- One hull per limb: the trunk (`log_1`), then each branch (`branch_1`, `branch_2`, ...). A painted
+  limb may fork — the tool handles forks — but painting each branch separately is fine too.
+- Brush **Precise**; rotate the camera between clicks (the picker hits whatever's frontmost, so a
+  leaf in front steals the click); **Shift** = add only, **Ctrl** = remove only.
+- Leave the Type column alone; the tool sets it.
+- **Don't worry about double-painting.** Technie does not remove a triangle from a hull when you
+  paint it into another one, so a trunk painted first usually still holds every branch painted
+  after it. The tool resolves this (rule below). Exact duplicate hulls are dropped automatically.
+- **Never use "🗙 All" in the Hulls list** — it deletes the painted selections themselves
+  (`PaintingData.RemoveAllHulls()`), not just the colliders.
 
-Screenshots from this environment are not reliable evidence — Scene View captures render
-washed-out/gizmo-less whenever the Editor window isn't OS-focused (see traps below), which is most
-of the time during an unattended MCP session. **Numeric checks are the primary verification here,
-not a screenshot.** Run all four before saving:
+### 2. Claude runs the tool — plan, look, apply, inspect
 
-1. **Segment count isn't suspiciously low.** A hull that comes back as exactly 1 segment is not by
-   itself proof the limb has no real seams — a real, fine, evenly-spaced ring structure can produce
-   this same "1 segment" result if a threshold wrongly rejects it (this is exactly what happened
-   with `AP_AlaskaCedar_001_2`, see "Bug found and fixed" below). If the limb visually bends or
-   tapers at all, and the split result is 1 piece, run `DumpRingProjection(prefabName, hullName)`
-   and look for a large ratio jump in the gap list before accepting the 1-piece result as correct.
-2. **Triangle count is preserved.** Compare total selected-triangle count across every hull, before
-   your last operation and after. It should match exactly — the split/generate step never drops a
-   triangle, it only redistributes whichever ones were already selected. If it matches, anything
-   that still looks wrong was never part of the original painted selection (a painting-step gap,
-   fixable by painting more, not a tool bug). If it doesn't match, that's a real regression.
-   ```
-   mesh.triangles.Length / 3                              -> total triangles in the mesh
-   sum of selectedFaces.arraySize across all current hulls -> what's actually covered
-   ```
-3. **Collider count matches hull count, with no oversized leftover.** After any re-run (especially
-   after fixing a bug and re-generating), explicitly check `root.GetComponentsInChildren<Collider>
-   (true).Length` equals the current hull count, and that no single collider's mesh is far larger
-   than the others (a leftover un-split hull from a prior bad generation looks like one collider
-   covering most of the original selection sitting alongside the new tight ones). Don't assume a
-   clear step removed the old collider(s) — check the live component list. `DescribeCurrentPrefabStage`
-   plus a direct `GetComponentsInChildren<Collider>` walk (see chat history 2026-09-17 for the exact
-   snippet) is the standard way to do this.
-4. **Ask Carlos to eyeball it in his own (focused) editor window** for anything a numeric check
-   can't catch (does it *look* right, not just add up right) — don't rely on an MCP screenshot as
-   the final sign-off.
+All commands live in `Assets/_Project/Code/Editor/Migration/TreeColliderTool.cs` and must be run
+with the tree open in Prefab Mode. From the MCP `execute_code` tool (which can't name the namespace
+directly), call them by reflection:
 
-## Lessons learned (2026-09-17, first two trees)
+```csharp
+System.Type t = null;
+foreach (var a in System.AppDomain.CurrentDomain.GetAssemblies()) { var tt = a.GetType("MrMoonlight.EditorTools.Migration.TreeColliderTool"); if (tt != null) { t = tt; break; } }
+try { return t.GetMethod("Plan").Invoke(null, new object[] { "AP_Tree_Juniper02_SMIK", null }).ToString(); }
+catch (System.Reflection.TargetInvocationException e) { return "ERROR: " + e.InnerException; }
+```
 
-- **Convex Hull is correct for a pre-split limb, not a fallback.** VHACD/Auto exists to
-  decompose one messy *concave* selection into multiple convex pieces automatically. Once a limb
-  is manually split into individually near-convex segments, there's nothing left for Auto to
-  usefully decompose — running it on an already-simple selection just adds noise from surface
-  bumps. This is *why* Auto kept giving a bad result "no matter the preset."
-- **A single hull over a whole tapering/forking limb overshoots badly.** A convex hull connects
-  its extreme points with straight lines; between a narrow base and a wider point where a branch
-  forks off, that straight edge cuts outside the real curved surface. This is what "the collider
-  covers space the enemy's body isn't in" looks like. Splitting at the real joint fixes it.
-- **First ring-detection attempt over-segmented badly**: a fixed noise-multiplier threshold
-  (8x the low-quartile gap) treated organic tree geometry's natural bumps as real seams — one
-  33-triangle hull split into 13 pieces, several too small to form a valid convex hull at all
-  ("Could not generate convex hull" errors). Fixed by switching to relative "elbow" detection
-  (biggest ratio jump between sorted gap sizes, requiring at least a 2x jump and the smallest
-  "real" gap to be ≥2% of the selection's total span) plus the minimum-triangle safety net.
-  Recovered the bad attempt losslessly via `MergeSplitHullsBack` (unions every `<base>_<n>` hull
-  back into one `<base>` hull — safe because the split never drops triangles, only redistributes
-  them, so the union always reconstructs the original selection exactly).
+| Command | What it does | Changes anything? |
+|---|---|---|
+| `Plan(prefab, onlyHullNames = null)` | Splits every unsplit painted hull in memory, computes the exact hulls Technie would build, writes a report + a 3-angle image | No |
+| `PlanFocus(prefab, hullName, int[] pieces)` | Same plan, 4-sided close-up framed on the listed pieces of one hull (report numbering, 1 = s01), all other hulls drawn for context | No |
+| `Apply(prefab, onlyHullNames = null)` | Splits the paint into `<name>_s01`, `_s02`, ... (each piece its own colour in Technie's list), generates colliders synchronously, verifies them, renders the **actually generated** colliders | Yes — Undo works; auto-saves if the Prefab Mode "Auto Save" box is on |
+| `Inspect(prefab)` | Checks the tree **as it is now**: every hull's paint next to the collider Technie actually built, collider bookkeeping, 10 largest gaps | No |
+| `Regenerate(prefab)` | Rebuilds colliders from the current hulls (after a hand edit), then verifies | Colliders only |
+| `Restore(prefab)` | Merges every `<name>_sNN` back into `<name>` and removes the generated colliders | Yes — Undo works |
 
-## Bug found and fixed (2026-09-17, `AP_AlaskaCedar_001_2`)
+`TreeColliderReset.Run(string[] keep, bool dryRun)` (`TreeColliderReset.cs`) wipes Technie paint,
+data files and all colliders from every test-copy prefab not in `keep`, then re-reads them from
+disk. Dry-run first; `keep` must include every Done prefab in the tracker. Asset deletes through
+MCP `execute_code` need `safety_checks: false`.
 
-**The opposite failure mode from the one above: a real, high-confidence seam signal was being
-thrown out.** `AP_AlaskaCedar_001_2`'s single log is one continuous mesh with ~19 evenly-spaced
-loop cuts along its length (built that way so it can bend), not several separate mesh pieces
-welded together like `AP_ENV_tree_Nokmyung`'s log. The gap-ratio elbow detection correctly found
-an 18-real-gap / noise-floor split with a clean **6x** confidence ratio (well above the 2x
-requirement) — but a second guard, "the smallest real gap must be ≥2% of the whole selection's
-axis span," rejected it anyway, because with 18 real gaps sharing that span each one is naturally
-smaller relative to the total than Nokmyung's 3 were. Result: the hull was silently left as one
-un-split piece — a straight-edged convex hull across the entire tapering trunk, the exact
-"overshoots the curve" problem this whole process exists to avoid. First delivered pass in this
-session shipped that broken single-hull result; Carlos caught it by eye in the editor.
+Reports and images: `<project>/Temp/TreeColliders/<prefab>_{plan|focus|applied|inspect}.{txt|png}`.
+Images: **left** = each piece's painted triangles in its colour, **right** = the hull built from
+them, same colour, same camera. Only the painted wood is drawn (no leaves, no neighbouring trees).
 
-Fix: dropped the fixed "≥2% of total span" floor (it doesn't scale with how many genuine rings a
-limb has) and raised the ratio confidence requirement slightly (2x → 2.5x) as a partial replacement
-— the ratio test is the real noise-vs-signal check, a percent-of-span floor isn't. Re-running the
-split on the same hull after the fix found all 18 real segments and produced 18 Convex Hulls
-hugging the taper, matching the intended look. Triangle count verified identical (392) before and
-after both the broken and fixed attempts — confirms this was purely a detection-threshold bug, not
-data loss.
+**The order, every tree:**
 
-**Takeaway for future trees:** a hull producing suspiciously few segments (especially exactly 1)
-is not proof the limb has no real seams — it may mean the mesh has many *fine, evenly-spaced* real
-seams that a percent-of-span-style floor would suppress. If a "single log, should be easy" case
-comes back as one piece, don't take that at face value — check whether it's genuinely a smooth,
-unbroken tube (rare) or a finely-ringed one with a suppressed real signal, via
-`DumpRingProjection` (dumps the sorted gap list; a real signal shows as a clean, large ratio jump
-somewhere in the descending gap list even if the absolute gap sizes are all small).
+1. `Plan`. Read the whole report — `PAINT:` lines first (duplicates dropped, triangles handed to
+   smaller hulls), then per hull `NOTE: fork at ...` lines — then **open the image and look**.
+   **If there are any `PAINT:` lines, tell Carlos before applying** — quote them and name the
+   hulls. He believed painting into a new hull subtracted from the old one (it doesn't, in
+   Technie), so double paint is expected, but it can also be a real mistake (a hull painted onto
+   the wrong limb, a copy he meant to be a different branch). The automatic rule is usually right;
+   he still decides whether to apply as-is or fix the paint first.
+2. For anything that looks off — or any piece marked `<-- CHECK` that isn't an obvious fluted trunk
+   ring — run `PlanFocus` on it and look again. A fork that came out wrong shows up in its `NOTE:
+   fork` line (see Troubleshooting).
+3. If the plan is right: `Apply`. The report must end with `VERIFY OK` (every hull has exactly one
+   collider, all convex, none stale).
+4. `Inspect` and look at the image of the **real** colliders.
+5. Ask Carlos to look in his own editor before calling the tree done.
 
-## Tool reference (`Assets/_Project/Code/Editor/Migration/AST116TechnieBatchCollider.cs`)
+Don't skip the looking. Two earlier sessions declared trees "done" from numbers and a single
+far-away screenshot; Carlos found crotch wedges and scattered pieces both times.
 
-- `SplitPaintedHullsAtRingSeams(prefabName, onlyHullNames = null)` — the main step 4 operation.
-  Must be run from inside the matching Prefab Stage.
-- `MergeSplitHullsBack(prefabName, originalNames[])` — recovery: undoes a bad split by unioning
-  `<base>` / `<base>_<n>` hulls back into one `<base>` hull per name given.
-- `RemoveCollidersOnly(names[])` / `RunOnNames(...)` / `RunCustomOnNames(...)` — the earlier
-  scene-wide batch tools from the original whole-tree VHACD evaluation. Still correct for simple
-  solid props (rocks/logs/stumps) but superseded by the manual-split process above for anything
-  branchy. These are scene-scoped (guarded to the test scene) and separate from the Prefab-Stage
-  methods above.
-- `DescribeCurrentPrefabStage()` — read-only dump of the open Prefab Stage's hull names, selected
-  face counts, and generated collider count. Use this to sanity-check state instead of guessing.
-- `DumpRingProjection(prefabName, hullName)` — read-only: shows the PCA-axis projection's sorted
-  gap list for one hull, biggest and smallest. Use when a split result looks suspicious (e.g.
-  exactly 1 segment for a limb that should clearly bend/taper) to see whether a real seam signal
-  exists but is being rejected by a threshold, versus the mesh genuinely being seamless.
-- `RegenerateCollidersOnly(prefabName)` — re-runs just the generate step against whatever hulls
-  currently exist, without touching selections. Useful to isolate a generation failure from a
-  split failure. Non-blocking (polls via editor coroutine) — check `Log` or the console a moment
-  after calling.
-- `RenameHullAndClearColliders(prefabName, oldName, newName)` — renames one hull and clears
-  generated colliders, so a split can be safely re-run with clean naming after fixing a bug rather
-  than stacking suffixes like `log_1_1_1`.
+## How the algorithm works (`LimbSegmenter.cs`)
 
-## Progress
+Each painted hull is one or more limbs (tubes that may fork). For each:
+
+1. **Weld** vertices by position (1e-4 local units). Imported meshes duplicate a vertex at every UV
+   or hard-normal seam; without welding, a continuous log looks like hundreds of islands.
+2. **Connected parts** are processed separately.
+3. **Start point:** where the limb is nearest the tree's base (the `Visual`'s local origin). If an
+   open edge of the paint is there (a branch where it leaves its parent), start from that whole ring;
+   otherwise (a trunk with a closed bottom) from that vertex.
+4. **Geodesic distance** from the start, along the limb's own surface (Dijkstra over welded edges,
+   metric units, the `Visual`'s non-uniform scale applied).
+5. **Arms and forks (join tree).** Sweeping from the farthest vertex inward, every tip starts an arm
+   and arms that meet form a fork — if the shorter arm reaches at least `PersistenceEdges` mesh edges
+   past the meeting point (so stubs and roots become arms; noise doesn't). Near-zero-length arms
+   between two forks are folded into their parent, so six roots leaving together are one 7-way fork.
+6. **Fork shoulders.** Just below a fork the parent and a side branch are one fused cross-section,
+   and slicing by distance alone hands the branch's shoulder to the parent — whose hull then fills
+   the crotch. So at every fork: the child that is thickest *where it leaves* is the limb carrying
+   on; its tube (axis through the fork, radius = 95th percentile of its surface distance in clean
+   stretches ±15%) keeps its vertices, and any vertex sticking out of that tube and closer to a side
+   branch's axis goes to that side branch.
+7. **Cutting each arm** walks bands along the geodesic distance and cuts when the centerline stops
+   being straight (sag > `StraightnessTolerance` × radius — a hull over a bend fills the inside of
+   the bend) or the piece passes `MaxLengthPerDiameter`. The piece that ends at a fork is capped at
+   `JunctionPieceDiameters`.
+8. **Tiny or flat pieces** (< `MinTrisPerPiece`, or no thickness) merge into a piece they actually
+   touch, same arm preferred.
+
+**Paint ownership** (in `TreeColliderTool.BuildPlans`, across all hulls even when planning one):
+exact duplicate hulls are dropped (first kept); a triangle painted in several hulls belongs to the
+hull with the fewest triangles — "the branch wins" (Carlos, 2026-09-17).
+
+### Settings (`TreeColliderTool.Settings`, tuned on Juniper02)
+
+| Setting | Value | Meaning |
+|---|---|---|
+| `StraightnessTolerance` | 0.2 | Max centerline sag in a piece, × local radius |
+| `MaxLengthPerDiameter` | 2.0 | Longest piece, in diameters |
+| `MinLengthPerDiameter` | 0.5 | Shortest piece the straightness test may cut |
+| `PersistenceEdges` | 1 | How far (mesh edges) a protrusion must reach to be its own arm. 1 = stubs split out (Carlos's call) |
+| `JunctionPieceDiameters` | 0.75 | Length cap for the piece ending at a fork |
+| `ForkRegionDiameters` | 2.0 | How far below a fork shoulder vertices can move to a side branch |
+| `TubeRadiusTolerance` | 0.15 | Slack on the carrying-on limb's tube |
+| `MinTrisPerPiece` | 6 | Smaller pieces merge into a touching neighbour |
+| `GapWarningRadii` / `GapFloorMetres` | 0.5 / 0.03 | Report flag: hull face stands off its paint by more than this |
+
+**Gap** (report column, `<-- CHECK`): the farthest any hull face stands off the piece's own painted
+surface, with the piece's open ends capped first. On a fluted trunk, 0.15–0.3 m on trunk rings is
+bark grooves — expected. On a branch or at a fork it means empty space is being wrapped — look.
+
+## Troubleshooting
+
+- **A crotch is filled / a branch's base wedge:** read that fork's `NOTE:` line. `continues as arm
+  N` must be the limb that actually carries on (thickest where it leaves). `side arm M took 0` at a
+  wide-angle branch means the tube rule kept everything — check `tube r` against the real trunk.
+- **Roots or stubs wrapped into the trunk ring:** they didn't reach `PersistenceEdges` edges; a
+  coarse mesh (big edges) makes this more likely.
+- **`NOTE: part N: no open edge at its base`**: that part started from a single vertex — fine for a
+  closed-bottom trunk; for a branch it means the paint doesn't reach its attachment.
+- **A hull covers two separate places:** shouldn't happen any more (pieces are single bands of
+  single arms). If it does, compare the left and right columns of the image: the left shows the
+  piece's actual triangles in its colour.
+- **`VERIFY PROBLEM`:** run `Regenerate`. Generation is synchronous now; the old window-driven
+  generate could silently do nothing while logging "complete".
+
+## Traps (engine / tooling)
+
+- **Colliders live on the `Visual` child**, not the prefab root.
+- **Preview rendering:** a plain scripted camera renders the main scene, not the isolated Prefab
+  Stage. `Camera.scene = stage.scene` fixes it (what `TreeColliderTool` does). Scene View
+  screenshots are useless when the Editor isn't the focused window — use the tool's images.
+- **Convex-hull renders hide scattered selections:** a hull of two separate clusters looks like one
+  solid blob. That's why the image's left column shows the triangles, not just hulls.
+- **Generating through the Technie window** (`RigidColliderCreatorWindow.GenerateColliders`) does
+  nothing if its target hasn't caught up with `Selection` yet. `TreeColliderTool` runs Technie's
+  own generation steps directly instead.
+- **Prefab Mode "Auto Save" is on** in Carlos's editor: `Apply`/`Restore` land in the prefab asset
+  immediately. Undo still works.
+
+## Progress — see `Docs/tree-collider-tracker.md`
+
+The tracker is the source of truth for which prefabs are done, in progress or waiting. Check it
+before touching any prefab and update it after every tree.
+
+- `AP_Tree_Juniper02_SMIK` — **done, Carlos approved (2026-09-17).** Repainted as `log_1` +
+  `branch_1..19`; `branch_17` (copy of `branch_12`) dropped; 609 of `log_1`'s 1506 triangles were
+  also painted in 11 branch hulls and went to those. 19 painted hulls -> 104 colliders,
+  `VERIFY OK`, `log_1` = trunk + 6 roots + the two-armed top fork. Collider volume 3.5 m³ (14 m³
+  as single hulls). Largest gaps are fluted-trunk rings (0.12–0.25 m).
+- `AP_ENV_tree_Nokmyung`, `AP_ENV_tree_SaGeeSukRim`, `AP_AlaskaCedar_001_2` — done with the
+  superseded splitter; kept as they are.
+- **2026-09-17: every other prefab in the test folder was reset** (`TreeColliderReset`: 104
+  prefabs, 3,602 colliders, 104 Technie components and 208 Technie data files removed, plus two
+  orphaned data pairs; verified from disk and in the test scene). Carlos repaints from scratch.
+
+## Batches (plan from 2026-09-17)
+
+Carlos paints, Claude (Opus — Carlos's call after the Sonnet sessions) processes in bulk:
+1. **Batch 1: 5 trees Carlos picks to be hard** — weird shapes, buried/overlapping limbs. The point
+   is to find new failure modes before he paints the rest. After it: fold lessons into this doc
+   (Troubleshooting + Settings) and tell Carlos anything that changes how he should paint.
+2. Then the remaining trees, 5–10 per session.
+
+Per batch: for each tree run the full order above (Plan -> look -> PlanFocus where limbs meet ->
+PAINT lines to Carlos -> Apply -> Inspect -> look), one short summary per tree, all questions for
+Carlos collected into one round, the tracker updated at the end.
+
+## Known gaps (2026-09-17) — not solved yet
+
+- **Tested on one tree.** Settings and the fork logic were tuned on Juniper02 (coarse mesh, 18 cm
+  median edge, fluted trunk, closed bottom). Untested: dense meshes, conifers with many whorls,
+  drooping limbs that go lower than where they start (the start point is "nearest the tree base"),
+  branches whose paint stops short of their parent, branches that are separate mesh pieces stuck
+  into the trunk, near-parallel limbs touching each other.
+- **In-game cost unmeasured.** Juniper02 went from 1 to 104 convex colliders. Nobody has measured
+  physics cost with hundreds of such trees on Island (it had ~5,900 vegetation colliders before).
+  Measure in a build after batch 1 and log it in `Docs/performance-log.md`.
+- **Test copies only.** Nothing has been carried over to the live vegetation prefabs or Island, and
+  there is no migration step written yet.
+- **Gameplay wiring unchecked:** tag/layer on the generated colliders (colliders sit on `Visual`,
+  and physics reads the collider's own tag), bullet impact surface, NavMesh bake impact.
+- **Solid props lost their colliders in the reset.** Rocks/boulders/logs/stumps listed as "Solid?"
+  in the tracker need Technie Auto (`AST116TechnieBatchCollider.RunOnNames`, test scene) or
+  painting — Carlos to confirm which.
+- **The reset isn't Ctrl+Z-able** (prefab saves + asset deletes). Git commit `4454569` on
+  `mrm-84` has the previous state.
+- **Report flags are noisy on trunks:** `<-- CHECK` fires on most fluted trunk rings. Harmless, but
+  it trains the reader to ignore it; calibrate after batch 1.
+- **One prefab at a time:** Plan/Apply need the tree open in Prefab Mode; there's no multi-prefab
+  runner yet (open each with `manage_prefabs open_prefab_stage`).
+- **The three old-tool trees** were never re-checked with `Inspect`; they may have the kinds of
+  wedges the old splitter produced.
+
+---
+
+## History (superseded 2026-09-17 — kept for the record, do not follow)
+
+Everything below describes the first process: `AST116TechnieBatchCollider.SplitPaintedHullsAtRingSeams`
+and its diagnostics (`CheckHullConnectivity`, `CaptureColliderPreview`, `DumpRingProjection`,
+`DumpElbowSelection`, `MergeSplitHullsBack`, `RegenerateCollidersOnly`,
+`RenameHullAndClearColliders`). Those methods were **deleted** on 2026-09-17 when `TreeColliderTool`
+replaced them. Why it was replaced, in one paragraph: it looked for "ring seams" as gaps in vertex
+positions projected on one axis. That works on a straight tube with loop cuts (AlaskaCedar) and fails
+on real trees: bends smear the signal, forks put unrelated branches at the same "height", the
+fallbacks it grew stitched separate regions into one hull, and five bug rounds on Juniper02 each
+passed the checks of the day while Carlos kept finding wedges and scattered pieces in the editor.
+The replacement segments by arms (join tree of geodesic distance) instead of seams.
+
+### Old workflow (superseded)
+
+1. Open the prefab in Prefab Mode. 2. Clear old colliders with "Delete generated colliders and game
+objects". 3. Rough-paint each major limb as one selection. 4. Claude ran
+`SplitPaintedHullsAtRingSeams(prefabName)`: PCA long axis per hull, ring seams found as the biggest
+relative jump ("elbow") in sorted vertex-position gaps, one Convex Hull per segment named
+`<original>_<n>`, segments under 4 tris merged, then generate. 5. Verify with a six-item checklist
+(segment count sanity via `DumpRingProjection`, triangle count preserved, collider count equals hull
+count, `CaptureColliderPreview` image, `CheckHullConnectivity` on every hull, Carlos's eyeball).
+6. Missed limbs: paint a new hull, re-run with a name filter. 7. Save / exit Prefab Mode.
+
+### Lessons learned (first two trees)
+
+- **Convex Hull is correct for a pre-split limb, not a fallback.** VHACD/Auto decomposes one messy
+  concave selection; on an already-simple selection it just adds noise from surface bumps.
+- **A single hull over a whole tapering/forking limb overshoots badly** — straight hull edges cut
+  outside the curved surface.
+- **First ring-detection attempt over-segmented** with a fixed noise-multiplier threshold (one
+  33-tri hull into 13 pieces, some unbuildable). Switched to relative "elbow" detection plus a
+  minimum-triangle safety net.
+
+### Bug found and fixed (`AP_AlaskaCedar_001_2`)
+
+A single log built as one tube with ~19 evenly spaced loop cuts. The elbow detection found the real
+18-gap split with a clean 6x ratio, but a "smallest real gap ≥ 2% of span" guard rejected it, leaving
+one straight hull across the tapering trunk; Carlos caught it by eye. Fix: dropped the span floor,
+raised the ratio bar 2x → 2.5x. Result: 18 hulls hugging the taper, triangle count identical (392).
+
+### Second bug (`AP_Tree_Juniper02_SMIK`)
+
+The elbow search took the single highest gap ratio anywhere in the list; on `branch_6` a noise pair
+of near-zero gaps from welded seam vertices (3.9x) beat the real seam (2.7x, 26% of span), leaving
+the branch unsplit. Fix: take the first qualifying gap scanning from the largest.
+
+### Third bug (`log_1`)
+
+A bent trunk smears ring cross-sections across one straight axis, so "no elbow" looked like "no
+seams": `log_1` came back as one giant hull. Fallback added: even split into `round(tris / 150)`
+segments. Also found: a plain scripted camera can't see inside an isolated Prefab Stage;
+`CaptureColliderPreview` redirected the SceneView's own camera instead.
+
+### Fourth bug (`log_1`, second round)
+
+The even-split fallback still assigned triangles by the same straight axis, so two disconnected
+branches at a similar height landed in one hull (Carlos circled them). Switched to geodesic distance
+from one seed; then found 1119 of ~1160 vertices "disconnected" because UV-seam duplicate vertices
+fragmented the index graph — fixed by position welding.
+
+### Fifth bug (same session)
+
+Distance from one seed still put different fork arms into the same band. Added a mandatory
+connected-components split per band and adjacency-only merging of tiny pieces;
+`CheckHullConnectivity` reported 0 disconnected of 27. Carlos then showed that the result was still
+wrong: pieces cut at arbitrary distances instead of the visible ring geometry, and hulls still
+wrapping empty space next to the trunk. That is where the rebuild started.
+
+### Old progress notes
 
 - `AP_ENV_tree_Nokmyung` — done (first pass had the even-split bug, corrected).
-- `AP_ENV_tree_SaGeeSukRim` — done. Two branch tips looked uncovered on first review; turned out
-  to be a visual-only artifact of the collider gizmo overlay being hard to see through the active
-  Mesh Renderer, not a real gap — confirmed fully covered once checked with that in mind. Worth
-  remembering: don't trust "looks uncovered" from a screenshot with the mesh visible without
-  double-checking (e.g. hide the renderer, or check selected-triangle counts as below).
-- `AP_AlaskaCedar_001_2` — done (2026-09-17), but exposed a real bug on the first pass, see lessons
-  below. Final result: one painted `log` hull (392 of 963 tris) split into **18** ring-based Convex
-  Hulls hugging the trunk's taper, matching the reference look Carlos wanted.
-- Remaining ~105 "had collider" species: not started. This is expected to take a while per tree
-  since the rough-painting step is manual; the split/generate step itself is fast and repeatable.
+- `AP_ENV_tree_SaGeeSukRim` — done. Two branch tips looked uncovered on first review; a visual-only
+  artifact of the gizmo overlay being hard to see through the active Mesh Renderer.
+- `AP_AlaskaCedar_001_2` — done: one painted `log` hull (392 of 963 tris) -> 18 ring-based hulls.

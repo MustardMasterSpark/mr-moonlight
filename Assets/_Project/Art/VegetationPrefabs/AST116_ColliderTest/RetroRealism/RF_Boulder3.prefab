@@ -119,12 +119,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3795569468942544549}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 4557429561086342033}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1575899499478797274}
   m_SourcePrefab: {fileID: 100100000, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}
 --- !u!4 &2820649434757191897 stripped
 Transform:
@@ -155,42 +149,6 @@ LODGroup:
     renderers:
     - renderer: {fileID: 3994650451416196022}
   m_Enabled: 1
---- !u!114 &4557429561086342033
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3201818662007439971}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
-  paintingData: {fileID: 11400000, guid: 2cc18d4440da4dc4ba0a01ec6847d577, type: 2}
-  hullData: {fileID: 11400000, guid: 5adb13c8699fbdf42a3e3983c4f8519a, type: 2}
---- !u!64 &1575899499478797274
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3201818662007439971}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -1200915820315366846, guid: 5adb13c8699fbdf42a3e3983c4f8519a, type: 2}
 --- !u!23 &3994650451416196022 stripped
 MeshRenderer:
   m_CorrespondingSourceObject: {fileID: -7511558181221131132, guid: cadcafeb0c9515646a33ca7213a08457, type: 3}

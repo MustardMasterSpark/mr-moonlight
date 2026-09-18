@@ -11,8 +11,6 @@ GameObject:
   - component: {fileID: 4530473185365345628}
   - component: {fileID: 2533908197606234737}
   - component: {fileID: 6815562462507633624}
-  - component: {fileID: 4404372862808529625}
-  - component: {fileID: 716950238440792166}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -92,42 +90,6 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4404372862808529625
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2264837226680500489}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
-  paintingData: {fileID: 11400000, guid: 832b6bbf9d5b7bd4993136f1bc61b0ab, type: 2}
-  hullData: {fileID: 11400000, guid: 0feb3f6c50c6f6f4fb87c6fe880d76c3, type: 2}
---- !u!64 &716950238440792166
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2264837226680500489}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -3995164189923332713, guid: 0feb3f6c50c6f6f4fb87c6fe880d76c3, type: 2}
 --- !u!1 &4275291618721341310
 GameObject:
   m_ObjectHideFlags: 0

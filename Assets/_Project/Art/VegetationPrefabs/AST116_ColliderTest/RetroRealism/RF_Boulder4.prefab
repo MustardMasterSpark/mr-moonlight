@@ -119,12 +119,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 32dd37c4b92e52649b47b51aa70650e7, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6843821253927508421}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 32dd37c4b92e52649b47b51aa70650e7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 5244309289298677205}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 32dd37c4b92e52649b47b51aa70650e7, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 301407429908282005}
   m_SourcePrefab: {fileID: 100100000, guid: 32dd37c4b92e52649b47b51aa70650e7, type: 3}
 --- !u!1 &4664984197135163176 stripped
 GameObject:
@@ -150,42 +144,6 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6610622456361320189}
   m_Enabled: 1
---- !u!114 &5244309289298677205
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4664984197135163176}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
-  paintingData: {fileID: 11400000, guid: 4eff09068d1550c4ab50f4516ffc7d8a, type: 2}
-  hullData: {fileID: 11400000, guid: a03e0b9df7826ed4e9d7965eefc1c88b, type: 2}
---- !u!64 &301407429908282005
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4664984197135163176}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: 172760316030340525, guid: a03e0b9df7826ed4e9d7965eefc1c88b, type: 2}
 --- !u!4 &5473714979515205010 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 32dd37c4b92e52649b47b51aa70650e7, type: 3}

@@ -1,0 +1,77 @@
+Context prompt: MRM-84 tree colliders, BATCH 1 (5 hard trees). For an Opus session.
+WRITTEN 2026-09-17. Read this cold instead of chat scrollback.
+
+===========================================================================
+0. FIRST
+===========================================================================
+- Branch `mrm-84` (`git branch --show-current`). Never commit or push - Carlos uses GitHub Desktop.
+- Don't start on kickoff. Read this, the two docs below, then wait for Carlos to say which 5
+  prefabs are painted and ready.
+- Read, in order:
+  1. Docs/tree-collider-tracker.md       - what is done (OFF-LIMITS) vs waiting
+  2. Docs/technie-vegetation-collider-process.md - the process, the algorithm, settings,
+     troubleshooting, and "Known gaps"
+- Code: Assets/_Project/Code/Editor/Migration/TreeColliderTool.cs (Plan / PlanFocus / Apply /
+  Inspect / Regenerate / Restore), LimbSegmenter.cs (the algorithm), TreeColliderReset.cs.
+  Call them from MCP execute_code by reflection (snippet in the process doc).
+
+===========================================================================
+1. WHERE THINGS STAND
+===========================================================================
+- AP_Tree_Juniper02_SMIK: done with TreeColliderTool, 104 colliders, Carlos approved. It is the
+  reference for "good".
+- Nokmyung, SaGeeSukRim, AlaskaCedar_001_2: done with the old (deleted) splitter; leave alone.
+- Every other prefab in AST116_ColliderTest was reset on 2026-09-17: no paint, no Technie data,
+  no colliders (verified from disk and in the test scene).
+- Carlos is painting 5 trees he chose to be difficult (weird shapes, buried/overlapping limbs).
+  The purpose of batch 1 is to find what breaks before he paints ~70 more.
+
+===========================================================================
+2. WHAT TO DO FOR EACH OF THE 5 TREES
+===========================================================================
+1. Tracker: confirm it's not Done; mark it In progress.
+2. Open it in Prefab Mode (manage_prefabs open_prefab_stage) if it isn't already.
+3. Plan. Read PAINT lines, per-hull NOTE lines, flags. LOOK at the image
+   (Temp/TreeColliders/<prefab>_plan.png) - left: each piece's triangles in its colour, right:
+   its hull. Wedges = a hull filling space that's empty on the left.
+4. PlanFocus on every place limbs meet and anything odd; look at all four sides.
+5. If a result is wrong: find the cause (the fork NOTE lines say which arm carries on and how
+   many shoulder vertices each side branch took). Fix the algorithm in LimbSegmenter if it's a
+   real new failure mode; don't twist settings to make one number look better. Re-plan and look
+   again. Record the failure + fix in the process doc's Troubleshooting.
+6. Collect for Carlos (one round of questions for the whole batch, AskUserQuestion):
+   PAINT lines (double paint, duplicates), paint that looks unintended, anything you couldn't fix.
+   Wait for his answers before applying anything they affect.
+7. Apply -> report must end VERIFY OK. Inspect -> LOOK at the image of the real colliders.
+8. Short per-tree summary for Carlos: pieces, colliders, anything flagged, image paths. He
+   checks live; only then mark Done in the tracker.
+
+===========================================================================
+3. TRAPS (learned the hard way)
+===========================================================================
+- LOOK AT THE IMAGES. The Sonnet sessions called Juniper02 done five times from numbers and one
+  far-away screenshot; Carlos found wedges each time. Zoom where limbs meet.
+- If Carlos asks a direct question or says stop, answer and wait. Don't keep coding.
+- Double paint is normal: in Technie, painting a triangle into a new hull does NOT remove it from
+  the hull it was in. The tool gives it to the smaller hull and drops exact duplicates - always
+  tell Carlos what it did (PAINT lines) before Apply.
+- Report "<-- CHECK" fires on most fluted trunk rings (bark grooves, 0.15-0.3 m) - noise there.
+  On a branch or at a fork it's real.
+- Prefab Mode Auto Save is on: Apply writes the prefab immediately (Undo works; Restore undoes).
+- execute_code often returns an empty result right after a recompile or asset refresh - retry,
+  and after anything destructive, re-read the real state instead of assuming.
+- Asset deletes via execute_code need safety_checks=false. TreeColliderReset's keep list must hold
+  every Done prefab.
+- Colliders live on the `Visual` child, not the prefab root.
+
+===========================================================================
+4. AFTER THE BATCH
+===========================================================================
+- Update the tracker and the process doc (what broke, what changed, settings if any, painting
+  advice for Carlos).
+- Open gaps worth raising with Carlos (details in the process doc "Known gaps"): in-game physics
+  cost of ~100 convex colliders per tree is unmeasured (measure in a build, log in
+  performance-log.md); nothing migrated to live prefabs/Island yet; collider tag/layer, bullet
+  surface and NavMesh impact unchecked; the "Solid?" props (rocks/logs/stumps) have no colliders
+  since the reset and need Auto mode or paint.
+- Then batch 2+: remaining trees, 5-10 per session.
