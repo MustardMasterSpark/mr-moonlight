@@ -167,7 +167,7 @@ The three "NO" rows break the no-hardcoded-values rule and are prime cleanup can
   (SessionLog v4), and flashlight switches are `[PLAYER] flashlight -> on|off` lines.
 - **Change record** (`performance-sessions.md` §8): a dated list of important changes with the docs and Linear
   comments that describe them, so a regression can be traced to a change.
-- **Linear:** MRM-44 (flashlight + hands), **MRM-85** (performance reports, change comments), **MRM-67** (polish, incl. the
+- **Linear:** **MRM-86** (the lighting rework), MRM-44 (flashlight + hands; sway, breath, detection, chest lamp stay here), **MRM-85** (performance reports, change comments), **MRM-67** (polish, incl. the
   flashlight + fog look), MRM-47 / MRM-69 (sun, skybox, TimeManager), MRM-9 (player prefab / HQ FPS viewmodel).
 - **Cheats:** F6 fog, F7 CRT, F8 time-of-day; F4 invulnerability. Quickest A/B for a lighting question.
 
@@ -178,7 +178,7 @@ The three "NO" rows break the no-hardcoded-values rule and are prime cleanup can
 - **Lighting rework (next session, planned by Carlos 2026-09-19):** rebuild `TimeManager` and the fog system, change the
   skyboxes, and merge the day/night light with the lamp / flashlight / light-source work. Wanted: **predefined baseline
   values for each time of day** (night, day, dusk...) and a **dynamic sun that changes gradually**, with the hands' light
-  following it. Handoff: `Docs/lighting-rework-opus-prompt.txt`.
+  following it. Tracked as **Linear MRM-86** (branch `mrm-86`). Handoff: `Docs/lighting-rework-opus-prompt.txt`.
 - **Fog + flashlight look** (MRM-67): the beam reads as a flat milky disc under HAZE. Fallback if a plain Spot Light cannot
   look right: Volumetric Light Beam (installer unextracted).
 - Wire the three unwired tunables (4), or delete them.
@@ -195,6 +195,7 @@ The three "NO" rows break the no-hardcoded-values rule and are prime cleanup can
 
 | Date | Change | Where recorded |
 |---|---|---|
-| 2026-09-19 | This file created; SessionLog v4 (`flashlight`/`handLights` in `[PERF]`, `[PLAYER] flashlight` lines); change-record system added to `performance-sessions.md` §8 | `changelog.md` MRM-44 entry; MRM-85 comment |
-| 2026-09-18 | Flashlight tunables + live tuning; hands on the `ViewModel` layer; hands' directional light following the sun with a night floor; world lights (lamps, flares, fires) light the hands; 21 HQ mask maps restored (guns PBR), arms matte | `viewmodel-light-layers.md`, `changelog.md` MRM-44 entries |
-| 2026-09-18 | Flashlight first iteration (F key, Spot Light, no animation) | `changelog.md` MRM-44 first-iteration entry |
+| 2026-09-19 | Lighting rework issue **MRM-86** created (branch `mrm-86`); process rules updated (branch `--no-track`, final-instructions step 4), change record C-002 | `performance-sessions.md` §8; Linear MRM-86, MRM-85 |
+| 2026-09-19 | This file created; SessionLog v4 (`flashlight`/`handLights` in `[PERF]`, `[PLAYER] flashlight` lines); change-record system added to `performance-sessions.md` §8 | `changelog.md` MRM-44 entry; MRM-85 comment; commit `e99866fd` (change record C-001) |
+| 2026-09-18 | Flashlight tunables + live tuning; hands on the `ViewModel` layer; hands' directional light following the sun with a night floor; world lights (lamps, flares, fires) light the hands; 21 HQ mask maps restored (guns PBR), arms matte | `viewmodel-light-layers.md`, `changelog.md` MRM-44 entries; commit `e99866fd` (C-001) |
+| 2026-09-18 | Flashlight first iteration (F key, Spot Light, no animation) | `changelog.md` MRM-44 first-iteration entry; commit `777b0ceb` |

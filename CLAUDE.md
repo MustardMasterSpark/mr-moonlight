@@ -62,6 +62,12 @@ If an issue and a document disagree, the issue wins.
   Blender work, then do it, verify by reading the actual scene/mesh/material state back, and
   document what changed. Same wait-if-he'd-rather-do-it-himself rule as Unity.
 - One issue, one branch, one PR.
+- **Create issue branches with `git switch -c <name> --no-track origin/main`**, never plain
+  `git checkout -b <name> origin/main`: that sets the branch's upstream to `origin/main`, and GitHub
+  Desktop then pushes the branch's commits **straight to `main`** with no pull request (happened to both
+  MRM-44 commits, 2026-09-18 and 2026-09-19). After creating a branch, check
+  `git config --get branch.<name>.merge` prints nothing (or `refs/heads/<name>`, never `refs/heads/main`).
+  Carlos publishes the branch from GitHub Desktop and opens the PR to `main`.
 - Never commit or push. The developer uses GitHub Desktop.
 
 ## Deadlines

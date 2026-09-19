@@ -191,3 +191,7 @@ materials' `_SmoothnessIntensity` set to 0.25 (cross-issue MRM-9) · hooks added
 (read by SessionLog) · cleanup must know: read `Docs/lighting.md` and `Docs/viewmodel-light-layers.md` first; URP lighting reads
 `UniversalAdditionalLightData.renderingLayers` not `Light.renderingLayerMask`; three lighting tunables are unwired (listed in
 lighting.md section 4). Next: lighting rework, `Docs/lighting-rework-opus-prompt.txt`.
+
+2026-09-19 (later) · MRM-44 follow-up / process · git: `mrm-44` had been created tracking `origin/main`, so both MRM-44 commits went straight
+to `main`; upstream removed, rule added to CLAUDE.md (branches are created with `--no-track` and the upstream checked), `mrm-86` created clean
+for the new lighting issue **MRM-86** (Opus, `Docs/lighting-rework-opus-prompt.txt`). Change record C-002 in `Docs/performance-sessions.md` §8.
