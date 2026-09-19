@@ -1885,7 +1885,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gutenberg Textura - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -3004,6 +3004,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Blue Aster_LOD
       objectReference: {fileID: 0}
+    - target: {fileID: 4273379976355062081, guid: 28a9be3900f65f34c95c453547fa300a, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fe28505c19524414487a38297a466509, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -3641,7 +3645,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -4711,7 +4715,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -5581,7 +5585,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Noto Serif - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -10353,6 +10357,14 @@ PrefabInstance:
       propertyPath: m_Name
       value: AP_WhiteFir_MD_Dead_03
       objectReference: {fileID: 0}
+    - target: {fileID: 5957881406165471901, guid: dd00594a3d485e64193be04dc2dcbee6, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 773451f6c8fd4fe41836bcf7f51e999b, type: 2}
+    - target: {fileID: 5957881406165471901, guid: dd00594a3d485e64193be04dc2dcbee6, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 808ce958dd2b546438bf70feda2cfc12, type: 2}
     - target: {fileID: 6397880067610821976, guid: dd00594a3d485e64193be04dc2dcbee6, type: 3}
       propertyPath: m_LocalScale.x
       value: 3.0929534
@@ -12064,7 +12076,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1898698124}
         m_TargetAssemblyTypeName: MrMoonlight.UI.MainMenuController, MrMoonlight.Runtime
-        m_MethodName: OnStartGameClicked
+        m_MethodName: OnLegionClicked
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14437,7 +14449,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpecialElite SDF Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -14766,6 +14778,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 7315157196388538638, guid: 97c25cc32fd321f48b75bc6233df484a, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 5368e446a95708a43adc1624f6434b2f, type: 2}
+    - target: {fileID: 7315157196388538638, guid: 97c25cc32fd321f48b75bc6233df484a, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: fcd2024847778754b90a2946d0002609, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -17110,7 +17130,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17309,6 +17329,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4631277394663251620, guid: 07a3b207a55a3a6448d418ec2bcd04f6, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 21037ab1836ae0947a2538e7c17f8393, type: 2}
+    - target: {fileID: 4631277394663251620, guid: 07a3b207a55a3a6448d418ec2bcd04f6, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: d024d571de21c9040bb191d74c7a1c10, type: 2}
     - target: {fileID: 7601870831519291058, guid: 07a3b207a55a3a6448d418ec2bcd04f6, type: 3}
       propertyPath: m_Name
       value: AP_BC_PineTree_02
@@ -17915,6 +17943,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: YellowAfricanDaisy_LOD
       objectReference: {fileID: 0}
+    - target: {fileID: 9087723232154537497, guid: b3bb9609207119040a48b8e1e592e0a7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: ea41ef6a71d2a6b439173161c2728102, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -18107,6 +18139,7 @@ MonoBehaviour:
   inputScheme: {fileID: 1898698126}
   menuMusicSource: {fileID: 1898698125}
   demoSceneName: Island
+  legionSceneName: Island_Legion
 --- !u!82 &1898698125
 AudioSource:
   m_ObjectHideFlags: 0
@@ -19408,6 +19441,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: African_violet_LOD
       objectReference: {fileID: 0}
+    - target: {fileID: 2974788996023248065, guid: 78b1031262667b440982315ca8b369a6, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 6c85640e56466d94e8126d918d21ac2c, type: 2}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -20498,6 +20535,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3615592923804440280, guid: 5cd67d571bb03ba4a8af14325b1ed7d7, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 859a815d0e6829a40977729376b06191, type: 2}
+    - target: {fileID: 3615592923804440280, guid: 5cd67d571bb03ba4a8af14325b1ed7d7, type: 3}
+      propertyPath: 'm_Materials.Array.data[1]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 45534c2ff28fff44f9146edd86693390, type: 2}
     - target: {fileID: 5818036248818114915, guid: 5cd67d571bb03ba4a8af14325b1ed7d7, type: 3}
       propertyPath: m_Name
       value: AP_Tree_WNT_M_03_SM

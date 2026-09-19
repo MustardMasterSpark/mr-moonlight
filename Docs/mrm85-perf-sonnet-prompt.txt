@@ -1,0 +1,84 @@
+Context prompt: performance work after MRM-84 (Legion island) + the session-log system (MRM-85). For a SONNET session.
+WRITTEN 2026-09-18 (end of session). Read this cold instead of chat scrollback.
+Supersedes Docs/mrm84-legion-island-sonnet-prompt.txt (that job is DONE, see section 1).
+
+===========================================================================
+0. FIRST
+===========================================================================
+- Never commit or push: Carlos uses GitHub Desktop. He is committing and merging the mrm-84 branch into main
+  at the end of the previous session; check `git status` / `git log` before assuming the branch is still open.
+- Check the Unity MCP bridge (execute_code `return Application.productName;` -> "MrMoonlight"). After any
+  compile the first call returns {"success":false}: send `return "ping";` first. compiler = codedom (C# 6).
+- Don't start on kickoff: read this file, then Docs/performance-sessions.md (whole), then WAIT for Carlos's go.
+- Scene/inspector/saved-scene work: ask permission first (CLAUDE.md hard rule).
+
+===========================================================================
+1. WHAT IS DONE (2026-09-18)
+===========================================================================
+- Island_Legion.unity (copy of Island, Gaia vegetation respawned with the 109 wood-MeshCollider prefabs,
+  8,786 instances, own NavMesh). Menu: Single/"The Narrow Way" -> Island, Legion -> Island_Legion. Details:
+  Docs/technie-vegetation-collider-process.md "Legion island scene".
+- TMP font shader repair (8 font assets + embedded scene materials), see Docs/mrm18-main-menu-build-summary.md.
+- SessionLog (Runtime/DevTools/SessionLog.cs): timestamped, scene-tagged build log. v1 build 35, v2 build 36,
+  v3 written and compiled but NOT in a build yet (display-change lines, logger self-cost, SessionLogEnabled).
+  Procedure, format, hypotheses table, changelog: Docs/performance-sessions.md. Linear: MRM-85 (living issue).
+- Trigger: Carlos says "I'm going to play a build, check the performance" -> follow performance-sessions.md §1
+  (read newest BUILD logs, ask a short batch of questions, write the entry to the doc AND an MRM-85 comment).
+  Every log-system change gets a changelog row (§7) AND an MRM-85 comment.
+
+===========================================================================
+2. WHAT THE DATA SAYS (sessions 1-2, builds 35-36)
+===========================================================================
+- Both islands fall from ~100-120 fps to ~30 fps over a 100-kill run; alive enemies stay 8-25. GPU-bound
+  (GPU frame time ~97% of frame time when slow). Cost shows as SetPass calls (~300-450 -> ~1,800-2,200).
+- Corpses are never destroyed (EnemyCorpseCleanup keeps the body, Animator, GoreSimulator, AudioSource).
+  Carlos fought from one spot, so corpses piled up in front of the camera. Carlos suspects unoptimised
+  blood/gore. H1/H3/H7 in the doc.
+- Dense forest is expensive at rest (2-3x fps difference vs open ground). Legion is not measurably worse than Island.
+- ~1 "Couldn't create a Convex Mesh ... 256 polygons" warning per 2-3 kills = runtime convex-hull creation on
+  kill (H8), find the source (GoreSimulator / ragdoll).
+- Logger cost measured in the Editor: ~1.5 us/frame + a ~2 ms window write every 5 s. Negligible.
+
+===========================================================================
+3. WHAT IS NEXT (suggested order; ask Carlos)
+===========================================================================
+1. Corpse A/B build: destroy/hide corpses after N s (or cap ~10) via a tunable, same route, compare SetPass/fps at
+   equal kill counts. Also try corpse renderers with shadows off (H7). Enemy code owners: EnemyCorpseCleanup,
+   EnemyHealth (Died/AnyDied), GoreSimulator (vendor, PG.GoreSimulator).
+2. Find and fix the per-kill runtime convex-hull creation (H8).
+3. Fixed stand-still benchmark (30 s plains, 30 s forest, no combat) in both scenes: settles H2/H6. Could be an
+   F-key or a tunable-driven camera position.
+4. Main menu window flash on scene switch: `MainMenuController.Awake` -> `SettingsPanel.ApplySavedDisplaySettings()`
+   -> `Screen.SetResolution(..., ExclusiveFullScreen)` runs on EVERY menu load. Guard it (skip when width/height/mode
+   already match). Touches MRM-18/MRM-78; log `[APP] display changed` (v3) confirms it. Build 37 needed.
+5. Unexplained: Island reloaded itself after the 100th kill in the build-36 run (Carlos clicked "main menu"; code
+   says GameOverPanel.OnMainMenuClicked -> "MainMenu", so a reload = Restart). Check the two buttons' onClick wiring
+   in Island.unity if it recurs.
+6. Parked by Carlos: LOD experiment ("later"). Any LOD tool must leave LOD 0 unchanged (paint + wood mesh are
+   indexed by triangle number).
+7. MRM-84 is CLOSED (Carlos, 2026-09-18). Verdict: keep Technie as the paint brush + WoodColliderTool. Optional leftovers:
+   asset spreadsheet row (AST-116); ~1 MB of unreferenced old hull meshes (Physics Hulls/*Hull Data*; the 51.6 MB of
+   *Painting Data* next to them must be KEPT); AP_Tree_Dry_N02 still excluded from Eerie/Beach. Future assets will
+   get the wood-collider treatment: see the recipe at the end of Docs/technie-vegetation-collider-process.md.
+
+Model: Sonnet is right for tuning/measuring/fixing on existing systems. Escalate only if the corpse/gore fix needs a
+real redesign of the enemy death pipeline.
+
+===========================================================================
+4. TRAPS
+===========================================================================
+- Play Mode dirties the open scene: reopen it (OpenScene Single) before building, do not save the play-mode junk.
+- Building: numbered folder under E:\Builds (`<N> - <two words> - <date>`, next is 37), non-development, zip with a
+  .ps1 (entry-by-entry, forward slashes), verify no backslash/zero-byte entries. Editor FPS is not a measurement.
+- Set the same fullscreen mode for every perf comparison (build 35 mixed FullScreenWindow and ExclusiveFullScreen).
+- Island.unity was resaved once (shader GUID repair + Gaia NoiseSettings reserialisation noise). Legion's Gaia
+  spawn order matters (Replace mode: last spawner wins shared species).
+- Gaia terrain data is a SHARED asset between both islands: never edit splatmaps/heights/detail layers casually.
+- Scripted edits fail silently in several ways: read state back, screenshot before saying fixed.
+- Carlos dictates messages; answer direct questions first; be quiet during long waits; suggest fresh sessions.
+
+===========================================================================
+5. WHICH HANDOFF TO USE (Carlos asked 2026-09-18)
+===========================================================================
+This file is for PERFORMANCE work (corpses, gore, benchmarks, menu flash). The next planned task is the FLASHLIGHT
+(Linear MRM-44): use Docs/interim-small-tasks-prompt.txt for that, not this file. Come back here only for the perf work.

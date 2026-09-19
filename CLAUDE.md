@@ -78,6 +78,21 @@ gate, and do not cut a system to nothing for Sept 1 if a slightly larger version
 gets made it starts from a clean project with better-chosen assets — so an asset having long-term
 drawbacks is not a reason to reject it here.
 
+## Performance sessions — "I'm going to play a build, check the performance"
+
+The game writes a scene-tagged session log in every build (`SessionLog`, no setup needed) to
+`%USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs\`. When Carlos says he is going
+to play (or has played) a build and wants the performance checked, follow **`Docs/performance-sessions.md`**
+§1 without re-asking: read the newest BUILD logs, ask him a short batch of questions about the run,
+then record the entry — numbers, conditions, what changed recently, findings and **hypotheses** — both
+in that doc and as a comment on Linear **MRM-85** ("Performance reports", a living issue, never closed).
+Keep the open-hypotheses table current. First implementation (2026-09-18); it will change a lot.
+
+The session log is a general debugging and analysis tool, not only for performance. **Whenever the log
+system changes (new field, line type, fix), add a row to the changelog in `Docs/performance-sessions.md`
+§7 and post it as a comment on MRM-85.** It is a dev tool: switch it off for the final release build
+(`MoonlightTunables.SessionLogEnabled`, plus Frame Timing Stats in Player Settings).
+
 ## Session hygiene
 
 Carlos budgets tokens across sessions. **Proactively suggest a fresh session** at natural stopping

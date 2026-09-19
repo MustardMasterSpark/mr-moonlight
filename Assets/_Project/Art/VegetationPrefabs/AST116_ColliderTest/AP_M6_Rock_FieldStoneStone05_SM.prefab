@@ -11,8 +11,7 @@ GameObject:
   - component: {fileID: 5635102777140809916}
   - component: {fileID: 8184762951100606418}
   - component: {fileID: 6774343135905052732}
-  - component: {fileID: 4117784248910811723}
-  - component: {fileID: 5403824015529827632}
+  - component: {fileID: 7163073461703664229}
   m_Layer: 0
   m_Name: Visual
   m_TagString: Untagged
@@ -32,7 +31,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 4864856161515732701}
   m_Father: {fileID: 4797205504380544795}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &8184762951100606418
@@ -92,7 +92,7 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!114 &4117784248910811723
+--- !u!114 &7163073461703664229
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -104,15 +104,47 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
-  paintingData: {fileID: 11400000, guid: 8688de61f4378b248ad70891a4af0c37, type: 2}
-  hullData: {fileID: 11400000, guid: 781b4eed4f486bb43b541fd6daa5b2aa, type: 2}
---- !u!64 &5403824015529827632
+  paintingData: {fileID: 11400000, guid: 7f7c2740dbdc0f84b8ffaf3ade37468d, type: 2}
+  hullData: {fileID: 11400000, guid: 9d66c0049d2d9f343966bc1dbd494d7e, type: 2}
+--- !u!1 &1678271978054338709
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4864856161515732701}
+  - component: {fileID: 1897792108501603169}
+  m_Layer: 0
+  m_Name: WoodCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &4864856161515732701
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678271978054338709}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5635102777140809916}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &1897792108501603169
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1583472256028073620}
+  m_GameObject: {fileID: 1678271978054338709}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2
@@ -125,9 +157,9 @@ MeshCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 5
-  m_Convex: 1
+  m_Convex: 0
   m_CookingOptions: 30
-  m_Mesh: {fileID: 3328423013486530623, guid: 781b4eed4f486bb43b541fd6daa5b2aa, type: 2}
+  m_Mesh: {fileID: 4300000, guid: c5b5208e94cb3ed4c998053dde4ce1c6, type: 2}
 --- !u!1 &6251571826363067917
 GameObject:
   m_ObjectHideFlags: 0

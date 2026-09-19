@@ -1,0 +1,90 @@
+DONE 2026-09-18: all 109 painted prefabs converted. Next job: Docs/mrm84-legion-island-sonnet-prompt.txt. Kept for the record.
+Context prompt: MRM-84 tree colliders, BULK RUN with WoodColliderTool. For a SONNET session.
+WRITTEN 2026-09-18. Read this cold instead of chat scrollback. Supersedes mrm84-batch1b-opus-prompt.txt.
+
+===========================================================================
+0. FIRST
+===========================================================================
+- Branch `mrm-84`. Never commit or push - Carlos uses GitHub Desktop.
+- Check the Unity MCP bridge answers (execute_code `return Application.productName;` ->
+  "MrMoonlight"). If it's refused, tell Carlos.
+- Don't start on kickoff. Read Docs/technie-vegetation-collider-process.md section "Current
+  process" (top of the file) and Docs/tree-collider-tracker.md. Then wait for Carlos to say go and
+  to name the prefabs (or "everything painted").
+
+===========================================================================
+1. WHAT CHANGED (why this is a Sonnet job now)
+===========================================================================
+Trees no longer get convex hulls. Each tree gets ONE non-convex MeshCollider built from the
+triangles Carlos painted as wood, on a child `Visual/WoodCollider`. It's exact by construction
+(Carlos's bar: a shot through visible air must never hit a collider). There's no geometry
+algorithm left to tune: the tool is mechanical and it proves itself with raycasts.
+Tool: Assets/_Project/Code/Editor/Migration/WoodColliderTool.cs
+Do NOT use TreeColliderTool / LimbSegmenter / MeshCoverField for static trees - superseded.
+
+===========================================================================
+2. THE RUN (per batch)
+===========================================================================
+Close Prefab Mode first (the tool refuses a prefab that is open in a stage). Call by reflection
+from execute_code (CodeDom C# 6):
+
+  System.Type t = null;
+  foreach (var a in System.AppDomain.CurrentDomain.GetAssemblies()) { var tt = a.GetType("MrMoonlight.EditorTools.Migration.WoodColliderTool"); if (tt != null) { t = tt; break; } }
+  string[] names = (string[])t.GetMethod("PaintedPrefabs").Invoke(null, null);   // or an explicit list
+  try { return t.GetMethod("Run").Invoke(null, new object[] { names, true }).ToString(); }   // dry run
+  catch (System.Reflection.TargetInvocationException e) { return "ERROR: " + e.InnerException; }
+
+Order:
+ 1. Dry run -> open EVERY Temp/TreeColliders/<prefab>_wood.png (Read tool). Left = whole mesh,
+    painted wood orange, the rest grey. Right = the collider. A GREY limb thick enough to hide
+    behind = a missed branch -> list it for Carlos; don't decide yourself.
+ 2. Real run: Run(names, false). Every line must say VERIFY OK.
+ 3. RayTest(names, 3000). Every line must say RAYTEST OK (0 "collider hit, no wood",
+    0 "wood, no collider hit").
+ 4. Update Docs/tree-collider-tracker.md (the wood-collider table). One line per tree.
+ 5. Carlos checks live. Only his OK moves a tree to Done.
+Runs are fast (5 trees: a few seconds). If something takes over a minute, stop and report - the
+old hull tool once froze the Editor for 13 minutes.
+
+===========================================================================
+3. SCOPE RULES
+===========================================================================
+- PaintedPrefabs() found 21 painted prefabs on 2026-09-18, including Carlos's batch 2 in progress.
+  Only run what Carlos names. He was still painting when this was written.
+- Already converted (9, all RAYTEST OK, awaiting Carlos's live check): Deadtree06, DeadTree01,
+  Lake_RoundTree_01, Curse_H01_2, MonsterTreeBark, Juniper02, Nokmyung, SaGeeSukRim,
+  AlaskaCedar_001_2. Re-running them is harmless (the mesh asset is overwritten in place) but only
+  needed after a repaint.
+- Names in the tracker's "Solid?" list (rocks, logs, stumps, FallTree...) showed up as painted
+  (e.g. AP_FallTree_01_SM). Ask Carlos whether they get a wood collider or Technie Auto.
+- A prefab with NO paint is skipped by PaintedPrefabs(); Run on it returns "not painted".
+
+===========================================================================
+4. TRAPS
+===========================================================================
+- After every script compile, the first execute_code returns {"success":false,data:null}. Send a
+  throwaway `return "ping";` first. A long call can also return that while Unity is still working:
+  check the report file's timestamp (Temp/TreeColliders/wood_run.txt) before re-running.
+- Two-sided: triangles whose material has Retro Lit `_Cull` == 0 get a reversed twin (physics
+  ignores back faces; DeadTree01 lost 13/558 test shots through mesh holes without it). Culled
+  materials stay one-sided on purpose. If a new shader shows up without `_Cull`, it's treated as
+  one-sided: say so in the report.
+- The report's "submesh 0: N/M painted" is a hint, not a pass/fail (leaf cards and moss often
+  share the bark submesh). The image decides.
+- The collider child copies Visual's layer + tag (physics reads the collider's OWN tag).
+- The test copies only. Nothing is carried over to live vegetation prefabs / Island yet - that's a
+  separate, unwritten step. Don't start it without Carlos.
+
+===========================================================================
+5. OPEN (not for this session unless Carlos asks)
+===========================================================================
+- Performance in a build (Island FPS with the wood colliders) -> Docs/performance-log.md.
+- Stale Technie hull meshes still sit inside each prefab's Technie hull-data asset (referenced by
+  nothing). Needs a cleanup step before the live migration.
+- Future knock-down/burn: disable WoodCollider, add Rigidbody + capsule/box. Idea only.
+
+===========================================================================
+6. AFTER
+===========================================================================
+Tracker + process doc (dated section), Linear comment on MRM-84, commit message text (Carlos
+commits). Carlos's trigger for all of it: "run the final instructions".

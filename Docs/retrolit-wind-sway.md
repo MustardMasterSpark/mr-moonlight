@@ -105,16 +105,55 @@ If a future scene wants a *third* category beyond Trees/Flowers (tall grass, bus
 extend `_WindCategory` past 0/1 and add a matching global intensity + `lerp`/`step` chain in
 `RetroWind.hlsl` — the pattern is meant to extend, not be redone.
 
-## Materials currently opted in (MainMenu)
+## 2026-09-18 incident: wind leaked into Island/VegetationGallery — now scoped via duplicate materials
 
-Trees (category 0): `M_TrunkB_PineBody`, `M_AP_BC_PineTree_02`, `M_TrunkA_PTree`,
-`M_AP_Tree_Conifir_A_02_SM`, `M_AP_Tree_Burnt_04_SM` (flexibility 0.4, dead),
-`M_AP_Tree_Lake_RoundTree_01_SM`, `M_AP_Tree_WNT_M_03_SM_extra27`, `M_AP_WhiteFir_MD_Dead_03`
-(flexibility 0.4, dead), `M_AP_AlaskaCedar_001_2_extra0`, `M_AP_Tree_Blackpoplar01_SM`,
-`M_AP_Tree_Blackpoplar01_SM_extra15`.
+**What happened:** `_WindEnabled` is a per-*material* flag on a *shared* asset. MainMenu doesn't
+use menu-only copies of its staged trees/flowers — it references the exact same
+`Assets/_Project/Art/VegetationPrefabs/**` prefabs and materials that Island and
+VegetationGallery use (via the vegetation spawner). Turning wind on for the menu's copy of e.g.
+`AP_BC_PineTree_02` turned it on for every instance of that species anywhere in the project,
+including two species (`AP_AlaskaCedar_001_2`, `African_violet_blue_LOD`) that were **never even
+staged in MainMenu** — they just happen to share a material file with a species that was.
 
-Flowers (category 1): `M_African_violet_blue_LOD`, `M_YellowAfricanDaisy_LOD`,
-`M_Blue Aster_LOD`.
+**Fix (no engine/shader change, asset-only):** for every material that had `_WindEnabled: 1`,
+duplicated it to a `<name>_MainMenu.mat` sibling in the same folder (same wind settings), then:
+- Set `_WindEnabled` back to `0` on all 11 original shared materials — silences wind on every
+  Island/Gallery/spawner instance immediately, at zero cost (disabled = identical to stock
+  RetroLit, per `RetroWind.hlsl`'s own comment).
+- In `MainMenu.unity` only, repointed the 7 actually-staged renderers' `sharedMaterials` to the
+  `_MainMenu` duplicates instead of the originals.
 
-`AP_Flower_001_09` (staged in the scene) has no renderer yet — nothing to enable wind on until it
-has a mesh assigned.
+The 11 originals fixed: `M_African_violet_blue_LOD`, `M_Blue Aster_LOD`,
+`M_YellowAfricanDaisy_LOD`, `M_AP_AlaskaCedar_001_2_extra0`, `M_AP_BC_PineTree_02`,
+`M_AP_Tree_Blackpoplar01_SM` (+ `_extra15`), `M_AP_Tree_Lake_RoundTree_01_SM`,
+`M_AP_Tree_WNT_M_03_SM_extra27`, `M_AP_WhiteFir_MD_Dead_03`, `M_TrunkB_PineBody`.
+
+**Materials currently opted in, corrected (previous list above was stale/aspirational — three of
+its entries, `M_TrunkA_PTree`, `M_AP_Tree_Conifir_A_02_SM`, `M_AP_Tree_Burnt_04_SM`, were always
+`_WindEnabled: 0` on disk despite being listed; `AP_Flower_001_09` still has no renderer):**
+
+- **Motionless everywhere now** (originals, off): all 11 materials listed above.
+- **Swaying in MainMenu only** (`_MainMenu` duplicates, on): the same 11, used exclusively by the
+  7 renderers staged in `MainMenu.unity` — `AP_BC_PineTree_02`, `AP_Tree_Blackpoplar01_SM`,
+  `AP_Tree_WNT_M_03_SM`, `AP_WhiteFir_MD_Dead_03`, `African_violet_LOD`, `Blue Aster_LOD`,
+  `YellowAfricanDaisy_LOD`.
+
+**This does not scale.** One duplicate material pair per species was fine for 7 MainMenu props;
+it is the wrong approach if wind needs to reach Island vegetation broadly, or if a *scene*
+(not a species) should decide whether wind is on. See the next section.
+
+## Forward-looking: more than wind is coming
+
+Carlos is thinking about vegetation reacting to several effects over time, not just wind —
+weather states (windy, rainy) and destructible effects (trees catching fire) were named
+explicitly as future directions (2026-09-18), not yet scoped or scheduled. No action taken yet,
+but when any of this is designed, keep in mind:
+
+- The current `_WindEnabled` per-material-asset toggle is already the wrong shape for "which
+  scene/instances get this effect" — that's what caused the 2026-09-18 leak. A per-object
+  MaterialPropertyBlock override (or a scene-level component that flips category membership at
+  runtime) scales better than duplicating materials per effect per species.
+- If fire is a real per-tree state change (not just VFX on top), it likely needs its own
+  material/shader path or a burnt-texture swap, not another RetroWind-style vertex hack.
+- Whatever shape this takes, do not bake more per-effect boolean flags directly onto the shared
+  species materials — that's the exact mistake this incident fixes.

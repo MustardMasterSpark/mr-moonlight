@@ -32,6 +32,60 @@ Transform:
   - {fileID: 5452477257451083956}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &8894910983812079542
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7974793142853317444}
+  - component: {fileID: 535794112887570908}
+  m_Layer: 0
+  m_Name: WoodCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &7974793142853317444
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8894910983812079542}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 5452477257451083956}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &535794112887570908
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8894910983812079542}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: 2a1075cab6db8f1479967b36b22ec600, type: 2}
 --- !u!1001 &5485857480321400671
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -114,17 +168,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7974793142853317444}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
       insertIndex: -1
       addedObject: {fileID: 7364344371791081733}
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
       insertIndex: -1
-      addedObject: {fileID: 2439189809867066140}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7266520654493052375}
+      addedObject: {fileID: 3834132053831642490}
   m_SourcePrefab: {fileID: 100100000, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
 --- !u!1 &4674955773413212686 stripped
 GameObject:
@@ -150,7 +204,7 @@ LODGroup:
     renderers:
     - renderer: {fileID: 6620357362540307419}
   m_Enabled: 1
---- !u!114 &2439189809867066140
+--- !u!114 &3834132053831642490
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -162,30 +216,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
-  paintingData: {fileID: 11400000, guid: f7cdd75f9b7066447b0a77de6e9ce96a, type: 2}
-  hullData: {fileID: 11400000, guid: e3a44d46663179f4caf7fea90450cbc7, type: 2}
---- !u!64 &7266520654493052375
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4674955773413212686}
-  m_Material: {fileID: 0}
-  m_IncludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_ExcludeLayers:
-    serializedVersion: 2
-    m_Bits: 0
-  m_LayerOverridePriority: 0
-  m_IsTrigger: 0
-  m_ProvidesContacts: 0
-  m_Enabled: 1
-  serializedVersion: 5
-  m_Convex: 1
-  m_CookingOptions: 30
-  m_Mesh: {fileID: -6075210877330031459, guid: e3a44d46663179f4caf7fea90450cbc7, type: 2}
+  paintingData: {fileID: 11400000, guid: c151442192893f34c9758a59e4c7b397, type: 2}
+  hullData: {fileID: 11400000, guid: 0f27f8921df63e94290ff917ae458dd6, type: 2}
 --- !u!4 &5452477257451083956 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 002a9d46fbec8e74197eaa40ac357d9a, type: 3}
