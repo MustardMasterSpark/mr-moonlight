@@ -166,3 +166,16 @@ NavMesh-Island_Legion.asset`, `Code/Runtime/DevTools/SessionLog.cs` (build sessi
 AnySpawned/AnyDespawned` (one-directional, added for the log), MainMenuController Legion button (MRM-18 cross-issue).
 Cleanup must know: the wood-collider recipe in `Docs/technie-vegetation-collider-process.md`; MRM-85 perf findings
 (corpses are never destroyed, GPU-bound) point at enemy death/gore = cleanup territory.
+
+2026-09-18 · MRM-44 (first iteration, flashlight only; visible breath, sway, enemy detection NOT done) · flashlight =
+a Spot Light child `Flashlight` under Player_Tracey/Body/Head/Camera with `MoonlightFlashlight` (F / D-Pad Up toggles the
+light, instant, no animation, no wieldable; Carlos rejected the HQ hand-held Flashlight wieldable, the lamp will be a
+chest-mounted model later) · files: `Code/Runtime/Player/MoonlightFlashlight.cs`, `Prefabs/Player/Player_Tracey.prefab`
+(new child), `InputSystem_Actions.inputactions` (+ regenerated .cs: F moved from Interact to FlashlightToggle, L binding
+removed; Interact now has NO keyboard binding, Carlos picks it later), `Docs/controls.md`, cookie texture
+`ThirdParty/AST-046/HQFPS/Art/Meshes/Wieldables/Flashlight/Materials/Flashlight_Cookie.png` (copied from the Weapon
+project, GUID preserved) · no hook into existing systems, `MoonlightFlashlight.Toggled`/`IsOn` are the hooks for the
+future enemy-detection change · cleanup must know: the HQ flashlight wieldable (HQFPS_Wieldable_Flashlight.prefab, item
+"HQFPS_Flashlight") is deliberately NOT in Tracey's holster and its FP FBX/materials were never migrated; shadows on the
+beam are OFF (GPU-bound frame, MRM-85), tunables still live on the Light component. Live F-key test is Carlos's.
+Handoff for the next session: Docs/mrm44-sonnet-prompt.txt.

@@ -19,10 +19,11 @@ needed, the game just responds to whichever device you touch.
 | **Left Stick (click)** | Sprint | Sprint while moving forward |
 | **Right Shoulder (RB)** | Switch Weapon | Cycle to the next held weapon |
 | **D-Pad Left / Right** | Inventory Navigate | Open the inventory, then step the selection |
+| **D-Pad Up** | Flashlight Toggle | Turns the flashlight beam on / off (MRM-44) |
 | **Start** | Pause | Open / close the pause menu |
 
-**Not yet wired to gameplay** (defined in the input asset, no behaviour attached): D-Pad Up
-(Flashlight Toggle), D-Pad Down (Boots Toggle), East button/`B` composite for Equip Melee — melee
+**Not yet wired to gameplay** (defined in the input asset, no behaviour attached): D-Pad Down
+(Boots Toggle), East button/`B` composite for Equip Melee — melee
 equip is currently keyboard-only (see below) and closes the inventory when pressed.
 
 ## Keyboard & Mouse
@@ -35,7 +36,8 @@ equip is currently keyboard-only (see below) and closes the inventory when press
 | **Right Mouse Button** | Aim Down Sights | Raise the weapon to aim down its sights |
 | **Space** | Jump | Jump |
 | **C** | Crouch | Crouch (hold) |
-| **E** | Interact | Pick up items / interact with the world (hold) |
+| *(unbound)* | Interact | Pick up items / interact with the world (hold). **F was taken by the flashlight 2026-09-18; Carlos will pick the new key later** |
+| **F** | Flashlight Toggle | Turns the flashlight beam on / off (MRM-44). No animation, just the light |
 | **R** | Reload | Reload the current weapon |
 | **Left Shift** | Sprint | Sprint while moving forward |
 | **Q** | Switch Weapon | Cycle to the next held weapon |
@@ -43,7 +45,7 @@ equip is currently keyboard-only (see below) and closes the inventory when press
 | **V** | Equip Melee (in inventory) | Closes the inventory once it's open |
 | **Escape** | Pause | Open / close the pause menu |
 
-**Not yet wired to gameplay:** `F` (Flashlight Toggle), `B` (Boots Toggle) — bound in the input
+**Not yet wired to gameplay:** `B` (Boots Toggle) — bound in the input
 asset but no system reads them yet.
 
 ### Inventory mini-flow (both schemes)

@@ -5,6 +5,38 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-44 — Flashlight, first iteration (2026-09-18)
+
+Branch `mrm-44`. Full record: Linear comment on MRM-44. Interim log: `Docs/interim-small-tasks-prompt.txt`.
+
+**BUILT**
+
+- `MoonlightFlashlight.cs` (Runtime/Player): F / D-Pad Up flips a `Light`. Instant, no animation, no wieldable.
+  Exposes `IsOn` and `Toggled` for the future enemy-detection work.
+- `Flashlight` child (Spot Light: range 30, 60/25 deg, intensity 4, warm white, shadows OFF, HQ cone cookie) under
+  `Player_Tracey/Body/Head/Camera` in `Player_Tracey.prefab`; every scene using the prefab inherits it.
+- Input: F moved from Interact to `FlashlightToggle`, old L binding removed. **Interact has no keyboard binding now.**
+- Cookie texture copied from the Weapon project (`Flashlight_Cookie.png`, GUID preserved).
+
+**DECISIONS**
+
+- Carlos rejected the HQ hand-held Flashlight wieldable (pulls out a hand, Switch animation): "we just have the beam of
+  light". The lamp will be a chest-mounted model on Tracey later. The wieldable prefab/item stay in the project but are
+  not in the holster and its FP FBX/materials were never migrated.
+- Shadows off by default: frame is GPU-bound with shadow-atlas warnings (MRM-85).
+
+**FAILED / NOT DONE**
+
+- Not verified live: the open MainMenu scene had unrelated unsaved changes, so Carlos runs the F-key test himself.
+- Wasted effort: copied then deleted the HQ FP flashlight FBXs/materials before the wieldable path was ruled out.
+
+**NEXT**
+
+- Live F-key test, tune beam numbers, HAZE look check, beam sway, visible breath, enemy visual detection, performance
+  check with a build (`Docs/performance-sessions.md`). Handoff: `Docs/mrm44-sonnet-prompt.txt`.
+
+---
+
 ## MRM-9 — Player_Tracey prefab completed, Burntwax fully removed (2026-09-17)
 
 Full record: Linear comment on MRM-9. Asset audit: `Docs/external-assets.md` → "Removed".

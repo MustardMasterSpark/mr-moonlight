@@ -17,7 +17,7 @@ instantly, no restart, no scheme-switch step. See `InputMapController.cs`.
 | **Move** | W / A / S / D | Left Stick |
 | **Look** | Mouse delta | Right Stick |
 | **Fire** | Mouse Left Button | Right Trigger |
-| **Interact** | E | X (West) |
+| **Interact** | *(unbound - was F until 2026-09-18, when the flashlight took it; Carlos picks the new key)* | X (West) |
 | **Crouch** | C | Right Stick Press |
 | **Jump** | Space | A (South) |
 | **Sprint** | Left Shift | Left Stick Press |
