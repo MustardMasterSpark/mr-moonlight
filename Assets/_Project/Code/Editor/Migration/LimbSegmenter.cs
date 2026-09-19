@@ -65,6 +65,11 @@ namespace MrMoonlight.EditorTools.Migration
 			public float Start;
 			public float End;
 			public List<int> Faces = new List<int>();
+			// Set by TreeColliderTool's cover pass: build this piece as a Technie "Face" hull (the
+			// painted triangles plus a copy pushed FaceThickness mesh units inward) instead of a
+			// convex hull of the triangles.
+			public bool AsFace;
+			public float FaceThickness;
 		}
 
 		public class ArcInfo

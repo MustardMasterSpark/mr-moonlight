@@ -1,0 +1,133 @@
+Context prompt: MRM-84 continues. NEW ISLAND SCENE with the wood-collider vegetation + main menu routing. For a SONNET session.
+WRITTEN 2026-09-18 (end of session). Read this cold instead of chat scrollback.
+Supersedes Docs/mrm84-wood-bulk-sonnet-prompt.txt (that job is DONE, see section 2).
+
+===========================================================================
+0. FIRST
+===========================================================================
+- Branch `mrm-84`, Linear issue MRM-84. Carlos wants this work on the SAME branch and issue. Never commit or push:
+  Carlos uses GitHub Desktop.
+- Check the Unity MCP bridge answers (execute_code `return Application.productName;` -> "MrMoonlight",
+  compiler codedom). After any compile the first call returns {"success":false}: send `return "ping";` first.
+- Don't start on kickoff. Read this file, then Docs/tree-collider-tracker.md (top two sections) and
+  Docs/technie-vegetation-collider-process.md "Bulk run (2026-09-18)". Then WAIT for Carlos's go.
+- Scene-view / inspector / saved-scene work is Carlos's territory: ASK PERMISSION before doing it via
+  the UnityMCP bridge (CLAUDE.md hard rule). If yes: do it, read the actual state back, document it.
+
+===========================================================================
+1. CARLOS'S TASK (his instructions, 2026-09-18, keep them intact)
+===========================================================================
+"Next session I want you to:
+ 1. Create a copy of the island scene.
+ 2. Strip it of all the [vegetation] it had generated in Gaia.
+ 3. Use Gaia again with the same strategy we did with the island, but now with these new assets
+    that we just added: the ones with the collisions."
+
+"This new scene: from the main menu, if we click Single, the player goes to the original island scene
+we had. If we click Legion, that takes us to the new island scene with the new trees you generate."
+
+Notes on the wording (dictated, so typos are expected):
+- He wrote "beat injection"; from context it means the vegetation Gaia spawned. Delete only what
+  Gaia generated (children of `<Terrain>/Gaia Game Object Spawns/`). CONFIRM with Carlos before deleting
+  anything else in the copy (hand-placed props, landmarks, player rig, Crest, lighting all stay).
+- "Single": there is NO button with that label. MainMenu.unity has `StartButton` (label " The Narrow Way")
+  and `LegionButton` (label "Legion"). BOTH currently call MainMenuController.OnStartGameClicked ->
+  loads "Island". Most likely Single = the first button (StartButton, " The Narrow Way"), Legion =
+  LegionButton. ASK CARLOS ONE QUESTION to confirm which button is "Single" and whether he wants labels changed.
+
+===========================================================================
+2. WHAT IS DONE (this session, all verified)
+===========================================================================
+- 109 prefabs in Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/ (incl. RetroRealism/ subfolder)
+  each have ONE non-convex MeshCollider on `Visual/WoodCollider`, built from Carlos's paint by
+  Assets/_Project/Code/Editor/Migration/WoodColliderTool.cs. All VERIFY OK + RAYTEST OK (3000 rays each).
+  Carlos looked at the gallery scene (VegetationGallery_TechnieColliderTest) and liked it. No formal
+  "Done" yet (tracker says awaiting his live check).
+- WoodColliderTool now resolves prefabs in subfolders (bug fixed: RF_* were skipped as "unpainted").
+- Docs updated: tree-collider-tracker.md, technie-vegetation-collider-process.md (dated section).
+- Colliders exist ONLY on the test copies in AST116_ColliderTest/. The LIVE prefabs the original Island
+  uses (Assets/_Project/Art/VegetationPrefabs/<name>.prefab, and RF_* at
+  Assets/_Project/Prefabs/World/Vegetation/RetroRealism/) still have their old capsule/box colliders.
+  DO NOT change those: the original Island must stay exactly as it is (Single -> original).
+- Checked: old live colliders and the new WoodCollider are all layer Default / tag Untagged, so Spotter
+  vision (reads the collider's own tag/layer) is not changed by the swap (3 prefabs sampled).
+
+===========================================================================
+3. THE PLAN (propose it to Carlos, get a go, then do it in this order)
+===========================================================================
+A. Copy the scene. AssetDatabase.CopyAsset Assets/_Project/Scenes/Island.unity -> a new name
+   (propose "Island_Legion.unity"; ASK Carlos for the name). Don't use Save As on the open Island.
+B. Strip the copy: delete every child under `<Terrain>/Gaia Game Object Spawns/`; reset
+   `m_spawnedInstances = 0` on every rule of every spawner under `Vegetation Spawners`.
+C. Repoint the copy's spawner rules to the wood-collider prefabs. The rules reference the LIVE prefabs.
+   Map by name: Art/VegetationPrefabs/<n>.prefab -> Art/VegetationPrefabs/AST116_ColliderTest/<n>.prefab,
+   and RF_* Prefabs/World/Vegetation/RetroRealism/<n> -> AST116_ColliderTest/RetroRealism/<n>.
+   The copies have DIFFERENT GUIDs, so this is a real repoint, not a rename. Report every rule whose
+   asset has no wood-collider copy (grass/flowers/mushrooms/nest/RF_Bush are intentionally collider-less).
+   AP_Tree_Dry_N02 was excluded from Eerie/Beach rules for "no collider"; it now has one - ASK Carlos
+   whether to add it back.
+D. Run the standard cycle ("generate new Gaia", memory mrm70-generate-new-gaia-trigger): clean, apply
+   changes, force every mask m_active = true, AreaSpawn each of the 9 biomes (Fountain, HereticForest,
+   EerieForest, FlakTower, Beach, AutumnForest, Forest, Mountain, Glade) with a manual
+   `while (coro.MoveNext())` drain (spawner.Spawn(false) is unreliable from script), then report totals
+   by reading `Gaia Game Object Spawns` child counts. Flora step stays REMOVED (rendering bug). Baseline to
+   match: 95 assets / 174 rules / ~5,990 instances (memory mrm70-gpt-distribution-v2-applied; source
+   Tools/vegetation/gpt_distribution_v2_auto.csv; Docs/mrm70-resume-2026-08-31-late-night.md).
+E. Rebake the NavMesh for the NEW scene into its OWN asset (never overwrite
+   Assets/_Project/Scenes/Island/NavMesh-Island.asset). Wood colliders are physics colliders, so they
+   rasterise. Do a small probe bake first (memory mrm27-island-navmesh-facts) and check connectivity.
+F. Main menu (Code/Runtime/UI/MainMenuController.cs): it has ONE `demoSceneName = "Island"` and
+   RunStartGame() loads it. Add a second scene-name field (same [SerializeField] string pattern as
+   demoSceneName; that is the existing precedent for scene names) and an OnLegionClicked() that runs
+   the same fade/load coroutine with the new scene. Repoint LegionButton's onClick in MainMenu.unity
+   from OnStartGameClicked to it. Add the new scene to Build Settings (ProjectSettings/EditorBuildSettings.asset
+   lists only MainMenu and Island right now).
+   THIS TOUCHES MRM-18 (main menu, still In Review): flag it explicitly in the Linear comment
+   as an incidental cross-issue change.
+G. Verify: enter Play from the menu, click each button, confirm the right scene loads, confirm the new
+   scene's vegetation is the wood-collider set (read the components back), test shooting/walking against a
+   few trees, screenshot before calling anything fixed. Log Island vs new-scene FPS in Docs/performance-log.md.
+
+===========================================================================
+4. TRAPS
+===========================================================================
+- Gaia spawner rules are SCENE-LOCAL (verified: Island.unity holds the SpawnerSettings as in-scene
+  objects, `m_settings: {fileID: <local>}`). So the copy's rules are independent of the original: good.
+  BUT the terrain data is a SHARED asset: the live terrain is the Gaia session asset
+  Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/Terrain_0_0-20260829 - 035828.asset
+  (1024 m, origin -512,0,-512). Both scenes point at it. Don't change splatmaps/heights in the copy
+  without duplicating the terrain data first. Vegetation is GameObjects (0 terrain trees) so stripping is scene-local.
+- Confirm Edit Mode before scripted edits (Play Mode edits silently revert on stop). Force
+  ImageMask.m_active = true every cycle (AreaSpawn can deactivate masks). Editor focus traps: a stalled
+  AssetDatabase job needs the Editor focused.
+- Scripted prefab/scene edits fail silently in several ways (memory unity-prefab-asset-edit-traps,
+  prefab -> instance propagation): read the actual state back, never trust "no error".
+- Non-convex MeshColliders: up to ~24k tris (GraveKeepers_B02), Curse_K01 ~18k, ArgassTree_03 ~17k (two-sided).
+  They are static so PhysX shares cooked data per mesh, but the Island FPS with them is UNMEASURED:
+  measure the new scene and write the numbers down.
+- Don't reopen convex hulls (TreeColliderTool / LimbSegmenter) for static trees.
+- A tool saying "not painted / not found" -> check subfolders first.
+- WoodColliderTool re-running is harmless (mesh asset overwritten in place); only needed after a repaint.
+- Don't add vegetation numbers to MoonlightTunables during prototyping (memory feedback-tunables-during-prototyping).
+- Carlos dictates his messages; answer direct questions first; be quiet during long waits; suggest a fresh
+  session at natural stopping points.
+
+===========================================================================
+5. PARKED (not for this session unless Carlos asks)
+===========================================================================
+- LODs: Carlos is curious ("later"). Only the 14 RF_* have a LODGroup (one LOD); the 95 AP_* have none.
+  Unity 6.3 has built-in mesh LODs (ModelImporter.generateMeshLods). He looked at "Asset Optimizer Pro"
+  (SKAVA, Fab, ~398 MXN). Any LOD tool must leave LOD 0 UNCHANGED (paint + wood mesh are indexed by
+  triangle number). Details: technie-vegetation-collider-process.md "Bulk run" section.
+- Stale Technie hull meshes still sit inside each prefab's hull-data asset (referenced by nothing): cleanup
+  step before merging to main.
+- Carrying colliders to the LIVE prefabs / original Island is NOT wanted now (Single keeps the original).
+- Future knock-down/burn: disable WoodCollider, add Rigidbody + capsule/box. Idea only.
+
+===========================================================================
+6. AFTER
+===========================================================================
+Tracker + process doc (dated section), Linear comment on MRM-84 (and flag MRM-18 for the menu change),
+commit message text (Carlos commits). Carlos's trigger for all of it: "run the final instructions".
+Model: Sonnet is right for this (pipeline on existing systems). Escalate only if the Gaia rule repointing
+turns out to need real design work.

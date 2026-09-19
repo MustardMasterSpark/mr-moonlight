@@ -22,12 +22,28 @@ namespace MrMoonlight.EditorTools.Migration
 	{
 		public static LimbSegmenter.Settings Settings = new LimbSegmenter.Settings();
 
-		// "Gap" = how far a hull's faces stand off the painted surface they came from. A hull
-		// hugging a limb has small gaps (bark grooves); a hull bridging a crotch, the space
-		// between roots or the inside of a bend has a gap comparable to the limb's radius.
-		// Flagged when the gap exceeds this fraction of the piece's radius (and GapFloor).
-		public static float GapWarningRadii = 0.5f;
-		public static float GapFloorMetres = 0.03f;
+		// Cover (2026-09-18): how far a hull's surface may stand outside the WHOLE tree mesh
+		// before it counts as a collider in visible air. Measured every CoverSpacing metres over
+		// the hull surface; points at or below CoverGroundY (local height, metres) are under the
+		// terrain and ignored.
+		public static float CoverTolerance = 0.05f;
+		public static float CoverSpacing = 0.04f;
+		public static float CoverGroundY = 0.03f;
+		// Only stand-off over OPEN air counts: a gap a ball of this radius (metres) fits into.
+		// Bark grooves and knots narrower than that are roughness, not see-through air - with
+		// every point counted, Deadtree06 came out as 1,278 colliders (2026-09-18).
+		public static float OpenAirRadius = 0.06f;
+		// The cover passes (plane splits, Face patches) stop after this many seconds per Plan/Apply
+		// and leave the remaining pieces as they are, with a NOTE: a plan once froze the Editor
+		// for 13 minutes on Deadtree06.
+		public static float CoverBudgetSeconds = 90f;
+		// Cover refinement: a piece whose hull stands off the mesh by more than CoverTolerance is
+		// split by the best of several planes (or into its connected parts) until it doesn't, or
+		// until a split no longer helps. At most this many extra pieces per segmenter piece.
+		public static bool RefineCover = true;
+		public static int MaxCoverSplitsPerPiece = 24;
+		// Pieces still over tolerance after the plane splits become small inward Face hulls.
+		public static bool FacePatchFallback = true;
 
 		private const int PreviewLayer = 31;
 		private static readonly Regex SplitName = new Regex(@"_s\d+$");
@@ -48,6 +64,9 @@ namespace MrMoonlight.EditorTools.Migration
 			public Vector3[] Verts;
 			public int[] Tris;
 			public Vector3 Scale;
+			public MeshCoverField Field;
+			public System.Diagnostics.Stopwatch Clock = System.Diagnostics.Stopwatch.StartNew();
+			public bool BudgetNoted;
 		}
 
 		private class PieceStats
@@ -56,9 +75,8 @@ namespace MrMoonlight.EditorTools.Migration
 			public Hull Target;
 			public Mesh HullMesh;
 			public float Volume;
-			public float Gap;
-			public float Radius;
 			public bool Flagged;
+			public MeshCoverField.Stats Cover;
 		}
 
 		private class HullPlan
@@ -144,7 +162,8 @@ namespace MrMoonlight.EditorTools.Migration
 						ctx.Paint.hulls.Insert(insertAt++, target);
 					}
 					target.name = baseName + "_s" + (i + 1).ToString("00");
-					target.type = HullType.ConvexHull;
+					target.type = plan.Pieces[i].Piece.AsFace ? HullType.Face : HullType.ConvexHull;
+					if (plan.Pieces[i].Piece.AsFace) target.faceThickness = plan.Pieces[i].Piece.FaceThickness;
 					target.colour = PieceColour(colourIndex++);
 					target.SetSelectedFaces(plan.Pieces[i].Piece.Faces, ctx.Mesh);
 					plan.Pieces[i].Target = target;
@@ -162,7 +181,7 @@ namespace MrMoonlight.EditorTools.Migration
 				foreach (PieceStats p in plan.Pieces)
 				{
 					if (p.HullMesh != null) Object.DestroyImmediate(p.HullMesh);
-					p.HullMesh = p.Target != null && p.Target.collisionMesh != null ? Object.Instantiate(p.Target.collisionMesh) : null;
+					p.HullMesh = p.Target != null ? GeneratedHullMesh(p.Target) : null;
 				}
 			string image = RenderPreview(ctx, plans, prefabName + "_applied.png");
 			string report = WriteReport(ctx, set, "APPLIED", image, verify, prefabName + "_applied.txt");
@@ -175,6 +194,20 @@ namespace MrMoonlight.EditorTools.Migration
 		// Use after Apply, and after any hand edit + Regenerate.
 		public static string Inspect(string prefabName)
 		{
+			return InspectCore(prefabName, false, Vector3.zero, 0f);
+		}
+
+		// Close-up of the CURRENT colliders (PlanFocus only works before Apply): four sides and a
+		// top view framed on every piece whose paint comes within `radius` metres of `centre`
+		// (metric Visual-local coordinates, as the COVER lines print them). Everything starting
+		// above the framed pieces is hidden in the top view.
+		public static string InspectFocus(string prefabName, Vector3 centre, float radius)
+		{
+			return InspectCore(prefabName, true, centre, radius);
+		}
+
+		private static string InspectCore(string prefabName, bool focus, Vector3 centre, float radius)
+		{
 			Context ctx = OpenContext(prefabName);
 			List<HullPlan> hulls = new List<HullPlan>();
 			List<PieceStats> all = new List<PieceStats>();
@@ -184,8 +217,9 @@ namespace MrMoonlight.EditorTools.Migration
 				if (faces.Length == 0) continue;
 				LimbSegmenter.Piece piece = new LimbSegmenter.Piece { Faces = new List<int>(faces) };
 				PieceStats st = new PieceStats { Piece = piece, Target = h };
-				st.HullMesh = h.collisionMesh != null ? Object.Instantiate(h.collisionMesh) : null;
-				st.Gap = MaxGap(st.HullMesh, piece.Faces, ctx);
+				st.HullMesh = GeneratedHullMesh(h);
+				st.Cover = CoverOf(st.HullMesh, ctx, CoverSpacing);
+				st.Flagged = st.Cover.Max > CoverTolerance;
 				HullPlan plan = new HullPlan { Source = h, BaseName = h.name, OriginalFaces = piece.Faces };
 				plan.Pieces.Add(st);
 				hulls.Add(plan);
@@ -195,16 +229,29 @@ namespace MrMoonlight.EditorTools.Migration
 			StringBuilder sb = new StringBuilder();
 			sb.AppendLine(ctx.Root.name + " - INSPECT (current colliders)");
 			sb.Append(VerifyColliders(ctx));
-			all.Sort((a, b) => b.Gap.CompareTo(a.Gap));
-			sb.AppendLine("Largest gaps (hull face standing off its own painted surface):");
-			for (int i = 0; i < Mathf.Min(10, all.Count); i++)
-				sb.AppendLine("  " + all[i].Target.name + "  " + all[i].Piece.Faces.Count + " tris  gap " + all[i].Gap.ToString("F3") + " m");
-			string image = RenderPreview(ctx, hulls, prefabName + "_inspect.png");
+			int bad = 0, faceHulls = 0;
+			foreach (PieceStats p in all) { if (p.Flagged) bad++; if (p.Target.type == HullType.Face) faceHulls++; }
+			sb.AppendLine(bad + " of " + all.Count + " colliders stand > " + CoverTolerance + " m outside the tree mesh (" + faceHulls + " are Face hulls)");
+			sb.Append(WorstCover(hulls));
+			List<int> focusList = null;
+			if (focus)
+			{
+				focusList = new List<int>();
+				for (int i = 0; i < all.Count; i++)
+					foreach (int f in all[i].Piece.Faces)
+					{
+						bool near = false;
+						for (int k = 0; k < 3 && !near; k++) near = (Vector3.Scale(ctx.Verts[ctx.Tris[f * 3 + k]], ctx.Scale) - centre).magnitude <= radius;
+						if (near) { focusList.Add(i); break; }
+					}
+				sb.AppendLine("Focus: " + focusList.Count + " pieces within " + radius + " m of " + centre);
+			}
+			string image = RenderPreview(ctx, hulls, prefabName + (focus ? "_inspectfocus.png" : "_inspect.png"), focusList);
 			sb.AppendLine("Image: " + image);
 			DestroyMeshes(hulls);
 
 			System.IO.Directory.CreateDirectory(ReportDir);
-			string path = System.IO.Path.Combine(ReportDir, prefabName + "_inspect.txt");
+			string path = System.IO.Path.Combine(ReportDir, prefabName + (focus ? "_inspectfocus.txt" : "_inspect.txt"));
 			System.IO.File.WriteAllText(path, sb.ToString());
 			return sb.ToString() + "Report: " + path;
 		}
@@ -239,6 +286,7 @@ namespace MrMoonlight.EditorTools.Migration
 				foreach (Hull h in g.Value) union.AddRange(h.GetSelectedFaces());
 				Hull keep = g.Value[0];
 				keep.name = g.Key;
+				keep.type = HullType.ConvexHull;
 				keep.SetSelectedFaces(union, ctx.Mesh);
 				for (int i = 1; i < g.Value.Count; i++)
 					ctx.Paint.RemoveHull(ctx.Paint.hulls.IndexOf(g.Value[i]));
@@ -249,6 +297,69 @@ namespace MrMoonlight.EditorTools.Migration
 			ctx.Creator.RemoveAllGenerated();
 			sb.AppendLine("Generated colliders removed. Colliders left on Visual: " + ctx.Visual.GetComponents<Collider>().Length);
 			return sb.ToString();
+		}
+
+		// Debug for the cover metric: stand-off (metres outside the tree mesh) at n points on the
+		// line from -> to (metric Visual-local coordinates, i.e. local position x the Visual's scale).
+		public static string Probe(string prefabName, Vector3 from, Vector3 to, int n)
+		{
+			Context ctx = OpenContext(prefabName);
+			StringBuilder sb = new StringBuilder();
+			sb.AppendLine("scale " + ctx.Scale + " bounds " + ctx.Mesh.bounds);
+			for (int i = 0; i < n; i++)
+			{
+				Vector3 p = Vector3.Lerp(from, to, n > 1 ? (float)i / (n - 1) : 0f);
+				sb.AppendLine(p.ToString("F2") + "  " + ctx.Field.Outside(p).ToString("F3"));
+			}
+			return sb.ToString();
+		}
+
+		// Read-only, from disk: colliders on Visual, painted hull count, and the first hull names,
+		// for each test-copy prefab named.
+		public static string Status(string[] prefabNames)
+		{
+			StringBuilder sb = new StringBuilder();
+			foreach (string n in prefabNames)
+			{
+				string path = "Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/" + n + ".prefab";
+				GameObject root = PrefabUtility.LoadPrefabContents(path);
+				try
+				{
+					Transform vis = root.transform.Find("Visual");
+					RigidColliderCreator cr = vis != null ? vis.GetComponent<RigidColliderCreator>() : null;
+					sb.Append(n + ": colliders " + (vis != null ? vis.GetComponents<Collider>().Length : -1));
+					if (cr != null && cr.paintingData != null)
+					{
+						sb.Append(", hulls " + cr.paintingData.hulls.Count + " [");
+						int k = 0;
+						foreach (Hull h in cr.paintingData.hulls)
+							if (k++ < 8) sb.Append(h.name + ":" + h.GetSelectedFaces().Length + " ");
+						sb.Append("]");
+					}
+					else sb.Append(", no paint");
+					sb.AppendLine();
+				}
+				finally { PrefabUtility.UnloadPrefabContents(root); }
+			}
+			return sb.ToString();
+		}
+
+		// A copy of the collider shape Technie actually built for a hull. Face hulls store the raw
+		// face points (PhysX cooks them convex), so their shape is the hull of those points.
+		private static Mesh GeneratedHullMesh(Hull h)
+		{
+			if (h.type == HullType.Face)
+			{
+				if (h.faceCollisionMesh == null) return null;
+				try { return QHullUtil.FindConvexHull(h.name, h.faceCollisionMesh, false); }
+				catch { return null; }
+			}
+			return h.collisionMesh != null ? Object.Instantiate(h.collisionMesh) : null;
+		}
+
+		private static Mesh ColliderMeshOf(Hull h)
+		{
+			return h.type == HullType.Face ? h.faceCollisionMesh : h.collisionMesh;
 		}
 
 		private static Context OpenContext(string prefabName)
@@ -267,6 +378,10 @@ namespace MrMoonlight.EditorTools.Migration
 			ctx.Verts = ctx.Mesh.vertices;
 			ctx.Tris = ctx.Mesh.triangles;
 			ctx.Scale = ctx.Visual.lossyScale;
+			Vector3[] metric = new Vector3[ctx.Verts.Length];
+			for (int i = 0; i < metric.Length; i++) metric[i] = Vector3.Scale(ctx.Verts[i], ctx.Scale);
+			ctx.Field = new MeshCoverField(metric, ctx.Tris, ctx.Scale.x * ctx.Scale.y * ctx.Scale.z < 0f);
+			ctx.Field.OpenAirRadius = OpenAirRadius;
 			return ctx;
 		}
 
@@ -330,17 +445,392 @@ namespace MrMoonlight.EditorTools.Migration
 
 				foreach (LimbSegmenter.Piece piece in plan.Seg.Pieces)
 				{
-					PieceStats st = new PieceStats { Piece = piece };
-					st.Volume = HullVolume(h.name, piece.Faces, ctx, out st.HullMesh);
-					float length = Mathf.Max(piece.End - piece.Start, 0.01f);
-					st.Radius = Mathf.Sqrt(st.Volume / (Mathf.PI * length));
-					st.Gap = MaxGap(st.HullMesh, piece.Faces, ctx);
-					st.Flagged = st.Gap > GapFloorMetres && st.Gap > GapWarningRadii * st.Radius;
-					plan.Pieces.Add(st);
+					if (!RefineCover) { plan.Pieces.Add(MakeStats(h.name, piece, ctx)); continue; }
+					foreach (LimbSegmenter.Piece rp in RefineByCover(h.name, piece, ctx, plan.Seg.Notes))
+					{
+						PieceStats st = MakeStats(h.name, rp, ctx);
+						if (!st.Flagged || !FacePatchFallback || OverBudget(ctx, plan.Seg.Notes)) { plan.Pieces.Add(st); continue; }
+						if (st.HullMesh != null) Object.DestroyImmediate(st.HullMesh);
+						foreach (LimbSegmenter.Piece fp in FacePatches(h.name, rp, ctx, plan.Seg.Notes))
+							plan.Pieces.Add(MakeStats(h.name, fp, ctx));
+					}
 				}
 				set.Plans.Add(plan);
 			}
 			return set;
+		}
+
+		private static PieceStats MakeStats(string name, LimbSegmenter.Piece piece, Context ctx)
+		{
+			PieceStats st = new PieceStats { Piece = piece };
+			st.Volume = PieceHull(name, piece, ctx, out st.HullMesh);
+			st.Cover = CoverOf(st.HullMesh, ctx, CoverSpacing);
+			st.Flagged = st.Cover.Max > CoverTolerance;
+			return st;
+		}
+
+		private static MeshCoverField.Stats CoverOf(Mesh hull, Context ctx, float spacing, float bail = float.MaxValue)
+		{
+			if (hull == null) return new MeshCoverField.Stats();
+			Vector3[] hv = hull.vertices;
+			for (int i = 0; i < hv.Length; i++) hv[i] = Vector3.Scale(hv[i], ctx.Scale);
+			return ctx.Field.Measure(hv, hull.triangles, spacing, CoverGroundY, bail);
+		}
+
+		private static bool OverBudget(Context ctx, List<string> notes)
+		{
+			if (ctx.Clock.Elapsed.TotalSeconds <= CoverBudgetSeconds) return false;
+			if (!ctx.BudgetNoted)
+			{
+				notes.Add("COVER BUDGET: " + CoverBudgetSeconds + " s used up - the pieces after this point were not refined for cover. Check the COVER list.");
+				ctx.BudgetNoted = true;
+			}
+			return true;
+		}
+
+		private static MeshCoverField.Stats CoverOfFace(string name, List<int> faces, float thickness, Context ctx, float spacing, float bail = float.MaxValue)
+		{
+			Mesh m;
+			FaceHullVolume(name, faces, thickness, ctx, out m);
+			if (m == null) return new MeshCoverField.Stats { Max = float.MaxValue };
+			MeshCoverField.Stats c = CoverOf(m, ctx, spacing, bail);
+			Object.DestroyImmediate(m);
+			return c;
+		}
+
+		// Last resort for a piece the plane splits couldn't bring within CoverTolerance (usually
+		// because the mesh's triangles are as big as the dent: DeadTree01's edges are ~0.5 m, so
+		// a trunk flare or a crotch is one or two triangles wide). Break it into small patches of
+		// adjacent triangles, each built as a Technie Face hull pushed inward: a patch's collider
+		// lies on the bark it came from, so its only stand-off is the patch's own outward
+		// concavity. A patch grows from its largest triangle while it stays within tolerance.
+		// Thickness: the thickest of FaceThicknesses (metres) that keeps a single triangle within
+		// tolerance - too thick and a thin limb's back side pokes through.
+		public static float[] FaceThicknesses = { 0.3f, 0.15f, 0.08f, 0.04f, 0.02f };
+		public static int MaxTrisPerFacePatch = 24;
+
+		private static List<LimbSegmenter.Piece> FacePatches(string name, LimbSegmenter.Piece piece, Context ctx, List<string> notes)
+		{
+			float coarse = CoverSpacing * 2f;
+			float unitScale = (Mathf.Abs(ctx.Scale.x) + Mathf.Abs(ctx.Scale.y) + Mathf.Abs(ctx.Scale.z)) / 3f;
+
+			// Edge adjacency over welded positions.
+			Dictionary<long, List<int>> byEdge = new Dictionary<long, List<int>>();
+			Dictionary<Vector3Int, int> weld = new Dictionary<Vector3Int, int>();
+			int W(Vector3 p)
+			{
+				Vector3Int q = new Vector3Int(Mathf.RoundToInt(p.x / Settings.WeldEpsilon), Mathf.RoundToInt(p.y / Settings.WeldEpsilon), Mathf.RoundToInt(p.z / Settings.WeldEpsilon));
+				int id;
+				if (!weld.TryGetValue(q, out id)) { id = weld.Count; weld[q] = id; }
+				return id;
+			}
+			foreach (int f in piece.Faces)
+			{
+				int[] w = { W(ctx.Verts[ctx.Tris[f * 3]]), W(ctx.Verts[ctx.Tris[f * 3 + 1]]), W(ctx.Verts[ctx.Tris[f * 3 + 2]]) };
+				for (int e = 0; e < 3; e++)
+				{
+					int a = Mathf.Min(w[e], w[(e + 1) % 3]), b = Mathf.Max(w[e], w[(e + 1) % 3]);
+					long key = ((long)a << 32) | (uint)b;
+					List<int> l;
+					if (!byEdge.TryGetValue(key, out l)) { l = new List<int>(); byEdge[key] = l; }
+					l.Add(f);
+				}
+			}
+			Dictionary<int, List<int>> nbrs = new Dictionary<int, List<int>>();
+			foreach (int f in piece.Faces) nbrs[f] = new List<int>();
+			foreach (List<int> l in byEdge.Values)
+				for (int i = 0; i < l.Count; i++)
+					for (int j = 0; j < l.Count; j++)
+						if (i != j && !nbrs[l[i]].Contains(l[j])) nbrs[l[i]].Add(l[j]);
+
+			// Largest triangles first: they dominate the stand-off and anchor the patches.
+			List<int> order = new List<int>(piece.Faces);
+			order.Sort((x, y) => TriArea(y, ctx).CompareTo(TriArea(x, ctx)));
+			HashSet<int> left = new HashSet<int>(piece.Faces);
+			List<LimbSegmenter.Piece> result = new List<LimbSegmenter.Piece>();
+			float worst = 0f;
+			foreach (int seed in order)
+			{
+				if (!left.Contains(seed)) continue;
+				List<int> patch = new List<int> { seed };
+				left.Remove(seed);
+
+				float thickness = FaceThicknesses[FaceThicknesses.Length - 1];
+				MeshCoverField.Stats cur = new MeshCoverField.Stats { Max = float.MaxValue };
+				foreach (float t in FaceThicknesses)
+				{
+					MeshCoverField.Stats c = CoverOfFace(name, patch, t / unitScale, ctx, coarse);
+					if (c.Max <= CoverTolerance || c.Max < cur.Max) { thickness = t; cur = c; }
+					if (c.Max <= CoverTolerance) break;
+				}
+
+				bool grew = true;
+				while (grew && patch.Count < MaxTrisPerFacePatch)
+				{
+					grew = false;
+					foreach (int f in patch.ToArray())
+						foreach (int nb in nbrs[f])
+						{
+							if (!left.Contains(nb) || patch.Count >= MaxTrisPerFacePatch) continue;
+							patch.Add(nb);
+							MeshCoverField.Stats c = CoverOfFace(name, patch, thickness / unitScale, ctx, coarse, Mathf.Max(CoverTolerance, cur.Max));
+							if (c.Max <= Mathf.Max(CoverTolerance, cur.Max)) { left.Remove(nb); cur = c; grew = true; }
+							else patch.RemoveAt(patch.Count - 1);
+						}
+				}
+				worst = Mathf.Max(worst, cur.Max);
+				result.Add(new LimbSegmenter.Piece { Component = piece.Component, Arc = piece.Arc, IndexInArc = piece.IndexInArc, Start = piece.Start, End = piece.End, Faces = patch, AsFace = true, FaceThickness = thickness / unitScale });
+			}
+			notes.Add("face patches: piece at " + piece.Start.ToString("F2") + "-" + piece.End.ToString("F2") + " m on arm " + piece.Arc + " (" + piece.Faces.Count + " tris) -> " + result.Count + " Face hulls, worst stand-off " + worst.ToString("F2") + " m");
+			return result;
+		}
+
+		private static float TriArea(int f, Context ctx)
+		{
+			Vector3 a = Vector3.Scale(ctx.Verts[ctx.Tris[f * 3]], ctx.Scale), b = Vector3.Scale(ctx.Verts[ctx.Tris[f * 3 + 1]], ctx.Scale), c = Vector3.Scale(ctx.Verts[ctx.Tris[f * 3 + 2]], ctx.Scale);
+			return 0.5f * Vector3.Cross(b - a, c - a).magnitude;
+		}
+
+		private static MeshCoverField.Stats CoverOfFaces(string name, List<int> faces, Context ctx, float spacing, float bail = float.MaxValue)
+		{
+			Mesh m;
+			HullVolume(name, faces, ctx, out m);
+			if (m == null) return new MeshCoverField.Stats { Max = float.MaxValue };
+			MeshCoverField.Stats c = CoverOf(m, ctx, spacing, bail);
+			Object.DestroyImmediate(m);
+			return c;
+		}
+
+		// Cover-driven splitting (2026-09-18). Slicing along the limb can't fix a concavity ACROSS
+		// the limb - roots fused into the trunk at the ground, two arms fused under a fork - and
+		// four rounds of tuning the ground footprint went in circles. So measure instead of guess:
+		// while a piece's hull stands off the whole tree mesh by more than CoverTolerance, try
+		// splitting it into its connected parts and by a set of planes (its principal axes, six
+		// vertical planes, a level plane, and the plane through its axis and the worst stand-off
+		// point) and keep the split whose worst part stands off least. Stops when a split no
+		// longer buys a real improvement (bark grooves can't be fixed by splitting).
+		private static List<LimbSegmenter.Piece> RefineByCover(string name, LimbSegmenter.Piece piece, Context ctx, List<string> notes)
+		{
+			List<LimbSegmenter.Piece> done = new List<LimbSegmenter.Piece>();
+			float coarse = CoverSpacing * 2f;
+			Queue<KeyValuePair<LimbSegmenter.Piece, MeshCoverField.Stats>> work = new Queue<KeyValuePair<LimbSegmenter.Piece, MeshCoverField.Stats>>();
+			MeshCoverField.Stats first = CoverOfFaces(name, piece.Faces, ctx, coarse);
+			work.Enqueue(new KeyValuePair<LimbSegmenter.Piece, MeshCoverField.Stats>(piece, first));
+			int splits = 0;
+			float worstAfter = 0f;
+			while (work.Count > 0)
+			{
+				KeyValuePair<LimbSegmenter.Piece, MeshCoverField.Stats> item = work.Dequeue();
+				LimbSegmenter.Piece p = item.Key;
+				float cover = item.Value.Max;
+				if (cover <= CoverTolerance || splits >= MaxCoverSplitsPerPiece || p.Faces.Count < 2 * Settings.MinTrisPerPiece || OverBudget(ctx, notes))
+				{
+					done.Add(p);
+					worstAfter = Mathf.Max(worstAfter, cover);
+					continue;
+				}
+
+				List<List<int>> best = null;
+				float bestScore = cover;
+				MeshCoverField.Stats[] bestParts = null;
+				foreach (List<List<int>> cand in CoverSplitCandidates(p.Faces, item.Value.WorstPoint, ctx))
+				{
+					bool ok = true;
+					foreach (List<int> part in cand) if (part.Count < 2 || PieceFlat(part, ctx)) { ok = false; break; }
+					if (!ok) continue;
+					float score = 0f;
+					MeshCoverField.Stats[] parts = new MeshCoverField.Stats[cand.Count];
+					for (int i = 0; i < cand.Count && score < bestScore; i++) { parts[i] = CoverOfFaces(name, cand[i], ctx, coarse, bestScore); score = Mathf.Max(score, parts[i].Max); }
+					if (score < bestScore) { bestScore = score; best = cand; bestParts = parts; }
+				}
+				// A split must buy a real improvement, or bark grooves would shatter every ring.
+				if (best == null || bestScore > cover - Mathf.Max(0.02f, 0.2f * (cover - CoverTolerance)))
+				{
+					done.Add(p);
+					worstAfter = Mathf.Max(worstAfter, cover);
+					continue;
+				}
+				splits += best.Count - 1;
+				for (int i = 0; i < best.Count; i++)
+				{
+					LimbSegmenter.Piece child = new LimbSegmenter.Piece { Component = p.Component, Arc = p.Arc, IndexInArc = p.IndexInArc, Start = p.Start, End = p.End, Faces = best[i] };
+					work.Enqueue(new KeyValuePair<LimbSegmenter.Piece, MeshCoverField.Stats>(child, bestParts[i]));
+				}
+			}
+			if (done.Count > 1)
+				notes.Add("cover: piece at " + piece.Start.ToString("F2") + "-" + piece.End.ToString("F2") + " m on arm " + piece.Arc + " split into " + done.Count + " (stand-off " + first.Max.ToString("F2") + " -> " + worstAfter.ToString("F2") + " m)");
+			return done;
+		}
+
+		private static bool PieceFlat(List<int> faces, Context ctx)
+		{
+			HashSet<Vector3> ps = new HashSet<Vector3>();
+			foreach (int f in faces) for (int k = 0; k < 3; k++) ps.Add(Vector3.Scale(ctx.Verts[ctx.Tris[f * 3 + k]], ctx.Scale));
+			if (ps.Count < 4) return true;
+			Vector3 mean = Vector3.zero;
+			foreach (Vector3 p in ps) mean += p;
+			mean /= ps.Count;
+			float xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+			foreach (Vector3 q in ps)
+			{
+				Vector3 d = q - mean;
+				xx += d.x * d.x; xy += d.x * d.y; xz += d.x * d.z; yy += d.y * d.y; yz += d.y * d.z; zz += d.z * d.z;
+			}
+			float det = xx * (yy * zz - yz * yz) - xy * (xy * zz - yz * xz) + xz * (xy * yz - yy * xz);
+			float trace = xx + yy + zz;
+			return trace < 1e-12f || det / (trace * trace * trace) < 1e-5f;
+		}
+
+		private static IEnumerable<List<List<int>>> CoverSplitCandidates(List<int> faces, Vector3 worst, Context ctx)
+		{
+			int count = faces.Count;
+			Vector3[] fc = new Vector3[count];
+			Vector3 mean = Vector3.zero;
+			for (int i = 0; i < count; i++)
+			{
+				int f = faces[i];
+				fc[i] = Vector3.Scale((ctx.Verts[ctx.Tris[f * 3]] + ctx.Verts[ctx.Tris[f * 3 + 1]] + ctx.Verts[ctx.Tris[f * 3 + 2]]) / 3f, ctx.Scale);
+				mean += fc[i];
+			}
+			mean /= count;
+
+			// Connected parts (sharing a welded vertex): separate roots, or ring slivers.
+			List<List<int>> parts = ConnectedParts(faces, ctx);
+			if (parts.Count > 1) yield return parts;
+
+			float xx = 0, xy = 0, xz = 0, yy = 0, yz = 0, zz = 0;
+			foreach (Vector3 p in fc)
+			{
+				Vector3 d = p - mean;
+				xx += d.x * d.x; xy += d.x * d.y; xz += d.x * d.z; yy += d.y * d.y; yz += d.y * d.z; zz += d.z * d.z;
+			}
+			Matrix4x4 cov = Matrix4x4.zero;
+			cov[0, 0] = xx; cov[0, 1] = xy; cov[0, 2] = xz; cov[1, 0] = xy; cov[1, 1] = yy; cov[1, 2] = yz; cov[2, 0] = xz; cov[2, 1] = yz; cov[2, 2] = zz;
+			Vector3 e1 = PowerIterate(cov, new Vector3(0.3f, 1f, 0.2f));
+			float l1 = Vector3.Dot(cov.MultiplyVector(e1), e1);
+			Matrix4x4 cov2 = cov;
+			for (int r = 0; r < 3; r++) for (int c = 0; c < 3; c++) cov2[r, c] -= l1 * e1[r] * e1[c];
+			Vector3 e2 = PowerIterate(cov2, Vector3.Cross(e1, Mathf.Abs(e1.y) < 0.9f ? Vector3.up : Vector3.right));
+			e2 = (e2 - e1 * Vector3.Dot(e2, e1)).normalized;
+
+			List<Vector3> normals = new List<Vector3> { e1, e2, Vector3.Cross(e1, e2).normalized };
+			// The plane holding the piece's long axis and its worst stand-off point: on a star
+			// cross-section that point sits in the air between two lobes.
+			Vector3 toWorst = worst - mean;
+			Vector3 wn = Vector3.Cross(e1, toWorst);
+			if (wn.sqrMagnitude > 1e-8f) normals.Add(wn.normalized);
+			for (int k = 0; k < 6; k++)
+			{
+				float ang = k * Mathf.PI / 6f;
+				normals.Add(new Vector3(Mathf.Cos(ang), 0f, Mathf.Sin(ang)));
+			}
+			normals.Add(Vector3.up);
+
+			float[] qs = { 0.5f, 0.3f, 0.7f };
+			foreach (Vector3 nrm in normals)
+			{
+				float[] proj = new float[count];
+				for (int i = 0; i < count; i++) proj[i] = Vector3.Dot(fc[i], nrm);
+				float[] sorted = (float[])proj.Clone();
+				System.Array.Sort(sorted);
+				foreach (float q in qs)
+				{
+					float cut = sorted[Mathf.Clamp((int)(q * count), 0, count - 1)];
+					List<int> lo = new List<int>(), hi = new List<int>();
+					for (int i = 0; i < count; i++) { if (proj[i] < cut) lo.Add(faces[i]); else hi.Add(faces[i]); }
+					if (lo.Count == 0 || hi.Count == 0) continue;
+					yield return new List<List<int>> { lo, hi };
+				}
+			}
+		}
+
+		private static Vector3 PowerIterate(Matrix4x4 m, Vector3 v)
+		{
+			if (v.sqrMagnitude < 1e-12f) v = Vector3.up;
+			v.Normalize();
+			for (int i = 0; i < 50; i++)
+			{
+				Vector3 w = m.MultiplyVector(v);
+				if (w.sqrMagnitude < 1e-20f) break;
+				v = w.normalized;
+			}
+			return v;
+		}
+
+		private static List<List<int>> ConnectedParts(List<int> faces, Context ctx)
+		{
+			Dictionary<Vector3Int, int> firstFace = new Dictionary<Vector3Int, int>();
+			int[] parent = new int[faces.Count];
+			for (int i = 0; i < parent.Length; i++) parent[i] = i;
+			int Find(int x)
+			{
+				while (parent[x] != x) { parent[x] = parent[parent[x]]; x = parent[x]; }
+				return x;
+			}
+			for (int i = 0; i < faces.Count; i++)
+				for (int k = 0; k < 3; k++)
+				{
+					Vector3 p = ctx.Verts[ctx.Tris[faces[i] * 3 + k]];
+					Vector3Int q = new Vector3Int(Mathf.RoundToInt(p.x / Settings.WeldEpsilon), Mathf.RoundToInt(p.y / Settings.WeldEpsilon), Mathf.RoundToInt(p.z / Settings.WeldEpsilon));
+					int other;
+					if (firstFace.TryGetValue(q, out other)) { int ra = Find(i), rb = Find(other); if (ra != rb) parent[ra] = rb; }
+					else firstFace[q] = i;
+				}
+			Dictionary<int, List<int>> groups = new Dictionary<int, List<int>>();
+			for (int i = 0; i < faces.Count; i++)
+			{
+				int r = Find(i);
+				if (!groups.ContainsKey(r)) groups[r] = new List<int>();
+				groups[r].Add(faces[i]);
+			}
+			return new List<List<int>>(groups.Values);
+		}
+
+		private static float PieceHull(string name, LimbSegmenter.Piece piece, Context ctx, out Mesh mesh)
+		{
+			return piece.AsFace ? FaceHullVolume(name, piece.Faces, piece.FaceThickness, ctx, out mesh) : HullVolume(name, piece.Faces, ctx, out mesh);
+		}
+
+		// Technie's "Face" hull (Hull.GenerateFace): every painted triangle plus a copy pushed
+		// `thickness` mesh units along Cross(p2-p0, p1-p0) - inward on this project's meshes -
+		// cooked by PhysX as one convex MeshCollider. So its collider is the convex hull of
+		// those points; this builds that hull the same way for measuring and preview.
+		private static float FaceHullVolume(string name, List<int> faces, float thickness, Context ctx, out Mesh mesh)
+		{
+			mesh = null;
+			Mesh pts = FacePointsMesh(faces, thickness, ctx.Verts, ctx.Tris);
+			Mesh hull = null;
+			try { hull = QHullUtil.FindConvexHull(name, pts, false); }
+			catch { hull = null; }
+			Object.DestroyImmediate(pts);
+			if (hull == null || hull.triangles.Length < 12) { if (hull != null) Object.DestroyImmediate(hull); return 0f; }
+			mesh = hull;
+			Vector3[] hv = hull.vertices;
+			int[] hi = hull.triangles;
+			float v = 0f;
+			for (int i = 0; i < hi.Length; i += 3)
+				v += Vector3.Dot(hv[hi[i]], Vector3.Cross(hv[hi[i + 1]], hv[hi[i + 2]]));
+			return Mathf.Abs(v / 6f) * Mathf.Abs(ctx.Scale.x * ctx.Scale.y * ctx.Scale.z);
+		}
+
+		private static Mesh FacePointsMesh(List<int> faces, float thickness, Vector3[] verts, int[] tris)
+		{
+			Vector3[] p = new Vector3[faces.Count * 6];
+			for (int i = 0; i < faces.Count; i++)
+			{
+				int f = faces[i];
+				Vector3 p0 = verts[tris[f * 3]], p1 = verts[tris[f * 3 + 1]], p2 = verts[tris[f * 3 + 2]];
+				Vector3 normal = Vector3.Cross((p2 - p0).normalized, (p1 - p0).normalized);
+				p[i * 6] = p0; p[i * 6 + 1] = p1; p[i * 6 + 2] = p2;
+				p[i * 6 + 3] = p0 + normal * thickness; p[i * 6 + 4] = p1 + normal * thickness; p[i * 6 + 5] = p2 + normal * thickness;
+			}
+			int[] idx = new int[p.Length];
+			for (int i = 0; i < idx.Length; i++) idx[i] = i;
+			Mesh m = new Mesh();
+			m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
+			m.vertices = p;
+			m.triangles = idx;
+			return m;
 		}
 
 		// Volume of the exact convex hull Technie will build (same QHull call), in metres^3.
@@ -359,107 +849,6 @@ namespace MrMoonlight.EditorTools.Migration
 			for (int i = 0; i < hi.Length; i += 3)
 				v += Vector3.Dot(hv[hi[i]], Vector3.Cross(hv[hi[i + 1]], hv[hi[i + 2]]));
 			return Mathf.Abs(v / 6f) * Mathf.Abs(ctx.Scale.x * ctx.Scale.y * ctx.Scale.z);
-		}
-
-		// Largest distance (metres) from the centre of any hull face to the piece's painted
-		// surface. The piece's open ends (where it meets the next piece) are capped first with a
-		// fan: a hull's end caps sit inside the limb, not in empty space, and would otherwise
-		// always measure as a full radius of "gap".
-		private static float MaxGap(Mesh hull, List<int> faces, Context ctx)
-		{
-			if (hull == null) return 0f;
-			List<Vector3> a = new List<Vector3>(), b = new List<Vector3>(), c = new List<Vector3>();
-			Dictionary<long, int> edgeUse = new Dictionary<long, int>();
-			Dictionary<Vector3Int, int> keyIndex = new Dictionary<Vector3Int, int>();
-			List<Vector3> keyPos = new List<Vector3>();
-			int KeyOf(Vector3 local)
-			{
-				Vector3Int q = new Vector3Int(Mathf.RoundToInt(local.x / Settings.WeldEpsilon), Mathf.RoundToInt(local.y / Settings.WeldEpsilon), Mathf.RoundToInt(local.z / Settings.WeldEpsilon));
-				int k;
-				if (!keyIndex.TryGetValue(q, out k)) { k = keyPos.Count; keyIndex[q] = k; keyPos.Add(Vector3.Scale(local, ctx.Scale)); }
-				return k;
-			}
-
-			foreach (int f in faces)
-			{
-				int k0 = KeyOf(ctx.Verts[ctx.Tris[f * 3]]), k1 = KeyOf(ctx.Verts[ctx.Tris[f * 3 + 1]]), k2 = KeyOf(ctx.Verts[ctx.Tris[f * 3 + 2]]);
-				a.Add(keyPos[k0]); b.Add(keyPos[k1]); c.Add(keyPos[k2]);
-				int[] ks = { k0, k1, k2 };
-				for (int e = 0; e < 3; e++)
-				{
-					int p = ks[e], q = ks[(e + 1) % 3];
-					if (p == q) continue;
-					long key = ((long)Mathf.Min(p, q) << 32) | (uint)Mathf.Max(p, q);
-					edgeUse[key] = edgeUse.ContainsKey(key) ? edgeUse[key] + 1 : 1;
-				}
-			}
-
-			Dictionary<int, List<int>> bAdj = new Dictionary<int, List<int>>();
-			foreach (KeyValuePair<long, int> e in edgeUse)
-			{
-				if (e.Value != 1) continue;
-				int p = (int)(e.Key >> 32), q = (int)(e.Key & 0xffffffff);
-				if (!bAdj.ContainsKey(p)) bAdj[p] = new List<int>();
-				if (!bAdj.ContainsKey(q)) bAdj[q] = new List<int>();
-				bAdj[p].Add(q); bAdj[q].Add(p);
-			}
-			HashSet<int> seen = new HashSet<int>();
-			foreach (int start in bAdj.Keys)
-			{
-				if (!seen.Add(start)) continue;
-				List<int> loop = new List<int>();
-				Stack<int> st = new Stack<int>();
-				st.Push(start);
-				while (st.Count > 0)
-				{
-					int u = st.Pop();
-					loop.Add(u);
-					foreach (int v in bAdj[u]) if (seen.Add(v)) st.Push(v);
-				}
-				Vector3 centre = Vector3.zero;
-				foreach (int u in loop) centre += keyPos[u];
-				centre /= loop.Count;
-				foreach (int u in loop)
-					foreach (int v in bAdj[u])
-						if (u < v) { a.Add(centre); b.Add(keyPos[u]); c.Add(keyPos[v]); }
-			}
-
-			Vector3[] hv = hull.vertices;
-			int[] hi = hull.triangles;
-			float worst = 0f;
-			for (int t = 0; t < hi.Length; t += 3)
-			{
-				Vector3 p = Vector3.Scale((hv[hi[t]] + hv[hi[t + 1]] + hv[hi[t + 2]]) / 3f, ctx.Scale);
-				float best = float.MaxValue;
-				for (int i = 0; i < a.Count; i++)
-				{
-					float d = (ClosestPointOnTriangle(p, a[i], b[i], c[i]) - p).sqrMagnitude;
-					if (d < best) best = d;
-				}
-				worst = Mathf.Max(worst, Mathf.Sqrt(best));
-			}
-			return worst;
-		}
-
-		private static Vector3 ClosestPointOnTriangle(Vector3 p, Vector3 a, Vector3 b, Vector3 c)
-		{
-			Vector3 ab = b - a, ac = c - a, ap = p - a;
-			float d1 = Vector3.Dot(ab, ap), d2 = Vector3.Dot(ac, ap);
-			if (d1 <= 0f && d2 <= 0f) return a;
-			Vector3 bp = p - b;
-			float d3 = Vector3.Dot(ab, bp), d4 = Vector3.Dot(ac, bp);
-			if (d3 >= 0f && d4 <= d3) return b;
-			float vc = d1 * d4 - d3 * d2;
-			if (vc <= 0f && d1 >= 0f && d3 <= 0f) return a + ab * (d1 / (d1 - d3));
-			Vector3 cp = p - c;
-			float d5 = Vector3.Dot(ab, cp), d6 = Vector3.Dot(ac, cp);
-			if (d6 >= 0f && d5 <= d6) return c;
-			float vb = d5 * d2 - d1 * d6;
-			if (vb <= 0f && d2 >= 0f && d6 <= 0f) return a + ac * (d2 / (d2 - d6));
-			float va = d3 * d6 - d5 * d4;
-			if (va <= 0f && (d4 - d3) >= 0f && (d5 - d6) >= 0f) return b + (c - b) * ((d4 - d3) / ((d4 - d3) + (d5 - d6)));
-			float denom = 1f / (va + vb + vc);
-			return a + ab * (vb * denom) + ac * (vc * denom);
 		}
 
 		// Same steps as RigidColliderCreatorWindow.GenerateCollidersRoutine (convex hulls only),
@@ -481,8 +870,11 @@ namespace MrMoonlight.EditorTools.Migration
 			foreach (Mesh m in existing)
 				if (!ctx.Paint.ContainsMesh(m)) Object.DestroyImmediate(m, true);
 			foreach (Hull hull in ctx.Paint.hulls)
-				if (hull.collisionMesh != null && !existing.Contains(hull.collisionMesh))
-					AssetDatabase.AddObjectToAsset(hull.collisionMesh, hullAssetPath);
+			{
+				Mesh m = ColliderMeshOf(hull);
+				if (m != null && !existing.Contains(m) && string.IsNullOrEmpty(AssetDatabase.GetAssetPath(m)))
+					AssetDatabase.AddObjectToAsset(m, hullAssetPath);
+			}
 
 			EditorUtility.SetDirty(ctx.Creator.hullData);
 			AssetDatabase.SaveAssets();
@@ -502,8 +894,9 @@ namespace MrMoonlight.EditorTools.Migration
 			foreach (Hull h in ctx.Paint.hulls)
 			{
 				int matches = 0;
-				foreach (MeshCollider c in cols) if (c.sharedMesh != null && c.sharedMesh == h.collisionMesh) matches++;
-				if (h.hasColliderError || h.collisionMesh == null || h.collisionMesh.vertexCount < 4) problems.Add(h.name + ": hull generation failed");
+				Mesh hm = ColliderMeshOf(h);
+				foreach (MeshCollider c in cols) if (c.sharedMesh != null && c.sharedMesh == hm) matches++;
+				if (h.hasColliderError || hm == null || hm.vertexCount < 4) problems.Add(h.name + ": hull generation failed");
 				else if (matches != 1) problems.Add(h.name + ": " + matches + " colliders use its mesh (expected 1)");
 				else ok++;
 			}
@@ -565,12 +958,13 @@ namespace MrMoonlight.EditorTools.Migration
 				{
 					PieceStats p = plan.Pieces[i];
 					if (p.Flagged) flagged++;
-					sb.AppendLine("  s" + (i + 1).ToString("00") + "  arm " + p.Piece.Arc + "  " + p.Piece.Start.ToString("F2") + "-" + p.Piece.End.ToString("F2") + " m  " + p.Piece.Faces.Count + " tris  vol " + p.Volume.ToString("F4") + "  radius " + p.Radius.ToString("F3") + "  gap " + p.Gap.ToString("F3") + " m" + (p.Flagged ? "   <-- CHECK" : ""));
+					sb.AppendLine("  s" + (i + 1).ToString("00") + "  arm " + p.Piece.Arc + "  " + p.Piece.Start.ToString("F2") + "-" + p.Piece.End.ToString("F2") + " m  " + p.Piece.Faces.Count + " tris" + (p.Piece.AsFace ? " FACE t" + (p.Piece.FaceThickness * (Mathf.Abs(ctx.Scale.x) + Mathf.Abs(ctx.Scale.y) + Mathf.Abs(ctx.Scale.z)) / 3f).ToString("F2") + "m" : "") + "  vol " + p.Volume.ToString("F4") + "  cover " + p.Cover.Max.ToString("F3") + "/" + p.Cover.P95.ToString("F3") + " m" + (p.Flagged ? " @" + p.Cover.WorstPoint.y.ToString("F2") + "m   <-- CHECK" : ""));
 				}
 			}
 
 			sb.AppendLine();
-			sb.AppendLine("TOTAL: " + plans.Count + " painted hulls -> " + totalPieces + " pieces, " + flagged + " flagged (gap > " + GapWarningRadii + " x radius and > " + GapFloorMetres + " m)");
+			sb.AppendLine("TOTAL: " + plans.Count + " painted hulls -> " + totalPieces + " pieces, " + flagged + " flagged (hull stands > " + CoverTolerance + " m outside the tree mesh)");
+			sb.Append(WorstCover(plans));
 			sb.AppendLine("Collider volume if each paint were one hull: " + before.ToString("F3") + " m3; after split: " + after.ToString("F3") + " m3");
 			if (verify != null) { sb.AppendLine(); sb.Append(verify); }
 			sb.AppendLine("Image: " + image);
@@ -579,6 +973,25 @@ namespace MrMoonlight.EditorTools.Migration
 			string path = System.IO.Path.Combine(ReportDir, fileName);
 			System.IO.File.WriteAllText(path, sb.ToString());
 			return sb.ToString() + "Report: " + path;
+		}
+
+		// The pieces whose hulls stand farthest outside the visible tree - where a shot through
+		// visible air would hit. Report numbering (s01 = 1) so PlanFocus can take them directly.
+		private static string WorstCover(List<HullPlan> plans)
+		{
+			List<KeyValuePair<string, PieceStats>> all = new List<KeyValuePair<string, PieceStats>>();
+			foreach (HullPlan plan in plans)
+				for (int i = 0; i < plan.Pieces.Count; i++)
+					all.Add(new KeyValuePair<string, PieceStats>(plan.BaseName + (plan.Pieces.Count > 1 ? " s" + (i + 1).ToString("00") : ""), plan.Pieces[i]));
+			all.Sort((x, y) => y.Value.Cover.Max.CompareTo(x.Value.Cover.Max));
+			StringBuilder sb = new StringBuilder();
+			sb.AppendLine("COVER (hull surface outside the whole tree mesh: max / p95, worst point x,y,z):");
+			for (int i = 0; i < Mathf.Min(12, all.Count); i++)
+			{
+				MeshCoverField.Stats c = all[i].Value.Cover;
+				sb.AppendLine("  " + all[i].Key + "  " + c.Max.ToString("F3") + " / " + c.P95.ToString("F3") + " m  at (" + c.WorstPoint.x.ToString("F2") + ", " + c.WorstPoint.y.ToString("F2") + ", " + c.WorstPoint.z.ToString("F2") + ")");
+			}
+			return sb.ToString();
 		}
 
 		private static Color PieceColour(int i)
@@ -632,6 +1045,34 @@ namespace MrMoonlight.EditorTools.Migration
 						hullRenderers.Add(AddPreviewObject(holder, "hull", flat, c, lit, temp));
 					}
 				if (paintRenderers.Count == 0) return null;
+
+				// Third column: the real tree in grey and, in red, only the collider surface that
+				// stands more than CoverTolerance outside it - where a shot through visible air
+				// would hit. Hull surface in air is outside the grey mesh by definition, so it shows.
+				List<Vector3> red = new List<Vector3>();
+				foreach (HullPlan plan in plans)
+					foreach (PieceStats p in plan.Pieces)
+					{
+						if (p.HullMesh == null) continue;
+						Vector3[] hv = p.HullMesh.vertices;
+						for (int i = 0; i < hv.Length; i++) hv[i] = Vector3.Scale(hv[i], ctx.Scale);
+						ctx.Field.CollectOutside(hv, p.HullMesh.triangles, 0.03f, CoverGroundY, CoverTolerance, red);
+					}
+				Vector3 inv = new Vector3(1f / ctx.Scale.x, 1f / ctx.Scale.y, 1f / ctx.Scale.z);
+				for (int i = 0; i < red.Count; i++) red[i] = Vector3.Scale(red[i], inv);
+				int[] redIdx = new int[red.Count];
+				for (int i = 0; i < redIdx.Length; i++) redIdx[i] = i;
+				Mesh redMesh = FlatMesh(red.ToArray(), redIdx, null);
+				temp.Add(redMesh);
+				Renderer redRenderer = AddPreviewObject(holder, "standoff", redMesh, new Color(1f, 0.05f, 0.05f), lit, temp);
+				// Only the painted wood is drawn grey (the leaf cards would bury everything); the red
+				// is still measured against the whole mesh.
+				List<int> wood = new List<int>();
+				foreach (HullPlan plan in plans)
+					foreach (PieceStats p in plan.Pieces) wood.AddRange(p.Piece.Faces);
+				Mesh treeMesh = FlatMesh(ctx.Verts, ctx.Tris, wood);
+				temp.Add(treeMesh);
+				Renderer treeRenderer = AddPreviewObject(holder, "tree", treeMesh, new Color(0.62f, 0.6f, 0.56f), lit, temp);
 
 				// Camera and light stay unparented: the Visual has a non-uniform scale, and a camera
 				// under it would render a skewed image.
@@ -689,7 +1130,18 @@ namespace MrMoonlight.EditorTools.Migration
 				rt.antiAliasing = 4;
 				temp.Add(rt);
 				cam.targetTexture = rt;
-				Texture2D sheet = new Texture2D(tile * 2, tile * viewDirs.Length, TextureFormat.RGB24, false);
+				// In a close-up's top view the grey tree and red patches above the focus are hidden
+				// too (single meshes, so they're filtered per triangle instead of per renderer).
+				Renderer treeTop = treeRenderer, redTop = redRenderer;
+				if (topCut < float.MaxValue)
+				{
+					Mesh tc = CutMesh(treeMesh.vertices, treeMesh.triangles, ctx.Visual, topCut);
+					Mesh rc = CutMesh(red.ToArray(), redIdx, ctx.Visual, topCut);
+					temp.Add(tc); temp.Add(rc);
+					treeTop = AddPreviewObject(holder, "treeTop", tc, new Color(0.62f, 0.6f, 0.56f), lit, temp);
+					redTop = AddPreviewObject(holder, "standoffTop", rc, new Color(1f, 0.05f, 0.05f), lit, temp);
+				}
+				Texture2D sheet = new Texture2D(tile * 3, tile * viewDirs.Length, TextureFormat.RGB24, false);
 				temp.Add(sheet);
 				RenderTexture prevActive = RenderTexture.active;
 
@@ -704,11 +1156,16 @@ namespace MrMoonlight.EditorTools.Migration
 					cam.farClipPlane = radius * 6f;
 					lightGo.transform.rotation = Quaternion.LookRotation(fwd + new Vector3(0.3f, -0.6f, 0.2f), Vector3.up);
 
-					for (int col = 0; col < 2; col++)
+					for (int col = 0; col < 3; col++)
 					{
 						float cut = top ? topCut : float.MaxValue;
 						foreach (Renderer r in paintRenderers) r.enabled = col == 0 && r.bounds.min.y < cut;
 						foreach (Renderer r in hullRenderers) r.enabled = col == 1 && r.bounds.min.y < cut;
+						bool cutTop = top && topCut < float.MaxValue;
+						treeRenderer.enabled = col == 2 && !cutTop;
+						redRenderer.enabled = col == 2 && !cutTop;
+						treeTop.enabled = col == 2 && (cutTop || treeTop == treeRenderer);
+						redTop.enabled = col == 2 && (cutTop || redTop == redRenderer);
 						cam.Render();
 						RenderTexture.active = rt;
 						sheet.ReadPixels(new Rect(0, 0, tile, tile), col * tile, (viewDirs.Length - 1 - v) * tile);
@@ -745,6 +1202,19 @@ namespace MrMoonlight.EditorTools.Migration
 			r.sharedMaterial = m;
 			r.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
 			return r;
+		}
+
+		// Triangles of a Visual-local mesh whose lowest corner is below world height `cut`.
+		private static Mesh CutMesh(Vector3[] verts, int[] tris, Transform visual, float cut)
+		{
+			List<int> keep = new List<int>();
+			for (int t = 0; t < tris.Length / 3; t++)
+			{
+				float lo = float.MaxValue;
+				for (int k = 0; k < 3; k++) lo = Mathf.Min(lo, visual.TransformPoint(verts[tris[t * 3 + k]]).y);
+				if (lo < cut) keep.Add(t);
+			}
+			return FlatMesh(verts, tris, keep);
 		}
 
 		// Unshared vertices per triangle so lighting shows every facet.

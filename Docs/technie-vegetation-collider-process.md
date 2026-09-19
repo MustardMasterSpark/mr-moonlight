@@ -1,9 +1,151 @@
 # Vegetation collider process — Technie Collider Creator 2 (AST-116)
 
-**Status: rebuilt 2026-09-17 (Opus session), in active use under MRM-84.** This is the "how to do
-the next tree" reference. The first version of this process (ring-seam splitter, 2026-09-17 Sonnet
-sessions) is superseded; its full record is kept under **History** at the bottom. Performance
-numbers and the original VHACD evaluation live in `Docs/performance-log.md`.
+**Status: SWITCHED 2026-09-18 to wood MeshColliders (`WoodColliderTool`), Carlos's call.** The
+current process is the next section, "Current process". Everything from "Doing a tree (convex
+hulls)" down is the convex-hull process (`TreeColliderTool`), **superseded for static trees** and
+kept for the record, and for a possible future knock-down/burn mechanic. The first version
+(ring-seam splitter) is under **History** at the bottom. Performance numbers and the original VHACD
+evaluation live in `Docs/performance-log.md`.
+
+## Current process (2026-09-18): one wood MeshCollider per tree
+
+**What it is.** Each tree gets ONE non-convex `MeshCollider` whose mesh is exactly the triangles
+Carlos painted as wood (leaves and unpainted twigs excluded). It sits on a child
+`Visual/WoodCollider` with Visual's layer and tag. The mesh is saved as
+`AST116_ColliderTest/WoodColliders/<prefab>_Wood.asset`. All of Technie's generated hull colliders
+are removed. The Technie **paint stays**; it is the source of truth for "which triangles are wood",
+so the tool can be re-run after any repaint.
+
+**Why (the batch-1 finding).** Carlos's bar is cover: a shot through air the player can see must
+never hit an invisible collider. Convex hulls can only approximate that. A cover metric built this
+session (`MeshCoverField`: how far a collider's surface stands outside the visible mesh, counting
+only open air) showed:
+- DeadTree01 needed 256 hulls to get within ~5 cm.
+- Deadtree06 still stood 0.87 m off at 492 hulls: flat roots fused into the trunk, and a hollow
+  snag top that no convex shape can hug.
+
+A collider made of the bark's own triangles is exact by construction, and it's one physics shape
+per tree instead of hundreds. Non-convex MeshColliders were only avoided before for WebGL memory
+(`mrm70-biome-vegetation-strategy.md`), and that reason died with the PC switch.
+
+**Two-sided faces.** Physics ignores back faces. Most of these bark materials render both sides
+(Retro Lit `_Cull` = 0), so a shot through a hole in the mesh onto the visible inside of the bark
+passed through. DeadTree01 showed this on 13 of 558 test rays. So triangles whose material has
+`_Cull` 0 get a reversed twin in the collider mesh. Culled materials (Lake_RoundTree,
+MonsterTreeBark) stay one-sided: their back faces are invisible, so a hit there would be a hit in
+visible air.
+
+**Static only.** A non-convex MeshCollider can't be on a moving Rigidbody. For a future knock-down
+or burn mechanic (Carlos, 2026-09-18 — an idea, not planned): on trigger, disable `WoodCollider`,
+add a Rigidbody plus a capsule or box, and let the tree fall. The separate child object exists so
+that swap is one toggle.
+
+### 1. Carlos paints (Technie, Prefab Mode, on the `Visual` child)
+
+- **Paint all the wood; the hulls don't matter any more.** One hull over the whole tree is fine,
+  and so are many. Overlaps, splits (`_s01`...) and hull names are all ignored: the tool takes
+  every painted triangle together.
+- Paint trunk, roots and branches thick enough to hide an enemy's body part or stop a shot. Thin
+  twigs and leaves stay unpainted: no collider, bullets pass. That's intended.
+- Same brush tips as before: **Precise**, rotate the camera between clicks, Shift = add,
+  Ctrl = remove, never "🗙 All".
+
+### 2. Run the tool (headless: no Prefab Mode needed; close Prefab Mode on that tree first)
+
+From MCP `execute_code` (CodeDom, so call by reflection):
+
+```csharp
+System.Type t = null;
+foreach (var a in System.AppDomain.CurrentDomain.GetAssemblies()) { var tt = a.GetType("MrMoonlight.EditorTools.Migration.WoodColliderTool"); if (tt != null) { t = tt; break; } }
+string[] names = { "AP_Tree_X", "AP_Tree_Y" };   // or (string[])t.GetMethod("PaintedPrefabs").Invoke(null, null)
+try { return t.GetMethod("Run").Invoke(null, new object[] { names, true }).ToString()        // true = dry run
+           + t.GetMethod("RayTest").Invoke(null, new object[] { names, 3000 }).ToString(); }
+catch (System.Reflection.TargetInvocationException e) { return "ERROR: " + e.InnerException; }
+```
+
+| Command | What it does | Changes anything? |
+|---|---|---|
+| `PaintedPrefabs()` | Every prefab in the test folder that has Technie paint | No |
+| `Run(names, dryRun: true)` | Builds the wood mesh in memory, writes the image, reports | No |
+| `Run(names, dryRun: false)` | Mesh asset + `WoodCollider` child, removes hull colliders, saves, reloads from disk -> `VERIFY OK` | Yes (prefab + mesh asset; git has the old state) |
+| `RayTest(names, rays)` | Instantiates each prefab in an isolated physics scene and fires `rays` raycasts (a third low in the roots, every fifth from above). Each hit is compared to where the ray meets the visible wood -> `RAYTEST OK` | No |
+
+**The order, per batch:** dry run -> look at every `<prefab>_wood.png` (Temp/TreeColliders/) ->
+real run (every line `VERIFY OK`) -> `RayTest` (every line `RAYTEST OK`) -> Carlos checks live.
+
+**Reading the image** (4 views; the last is straight down):
+- **Left:** the whole mesh, painted wood in orange, everything else in grey. A grey limb thick
+  enough to hide behind is a **missed branch**: tell Carlos, don't guess.
+- **Right:** the collider alone (green). It should be the orange part, exactly.
+
+**Reading the report:**
+- `submesh 0: N/M painted` is a hint only. On DeadTree01 the unpainted 24% is leaf cards; on
+  Curse_H01 (35%) it's moss slabs plus some real roots. The image decides.
+- `two-sided` counts triangles that got a reversed twin.
+
+### Batch 1 result (2026-09-18) — all 5 converted, awaiting Carlos's live check
+
+| Tree | Wood tris | Collider tris | RayTest (3000 rays) |
+|---|---|---|---|
+| `AP_Tree_Deadtree06_SM` | 5,346 | 10,692 (two-sided) | 1201/1201 on the bark, 0 false, 0 missed |
+| `AP_Tree_DeadTree01_SM` | 967 | 1,934 (two-sided) | 558/558, 0, 0 |
+| `AP_Tree_Lake_RoundTree_01_SM` | 2,199 | 2,199 (culled material) | 639/639, 0, 0 |
+| `AP_Tree_Curse_H01_2` | 9,095 | 18,190 (two-sided) | 1027/1027, 0, 0 |
+| `AP_M6_Tree_MonsterTreeBark_SM_PHJ_2` | 8,684 | 8,684 (culled material) | 1112/1112, 0, 0 |
+
+Open paint question: **Curse_H01** has some fairly thick lower roots and branches unpainted (grey
+in its image). Carlos decides whether they need colliders.
+
+### Bulk run (2026-09-18, evening) — 109 prefabs converted, Carlos liked the gallery result
+
+Carlos painted every tree, rock, stump and log in the test folder as one hull. Result: **109 prefabs**
+(the 5 + 4 from batch 1, then 86, then the 14 `RF_*`) each with one `Visual/WoodCollider`. Every one
+`VERIFY OK` from disk and `RAYTEST OK` at 3000 rays (0 hits in air, 0 shots through wood, worst error
+0.000 m). Timings: dry run of 95 = 18 s; real run of 86 = ~1 min; RayTest of 86 = ~40 s. No need to batch small.
+
+How it was reviewed: instead of opening 95 `_wood.png` files, crop each image's top-left view (the
+whole mesh, wood in orange), tile 12 per sheet with PIL and read 8 sheets. Grey = leaf cards, cloth
+ribbons (GraveKeepers), moss slabs; a thick grey limb would be a missed branch (none found).
+
+**Trap found: the tool only scanned the top-level folder.** The 14 `RF_*` (Retro Realism) live in
+`AST116_ColliderTest/RetroRealism/`, so `PaintedPrefabs()` skipped them and they were wrongly reported
+as unpainted. `WoodColliderTool.PrefabPath()` now resolves prefabs in subfolders and
+`PaintedPrefabs()` skips only `WoodColliders/`. Rule: when a tool says "not painted" or "not found",
+check for subfolders before telling Carlos.
+
+Rocks, stumps, logs and fallen trees went through the same wood tool (not Technie Auto), because
+Carlos painted them. No collider by design: `RF_Bush*` (no Technie component), mushrooms, `AP_Nest_B01`,
+grass, flowers, ferns.
+
+**LOD facts (surveyed the same evening, for later).** Only the 14 `RF_*` have a `LODGroup`, each with
+ONE LOD (cull at 1.5% screen height); none of the 95 `AP_*` prefabs have any. Heaviest meshes:
+GraveKeepers_B01/B02/B04/B06 (17-27k tris), Curse_H01/J07/J08/K01 (10-28k), ArgassTree_02/03/04.
+Unity 6.3 has built-in mesh LODs (`ModelImporter.generateMeshLods`, `Mesh.SetLods`). Carlos is
+considering *Asset Optimizer Pro* (SKAVA, Fab, ~398 MXN, no reviews, last update 2025-05-17; batch LOD +
+decimation, nothing tree-specific). **Trap for any LOD tool: the Technie paint and the wood mesh are
+indexed by triangle number of the ORIGINAL mesh, so LOD 0 must come through unchanged.** Re-run
+`RayTest` on a treated tree afterwards. The wood collider is built from LOD 0 and stays active while
+the renderer is culled. Parked by Carlos ("later").
+
+### Still open for the wood-collider route
+
+- **Performance is still unmeasured in a build.** It should be cheaper than hulls: one shape per
+  tree, and instances of one tree share a cooked mesh. The heaviest so far is Curse_H01 at 18k
+  collider triangles. Measure on Island after the bulk run and log it in
+  `Docs/performance-log.md`.
+- **The four older Done trees** (Juniper02, Nokmyung, SaGeeSukRim, AlaskaCedar_001_2) were
+  converted to wood colliders on Carlos's request the same day. All pass RayTest.
+- **Technie's role is now only the paint brush.** The MeshCollider is plain Unity. The finished
+  collider (the `_Wood.asset` mesh on `WoodCollider`) doesn't depend on Technie at all. Technie is
+  still how Carlos marks which triangles are wood, and the tool reads that selection from Technie's
+  painting data. Dropping Technie would take two things: (a) another way to pick the wood, e.g.
+  automatic by bark material/submesh where the mesh separates it, or a small custom paint tool;
+  and (b) stripping the Technie component and data assets from the prefabs after conversion.
+  Carlos to decide.
+- **Leftover Technie data.** Each prefab's Technie hull-data asset still holds the old hull meshes
+  (stale, referenced by nothing). This needs a cleanup step before the live migration.
+- **Test copies only.** Carrying these over to the live vegetation prefabs and Island is still
+  unwritten.
 
 ## Why this exists
 
@@ -17,7 +159,11 @@ Goal for trees (Carlos): colliders **one-to-one with the wood, or as tight as po
 manageable pieces, and **never a hull that wraps empty space** (between roots, in a crotch, inside a
 bend). Leaves and twigs nobody paints get no collider — that's intended.
 
-## Doing a tree
+## Doing a tree (convex hulls, `TreeColliderTool`) — SUPERSEDED 2026-09-18 for static trees
+
+Kept for the record. `TreeColliderTool` still works, and on 2026-09-18 it gained the cover metric
+(`MeshCoverField`), cover-driven plane splits, inward Face-hull patches, `InspectFocus` and a 90 s
+budget. Its numbers are in the "Current process" section. Don't use it for static trees.
 
 ### 1. Carlos paints (Technie, Prefab Mode, on the `Visual` child)
 
@@ -262,6 +408,10 @@ Painting lessons for Carlos: separate hulls per limb still give the cleanest res
 lie flat and fuse into the trunk at the ground, paint each root as its own hull.
 
 ## Known gaps (2026-09-17, updated 2026-09-18) — not solved yet
+
+> **2026-09-18, later:** the geometry gaps below (fused ground roots, fork crotches, braided strands)
+> belong to the convex-hull route. The wood MeshCollider has none of them. For the gaps that still
+> apply, see "Still open for the wood-collider route" at the top.
 
 - **Fused ground roots** (Deadtree06) — see Troubleshooting.
 - **Fork crotches on thick trunks** (DeadTree01 upper-left, Carlos 2026-09-18) — the fused

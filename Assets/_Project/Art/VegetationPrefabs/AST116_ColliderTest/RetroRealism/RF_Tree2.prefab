@@ -32,6 +32,60 @@ Transform:
   - {fileID: 990066136406207290}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &6618860303065694444
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7375074192958959193}
+  - component: {fileID: 6592503752960004511}
+  m_Layer: 0
+  m_Name: WoodCollider
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 2147483647
+  m_IsActive: 1
+--- !u!4 &7375074192958959193
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6618860303065694444}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 990066136406207290}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!64 &6592503752960004511
+MeshCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6618860303065694444}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 0
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 5
+  m_Convex: 0
+  m_CookingOptions: 30
+  m_Mesh: {fileID: 4300000, guid: 9208079991b62d34798088cf3b0e7f43, type: 2}
 --- !u!1001 &736288625953590481
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -122,11 +176,17 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
-    m_AddedGameObjects: []
+    m_AddedGameObjects:
+    - targetCorrespondingSourceObject: {fileID: -8679921383154817045, guid: 166e713e18773e64b82dc813e97e4578, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 7375074192958959193}
     m_AddedComponents:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 166e713e18773e64b82dc813e97e4578, type: 3}
       insertIndex: -1
       addedObject: {fileID: 8458861278029802123}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 166e713e18773e64b82dc813e97e4578, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 945579806506094419}
   m_SourcePrefab: {fileID: 100100000, guid: 166e713e18773e64b82dc813e97e4578, type: 3}
 --- !u!1 &501794340739412352 stripped
 GameObject:
@@ -152,6 +212,20 @@ LODGroup:
     renderers:
     - renderer: {fileID: 2158991391722393685}
   m_Enabled: 1
+--- !u!114 &945579806506094419
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 501794340739412352}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 86df15996814cff45aed711a3ccf2a0a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: TechniePhysicsCreator::Technie.PhysicsCreator.RigidColliderCreator
+  paintingData: {fileID: 11400000, guid: 532bd01a3521e974c943e8d4547628af, type: 2}
+  hullData: {fileID: 11400000, guid: ad0140c10a12ee24b9d49068628a4385, type: 2}
 --- !u!4 &990066136406207290 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 166e713e18773e64b82dc813e97e4578, type: 3}
