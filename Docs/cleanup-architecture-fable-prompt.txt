@@ -1,0 +1,139 @@
+Context prompt: THE BIG CLEANUP / NEW DIRECTION: architecture session (FABLE). Read this cold.
+
+WRITTEN: 2026-09-19, before the session exists. Carlos's own brief did not exist yet when this was written, so anything
+below about the brief's contents is a placeholder. The brief itself is the authority on what he wants.
+
+Do NOT start working on reading this file. Read what it points to, then wait for Carlos to open the conversation
+(memory: don't-auto-start-on-kickoff).
+
+===========================================================================
+1. WHY THIS SESSION EXISTS, AND WHY IT'S ON FABLE
+===========================================================================
+Mr. Moonlight is a first-person horror shooter (Unity 6.3 LTS, URP, Windows 64-bit, PSX look, 1920x1080). One developer,
+Carlos, who is the only person who touches Unity. The class gates (Sept 1 / Sept 8) are past. The real target is a
+**Kickstarter campaign launched alongside the demo, before Halloween 2026**. The demo is the campaign's shop window.
+
+Early in the project, one very large prompt from Carlos became the Linear issues (project `MrMoonlightDemo`, team `MRM`)
+that the project has been built from. This session is the second time that happens. Carlos has written a new, large
+brief covering:
+  - new things no Linear issue covers yet;
+  - redefinitions of existing issues, some of which may mean reworking how a system is implemented;
+  - a cleanup of code, packages and documentation debt;
+  - new assets he has acquired since the issues were written;
+  - a new overall direction.
+
+Carlos is paying for Fable credits specifically for this session, because the value is in the thinking: comparing the
+existing plan with the new one at the architecture level and deciding what to keep, redefine, merge, rework, add or
+retire. The mechanical work (cross-referencing, file reading, inventories) was done beforehand on a cheaper model, so
+spend this session's effort on judgement, not on re-reading the repo. Implementation happens later on Opus/Sonnet.
+
+===========================================================================
+2. READ, IN THIS ORDER
+===========================================================================
+1. `Docs/cleanup-brief.md`: CARLOS'S BRIEF. The most important input. Every entry has a certainty tag:
+   DECIDED (don't argue, design around it), LEANING (push back if you see something better, and say why),
+   OPEN (he wants help thinking). Under each cleaned-up entry are his original words. If they disagree, the original
+   words win. Section 7 lists the gaps and contradictions the prep session found.
+2. `Docs/cleanup-briefing-pack.md`: the facts. Linear inventory, system map, vendor exposure, asset state,
+   performance baseline, known traps. Prepared by the prep session. Trust it as a starting point, and verify anything
+   a decision depends on directly (read the file, `get_issue`) before relying on it.
+3. `CLAUDE.md`: hard rules, deadlines, the working process.
+4. The two files that describe what happened between the demo and now (section 3 summarises them. Open them only if
+   you need the detail):
+   - `Docs/demo-wrapup-audio-music-sonnet-prompt.txt`
+   - `Docs/interim-small-tasks-prompt.txt`, especially its "Interim work log" at the bottom.
+5. Anything else only on demand. There are 100+ files in `Docs/`, and most are per-session handoffs from finished
+   work. `Docs/00-INDEX.md` and `Docs/Design/` (background only; Linear wins over design docs) exist if needed.
+
+===========================================================================
+3. WHAT HAPPENED BETWEEN THE DEMO AND THIS SESSION (the two files above, compressed)
+===========================================================================
+A. THE DEMO WRAP-UP ARC (2026-09-10, `demo-wrapup-audio-music-sonnet-prompt.txt`)
+   To make the class deadline, about 8 direct-chat sessions in one day landed on `main` with almost no Linear issues:
+   - `DemoSpotterPopulationManager` (floor-based Spotter spawning, straggler relocation, 2-tier aggression escalation),
+     `EnemyCorpseCleanup`, `SpotterPopulationMax = 25`, kill goal 100.
+   - Demo intro letterbox + subtitles, kill-line HUD, pause overlay with controls image.
+   - Audio: AudioRandomContainer double-fire fix, Spotter SFX pools (`EnemyAudioHooks`, `SpotterDetectionAlert`),
+     island music, 3 new mixer groups built by reflection, a temporary F10 mixer overlay (explicitly not the final mix).
+   - Build 29 went to itch.io for the class.
+   Carlos then said he wanted a big sit-down session covering (1) strategy and documentation gaps, (2) code cleanup of
+   the demo-only/LEGACY systems (the Spotter population layer, aggression tiers, the F10 overlay, arguably the whole
+   Spotter AI), and (3) the future development approach. **This session is that one.**
+   Findings recorded in that file for this session:
+   - The vSync lesson: a PolymindGames vendor asset silently forced `vSyncCount = 1` on every boot, with no UI.
+     Audit `_Project/Code/Vendor/*` for self-applying code (`RuntimeInitializeOnLoadMethod`, singletons,
+     `UserOptions<T>.Instance`).
+   - A possible live conflict: vendor `AudioManager` writes `"MasterVolume"` (the same exposed-parameter name our own
+     sliders use) from a separate settings source. Unconfirmed.
+   - Removal candidates: Simple Water Shader (probably dead), and Terrain Sample Asset Pack (1.9 GB, but vegetation
+     prefabs reference its meshes, so copy what ships and then drop it). Burntwax was already removed (2026-09-17).
+   - Nine installed packages are behind their store versions. Do NOT bulk-upgrade: GUIDs and copied vendor code are
+     load-bearing. Each upgrade is its own task, with a reason.
+   - The asset index spreadsheet (AST-### IDs, owned/wishlist/priority) exists. Carlos's master copy is outside the
+     repo (`C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx`), and a
+     read-only mirror is at `Docs/asset-index/ASSETS-Index.xlsx`.
+
+B. THE INTERIM PHASE (2026-09-16 onward, `interim-small-tasks-prompt.txt`, umbrella issue **MRM-81**)
+   While the cleanup waited, only additive, self-contained work was allowed. Anything that changed how enemies think,
+   spawn or take damage, how weapons fire, or how audio is routed was parked for this session. What landed (the
+   interim work log has files, hooks and detail):
+   - MRM-84: tree colliders. Technie Collider Creator is used as a paint brush, and `WoodColliderTool` bakes one wood
+     MeshCollider per prefab (109 prefabs). New scene `Island_Legion` (8,786 instances, own NavMesh). Menu:
+     Single -> Island, Legion -> Island_Legion.
+   - MRM-85: the build SessionLog (a scene-tagged performance/debug log) and the performance-session process. Living
+     issue, never closed. Findings: the frame is GPU-bound, and corpses are never destroyed (enemy death/gore,
+     parked for the cleanup).
+   - MRM-44: flashlight (plain toggled Spot Light on F), and hands/weapons on their own URP "ViewModel" light layer.
+     Still open: beam sway, visible breath, enemy detection of the light, chest lamp model.
+   - MRM-86: lighting rework (TimeManager, fog, skyboxes, light sources) on branch `mrm-86`. It may be in progress
+     or done by the time you read this. Check Linear and `Docs/lighting.md` (the single lighting reference).
+   - Process changes: the branch `--no-track` rule, the change record (`Docs/performance-sessions.md` §8), and the
+     four-step "final instructions".
+   When this session starts, the interim phase ends: MRM-81 gets closed and `interim-small-tasks-prompt.txt` retires
+   (confirm both with Carlos, don't do them silently).
+
+===========================================================================
+4. WHAT CARLOS WANTS OUT OF THIS SESSION
+===========================================================================
+Section 6 of his brief overrides this. Default expectations:
+  1. **Questions first.** After reading, bring him your questions and the decisions that are genuinely his, in one
+     batch, before producing the plan. He dictates his answers, so expect typos.
+  2. **An architecture/strategy document**: the new direction, and the systems as they should be for October. For each
+     major system: keep / refactor / rework / replace, and why. Include what changes in the working process, if
+     anything. Write it to `Docs/` (suggested name: `Docs/architecture-2026-10.md`).
+  3. **An issue-by-issue plan**, covering every existing MRM issue and every brief entry (B-xx): keep as is /
+     redefine / merge into / split / new / close. For new or redefined issues, give the proposed title, a short
+     description, "done when", the model best suited to build it (Opus for new systems, Sonnet for tuning/fixing),
+     dependencies, and a milestone.
+  4. **Sequencing**: what order, what goes in which milestone before Halloween, and what gets cut if time runs short.
+  5. **Linear updates only after Carlos approves the plan.** Then apply them.
+
+Be candid. If an entry in the brief conflicts with the deadline, the 1 GB limit, a system that already works, or
+another entry, say so plainly and offer the trade-off. Don't quietly smooth it over. Where you recommend, recommend
+one thing and give the reason. Don't lay out options you wouldn't pick.
+
+===========================================================================
+5. FIXED CONSTRAINTS (from CLAUDE.md; don't re-litigate)
+===========================================================================
+- Windows 64-bit standalone, under 1 GB download (itch.io), 1920x1080 borderless. WebGL is dead; anything saying
+  960x540/WebGL/GLES3 is stale.
+- No hardcoded values: `MoonlightTunables` (early visual/staging numbers may stay on components while prototyping).
+- One issue, one branch, one PR. Branches via `git switch -c <name> --no-track origin/main`. Never commit or push:
+  Carlos uses GitHub Desktop.
+- Unity and Blender work through the MCP bridges needs Carlos's permission each time. This session is planning, so it
+  shouldn't need either.
+- Vendor code: `Assets/ThirdParty/**` is git-ignored, and vendor logic lives in tracked
+  `Assets/_Project/Code/Vendor/<Package>/`.
+- RetroLit samples only BaseColor + Normal. Glowing objects get a real Light, never emission. Normal maps are never
+  pixelated.
+- Linear is the source of truth. Design docs are background. If an issue and a doc disagree, the issue wins, and
+  after this session the issues should reflect the new direction.
+- Scope note: assets are chosen for the demo. A future full game starts clean, so long-term drawbacks of an asset are
+  not by themselves a reason to reject it here.
+
+===========================================================================
+6. AT THE END OF THE SESSION
+===========================================================================
+When Carlos says "run the final instructions", do the four steps in CLAUDE.md. For a planning session, the commit
+message covers the new docs; the change record (§8) notes that the plan changed and the Linear issues were rewritten.
+Also write the handoff for the FIRST implementation session the plan calls for, and say which model it suits.

@@ -13,7 +13,8 @@ file retires. That session reads the "Interim work log" at the bottom.
   rework the enemy system (Spotter / Blaze AI / DemoSpotterPopulationManager), the weapon system
   (PolymindGames FPSCore + HQ FPS Weapons) and audio (mixer, EnemyAudioHooks, vendor AudioManager).
   Its handoff is `Docs/demo-wrapup-audio-music-sonnet-prompt.txt`. DO NOT read that file for an
-  interim task; its existence is all you need to know.
+  interim task; its existence is all you need to know. (2026-09-19: the cleanup now runs as brief ->
+  prep -> Fable session: `Docs/cleanup-brief-template.md`, `Docs/cleanup-architecture-fable-prompt.txt`.)
 - Carlos is working on 3D models in parallel. These sessions exist so he can use his weekly token
   budget without stalling, so keep them short and cheap.
 - Carlos is the only one who touches Unity. Scene/inspector work through the Unity MCP bridge needs
