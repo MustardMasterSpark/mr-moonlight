@@ -1,0 +1,31 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-44: Docs and process follow-up (branch --no-track rule, change-record hashes, lighting rework handoff)
+
+
+DESCRIPTION (the body field)
+============================
+
+Docs-only follow-up to e99866fd. No code, scene, prefab or asset changes.
+
+- CLAUDE.md: new hard rule for creating issue branches (`git switch -c <name> --no-track origin/main`, then check the upstream is
+  never `main`). Both MRM-44 commits (777b0ce, e99866f) went straight to main because `mrm-44` tracked origin/main. `Docs/lighting.md`
+  added to "Read first". Final-instructions step 4 (change trace) recorded earlier is unchanged.
+- Docs/performance-sessions.md section 8: change record C-001 now carries the commit hashes and the "went to main" note; new
+  row C-002 for this process/docs change.
+- Docs/lighting.md: points at the new Linear issue MRM-86 and its history table.
+- Docs/lighting-rework-opus-prompt.txt: now tied to MRM-86 / branch mrm-86, with the branch rule and how to handle work that
+  crosses several Linear issues.
+- Docs/changelog.md, Docs/mrm44-sonnet-prompt.txt, Docs/interim-small-tasks-prompt.txt: cross-references and work-log entry.
+
+HOW TO COMMIT THIS
+
+- Recommended: commit on `mrm-44`, then use "Publish branch" (the branch no longer tracks main, so this creates origin/mrm-44)
+  and open a pull request to main. main already contains the earlier MRM-44 commits, so the PR shows only this docs commit. It is
+  also the proof that the tracking fix works.
+- `mrm-86` (for MRM-86) already exists locally, created with --no-track from main; nothing to do until the next session.
+
+Linear: MRM-44, MRM-85 (change record C-002), MRM-86 (new lighting rework issue).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

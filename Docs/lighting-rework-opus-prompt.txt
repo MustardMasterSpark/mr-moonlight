@@ -1,10 +1,24 @@
 Context prompt: LIGHTING REWORK (Opus suggested). Read this cold; don't rely on chat scrollback.
 
-WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions). Branch when written: `mrm-44`
-(commit pending; message in Docs/mrm44-commit-message.txt). The rework probably deserves its own issue and branch:
-ASK Carlos whether to create a Linear issue (suggested title "Lighting system rework: TimeManager, fog, skyboxes")
-before touching code. Do NOT auto-start on reading this file; wait for Carlos's go-ahead
-(memory: don't-auto-start-on-kickoff).
+WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions), UPDATED the same day.
+LINEAR ISSUE: **MRM-86** "Lighting system rework: TimeManager, fog, skyboxes and light sources" (created 2026-09-19 at Carlos's
+go-ahead; Opus, M2, High). GIT BRANCH: **`mrm-86`**, already created LOCALLY from `main` (e99866fd) with `--no-track`; it does
+not exist on GitHub yet. Carlos publishes it from GitHub Desktop and opens the PR to `main`. Start the session with
+`git switch mrm-86` (and check `git status` first: uncommitted doc edits may still be sitting on `mrm-44`; if so ask Carlos
+whether he has committed them, do not carry them silently across branches).
+
+BRANCH RULE FOR EVERY BRANCH, NOW AND LATER (Carlos, 2026-09-19: "not only for this branch, for any other future branch"):
+create issue branches with `git switch -c <name> --no-track origin/main` (or `git branch --no-track <name> main`), then run
+`git config --get branch.<name>.merge`: it must print nothing (or `refs/heads/<name>`), NEVER `refs/heads/main`. A branch that
+tracks main makes GitHub Desktop push straight to main with no PR; that happened to both MRM-44 commits. Rule is in CLAUDE.md.
+
+MULTIPLE ISSUES: the next sessions may touch several Linear issues. This one is MRM-86. The lamp's remaining details and MRM-44's
+open scope (beam sway, visible breath, enemy detection, chest lamp model) stay on **MRM-44** (branch `mrm-44`, which after the
+tracking fix will get its own `origin/mrm-44` when Carlos publishes). The flashlight + HAZE fog look is a polish item on MRM-67.
+When work crosses issues, keep one branch per issue (or ask Carlos for a one-time exception, as MRM-75/34 did) and flag the cross-
+issue work in a comment on each issue touched. Ask Carlos which issue a given piece of work belongs to when it is unclear.
+
+Do NOT auto-start on reading this file; wait for Carlos's go-ahead (memory: don't-auto-start-on-kickoff).
 
 MODEL: Opus. This is designing a system (a dynamic time-of-day + fog + skybox + light-source model), not tuning.
 
@@ -81,7 +95,8 @@ and the other light sources."
 - Every value that will be tuned gets a MoonlightTunables entry AND a live-tuning block on a component he can edit in the
   Inspector during Play Mode (the flashlight and MoonlightViewModelLighting are the pattern).
 - Keep ONE lighting doc: update Docs/lighting.md (including section 8 history) as you go, not at the end.
-- Ends with "run the final instructions" (4 steps), including the change record C-002 in performance-sessions.md.
+- Ends with "run the final instructions" (4 steps), including a NEW change-record row (C-003; C-002 is the process/docs update)
+  in performance-sessions.md section 8 and a comment on MRM-85. Linear comments go on MRM-86 (main), MRM-44/MRM-67/MRM-9 if touched.
 - Performance: the frame is GPU-bound (MRM-85). Any new shadow-casting or extra realtime light is a measured decision:
   ask Carlos to play a build ("check the performance"); open hypotheses H9 (flashlight cost) and H10 (hands' world-light
   scan cost) are waiting for exactly that.
@@ -90,7 +105,7 @@ and the other light sources."
 ===========================================================================
 5. OPEN QUESTIONS TO PUT TO CARLOS FIRST
 ===========================================================================
-1. New Linear issue and branch for this? (Yes is recommended: it is bigger than MRM-44.)
+1. (ANSWERED 2026-09-19: MRM-86 / branch mrm-86 created; nothing to ask.)
 2. Skybox blending for a continuous day: acceptable to build a blend (shader or two-dome cross-fade), or keep instant
    swaps hidden behind story beats and only make the SUN continuous?
 3. Is "time of day" a single 0-24 h value driving sun, sky, fog, ambient and hand light from curves/gradients? (Recommended

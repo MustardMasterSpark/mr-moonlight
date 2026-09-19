@@ -59,7 +59,9 @@ Full write-up of the layer setup: **`Docs/viewmodel-light-layers.md`** (first us
   presets, HAZE, sky, flashlight, hands, lamps, flares, Light Layers, every lighting tunable, all traps). Found three
   **unwired tunables** while writing it (`SpotterLampIntensity/Range`, `PlayerAmbientLightIntensity/Range`,
   `MineMaxRealtimeLights`): the values live on the prefab / scene object.
-- **NEXT SESSION = lighting rework** (Carlos): rebuild TimeManager + fog, change skyboxes, merge the day/night light with the
+- **Git process fix (2026-09-19):** both MRM-44 commits landed directly on `main` because the local branch tracked `origin/main`;
+  upstream removed, rule added to CLAUDE.md (`--no-track`), commits recorded as C-001 (`777b0ceb`, `e99866fd`) in the change record.
+- **NEXT SESSION = lighting rework** (Carlos), now **Linear MRM-86, branch `mrm-86`**: rebuild TimeManager + fog, change skyboxes, merge the day/night light with the
   lamp/flashlight work, baselines per time of day, dynamic sun. Handoff: `Docs/lighting-rework-opus-prompt.txt`.
 - **Design note for the full game:** the sun will change continuously, not by preset. The hands read the live sun, never a
   preset (details in `Docs/viewmodel-light-layers.md`, "FOR THE FULL GAME").
