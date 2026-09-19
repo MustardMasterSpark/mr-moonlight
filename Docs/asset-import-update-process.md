@@ -14,7 +14,7 @@ worked example if anything below is ambiguous.
 |---|---|
 | `C:\Users\calva\Documents\Asset Collection\01_DOWNLOAD` | Landing zone for freshly downloaded `.zip` / `.unitypackage` files, however Carlos names them. |
 | `C:\Users\calva\Documents\Asset Collection\02_extracted` | Scratch extraction area, one subfolder per asset ID (`AST-018\`, etc.). Safe to delete and re-extract at any time — nothing here is a source of truth. |
-| `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx` | **The master spreadsheet.** Source of truth for IDs, owned/wishlist status, versions. See "The spreadsheet" below. |
+| `C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx` | **The master spreadsheet.** Source of truth for IDs, owned/wishlist status, versions. See "The spreadsheet" below. |
 
 ## Step 0 — identify: repeat or new?
 
@@ -194,15 +194,19 @@ fine unless he made deliberate edits, in which case get those first.
 
 ## The spreadsheet: two copies, one master
 
-- **Master, editable:** `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx` (outside
+- **Master, editable:** `C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx` (outside
   this repo — Carlos opens and browses it directly in Excel). This is what Step 5 edits.
 - **Repo mirror, read-only reference:** `Docs/asset-index/ASSETS-Index.xlsx` (this repo, tracked in
   git, no date in the filename so the path never needs updating). Purpose: so a future session — or
-  anyone reading this repo cold — can see current asset status without knowing the Desktop path,
+  anyone reading this repo cold — can see current asset status without knowing the master's path,
   and so it's backed up by git instead of living solely on one machine.
 - **The mirror is not a second source of truth.** Every time Step 5 edits the master, copy it
   over the mirror in the same breath. Never edit the mirror directly. If they ever disagree, the
-  Desktop master wins — the mirror is stale until the next copy.
+  master wins — the mirror is stale until the next copy.
+
+> **Master moved 2026-09-19.** It used to live at `C:\Users\calva\Desktop\assets\`; Carlos moved it to
+> `...\Asset Collection\03_documentation\` so the whole collection (`01_DOWNLOAD`, `02_extracted`,
+> `03_documentation`) sits under one root. Same filename. His original `ASSETS.xlsx` sits beside it, untouched.
 
 `Docs/external-assets.md`'s "2026-09-16 audit" section and the `[[asset_index_spreadsheet]]` memory
 both describe the spreadsheet's ID ranges and section meanings in more depth than this doc repeats.
@@ -226,6 +230,38 @@ Technie Collider Creator 2 (AST-116) is the next one scheduled to actually go th
 the vegetation-collider work — that's an **interim task**, not a version update, so its handoff
 lives in `Docs/interim-small-tasks-prompt.txt`'s Task Slot, not a separate file. See "Which kind of
 task is this?" below.
+
+## Worked example 2 (2026-09-19) — 14 files, 3 genuinely new
+
+Carlos said "four completely new assets" and pointed at four URLs. The check in Step 0 found that
+**one of the four (Vertex Ambient Occlusion Generator) was already wishlist AST-119**, and that ten
+more files in the folder he hadn't mentioned were wishlist rows too. So: **never trust "these are
+new" — match every file against the sheet by name.** Result:
+
+| Outcome | Files |
+|---|---|
+| Wishlist → owned, moved to "OWNED (FROM WISHLIST)", ID kept | AST-118 STORY Wildlands Props, 119 Vertex AO Generator, 120 Final IK, 121 Zombie Animations Set, 122 Ghost Creature Anims, 123 Witch Hag Animations, 124 Killer Doll Animations, 125 The Rake, 126 Skeleton Zombies (sheet says "V1", file has no version), 144 PuppetMaster, 147 Asset Optimizer Pro |
+| Genuinely new, next free IDs (highest was 263) | **AST-264** SensorToolkit 2, **AST-265** Emerald AI 2026, **AST-266** Advanced Cable Creator |
+
+None was installed in either project (checked `ThirdParty/AST-###` and `PLAYGROUND/AST-###`), so all
+14 stay un-extracted, nothing synced. Rename log: `01_DOWNLOAD\_rename-log 2026-09-19.csv`.
+
+What the sheet update added beyond the Step 5 rules above:
+- **New-asset rows** get the store data scraped from the Asset Store page's embedded JSON (publisher,
+  full price, latest version, updated date — see `[[asset_index_spreadsheet]]`), the collection URL
+  Carlos supplied, `notes` starting `[Claude] Added <date>`, the **yellow** fill (the Legend's meaning
+  is exactly "owned, missing from your original list"), and `priority` = `Owned (new · not on original list)`.
+- **Zebra striping is static fill, not conditional formatting** — moving rows breaks it, so re-stripe
+  each section after reordering (yellow rows excepted).
+- **Legend counts go stale on every move.** Recompute the P1–P5 "N assets · ~$X" lines from the
+  remaining wishlist rows, the category counts from all rows, and add a dated line under "Changes".
+  (The 09-17 move had left P1 at 41; it's 25 now.) Verified the formula by reproducing P3–P5 exactly.
+- **`up to date?` when the filename has no version** (Skeleton Zombies) or the store has none
+  (Asset Optimizer Pro, sold on Fab) → `Unknown`. PuppetMaster's file is named `v1.5 (11 Apr 2025)`
+  while the store's 1.5 is dated 2026-04-10 — string-equal so marked `Yes`, but the date suggests
+  Carlos's copy may be a year older than the store's; worth a glance when it's installed.
+- **`ls | head -100` on `01_DOWNLOAD` silently hid a file** (Zombie Animations Set). List the whole folder
+  and filter out `AST-*` instead of truncating.
 
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 

@@ -23,7 +23,7 @@
 >   project re-added from disk.
 > - Every evaluation package under `Assets/PLAYGROUND/` now sits in **one folder named with its
 >   asset-index ID** (`AST-001` = Gore Simulator, `AST-013` = Retarget Pro V5, …). Look IDs up in
->   `C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`.
+>   `C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx`.
 > - Assets that had two top-level folders are nested inside one ID folder: AST-002 InfiniCLOUD
 >   (both `ARTnGAME` folders), AST-003 Dynamic Radial Masks (original + modified copy), AST-005
 >   Shiny SSR, AST-006 PIDI, AST-055 Highlight Plus.

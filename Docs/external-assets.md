@@ -13,10 +13,12 @@ brought back to a working state.
 
 Verified against `Assets/ThirdParty/`, `Assets/_Project/Code/Vendor/`, `Packages/`, `Assets/Plugins/`
 and `Assets/_Project/Art/` while building Carlos's master asset spreadsheet
-(`C:\Users\calva\Desktop\assets\ASSETS - Index 2026-09-16.xlsx`, outside the repo, with stable `AST-###`
+(`C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx`, outside the repo, with stable `AST-###`
 IDs, store prices/versions and the wishlist priority order). The tables further down are kept as
 history. **Where they disagree with this section, this section wins.**
 
+> **2026-09-19 — 14 more downloads, none installed.** The index is now 266 rows. Owned but **not in any project**: AST-118 STORY Wildlands Props, 119 Vertex AO Generator, 120 Final IK, 121 Zombie Animations Set, 122 Ghost Creature Anims, 123 Witch Hag Animations, 124 Killer Doll Animations, 125 The Rake, 126 Skeleton Zombies, 144 PuppetMaster, 147 Asset Optimizer Pro (all were wishlist rows), plus three assets that were on no list: AST-264 SensorToolkit 2, 265 Emerald AI 2026, 266 Advanced Cable Creator. Enemy AI stays Blaze AI; 264/265 are reference or comparison only until Carlos decides otherwise. Detail: `Docs/asset-import-update-process.md` → "Worked example 2".
+>
 > **`Assets/ThirdParty/` renamed to asset-index IDs (2026-09-16, later the same day).** Every
 > vendor folder is now named with its bare ID, and assets that were spread over several folders
 > are consolidated:
