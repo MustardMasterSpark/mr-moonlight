@@ -263,6 +263,27 @@ What the sheet update added beyond the Step 5 rules above:
 - **`ls | head -100` on `01_DOWNLOAD` silently hid a file** (Zombie Animations Set). List the whole folder
   and filter out `AST-*` instead of truncating.
 
+## Worked example 3 (2026-09-19, later) — 13 files, all already wishlist
+
+Carlos said "the new assets are the ones that don't have the ID name" and told me to ignore a file named
+`Assets.zip` (a 2.7 GB leftover from 09-05 that was never an asset row — left untouched). Filtering out
+`AST-*` on the **full** listing gave 13 files; every one matched a wishlist row by name, so **no new IDs**:
+AST-127, 128, 129, 131, 132, 134, 135, 137 (P1), 142, 143, 156, 157 (P2), 232 (P4). Renamed in place,
+rows appended to `_rename-log 2026-09-19.csv` (same date, so same file), nothing extracted or installed.
+
+Sheet update: 266 IDs in, 266 out; the rows now sit in ID order inside "OWNED (FROM WISHLIST)". New since
+example 2:
+- **Rewrite the sheet in place, not into a fresh sheet.** Snapshot every row (values, `_style`, hyperlink,
+  row height) first, then write them back in the new order over rows 3..N. The row count never changes when
+  rows only move between sections, so freeze panes, widths and the 552 hyperlinks all survive. Reset
+  `ws._hyperlinks = []` first; openpyxl rebuilds it on save.
+- **Dry-run validations before writing:** the zebra rule (even index none, odd `F7F8FA`, yellow rows
+  excluded) reproduced the existing fills with 0 mismatches, and the tier formula (count + sum of numeric
+  prices) reproduced all five Legend lines exactly, so the recomputed ones can be trusted.
+- New tier totals: P1 17 / $204.38, P2 24 / $1,026.62, P3 unchanged, P4 19 / $796.94, P5 unchanged.
+- `up to date?`: AST-143 Cineaster = **No** (file v1.0.2, store 1.0.3), the other 12 = Yes.
+- The Legend's "Source file" line moved down one row to make room for a second 2026-09-19 change line.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —
