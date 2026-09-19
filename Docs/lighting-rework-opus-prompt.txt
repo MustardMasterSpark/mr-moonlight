@@ -2,10 +2,11 @@ Context prompt: LIGHTING REWORK (Opus suggested). Read this cold; don't rely on 
 
 WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions), UPDATED the same day.
 LINEAR ISSUE: **MRM-86** "Lighting system rework: TimeManager, fog, skyboxes and light sources" (created 2026-09-19 at Carlos's
-go-ahead; Opus, M2, High). GIT BRANCH: **`mrm-86`**, already created LOCALLY from `main` (e99866fd) with `--no-track`; it does
+go-ahead; Opus, M2, High). GIT BRANCH: **`mrm-86`**, already created LOCALLY from `main` (now 3d207360, after PR #34) with `--no-track`; it does
 not exist on GitHub yet. Carlos publishes it from GitHub Desktop and opens the PR to `main`. Start the session with
-`git switch mrm-86` (and check `git status` first: uncommitted doc edits may still be sitting on `mrm-44`; if so ask Carlos
-whether he has committed them, do not carry them silently across branches).
+`git switch mrm-86`. The working tree may hold ONE small uncommitted docs edit (the C-002 commit hash in
+Docs/performance-sessions.md, Docs/lighting.md and this file); it rides along to `mrm-86` because both branches have the same content,
+so include it in the first commit there. `mrm-44` is merged and published (PR #34); its remaining scope continues there.
 
 BRANCH RULE FOR EVERY BRANCH, NOW AND LATER (Carlos, 2026-09-19: "not only for this branch, for any other future branch"):
 create issue branches with `git switch -c <name> --no-track origin/main` (or `git branch --no-track <name> main`), then run

@@ -195,7 +195,7 @@ The three "NO" rows break the no-hardcoded-values rule and are prime cleanup can
 
 | Date | Change | Where recorded |
 |---|---|---|
-| 2026-09-19 | Lighting rework issue **MRM-86** created (branch `mrm-86`); process rules updated (branch `--no-track`, final-instructions step 4), change record C-002 | `performance-sessions.md` §8; Linear MRM-86, MRM-85 |
+| 2026-09-19 | Lighting rework issue **MRM-86** created (branch `mrm-86`); process rules updated (branch `--no-track`, final-instructions step 4), change record C-002 | `performance-sessions.md` §8; Linear MRM-86, MRM-85; commit `c91ff942`, PR #34 merged as `3d207360` |
 | 2026-09-19 | This file created; SessionLog v4 (`flashlight`/`handLights` in `[PERF]`, `[PLAYER] flashlight` lines); change-record system added to `performance-sessions.md` §8 | `changelog.md` MRM-44 entry; MRM-85 comment; commit `e99866fd` (change record C-001) |
 | 2026-09-18 | Flashlight tunables + live tuning; hands on the `ViewModel` layer; hands' directional light following the sun with a night floor; world lights (lamps, flares, fires) light the hands; 21 HQ mask maps restored (guns PBR), arms matte | `viewmodel-light-layers.md`, `changelog.md` MRM-44 entries; commit `e99866fd` (C-001) |
 | 2026-09-18 | Flashlight first iteration (F key, Spot Light, no animation) | `changelog.md` MRM-44 first-iteration entry; commit `777b0ceb` |
