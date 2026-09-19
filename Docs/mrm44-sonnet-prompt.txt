@@ -1,3 +1,16 @@
+*** UPDATED 2026-09-19 (read this block first; the sections below are the 2026-09-18 first-iteration handoff) ***
+Since then: the beam is tunable (Flashlight* tunables + Live tuning), Carlos saved his numbers (intensity 60, range 40,
+outer 70, inner 25, colour #FFE094, shadows none, cookie on); the hands and weapons were reworked onto a URP `ViewModel`
+rendering layer with their own sun-following directional light and world-light scan; the HQ mask maps were restored;
+SessionLog v4 records the flashlight state. Everything about lighting is now in Docs/lighting.md and
+Docs/viewmodel-light-layers.md. Commit message for this batch: Docs/mrm44-commit-message.txt.
+STILL OPEN IN MRM-44 (unchanged, none started): beam sway (idle / walking / sprinting), visible breath, enemy visual
+detection reading MoonlightFlashlight.IsOn (raise with Carlos first; CLEANUP-adjacent), the chest lamp model and Scott's
+Sharpie texture (art from Carlos), a performance check in a build (H9 / H10 in Docs/performance-sessions.md).
+The NEXT SESSION is the lighting rework (TimeManager + fog + skyboxes + light sources): Docs/lighting-rework-opus-prompt.txt.
+Item 2 below ("tune the beam") is DONE, except the fog look, which is logged on MRM-67.
+================================================================================================================
+
 Context prompt: MRM-44 FLASHLIGHT + VISIBLE BREATH (Sonnet). Read this cold; don't rely on chat scrollback.
 
 WRITTEN: 2026-09-18. Branch: `mrm-44` (local, cut from origin/main 087c0b4; NOT committed, Carlos commits in GitHub Desktop).

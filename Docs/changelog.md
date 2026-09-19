@@ -5,6 +5,82 @@ Structure is **BUILT / DECISIONS / FAILED / NEXT** — see `Claude Code Context 
 
 ---
 
+## MRM-44 — Flashlight tuning + view-model Light Layers (2026-09-18, second session)
+
+Full write-up of the layer setup: **`Docs/viewmodel-light-layers.md`** (first use of URP Light Layers in the project).
+
+**BUILT**
+
+- Flashlight beam numbers are now `Flashlight*` fields in `MoonlightTunables`, applied by `MoonlightFlashlight`, with a
+  **Live tuning** block on the component (Play Mode) for inspector tweaking. Carlos's tuned defaults: intensity 60,
+  range 40, outer 70 deg, inner 25 deg, colour `#FFE094`, shadows None, cookie on. New `FlashlightUseCookie` switch
+  (the HQ cookie is a dark-centred ring that dims and shrinks the beam).
+- **Hands and weapons no longer lit by the flashlight or `PlayerAmbientLight`.** Rendering layer 1 renamed **`ViewModel`**
+  (`TagManager.asset`). New `MoonlightViewModelLighting` on the player camera moves every mesh under it to `ViewModel`
+  (off `Default`), adds `ViewModel` to every Directional light (sun/moon) and to the weapon muzzle-flash lights, and owns
+  a new `ViewModelFill` point light (`ViewModel` only). Tunables `ViewModelFillIntensity` (1) / `ViewModelFillRange` (2.5),
+  same live-tuning block.
+
+**DECISIONS**
+
+- Light Layers, not a second camera: URP lights affect every camera's objects, so a camera cannot exclude a light.
+- Rule applied at startup, not baked per renderer, so future weapons and new scenes need no setup. Edit-mode Scene view
+  therefore does not show the final hand lighting.
+
+**FIXED LATER THE SAME SESSION (hands were pure black)**
+
+- The first version set `Light.renderingLayerMask`, which URP ignores for lighting: lights use
+  `UniversalAdditionalLightData.renderingLayers` (all still `1`). Hands on `ViewModel` only matched no light and rendered
+  black, day and night. Component now sets the additional data. Verified: readback per light, plus a screenshot with the
+  flashlight ON showing the hand and knife naturally lit. Details and the "verify both directions" lesson in
+  `Docs/viewmodel-light-layers.md` Traps.
+- Flashlight + HAZE fog "milky disc" look logged as a polish item on **MRM-67**.
+
+**REWORKED AGAIN (hands far too bright, Carlos's M1A/revolver screenshots)**
+
+- Root causes: (a) the HQ hand/weapon materials had lost their **mask maps** in migration, so they defaulted to fully
+  metallic + fully smooth = chrome; (b) the world sun lit the hands with no tree shadows; (c) a point "fill" light blows out
+  by distance squared.
+- Fixed: **21 mask maps** copied from the Weapon project (guns PBR again); arm materials `_SmoothnessIntensity` 0.25 (hands
+  matte); the sun no longer lights the hands; the point fill is replaced by a **directional `ViewModelLight` that follows
+  the live sun every frame** (`max(floor, sun * factor)`), with a night floor so the hands are never black. Tunables
+  `ViewModelSunFactor` 0.5 / `ViewModelLightFloor` 0.3 replace the fill tunables.
+- Hands' light direction and colour are now tunables too (`ViewModelLightPitch` 40, `ViewModelLightYaw` 20,
+  `ViewModelLightFollowsSunColor` true, `ViewModelLightColor`), with the day (`SunFactor`) and night (`LightFloor`)
+  profiles saved as the current defaults. Enemy weapons (Spotter shotgun, flare gun: `Retro Lit`) confirmed untouched.
+- **World lights now light the hands too** (`ScanWorldLights`, tunables `ViewModelWorldLightsEnabled` / `MaxDistance` 15 /
+  `RescanSeconds` 0.5): every non-sun light not under the player root and within range gets the `ViewModel` bit (Spotter and
+  dropped lamps, flares, fires); the flashlight and personal light still don't. Verified with test lamps (near 3, far 1,
+  player lights unchanged; hand visibly lit orange).
+- **SessionLog v4** (`[PLAYER] flashlight -> on/off`, `flashlight on|off handLights N` on every `[PERF]` line) so the new lights
+  are traceable in performance runs (hypotheses H9, H10). **Change record C-001** added to `Docs/performance-sessions.md`
+  section 8, and step 4 (change trace) added to CLAUDE.md's "Run the final instructions".
+- **`Docs/lighting.md` created (2026-09-19):** the single reference for every light and lighting system (sun / TimeManager
+  presets, HAZE, sky, flashlight, hands, lamps, flares, Light Layers, every lighting tunable, all traps). Found three
+  **unwired tunables** while writing it (`SpotterLampIntensity/Range`, `PlayerAmbientLightIntensity/Range`,
+  `MineMaxRealtimeLights`): the values live on the prefab / scene object.
+- **NEXT SESSION = lighting rework** (Carlos): rebuild TimeManager + fog, change skyboxes, merge the day/night light with the
+  lamp/flashlight work, baselines per time of day, dynamic sun. Handoff: `Docs/lighting-rework-opus-prompt.txt`.
+- **Design note for the full game:** the sun will change continuously, not by preset. The hands read the live sun, never a
+  preset (details in `Docs/viewmodel-light-layers.md`, "FOR THE FULL GAME").
+- Verified live: layers per light, hands' light 0.425 at sun 0.85 and 0.3 at sun 0.03, `RenderSettings.sun` intact,
+  screenshots with flashlight off/on show matte skin and dark steel, no blow-out. **Not yet checked by Carlos on the M1A;**
+  numbers are guesses.
+
+**FAILED / NOT DONE**
+
+- First version of the weapon-light rule swept in `PlayerAmbientLight` (a direct child of the camera). Fixed: only lights
+  nested deeper than the camera's direct children count. Found by reading masks back in Play Mode.
+- `ViewModelSunFactor` / `ViewModelLightFloor` are starting guesses; Carlos to tune (M1A in the morning, hands at night).
+- HQ FP textures still have no pixelation pass (vendor originals, not RetroLit).
+- Unrelated modified file `Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset` appeared in git status; not from this work.
+
+**NEXT**
+
+- Carlos live-tunes the fill; tell Claude the numbers to save. Then beam sway, visible breath, enemy detection, perf check.
+
+---
+
 ## MRM-44 — Flashlight, first iteration (2026-09-18)
 
 Branch `mrm-44`. Full record: Linear comment on MRM-44. Interim log: `Docs/interim-small-tasks-prompt.txt`.

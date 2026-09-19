@@ -145,6 +145,11 @@ MonoBehaviour:
   DefaultVoicesVolume: 1
   DefaultSFXVolume: 1
   MixerMuteDecibels: -80
+  IslandMusicFadeInDuration: 4
+  DefaultMenuMusicVolume: 1
+  DefaultWeaponVolume: 1
+  DefaultIslandMusicVolume: 1
+  DefaultSpotterVolume: 1
   TitleBreakpointCross: 0
   TitleBreakpointLogo: 4.103
   TitleBreakpointDisclaimer1: 8.114
@@ -199,6 +204,7 @@ MonoBehaviour:
   EnemyDropScatterImpulse: 1.5
   EnemyDropGroundSnapTimeout: 6
   SpotterPopulationMin: 10
+  SpotterPopulationMax: 25
   SpotterPopulationSpawnRadius: 65
   SpotterPopulationMinSpawnDistance: 40
   SpotterPopulationCheckInterval: 5
@@ -311,3 +317,44 @@ MonoBehaviour:
   KillLineColor: {r: 0.82, g: 0.05, b: 0.05, a: 1}
   KillLineAnchoredYWithLetterbox: 210
   KillLineAnchoredYWithoutLetterbox: 50
+  UpscalingRenderScale: 0.67
+  QualityMinimalShadowDistance: 20
+  QualityMinimalShadowCascades: 1
+  QualityMinimalMsaaSamples: 1
+  QualityMinimalLodBias: 0.5
+  QualityMinimalTextureMipLimit: 2
+  QualityMediumShadowDistance: 45
+  QualityMediumShadowCascades: 2
+  QualityMediumMsaaSamples: 1
+  QualityMediumLodBias: 1
+  QualityMediumTextureMipLimit: 1
+  QualityHighShadowDistance: 70
+  QualityHighShadowCascades: 3
+  QualityHighMsaaSamples: 2
+  QualityHighLodBias: 1.5
+  QualityHighTextureMipLimit: 0
+  QualityHighestShadowDistance: 90
+  QualityHighestShadowCascades: 4
+  QualityHighestMsaaSamples: 1
+  QualityHighestLodBias: 2
+  QualityHighestTextureMipLimit: 0
+  FlashlightIntensity: 60
+  FlashlightRange: 40
+  FlashlightOuterSpotAngle: 70
+  FlashlightInnerSpotAngle: 25
+  FlashlightColor: {r: 1, g: 0.8784, b: 0.5804, a: 1}
+  FlashlightShadows: 0
+  FlashlightShadowStrength: 1
+  FlashlightUseCookie: 1
+  ViewModelSunFactor: 0.5
+  ViewModelLightFloor: 0.3
+  ViewModelLightPitch: 40
+  ViewModelLightYaw: 20
+  ViewModelLightFollowsSunColor: 1
+  ViewModelLightColor: {r: 1, g: 1, b: 1, a: 1}
+  ViewModelWorldLightsEnabled: 1
+  ViewModelWorldLightMaxDistance: 15
+  ViewModelWorldLightRescanSeconds: 0.5
+  SessionLogEnabled: 1
+  SessionLogPerfSampleSeconds: 5
+  SessionLogPerfWarmupSeconds: 2

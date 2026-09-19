@@ -179,3 +179,15 @@ future enemy-detection change · cleanup must know: the HQ flashlight wieldable 
 "HQFPS_Flashlight") is deliberately NOT in Tracey's holster and its FP FBX/materials were never migrated; shadows on the
 beam are OFF (GPU-bound frame, MRM-85), tunables still live on the Light component. Live F-key test is Carlos's.
 Handoff for the next session: Docs/mrm44-sonnet-prompt.txt.
+
+2026-09-19 · MRM-44 (second and third sessions: flashlight tuning + the hands' lighting; still NOT done: beam sway, visible
+breath, enemy detection) · flashlight numbers are now `Flashlight*` tunables with a Live tuning block; hands and weapons
+moved to a new URP rendering layer `ViewModel`, lit by their own directional light that follows the live sun (night floor),
+plus world lights within 15 m (periodic scan) · files: `Code/Runtime/Player/MoonlightViewModelLighting.cs` (new),
+`MoonlightFlashlight.cs`, `MoonlightTunables.cs` + asset, `Code/Runtime/DevTools/SessionLog.cs` (v4: flashlight / handLights
+in [PERF]; cross-issue MRM-85), `Prefabs/Player/Player_Tracey.prefab` (ViewModelLight child), `ProjectSettings/TagManager.asset`
+(rendering layer 1 renamed ViewModel), 21 HQ mask maps copied into `Assets/ThirdParty/AST-046` (git-ignored) and the two arm
+materials' `_SmoothnessIntensity` set to 0.25 (cross-issue MRM-9) · hooks added: `MoonlightViewModelLighting.WorldLightsOnHands`
+(read by SessionLog) · cleanup must know: read `Docs/lighting.md` and `Docs/viewmodel-light-layers.md` first; URP lighting reads
+`UniversalAdditionalLightData.renderingLayers` not `Light.renderingLayerMask`; three lighting tunables are unwired (listed in
+lighting.md section 4). Next: lighting rework, `Docs/lighting-rework-opus-prompt.txt`.

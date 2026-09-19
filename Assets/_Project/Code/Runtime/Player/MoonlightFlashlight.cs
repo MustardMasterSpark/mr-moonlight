@@ -1,3 +1,4 @@
+using MrMoonlight.Data;
 using MrMoonlight.Input;
 using UnityEngine;
 using UnityEngine.Events;
@@ -17,8 +18,11 @@ namespace MrMoonlight.Player
     ///
     /// <para>Drop it on a Spot Light that is a child of the player camera (or, later, the chest lamp
     /// model). It finds the player through <see cref="MoonlightPlayerRig"/> in a parent, so nothing
-    /// here is tied to the Island scene. Range, angle, intensity, cookie and shadows all live on the
-    /// <see cref="Light"/> itself while this is a prototype.</para>
+    /// here is tied to the Island scene. Range, angle, intensity, colour, shadows and the cookie
+    /// on/off switch are <c>Flashlight*</c> fields in <see cref="MoonlightTunables"/>, applied to the
+    /// <see cref="Light"/> at startup. For tuning, tick <c>Live tuning</c> in Play Mode and edit
+    /// the fields on this component; they are re-seeded from the tunables on every scene start,
+    /// so the sweet spot has to be copied back into the tunables by hand.</para>
     ///
     /// <para><b>Shadows are a GPU cost.</b> The frame is already GPU-bound with shadow-atlas
     /// warnings (MRM-85), so the beam ships with shadows off. Switch them on the Light and re-check
@@ -41,7 +45,41 @@ namespace MrMoonlight.Player
         [Tooltip("Raised with the new state every time the beam is switched.")]
         [SerializeField] private UnityEvent<bool> toggled = new UnityEvent<bool>();
 
+        [Header("Live tuning (Play Mode)")]
+        [Tooltip("Tick this in Play Mode, then edit the values below and watch the beam change. Un-ticked, "
+                 + "the beam follows MoonlightTunables. The values below are copied FROM the tunables every "
+                 + "time the scene starts, so anything typed here is scratch: Play Mode edits are discarded "
+                 + "on stop. Tell Claude the values you like and they get saved as the new defaults.")]
+        [SerializeField] private bool liveTuning;
+
+        [Tooltip("Brightness. Tunable: FlashlightIntensity.")]
+        [SerializeField, Min(0f)] private float intensity;
+
+        [Tooltip("Reach in metres. Tunable: FlashlightRange.")]
+        [SerializeField, Min(0.1f)] private float range;
+
+        [Tooltip("Full cone width in degrees. Tunable: FlashlightOuterSpotAngle.")]
+        [SerializeField, Range(1f, 179f)] private float outerSpotAngle;
+
+        [Tooltip("Full-strength core in degrees; fades to nothing at the outer angle. Tunable: "
+                 + "FlashlightInnerSpotAngle. Held at or below the outer angle.")]
+        [SerializeField, Range(0f, 179f)] private float innerSpotAngle;
+
+        [Tooltip("Beam colour. Tunable: FlashlightColor.")]
+        [SerializeField] private Color color = Color.white;
+
+        [Tooltip("None is free. Hard/Soft cost GPU time. Tunable: FlashlightShadows.")]
+        [SerializeField] private LightShadows shadows;
+
+        [Tooltip("Shadow darkness, 0-1. Tunable: FlashlightShadowStrength.")]
+        [SerializeField, Range(0f, 1f)] private float shadowStrength;
+
+        [Tooltip("Shape the beam with its dark-centred cookie ring, or leave it a plain cone. "
+                 + "Tunable: FlashlightUseCookie.")]
+        [SerializeField] private bool useCookie;
+
         private Light _beam;
+        private Texture _cookie;
         private InputAction _toggle;
 
         /// <summary>True while the beam is lit.</summary>
@@ -54,6 +92,12 @@ namespace MrMoonlight.Player
         {
             _beam = GetComponent<Light>();
             _beam.enabled = startOn;
+
+            // The cookie is authored on the Light; remember it so "use cookie" can be switched off and on.
+            _cookie = _beam.cookie;
+
+            LoadFromTunables();
+            Apply();
         }
 
         private void Start()
@@ -73,9 +117,57 @@ namespace MrMoonlight.Player
 
         private void Update()
         {
+            if (liveTuning)
+            {
+                Apply();
+            }
+
             if (_toggle != null && _toggle.WasPerformedThisFrame())
             {
                 SetOn(!IsOn);
+            }
+        }
+
+        /// <summary>Re-reads the tunables and applies them, e.g. after editing the asset during Play Mode.</summary>
+        [ContextMenu("Reload values from MoonlightTunables")]
+        private void ReloadFromTunables()
+        {
+            LoadFromTunables();
+            if (_beam != null)
+            {
+                Apply();
+            }
+        }
+
+        /// <summary>Copies every beam value from <see cref="Tunables"/> into the inspector fields.</summary>
+        private void LoadFromTunables()
+        {
+            MoonlightTunables t = Tunables.I;
+            intensity = t.FlashlightIntensity;
+            range = t.FlashlightRange;
+            outerSpotAngle = t.FlashlightOuterSpotAngle;
+            innerSpotAngle = t.FlashlightInnerSpotAngle;
+            color = t.FlashlightColor;
+            shadows = t.FlashlightShadows;
+            shadowStrength = t.FlashlightShadowStrength;
+            useCookie = t.FlashlightUseCookie;
+        }
+
+        /// <summary>Pushes the inspector fields onto the <see cref="Light"/>.</summary>
+        private void Apply()
+        {
+            _beam.intensity = intensity;
+            _beam.range = range;
+            _beam.spotAngle = outerSpotAngle;
+            _beam.innerSpotAngle = Mathf.Min(innerSpotAngle, outerSpotAngle);
+            _beam.color = color;
+            _beam.shadows = shadows;
+            _beam.shadowStrength = shadowStrength;
+
+            Texture wantedCookie = useCookie ? _cookie : null;
+            if (_beam.cookie != wantedCookie)
+            {
+                _beam.cookie = wantedCookie;
             }
         }
 

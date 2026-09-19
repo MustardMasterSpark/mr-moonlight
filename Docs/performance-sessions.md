@@ -10,6 +10,9 @@ optimisations stays in `Docs/performance-log.md`; this file is the per-*run* rec
 helps at any time, especially bug fixing and analysis (it already caught a per-kill runtime warning and
 will catch display-mode flicker). **Every change to the log system (new field, new line type, fixed bug,
 changed behaviour) MUST be recorded in the changelog in section 7 AND as a comment on MRM-85.**
+**Every *important change to the game* (anything that could plausibly change performance, behaviour or what the logs
+show) MUST be recorded in the change record in section 8 AND as a comment on MRM-85** - this is part of the "run the
+final instructions" routine (Carlos, 2026-09-19), so a regression can be traced back to the change that caused it.
 
 Linear: **MRM-85** "Performance reports" - https://linear.app/mrmoonlight/issue/MRM-85/performance-reports-running-log-of-build-play-sessions (a living log issue: never closed, one comment per session).
 
@@ -38,7 +41,7 @@ look at the logs"):
    issue. Update the "Open hypotheses" table in section 3.
 6. Never conclude from one run. Say what would falsify each hypothesis.
 
-## 2. What the log contains (SessionLog v3, see the changelog in section 7)
+## 2. What the log contains (SessionLog v4, see the changelog in section 7)
 
 Code: `Assets/_Project/Code/Runtime/DevTools/SessionLog.cs` (self-installing, always on, tunables
 `SessionLogPerfSampleSeconds` = 5 and `SessionLogPerfWarmupSeconds` = 2 in `MoonlightTunables`).
@@ -50,9 +53,10 @@ Frame Timing Stats is enabled in Player Settings (needed for the CPU/GPU columns
 | every Unity log line | prefixed `HH:mm:ss.fffZ t=<s> f=<frame> [<active scene>]` |
 | `[SCENE] ===== ACTIVE X =====` | scene switch; a `SUMMARY` for the scene just left precedes it |
 | `[SCENE] SUMMARY X` | time in scene, frames (first 2 s excluded), avg fps, 1% low, worst frame, enemies spawned/killed/alive/corpses, kills by weapon |
-| `[PERF] window` | every 5 s: avg/1% low/best fps, worst frame, CPU avg/max ms, GPU avg/max ms, draws / SetPass / triangles / batches, managed MB, player position, **biome** (dominant terrain layer), **weapon**, enemies alive by kind, corpses, spawned/killed this scene |
+| `[PERF] window` | every 5 s: avg/1% low/best fps, worst frame, CPU avg/max ms, GPU avg/max ms, draws / SetPass / triangles / batches, managed MB, player position, **biome** (dominant terrain layer), **weapon**, **`flashlight on/off handLights N`** (v4: flashlight state and how many world lights currently reach the player's hands), enemies alive by kind, corpses, spawned/killed this scene |
 | `[ENEMY] SPAWN` / `KILL` | one line each, with `scene=`, the live counts, and on kills `by=` and `weapon=` |
 | `[PLAYER] weapon -> X` | weapon switches |
+| `[PLAYER] flashlight -> on/off` | every flashlight switch (v4, MRM-44) |
 | `[APP]` | focus lost/regained (**fps while unfocused is not trustworthy**), quitting |
 
 Known limits: weapon-per-kill is "the weapon equipped at the moment of death" (fine for hitscan and
@@ -74,6 +78,8 @@ harmless (the weapon is not spawned yet).
 | H6 | Legion's +47% vegetation (8,786 vs 5,990) costs render time | **Weak signal.** Whole-scene averages equal (Island 73.5 fps / Legion 79.4). At rest in FlakTower Legion showed ~3x the draws (7-8k vs 2.2-2.5k) and ~1.5x tris at ~20% lower fps, but at a different spot | Same spot, no combat, both scenes (needs a fixed benchmark position) | open |
 | H7 | Corpses pile up **in front of the camera** (player fights from one spot) so every corpse is rendered with shadow passes and several materials | Consistent with the SetPass plateau ~50 kills, position nearly constant (222,107) / (380,172) | Set corpse renderers to no-shadow, or count visible renderers | open |
 | H8 | Each kill **builds convex hulls at runtime** for gore pieces ("Couldn't create a Convex Mesh ... 256 polygons" warning, 36x Island / 47x Legion per 100 kills) | Warning count ~ kill count, source mesh name empty | Find which GoreSimulator/ragdoll path builds them; pre-bake or skip colliders on gore pieces | open |
+| H9 | The **flashlight** (Spot, intensity 60, range 40, cookie, no shadows) plus lights on the hands costs GPU time, or its fog interaction does | None yet: added with MRM-44 (2026-09-18/19). One incidental Editor window pair (flashlight on 139.7 fps vs a slower loading window) is NOT comparable | Same spot, same scene, no combat: 30 s with the flashlight off, 30 s on; the `[PERF]` lines carry `flashlight on/off` since v4 | open |
+| H10 | The hands' **world-light scan** (`MoonlightViewModelLighting.ScanWorldLights`, `FindObjectsByType<Light>` every 0.5 s) or many Spotter lamps on the hands (soft-shadowed Point lights within 15 m) costs CPU/GPU | None yet. Expected small | Compare `[PERF]` at the same kill count with `ViewModelWorldLightsEnabled` off; watch `handLights` in the line for how many lights reach the hands | open |
 
 ## 4. Entry template
 
@@ -185,9 +191,31 @@ carries its own answer. For the final release build set `MoonlightTunables.Sessi
 | v1 | 2026-09-18 | 35 | First version. Every Unity log line copied to `session-*.log` with UTC time, frame and active scene; `[SCENE]` markers and per-scene summaries; 5 s `[PERF]` fps windows; `[ENEMY]` SPAWN/KILL with live counts; `[APP]` focus lines. Bugs: scene summaries lost their enemy counts, menu summary showed the next scene's enemies, first window included the load stall. |
 | v2 | 2026-09-18 | 36 | Added corpses, player position and biome (dominant terrain layer), equipped weapon, killer + weapon on kills, `[PLAYER]` weapon switches, draws/SetPass/triangles/batches, CPU/GPU frame time (Frame Timing Stats turned on in Player Settings), managed memory; per-scene enemy stats keyed by scene handle (fixes v1 bugs); 2 s scene warm-up excluded (`SessionLogPerfWarmupSeconds`); `EnemyIdentity.AnySpawned/AnyDespawned` hooks; kills-by-weapon in scene summaries. |
 | v3 | 2026-09-18 | not in a build yet | `[APP] display changed` lines (resolution / fullscreen-mode switches, to catch window flicker); logger self-cost on every `[PERF]` line; `SessionLogEnabled` master switch in `MoonlightTunables`. |
+| v4 | 2026-09-19 | not in a build yet | `[PLAYER] flashlight -> on/off` lines and `flashlight on/off handLights N` at the end of every `[PERF]` window (state of the player's flashlight and how many world lights currently reach the hands), so a performance window can be read against the light state (H9, H10). Code: `SessionLog.TryResolveLighting`, `MoonlightViewModelLighting.WorldLightsOnHands`. Change C-001 in section 8. |
 
 Ideas not done yet: particle-system and decal counts per kill, active/visible renderer counts, a physics
 step time, a fixed stand-still benchmark trigger, log rotation (old files pile up in `Logs/`).
+
+## 8. Change record — important changes to the game, so problems can be traced back
+
+Started 2026-09-19 (Carlos: *"a record of every time we introduce new changes, so we can refer back to them when we
+implement the log system"* / trace down problems). **One row per important change, added by the "run the final
+instructions" routine** (`CLAUDE.md` §"Run the final instructions", step 4). It is the bridge between a log line and
+the change that may explain it: find the date of the odd behaviour in a session log (`session-<timestamp>.log`), then
+read this table to see what changed just before.
+
+Columns: **ID** (C-nnn, never reused) | **Date** | **Branch / commit** | **What changed** | **What it could show up as in the logs** | **Read more** | **Linear**.
+The commit hash is filled in **after Carlos commits** (he uses GitHub Desktop): tell Claude the hash and it gets added; until
+then the row says `pending` plus the suggested commit message file. To find the commit of any file later:
+`git log --oneline -- <path>`.
+
+| ID | Date | Branch / commit | What changed | Could show up in the logs as | Read more | Linear |
+|---|---|---|---|---|---|---|
+| C-001 | 2026-09-18 / 19 | `mrm-44`, commit **pending** (message: `Docs/mrm44-commit-message.txt`) | **Flashlight and player lighting (MRM-44).** New flashlight Spot Light on F (intensity 60, range 40, cookie, shadows off) with tunables + live tuning. First-person hands and weapons moved to a URP `ViewModel` rendering layer; a dedicated directional light follows the live sun (floor at night); world lights within 15 m (lamps, flares, fires) also light the hands via a 0.5 s scan (`FindObjectsByType<Light>`). 21 HQ mask maps restored (guns PBR), arm materials matte. SessionLog v4. Docs unified into `lighting.md` | Extra realtime lights (flashlight + hands' light) in `draws`/GPU time; flashlight-on windows (`flashlight on`); a 0.5 s CPU spike pattern if the scan is costly (H10); `handLights N` rising near Spotter lamps; 18 extra small textures in memory (`managed` MB barely moves) | `Docs/lighting.md`, `Docs/viewmodel-light-layers.md`, `changelog.md` (MRM-44 entries) | MRM-44 (main record), MRM-85 (this record), MRM-9 (hand/weapon materials, cross-issue), MRM-67 (fog + flashlight look). Comments posted 2026-09-19 |
+
+**How to fill a row:** ID, date, branch and hash, one paragraph of *what actually changed*, the specific log lines,
+fields or hypotheses it could explain (name the `Hn` rows in section 3), and links to the docs and Linear comments. Keep
+it factual; interpretation goes in the session entries (section 5).
 
 ---
 

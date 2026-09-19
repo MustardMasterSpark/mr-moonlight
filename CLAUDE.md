@@ -27,6 +27,9 @@ resolution, HUD layout, menus — targets **1920×1080**.
 2. `Docs/pc-build-target.md` — read before writing code (replaces `webgl-constraints.md`)
 3. `Docs/unity-conventions.md` and `Docs/csharp-conventions.md`
 4. `Docs/glossary.md` — canonical names (Tracey, Pickaxe, Furman)
+5. `Docs/lighting.md` — **anything that is a light or decides how light looks**: sun / day-night,
+   fog, sky, the flashlight, the hands' lighting, enemy lamps, flares, Light Layers, every lighting
+   tunable. The single place for lighting; update it whenever you touch a light (added 2026-09-19)
 
 ## Making a 3D asset — fire the wizard
 Any prop, character, or weapon work: **`/prop`**, or read
@@ -117,8 +120,8 @@ summary of what changed and a suggested commit message instead.
 ### "Run the final instructions" — Carlos's end-of-session trigger phrase
 
 When Carlos says **"run the final instructions"** (or close enough — "wrap up," "final steps," this
-exact phrase said in past sessions), it means all three of the following, every time, without
-re-asking what he means:
+exact phrase said in past sessions), it means all four of the following, every time, without
+re-asking what he means (step 4 added 2026-09-19):
 
 1. **Commit message.** Summary + description for the current issue branch, in the repo's usual
    style, ending with the required attribution footer (see this session's system instructions for
@@ -133,6 +136,17 @@ re-asking what he means:
    in this section — what's done, what's next, traps found. This step and step 2 overlap in
    research but not in audience: the doc/Linear updates are the permanent record, this file is the
    "read me first, cold" pointer for whoever picks the branch back up.
+4. **Change trace.** Running the final instructions means an important change was made, so record it
+   where problems can be traced back to it (Carlos, 2026-09-19: "a record of every time we introduce
+   new changes... to expand our ability to trace down problems and look at log information"):
+   - add a row (`C-nnn`, never reused) to the **change record, `Docs/performance-sessions.md` §8**: date,
+     branch and commit (`pending` + the commit-message file until Carlos commits and tells you the hash,
+     then fill it in), what actually changed, **what it could show up as in the session logs**, links to
+     the docs, and the Linear issues;
+   - post the same record as a comment on **Linear MRM-85** ("Performance reports");
+   - if the change touches the log system itself, also add the §7 changelog row (existing rule);
+   - if it touches anything light-related, update `Docs/lighting.md` too (its §8 change history).
+   Keep it as simple as it can be while still traceable: date, what, where, which log lines.
 
-Do all three before reporting back — this phrase is the signal that the session is wrapping, not a
-request to ask which of the three he wants.
+Do all four before reporting back — this phrase is the signal that the session is wrapping, not a
+request to ask which of the four he wants.

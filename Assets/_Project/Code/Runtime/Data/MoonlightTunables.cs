@@ -1027,6 +1027,59 @@ namespace MrMoonlight.Data
         /// <summary>See <see cref="QualityMinimalTextureMipLimit"/>.</summary>
         public int QualityHighestTextureMipLimit = 0;
 
+        [Header("Flashlight — MRM-44 (2026-09-18)")]
+        /// <summary>Brightness of the flashlight beam (URP Spot Light intensity). Applied by <see cref="Player.MoonlightFlashlight"/>. Raise it first if the beam reads dim; it is what the scene's darkness is measured against. Owner: MRM-44</summary>
+        public float FlashlightIntensity = 60f;
+
+        /// <summary>How far the beam reaches, in metres. URP fades the beam smoothly to zero at this distance, so a longer range also brightens the far end. Owner: MRM-44</summary>
+        public float FlashlightRange = 40f;
+
+        /// <summary>Full width of the beam's cone, in degrees (the Light's outer spot angle). This is the "how big is the cone" knob. Owner: MRM-44</summary>
+        public float FlashlightOuterSpotAngle = 70f;
+
+        /// <summary>Angle, in degrees, inside which the beam is at full strength; between this and <see cref="FlashlightOuterSpotAngle"/> it fades out. Equal to the outer angle gives a hard edge, a small value gives a soft, spotty centre. Clamped to the outer angle at runtime. Owner: MRM-44</summary>
+        public float FlashlightInnerSpotAngle = 25f;
+
+        /// <summary>Colour of the beam. Default is a warm amber, hex FFE094 (Carlos, tuned live 2026-09-18). Owner: MRM-44</summary>
+        public Color FlashlightColor = new Color(1f, 0.8784f, 0.5804f, 1f);
+
+        /// <summary>Whether the beam casts shadows, and how. None is free; Hard/Soft cost GPU time and the frame is already GPU-bound (shadow-atlas warnings, MRM-85), so measure with a build before shipping anything but None. Owner: MRM-44</summary>
+        public LightShadows FlashlightShadows = LightShadows.None;
+
+        /// <summary>How dark the beam's shadows are, 0-1. Only matters when <see cref="FlashlightShadows"/> is not None. Owner: MRM-44</summary>
+        public float FlashlightShadowStrength = 1f;
+
+        /// <summary>Whether the beam is shaped by its cookie texture (the dark-centred ring from the HQ FPS flashlight). The cookie multiplies the light down and only fills part of the cone, so switching it off gives a brighter, plainer, larger-looking beam. Owner: MRM-44</summary>
+        public bool FlashlightUseCookie = true;
+
+        [Header("View-model lighting — MRM-44 (2026-09-18, see Docs/viewmodel-light-layers.md)")]
+        /// <summary>How much of the world sun's intensity the hands' own light copies, 0-1+. The hands get a dedicated directional light (they no longer receive the world sun, which had no tree shadows on them and blew them out). Its brightness follows the sun every frame, so it tracks any time of day AND any gradual sun change. Applied by <see cref="Player.MoonlightViewModelLighting"/>. Owner: MRM-44</summary>
+        public float ViewModelSunFactor = 0.5f;
+
+        /// <summary>Minimum brightness of the hands' light, so they are never black at night when the sun's intensity is near zero. The night look of the hands is this number. Owner: MRM-44</summary>
+        public float ViewModelLightFloor = 0.3f;
+
+        /// <summary>Pitch, in degrees, of the hands' light relative to the camera: 0 shines straight ahead, 90 straight down. The light is a child of the camera, so it always lights the hands from the same side however the player turns. Owner: MRM-44</summary>
+        public float ViewModelLightPitch = 40f;
+
+        /// <summary>Yaw, in degrees, of the hands' light relative to the camera: positive turns it to the player's right, so the light comes from the left. Owner: MRM-44</summary>
+        public float ViewModelLightYaw = 20f;
+
+        /// <summary>When true the hands' light takes the world sun's colour every frame (warm at dusk, cold moonlight at night, whatever the day cycle does). When false it uses <see cref="ViewModelLightColor"/>. Owner: MRM-44</summary>
+        public bool ViewModelLightFollowsSunColor = true;
+
+        /// <summary>Fixed colour of the hands' light, used only while <see cref="ViewModelLightFollowsSunColor"/> is off. Owner: MRM-44</summary>
+        public Color ViewModelLightColor = Color.white;
+
+        /// <summary>Whether lights other than the sun and the player's own (Spotter lamps, dropped lamps, flares, fires, enemy muzzle flashes) also light the player's hands and weapons. The player's own lights (flashlight, personal light) never do. Owner: MRM-44</summary>
+        public bool ViewModelWorldLightsEnabled = true;
+
+        /// <summary>A world light only lights the hands while it is within this many metres of the player. Keeps the cost bounded with many enemies around, and stops a far lamp lighting the hands through cover when that lamp casts no shadows. Owner: MRM-44</summary>
+        public float ViewModelWorldLightMaxDistance = 15f;
+
+        /// <summary>Seconds between scans that decide which world lights reach the hands. Lights spawn at runtime (dropped lamps, flares), so this is a periodic rescan, not a one-time setup. Owner: MRM-44</summary>
+        public float ViewModelWorldLightRescanSeconds = 0.5f;
+
         [Header("Session log — perf test tagging by scene (MRM-84, 2026-09-18)")]
         /// <summary>Master switch for SessionLog (the build's timestamped, scene-tagged session log). On during development; switch off for the final release build. Read once at startup, so it needs a restart. Owner: MRM-84</summary>
         public bool SessionLogEnabled = true;

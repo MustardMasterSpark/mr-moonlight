@@ -1,0 +1,59 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-44: Flashlight tuning, hands lit on their own ViewModel light layer, session log v4
+
+
+DESCRIPTION (the body field)
+============================
+
+Second commit on mrm-44 (the first, 777b0ce, added the F-key flashlight). This one tunes the beam, fixes the
+first-person hands and weapons being blown out or black under the new lights, and adds the traceability and
+docs Carlos asked for.
+
+WHAT'S NEW
+
+- Flashlight beam is now tunable: Flashlight* fields in MoonlightTunables, applied by MoonlightFlashlight, with a
+  Live tuning block on the component for tweaking in Play Mode. Carlos's tuned defaults are saved: intensity 60,
+  range 40, outer 70, inner 25, colour #FFE094, shadows none, cookie on. New FlashlightUseCookie switch.
+- Hands and weapons no longer get blown out. New URP rendering layer "ViewModel" (TagManager). New
+  MoonlightViewModelLighting on the player camera puts every mesh under it on that layer only, so the flashlight,
+  the personal light and the world sun no longer touch them. The hands get one dedicated directional light
+  (ViewModelLight) that follows the LIVE sun every frame, with a night floor so they are never black. Direction,
+  colour, day factor and night floor are ViewModel* tunables with live tuning on the Camera.
+- Other world lights (Spotter and dropped lamps, flares, fires, muzzle flashes) DO light the hands within 15 m,
+  via a 0.5 s scan. The player's own flashlight and personal light never do.
+- Guns are PBR again, hands matte: the HQ hand/weapon materials had lost their mask maps in migration and rendered
+  as chrome. 21 mask maps restored; arm materials smoothness 0.25. (Assets/ThirdParty is git-ignored: these do not
+  appear in this commit.)
+- SessionLog v4: [PLAYER] flashlight -> on/off lines and "flashlight on|off handLights N" on every [PERF] line.
+- Docs: new Docs/lighting.md (single reference for every light, the day/night system, fog, lamps, tunables and
+  traps), new Docs/viewmodel-light-layers.md (deep dive), change record C-001 in Docs/performance-sessions.md
+  section 8, CLAUDE.md final-instructions step 4 (change trace) and a lighting.md pointer.
+
+WHAT'S DELIBERATELY NOT HERE
+
+- No time-of-day baselines or dynamic sun: that is the next session (rework of TimeManager, fog and skyboxes).
+- No beam sway, visible breath or enemy detection change (still open in MRM-44).
+- The hands' light numbers are guesses; Carlos tunes them live and reports the values.
+
+CHECK BEFORE COMMITTING
+
+- Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset shows as modified and is NOT from this work (exclude or
+  discard it).
+- Nothing in this commit was verified in a build, only in Editor Play Mode (layer/intensity readbacks and
+  screenshots). Ask Claude to log the perf check ("I'm going to play a build, check the performance"); H9 and H10 in
+  performance-sessions.md are waiting on it.
+
+FILES (code / data)
+
+- Code/Runtime/Player/MoonlightFlashlight.cs (tunables + live tuning)
+- Code/Runtime/Player/MoonlightViewModelLighting.cs (+ .meta) (new)
+- Code/Runtime/Data/MoonlightTunables.cs, Data/Resources/MoonlightTunables.asset
+- Code/Runtime/DevTools/SessionLog.cs (v4)
+- Prefabs/Player/Player_Tracey.prefab (ViewModelLight child + component)
+- ProjectSettings/TagManager.asset (rendering layer renamed ViewModel)
+
+Full record: Docs/lighting.md, Docs/viewmodel-light-layers.md, Docs/changelog.md, Docs/performance-sessions.md (C-001).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

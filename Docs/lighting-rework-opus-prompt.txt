@@ -1,0 +1,103 @@
+Context prompt: LIGHTING REWORK (Opus suggested). Read this cold; don't rely on chat scrollback.
+
+WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions). Branch when written: `mrm-44`
+(commit pending; message in Docs/mrm44-commit-message.txt). The rework probably deserves its own issue and branch:
+ASK Carlos whether to create a Linear issue (suggested title "Lighting system rework: TimeManager, fog, skyboxes")
+before touching code. Do NOT auto-start on reading this file; wait for Carlos's go-ahead
+(memory: don't-auto-start-on-kickoff).
+
+MODEL: Opus. This is designing a system (a dynamic time-of-day + fog + skybox + light-source model), not tuning.
+
+READ FIRST, IN THIS ORDER
+1. Docs/lighting.md  <- THE single reference: every light, the presets, HAZE, Light Layers, all lighting tunables,
+   all traps, what is unwired. Written for exactly this session.
+2. Docs/viewmodel-light-layers.md (how the hands are lit; the part you must not break).
+3. Docs/pc-build-target.md section HAZE (fog parameters).
+4. CLAUDE.md (esp. "Run the final instructions": four steps now, step 4 = change trace in
+   Docs/performance-sessions.md section 8 + MRM-85).
+
+===========================================================================
+1. WHAT CARLOS WANTS (his words, 2026-09-19)
+===========================================================================
+"In the next session we are going to be adjusting the lights of the game. I want to rework the current implementation of
+the time manager, which also includes the fog system, and I also want to change the skyboxes. We are going to rework the
+current implementation of the light of the day a little bit and join it with what we have done here today with their lamp
+and the other light sources."
+- Set up PREDEFINED VALUES / a baseline for each time of day (night, day, dusk...): "like a baseline for the night, the
+  day, etc." Today there are 4 fixed presets (Morning, Sunset, Night, Apocalypse) with only the sun and skybox in them.
+- The FULL GAME'S SUN IS DYNAMIC: it changes gradually and continuously; presets are only a stopgap. "Lights are going to
+  be dynamic. We're not going to just select them." Whatever you build must survive that.
+- When the lighting changes, how the hands are lit changes with it (already true: see below).
+- Night hands: he asked for them to be "bumped up" at night (floor 0.3 today, a guess). Extreme values he tried looked
+  interesting for a future DRUG SYSTEM (status effects driving light values): keep the tunables drivable from code.
+- The hands will later be replaced by Tracey's own model; keep the hands' lighting model-agnostic.
+
+===========================================================================
+2. STATE OF PLAY (verified 2026-09-19)
+===========================================================================
+- World: one Directional light SUN (RenderSettings.sun = SUN in Island / Island_Legion), SunController applies a
+  SunState, TimeManager lerps the sun between presets over N seconds but swaps the skybox INSTANTLY, SkyboxSwitcher,
+  HAZE fog driven separately (F6 toggle, SceneEffectsToggle; two fog sources: global Volume + HazeDensityVolume boxes),
+  IslandStartupPreset (demo-only, random Morning+fog / Night+no fog), F8 cycles presets. Presets table with numbers is
+  in Docs/lighting.md 1.1. Night sun intensity is 0.12, so anything proportional to it is near zero at night.
+- Player: flashlight (Spot, 60 / 40 m / 70 deg, no shadows, cookie), PlayerAmbientLight (scene-level only, 0.34 / 6 m),
+  the hands' directional light `ViewModelLight` following the LIVE sun (`max(ViewModelLightFloor 0.3, sun * 0.5)`), all
+  in `MoonlightViewModelLighting` on Player_Tracey/Body/Head/Camera. World lights within 15 m (Spotter/dropped lamps,
+  flares, fires) also light the hands via a 0.5 s scan.
+- The hands' light reads `RenderSettings.sun.intensity/.color` every frame, never a preset: a continuous day cycle
+  needs no change to it, as long as RenderSettings.sun stays pointing at the real sun. If you replace or move the sun
+  system, keep that contract (or update MoonlightViewModelLighting.FindSun).
+- Session log v4 records `flashlight on|off handLights N` on every [PERF] line (Docs/performance-sessions.md).
+
+===========================================================================
+3. TRAPS ALREADY FOUND (details in Docs/lighting.md section 5)
+===========================================================================
+- URP lighting uses UniversalAdditionalLightData.renderingLayers, NOT Light.renderingLayerMask. Verify light changes in
+  BOTH directions (not lit by X AND still lit by what should light it).
+- Keep RenderSettings.sun set, or the hands' light (brighter than the sun at night) becomes URP's main light and the sun
+  loses its shadows.
+- HAZE needs camera post-processing ON; fog has two independent sources; HAZE lights the fog from punctual lights only
+  because the renderer is Forward+. Thick fog under a bright sky reads as white haze (placeholder values, not art).
+- Skybox swaps are instant by design (MRM-47): a continuous cycle needs a blend approach (custom skybox blend shader, or
+  two-layer) decided WITH Carlos before building.
+- THREE TUNABLES ARE UNWIRED (`SpotterLampIntensity/Range`, `PlayerAmbientLightIntensity/Range`, `MineMaxRealtimeLights`);
+  the real values sit on the prefab / scene object. Wire or delete them as part of this work.
+- PlayerAmbientLight exists only in Island and Island_Legion scenes (not in the prefab, not in Sandbox).
+- HAZE / Retro Shaders / the 21 HQ mask maps are in git-ignored Assets/ThirdParty.
+- The flashlight looks like a flat milky disc under HAZE fog (logged on MRM-67). A plain Spot Light may need the
+  Volumetric Light Beam asset (installer unextracted) or fog tuning: decide with Carlos.
+- Editor screenshots are unreliable (1-30 fps unfocused, intro cinematic hides the hands ~10 s). Verify by reading
+  values/layers back; real judgement needs a build (memory: verification_requires_a_build). Never Thread.Sleep in
+  UnityMCP execute_code.
+- Play Mode component edits are discarded on stop; live tuning has a block on the component, values then get saved into
+  the tunables when Carlos reports them.
+
+===========================================================================
+4. HOW CARLOS WANTS THE SESSION RUN
+===========================================================================
+- Tell him your APPROACH before building (he asked for this every time): a few lines, a recommendation, wait for yes.
+- He is OK with the Unity MCP bridge for scene/prefab work but CLAUDE.md says ask first: do that, then read every change
+  back.
+- Every value that will be tuned gets a MoonlightTunables entry AND a live-tuning block on a component he can edit in the
+  Inspector during Play Mode (the flashlight and MoonlightViewModelLighting are the pattern).
+- Keep ONE lighting doc: update Docs/lighting.md (including section 8 history) as you go, not at the end.
+- Ends with "run the final instructions" (4 steps), including the change record C-002 in performance-sessions.md.
+- Performance: the frame is GPU-bound (MRM-85). Any new shadow-casting or extra realtime light is a measured decision:
+  ask Carlos to play a build ("check the performance"); open hypotheses H9 (flashlight cost) and H10 (hands' world-light
+  scan cost) are waiting for exactly that.
+- Suggest a fresh session again at the next clean stopping point.
+
+===========================================================================
+5. OPEN QUESTIONS TO PUT TO CARLOS FIRST
+===========================================================================
+1. New Linear issue and branch for this? (Yes is recommended: it is bigger than MRM-44.)
+2. Skybox blending for a continuous day: acceptable to build a blend (shader or two-dome cross-fade), or keep instant
+   swaps hidden behind story beats and only make the SUN continuous?
+3. Is "time of day" a single 0-24 h value driving sun, sky, fog, ambient and hand light from curves/gradients? (Recommended
+   shape: one authoritative time value plus authored baselines per period that the curves blend between.)
+4. Which fog system stays: HAZE global Volume + density boxes, driven by the same time value?
+5. Who owns the night look of the hands: keep `ViewModelLightFloor`, or a per-period value from the baselines?
+
+Done means: baselines per time of day exist as data, the sun/sky/fog/ambient/hands' light all follow one time value,
+nothing in the hands' code reads a preset, the three unwired tunables are wired or gone, Docs/lighting.md is current, and
+Carlos has judged it in a build.

@@ -145,6 +145,8 @@ never load at all.)
 
 ### HAZE
 
+> Lighting overall (sun, presets, the flashlight, lamps, Light Layers): **`Docs/lighting.md`**.
+
 `HazeRendererFeature` on `PC_Renderer`. Global fog Volume (`VP_HazeGlobalFog`) + a
 `HazeDensityVolume` box covering the playable slice (X 650–1700, Y 20–200, Z 3800–5900).
 

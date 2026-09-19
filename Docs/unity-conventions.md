@@ -219,6 +219,18 @@ Three scenes only:
 
 ---
 
+## Lights and Light Layers
+
+URP **Light Layers** are in use (first added 2026-09-18, MRM-44). A light only affects a mesh when their layers share a
+bit. The player's hands and weapons are on the **`ViewModel`** rendering layer *only*, so lights left on `Default`
+(flashlight, personal light, **the sun**, enemy lamps, any light you drop into a scene) do not touch them. The hands get
+one dedicated directional light that **follows the live sun every frame** (never a preset: the full game's sun will move
+continuously). Set a light's layers on **`UniversalAdditionalLightData.renderingLayers`**, not `Light.renderingLayerMask`
+(URP ignores that one). Applied by rule by `MoonlightViewModelLighting` on the player camera, so scenes need no setup.
+**Read `Docs/lighting.md` (the single lighting reference) and `Docs/viewmodel-light-layers.md` before adding a light, a first-person mesh, or changing how the sun works.**
+
+---
+
 ## Physics and colliders
 
 - **Player:** capsule collider, slope limit set from tunables.

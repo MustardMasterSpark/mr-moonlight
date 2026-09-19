@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Text;
 using MrMoonlight.Data;
 using MrMoonlight.Enemies;
+using MrMoonlight.Player;
 using PolymindGames.WieldableSystem;
 using Unity.Profiling;
 using UnityEngine;
@@ -90,6 +91,8 @@ namespace MrMoonlight.DevTools
         private readonly Dictionary<int, SceneStats> _sceneStats = new Dictionary<int, SceneStats>();
 
         private WieldablesController _wieldables;
+        private MoonlightFlashlight _flashlight;
+        private MoonlightViewModelLighting _viewModelLighting;
 
         // Self-measured cost of this logger (its own Update work and the periodic window write), so
         // "does logging hurt fps?" is answered by the log itself.
@@ -264,8 +267,44 @@ namespace MrMoonlight.DevTools
             return true;
         }
 
+        /// <summary>
+        /// Finds the player's flashlight and hands' lighting the same lazy way as the wieldables, and logs every
+        /// flashlight switch as a <c>[PLAYER] flashlight -> on/off</c> line (SessionLog v4, MRM-44), so a perf
+        /// window can be read against the light state.
+        /// </summary>
+        private void TryResolveLighting()
+        {
+            if (_flashlight == null)
+            {
+                _flashlight = FindAnyObjectByType<MoonlightFlashlight>();
+                if (_flashlight != null)
+                    _flashlight.Toggled.AddListener(OnFlashlightToggled);
+            }
+
+            if (_viewModelLighting == null)
+                _viewModelLighting = FindAnyObjectByType<MoonlightViewModelLighting>();
+        }
+
+        private void OnFlashlightToggled(bool on)
+        {
+            PublishClock();
+            Debug.Log($"[PLAYER] flashlight -> {(on ? "on" : "off")}");
+        }
+
+        private string LightingState()
+        {
+            string flash = _flashlight == null ? Unknown : (_flashlight.IsOn ? "on" : "off");
+            string hands = _viewModelLighting == null ? Unknown : _viewModelLighting.WorldLightsOnHands.ToString();
+            return $"flashlight {flash} handLights {hands}";
+        }
+
         private void UnsubscribeWieldables()
         {
+            if (_flashlight != null)
+                _flashlight.Toggled.RemoveListener(OnFlashlightToggled);
+            _flashlight = null;
+            _viewModelLighting = null;
+
             if (_wieldables != null)
                 _wieldables.EquippingStopped -= OnWeaponEquipped;
             _wieldables = null;
@@ -526,10 +565,11 @@ namespace MrMoonlight.DevTools
             double lastWriteMs = _lastWindowWriteTicks * 1e3 / Stopwatch.Frequency;
 
             TryResolveWieldables();
+            TryResolveLighting();
             Debug.Log(
                 $"[PERF] {label}: {count} frames over {sum:0.0}s | avg {1.0 / avgDt:0.0} fps ({avgDt * 1000.0:0.00} ms) | " +
                 $"1% low {1f / p99:0.0} fps ({p99 * 1000f:0.00} ms) | best {1f / best:0.0} fps | worst frame {worst * 1000f:0.0} ms | " +
-                $"{timing} | {render} | managed {gcMb} MB | {PositionAndBiome()} | weapon {WeaponName()} | enemies {EnemyCounts(_activeSceneHandle)} | logger cost {logUsPerFrame:0.0} us/frame, last window write {lastWriteMs:0.00} ms");
+                $"{timing} | {render} | managed {gcMb} MB | {PositionAndBiome()} | weapon {WeaponName()} | {LightingState()} | enemies {EnemyCounts(_activeSceneHandle)} | logger cost {logUsPerFrame:0.0} us/frame, last window write {lastWriteMs:0.00} ms");
 
             _lastWindowWriteTicks = Stopwatch.GetTimestamp() - writeStart;
             _windowStartIndex = _sceneFrameTimes.Count;
