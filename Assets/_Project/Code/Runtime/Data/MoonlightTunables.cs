@@ -1026,5 +1026,15 @@ namespace MrMoonlight.Data
         public float QualityHighestLodBias = 2.0f;
         /// <summary>See <see cref="QualityMinimalTextureMipLimit"/>.</summary>
         public int QualityHighestTextureMipLimit = 0;
+
+        [Header("Session log — perf test tagging by scene (MRM-84, 2026-09-18)")]
+        /// <summary>Master switch for SessionLog (the build's timestamped, scene-tagged session log). On during development; switch off for the final release build. Read once at startup, so it needs a restart. Owner: MRM-84</summary>
+        public bool SessionLogEnabled = true;
+
+        /// <summary>Seconds between the [PERF] lines SessionLog writes (avg/min/max FPS and frame time over the window, tagged with the current scene). 0 turns the perf lines off; the scene markers and per-line scene tags stay on. Owner: MRM-84</summary>
+        public float SessionLogPerfSampleSeconds = 5f;
+
+        /// <summary>Seconds after a scene becomes active that SessionLog leaves out of its fps/frame-time stats, so the scene-load hitch does not pollute the first window or the scene summary. Owner: MRM-84</summary>
+        public float SessionLogPerfWarmupSeconds = 2f;
     }
 }

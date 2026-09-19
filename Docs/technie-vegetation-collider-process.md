@@ -518,3 +518,61 @@ wrapping empty space next to the trunk. That is where the rebuild started.
 - `AP_ENV_tree_SaGeeSukRim` — done. Two branch tips looked uncovered on first review; a visual-only
   artifact of the gizmo overlay being hard to see through the active Mesh Renderer.
 - `AP_AlaskaCedar_001_2` — done: one painted `log` hull (392 of 963 tris) -> 18 ring-based hulls.
+
+---
+
+## Legion island scene (2026-09-18, second half of the MRM-84 session)
+
+The 109 wood-collider prefabs now have a real home: **`Assets/_Project/Scenes/Island_Legion.unity`**, a copy of
+`Island.unity` whose Gaia vegetation was stripped and respawned with them. The original Island and its
+live prefabs are untouched by design (Single -> `Island`, Legion -> `Island_Legion` from the main menu).
+
+- **Strip:** every child of `<Terrain>/Gaia Game Object Spawns/` deleted (94 species groups, 5,990
+  instances). Nothing else in the scene was removed. Grass and flowers are terrain **detail layers on the
+  shared terrain data** (72 layers), not Gaia rules, so both islands share them.
+- **Repoint:** the copy's spawner rules are scene-local, so all 174 GameObject rules were pointed by
+  prefab name at `AST116_ColliderTest/<name>.prefab` (RF_* would map to `.../RetroRealism/`, none are in the
+  rules). 174/174 had a copy. The 9 terrain-texture rules (biome masks) were left as they were.
+- **Respawn:** masks forced `m_active = true`, then `Spawner.AreaSpawn` per biome in the documented order
+  (Fountain, HereticForest, EerieForest, FlakTower, Beach, AutumnForest, Forest, Mountain, Glade) with a
+  manual `while (coro.MoveNext())` drain. Result **8,786 instances, all carrying `Visual/WoodCollider`**.
+- **Why 8,786 and not the original 5,990:** Gaia's Replace mode means that when several biomes share a
+  species only the LAST spawner run keeps it. The original island ended up with few of the shared species
+  (its run order had Fountain/FlakTower/Autumn after Forest); the documented order keeps Forest's bushes,
+  conifers and broken logs. Carlos looked at it and preferred the denser result (kept). Running Forest,
+  Autumn, Eerie, Heretic, Beach, Mountain, Glade, FlakTower, Fountain gives ~6,050 and reproduces the
+  original species mix. Gaia's seed is deterministic per order.
+- **`AP_Tree_Dry_N02`** is still excluded from the Eerie and Beach rules as in the original (it now has a
+  collider; Carlos has not asked for it to be added back).
+- **NavMesh:** rebaked into its own asset `Assets/_Project/Scenes/Island_Legion/NavMesh-Island_Legion.asset`
+  (the surface's `navMeshData` was set to null first so `NavMesh-Island.asset` could not be overwritten).
+  90,605 triangles vs 75,671. Connectivity was not checked.
+- **Menu:** see `Docs/mrm18-main-menu-build-summary.md` (Legion button, `Island_Legion` in Build Settings).
+- **Performance:** measured in builds 35 and 36, see `Docs/performance-sessions.md`. Legion is not
+  measurably worse than Island overall; both slow down with kills (corpses), not with wood colliders.
+
+**MRM-84 status at the end of this session:** collider work and the Legion scene are done and Carlos's live
+checks were positive. Still open, none blocking the merge: the formal Technie **verdict** for the Linear
+"Done when" and the asset spreadsheet row (AST-116) — proposed verdict: *adopt Technie's paint/Convex-Hull
+component as the authoring UI only; the collider itself is baked by our `WoodColliderTool` into one
+non-convex MeshCollider; Technie's Auto/VHACD hulls rejected (too loose or too heavy)*; the stale Technie
+hull meshes (see the correction below); the LOD experiment (parked, Carlos: "later").
+
+### Correction + close-out (2026-09-18, later)
+
+- **Verdict (Carlos): KEEP Technie.** It stays as the paint brush for choosing which triangles are wood; the
+  collider itself is baked by `WoodColliderTool`. Expect more assets than these trees to get the same treatment.
+- **"Stale hulls" was overstated. Measured:** `AST116_ColliderTest/Physics Hulls/` holds 114 `Visual N Hull Data`
+  assets (**1.0 MB total**, each a small mesh such as 27 verts, referenced by no prefab collider) and 114
+  `Visual N Painting Data` assets (**51.6 MB, Carlos's paint, MUST BE KEPT**: `WoodColliderTool` reads them, and
+  a repaint or re-run needs them). The 73 MB figure earlier in this section was the whole test folder, not
+  stale data. Unreferenced assets are not included in a build, so the old hull meshes only add ~1 MB of repo
+  clutter. Cleanup is optional and low value: if ever done, remove only the `Hull Data` assets' old meshes,
+  never `Painting Data`.
+- **Reusing the workflow for another asset (recipe):** (1) copy the prefab into a test folder and paint the wood
+  in Technie's Convex Hull component (one hull, wood only); (2) `WoodColliderTool.Run(new[]{"<prefab>"}, dryRun:true)`
+  then real, then `RayTest`; (3) look at the generated `<prefab>_wood.png`; (4) log it in the tracker; (5) if
+  the prefab has a LODGroup keep LOD 0 untouched (paint and wood mesh are indexed by triangle number).
+  **Known limit:** the tool's folder is a compile-time constant (`WoodColliderTool.PrefabFolder` =
+  `.../AST116_ColliderTest/`), so a new asset outside that folder needs either its prefab copied there or a
+  small refactor that makes the folder a parameter. Do that refactor with the first non-vegetation asset.

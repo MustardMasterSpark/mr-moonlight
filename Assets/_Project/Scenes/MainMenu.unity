@@ -1885,7 +1885,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gutenberg Textura - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -3645,7 +3645,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -4715,7 +4715,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -5585,7 +5585,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Noto Serif - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -12076,7 +12076,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 1898698124}
         m_TargetAssemblyTypeName: MrMoonlight.UI.MainMenuController, MrMoonlight.Runtime
-        m_MethodName: OnStartGameClicked
+        m_MethodName: OnLegionClicked
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -14449,7 +14449,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpecialElite SDF Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -17130,7 +17130,7 @@ Material:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: Gabriele Bad AH - Regular Material (Instance)
-  m_Shader: {fileID: 4800000, guid: 5a9d618948e20604e8c7e02a70c0b40a, type: 3}
+  m_Shader: {fileID: 4800000, guid: fe393ace9b354375a9cb14cdbbc28be4, type: 3}
   m_Parent: {fileID: 0}
   m_ModifiedSerializedProperties: 0
   m_ValidKeywords: []
@@ -18139,6 +18139,7 @@ MonoBehaviour:
   inputScheme: {fileID: 1898698126}
   menuMusicSource: {fileID: 1898698125}
   demoSceneName: Island
+  legionSceneName: Island_Legion
 --- !u!82 &1898698125
 AudioSource:
   m_ObjectHideFlags: 0

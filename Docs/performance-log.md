@@ -167,3 +167,13 @@ doc stays the numeric/perf history; that one is the "how to do the next tree" re
 First two trees done (`AP_ENV_tree_Nokmyung`, `AP_ENV_tree_SaGeeSukRim`), ~106 remaining. No new
 Island FPS numbers this entry — this work is still confined to the `AST116_ColliderTest` scene
 copy.
+
+## 2026-09-18 — Island vs Island_Legion in a build (numbers live in the session docs)
+
+First real build measurements, with the session log (builds 35 and 36, RX 9070 XT, 1920x1080, 100-Spotter loop,
+infinite ammo + invulnerability). Whole-scene average / 1% low: Island 73.5 / 26.8 fps, Island_Legion 79.4 /
+25.2 fps. Both fall from ~100-120 fps to ~30 fps as kills (corpses) accumulate; the frame is GPU-bound and the
+cost shows up as SetPass calls (~300-450 -> ~1,800-2,200). Dense forest costs far more than open ground at rest.
+Legion (8,786 instances, wood MeshColliders) is not measurably worse overall. Full analysis, hypotheses and the
+log-system changelog: `Docs/performance-sessions.md` and Linear MRM-85. (Editor FPS numbers earlier the same
+day are not comparable and were not used.)

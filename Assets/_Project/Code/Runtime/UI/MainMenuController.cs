@@ -112,6 +112,9 @@ namespace MrMoonlight.UI
         [Tooltip("Scene asset Start loads. Currently \"Island\" - the demo scene's actual asset name; Docs/unity-conventions.md still calls it \"Demo\" conceptually.")]
         [SerializeField] private string demoSceneName = "Island";
 
+        [Tooltip("Scene asset the Legion button loads: the same island rebuilt with the wood-collider vegetation set (MRM-84). Must be in Build Settings.")]
+        [SerializeField] private string legionSceneName = "Island_Legion";
+
         private void Awake()
         {
             // Apply saved (or default) volumes and display settings before the reveal even
@@ -147,7 +150,13 @@ namespace MrMoonlight.UI
         /// <summary>Button hookup: Start game.</summary>
         public void OnStartGameClicked()
         {
-            StartCoroutine(RunStartGame());
+            StartCoroutine(RunStartGame(demoSceneName));
+        }
+
+        /// <summary>Button hookup: Legion (the wood-collider island).</summary>
+        public void OnLegionClicked()
+        {
+            StartCoroutine(RunStartGame(legionSceneName));
         }
 
         /// <summary>Button hookup: Settings.</summary>
@@ -414,7 +423,7 @@ namespace MrMoonlight.UI
             group.alpha = 1f;
         }
 
-        private IEnumerator RunStartGame()
+        private IEnumerator RunStartGame(string sceneName)
         {
             mainButtonsGroup.interactable = false;
 
@@ -423,7 +432,7 @@ namespace MrMoonlight.UI
             // for the load duration, black screen or not. allowSceneActivation stays false until
             // both the load and the fade are done, so activation itself is instant and the
             // player never sees a hitch. Owner: MRM-18
-            AsyncOperation loadOp = SceneManager.LoadSceneAsync(demoSceneName);
+            AsyncOperation loadOp = SceneManager.LoadSceneAsync(sceneName);
             loadOp.allowSceneActivation = false;
 
             float duration = Tunables.I.MenuTransitionFadeDuration;

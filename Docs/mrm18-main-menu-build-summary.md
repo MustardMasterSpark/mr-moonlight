@@ -1111,3 +1111,23 @@ nobody has actually seen the two-column layout or the F12 overlay render on scre
 rebuild and screenshot/play-test this before assuming it looks right** — same
 "confirm with a screenshot before declaring fixed" rule that already applies everywhere else in
 this project.
+
+---
+
+## 2026-09-18 — cross-issue change from MRM-84 (Legion button) and font shader repair
+
+- **Two scenes, two buttons.** `MainMenuController` has a new `[SerializeField] string legionSceneName = "Island_Legion"`
+  and `OnLegionClicked()`; `RunStartGame` now takes the scene name. `StartButton` (" The Narrow Way",
+  "Single") still calls `OnStartGameClicked` -> `Island`; `LegionButton` now calls `OnLegionClicked` ->
+  `Island_Legion`. `Island_Legion` is in Build Settings (index 2). Verified in Play from the menu.
+- **Font shader repair.** Eight custom TMP font assets (`GabrieleBandAah`, `GutenbergTextura`, `HitMePunk`,
+  `Kurland`, `Mustasurma`, `NotoSerif`, `Punktype`, `SpecialElite`) and the TMP material instances embedded in
+  `MainMenu`, `Island` and `Island_Legion` referenced a shader GUID (`5a9d6189...`) that no longer exists
+  anywhere in the project, so text rendered magenta. All were repointed to `TextMeshPro/Mobile/Distance Field`.
+  Cause of the missing shader unknown (not in git history). Any other prefab that references that GUID would
+  show the same magenta; only the fonts and the three scenes were checked.
+- **Open bug found by the session log (not fixed):** returning to the main menu flashes the window (desktop
+  visible for a split second) because `MainMenuController.Awake` -> `ApplySavedDisplaySettings()` calls
+  `Screen.SetResolution(..., ExclusiveFullScreen)` on every menu load. Suggested fix: skip the call when
+  width, height and mode already match. Logger v3 logs `[APP] display changed` to confirm. Owner of the
+  display code: MRM-78.

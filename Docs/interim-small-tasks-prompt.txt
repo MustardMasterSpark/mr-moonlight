@@ -101,19 +101,22 @@ either a narrower version or parking it for the cleanup.
 ===========================================================================
 6. TASK SLOT: Carlos fills this in, or states the task in chat
 ===========================================================================
-Task: try Technie Collider Creator 2, see how it behaves, change the colliders of the vegetation
-  assets on the vegetation gallery scene (Carlos, stated in chat 2026-09-17).
-Asset(s) involved (AST-### if any): AST-116 (Technie Collider Creator 2). Downloaded and renamed to
-  `AST-116.zip` in `01_DOWNLOAD` 2026-09-17, moved from wishlist to the spreadsheet's new "OWNED
-  (FROM WISHLIST) — not yet in project" section — owned but NOT YET extracted or installed
-  anywhere. Extract/import it per `Docs/asset-import-update-process.md` Steps 2–4 (this is a first
-  install, not a version sync, so there's no existing GUID map to match against).
-Linear issue (leave blank and Claude creates a sub-issue of MRM-81): blank — create at session start.
-Done when: tried against the vegetation actually in `Assets/_Project/Scenes/VegetationGallery.unity`
-  (as of 2026-09-17: Ground, HAZE Global Fog/Explorable Area Fog, a few unnamed roots, 453 KB, last
-  touched 2026-09-04 — verify what's actually in it before trusting this description) with a
-  concrete before/after measurement, plus a verdict (adopt / reject / needs more evaluation) logged
-  below and reflected in the spreadsheet.
+Task: FLASHLIGHT + visible breath (Linear MRM-44, Sonnet). Carlos, 2026-09-18: "the next task is going to be the
+  implementation of flashlight". Read the issue with get_issue MRM-44 first (it is the source of truth).
+Asset(s) involved: HQ FPS Weapons 2.0 ships a Flashlight wieldable (`HQFPS/Art/Meshes/Wieldables/Flashlight/`:
+  Flashlight.fbx, FP_Flashlight.fbx, FP_Arms_Flashlight.fbx with Equip/Unequip/Idle/Hold/Switch clips). Verify
+  where it lives in Mr. Moonlight before relying on this. `F` (Flashlight Toggle) is bound in the input actions but
+  not wired to gameplay (Docs/controls.md).
+Rules that apply: a glowing/lit object gets a REAL Light on the prefab, never an emission map (CLAUDE.md). The
+  wieldable system is PolymindGames (vendor, do not edit `_Project/Code/Vendor/`): add the flashlight as a new
+  wieldable/prefab and a new script, hook one-directionally. If it needs changes inside the weapon system, that is
+  the cleanup (section 2): stop and tell Carlos.
+Performance heads-up (from MRM-85): the frame is GPU-bound and the log already shows URP shadow-atlas warnings
+  ("24 shadow maps in 2048x2048"); an extra shadow-casting spot light costs real GPU time. Make shadows/range/
+  intensity tunables and, once it works, ask Carlos to play a build and say "check the performance"
+  (Docs/performance-sessions.md) to compare with and without the flashlight.
+Linear issue: MRM-44.
+Done when: per the MRM-44 description; verified live in Play Mode with a screenshot.
 
 ---------------------------------------------------------------------------
 EXAMPLE TASK (the first one Carlos plans): better tree collisions with Technie Collider Creator 2
@@ -154,3 +157,12 @@ case 820-1024 per tree), ADOPT candidate for solid props only (rocks/logs/stumps
 collider each). Full numbers in `Docs/performance-log.md` and the MRM-84 comment. The
 `AST116_ColliderTest` folder + test scene are safe to delete if Carlos rejects outright, or reuse
 if he wants to try a capped VHACD preset / non-Auto hull type on rocks only.
+
+2026-09-18 · MRM-84 (follow-up, same issue) · Technie verdict revised after the paint-based workflow: KEEP Technie as
+the paint brush (choosing which triangles are wood); the collider is baked by `WoodColliderTool` into ONE non-convex
+MeshCollider per prefab (109 prefabs, RAYTEST OK); Auto/VHACD stays rejected. New scene `Island_Legion.unity` uses them
+(8,786 instances). Files: `Code/Editor/Migration/WoodColliderTool.cs`, `Scenes/Island_Legion.unity`, `Scenes/Island_Legion/
+NavMesh-Island_Legion.asset`, `Code/Runtime/DevTools/SessionLog.cs` (build session log, MRM-85), hook `EnemyIdentity.
+AnySpawned/AnyDespawned` (one-directional, added for the log), MainMenuController Legion button (MRM-18 cross-issue).
+Cleanup must know: the wood-collider recipe in `Docs/technie-vegetation-collider-process.md`; MRM-85 perf findings
+(corpses are never destroyed, GPU-bound) point at enemy death/gore = cleanup territory.

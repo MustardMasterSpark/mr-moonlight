@@ -196,6 +196,15 @@ colour (no package needed, see the Screen 3 disclaimer note above), and `TMP_Tex
 `_Sharpness` SDF property (TextMeshPro/Mobile/Distance Field shader, present on every TMP font
 asset in this project) animated per-object via DOTween for a blur-to-focus reveal.
 
+## Session log (build-mode, always on)
+
+`Runtime/DevTools/SessionLog.cs` installs itself before the first scene and writes a timestamped,
+scene-tagged log to `%USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs\session-*.log` in
+every build and Editor Play session (fps windows, CPU/GPU time, draw stats, enemies and corpses, weapon,
+biome, scene switches, display changes). No key, no setup; switch it off with
+`MoonlightTunables.SessionLogEnabled`. Format, procedure and changelog: **`Docs/performance-sessions.md`**
+(MRM-85). Record every change to it in that doc's changelog and on MRM-85.
+
 ## Known gaps
 
 - **Removal triggers.** F3/F4/F5 and `EnemyDebugControls` are all placeholders for MRM-32 (real

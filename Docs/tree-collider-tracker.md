@@ -137,3 +137,10 @@ Carlos.
 `AP_Tree_Break_MushroomTrunk_01_SM`, `AP_Tree_Break_Root_02_SM`
 
 **Never had colliders, left alone:** the 47 prefabs in `GRASS PREFABS/` and `RF_Bush1`..`RF_Bush3`.
+
+## Update 2026-09-18 (night) — all 109 are live in the Legion scene
+
+All 109 wood-collider prefabs are used by `Assets/_Project/Scenes/Island_Legion.unity` (8,786 Gaia
+instances) and were played in builds 35 and 36. Carlos's live check of the colliders was positive.
+`Island.unity` and the live prefabs still use the old colliders on purpose. See
+`Docs/technie-vegetation-collider-process.md` "Legion island scene".
