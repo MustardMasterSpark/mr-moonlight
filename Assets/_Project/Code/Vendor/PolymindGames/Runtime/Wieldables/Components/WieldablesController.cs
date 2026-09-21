@@ -104,6 +104,11 @@ namespace PolymindGames.WieldableSystem
         {
             wieldable ??= _nullWieldable;
 
+            // MRM-9: nothing can replace the syringe until its heal finishes (throwables reach
+            // here directly, bypassing the inventory's selection gate).
+            if (_activeWieldable is HealingWieldable { IsHealing: true })
+                return false;
+
             if (!ValidateWieldableRegistered(wieldable))
                 return false;
 

@@ -28,7 +28,7 @@ Carlos: *"From the start the player will always spawn with the combat knife."*
 | **4** | Rifles | M1A (M14) → AKM |
 | **5** | Precision | Crossbow → Hunting Rifle (scoped) |
 | **7** *or* **G** | Throwables | Frag Grenade → Molotov Cocktail |
-| **H** | — | Use the Syringe (heals; see §6) |
+| **V** | — | Use the Syringe (heals; see §6). Moved from H 2026-09-20 |
 
 "The Club" is the BaseballBat asset — `Docs/glossary.md`, ruled 2026-08-28. "Trench Club" in
 Carlos's message is the superseded name for the same object.
@@ -44,7 +44,7 @@ for last-used-instead; it is off because predictable beats clever when the point
 | **Q / E** | Q = next weapon | **Lean left / right** | Carlos: *"The new keys will replace Q. And now we will use the keys Q and E."* |
 | **F** | Flashlight | **Interact** | E was Interact and had to move. F was the nearest free, conventional key |
 | **L** | — | **Flashlight** | Displaced by Interact |
-| **H** | — | **Heal** | Makes the Syringe work at all (§6) |
+| **V** | — | **Heal** | Makes the Syringe work at all (§6) |
 | Right bumper | Next weapon | unchanged | The only weapon control a controller still has |
 
 **Keyboard only, deliberately.** Carlos: *"all of these new keys obviously don't have an equivalent
@@ -195,6 +195,10 @@ changes shape.
 
 ---
 
+> **Update 2026-09-21 (MRM-87):** the Syringe is now on **V**, usable at any health, unlimited, and locks the hands
+> while it runs. This section describes the original state; the current rules and the vendor edits are in
+> `Docs/hands-items-and-weapons-pipeline.md` §7. That doc is also the checklist for adding new items and weapons.
+
 ## 6. The Syringe — what it is, and why it appeared to do nothing
 
 Carlos asked whether it is a prop. **It is fully functional**, and the reason it seemed inert is
@@ -218,9 +222,9 @@ Three things were in the way, all now fixed:
    while every weapon carries the Wieldable tag `6549466`, so the Holster's tag restriction refused
    it — reporting the thoroughly misleading *"Inventory Is Full"* with 3 slots free. Tagged.
 
-**How to use it:** press **H**, from any weapon. The handler equips the Syringe itself, plays the
+**How to use it:** press **V**, from any weapon. The handler equips the Syringe itself, plays the
 heal, and holsters it again — the player never selects it manually, which is why it is on no number
-key. It does nothing at full health (`TryHeal` checks `IsFullHealth`).
+key. It works at any health (the `IsFullHealth` gate in `TryHeal` was removed 2026-09-20: any item can be used even if wasted, and the Syringe will gain non-heal effects such as a defence buff).
 
 ---
 
@@ -312,6 +316,8 @@ the same frame the throw consumed it. **The ceiling is the item definition's, no
 gives both throwables `StackSize = 3`, so a request for 99 produces a stack of 3 (measured). The
 target is clamped to the definition's own stack size. If a bigger visible count is ever wanted that
 is one field on `HQFPS_Frag Grenade.asset`, not a code change.
+
+**Syringe (2026-09-20).** Same mechanism. Its item definition shipped `StackSize = 1`, so the loadout's count of 5 was clamped to 1 and the first heal emptied the slot for good. `HQFPS_Syringe.asset` is now `StackSize = 3` and `Syringe` is in `MoonlightInfiniteThrowables.throwables` on `Player_Tracey.prefab`. No item in the project has a durability property, so nothing else wears out.
 
 **Ammo items** need no import — all eight ammunition item definitions (`.45 ACP`, `.357M`, `.300WM`,
 `5.56×45`, `7.62×39`, `7.62×51`, `12 Gauge Shell`, `Bolt`), all 8 magazine prefabs and all 8 shell

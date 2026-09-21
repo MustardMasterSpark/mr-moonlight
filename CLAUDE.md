@@ -38,6 +38,11 @@ instruction set, not a reference — it asks the path, the source, and the textu
 resolution, automates every step it can, and **writes its own lessons back after each
 prop** so the next one is faster. Per-prop history lives in `Docs/prop-log.md`.
 
+**Anything that takes over the hands** (a new weapon, the map and compass, a drug, a tool held
+in both hands) also needs animation, a wieldable prefab, an item definition and a key: read
+**`Docs/hands-items-and-weapons-pipeline.md`** (MRM-87) first. It has the checklist, the traps,
+and what must stay compatible with Tracey's own arms and QuickMagic mocap.
+
 Two rules from it that are easy to get wrong: **RetroLit samples only BaseColor +
 Normal** (no mask, no metallic, no emission — AO is multiplied into the albedo), and
 **glowing objects get a real Light on the prefab**, never an emission map.

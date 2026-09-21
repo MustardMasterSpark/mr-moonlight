@@ -42,7 +42,7 @@ equip is currently keyboard-only (see below) and closes the inventory when press
 | **Left Shift** | Sprint | Sprint while moving forward |
 | **Q** | Switch Weapon | Cycle to the next held weapon |
 | **Mouse Wheel / `[` / `]`** | Inventory Navigate | Open the inventory, then step the selection |
-| **V** | Equip Melee (in inventory) | Closes the inventory once it's open |
+| **V** | Heal | Uses the Syringe from any weapon: raises it, heals 50 HP after ~2 s, then puts your previous weapon back. Works at any health, and syringes are unlimited for now. Weapon switching, throws and fire are ignored while it runs (MRM-87). Moved from H |
 | **Escape** | Pause | Open / close the pause menu |
 
 **Not yet wired to gameplay:** `B` (Boots Toggle) — bound in the input
@@ -51,8 +51,9 @@ asset but no system reads them yet.
 ### Inventory mini-flow (both schemes)
 
 Scrolling the inventory axis away from zero while closed **opens** it; the same scroll then steps
-the selection. **Jump** (Space / A) uses the selected item. **Equip Melee** (V / East button)
-closes it. The player is not paused or immobilized while it's open — Tracey can still be attacked.
+the selection. **Jump** (Space / A) uses the selected item. **Equip Melee** (East button only)
+closes it. **The keyboard binding was removed 2026-09-21** (V is now Heal, MRM-87) and
+`InventoryUIController` has no keyboard Close key until Carlos picks one; that UI is not in any prefab or scene yet. The player is not paused or immobilized while it's open — Tracey can still be attacked.
 
 ## Debug / cheat keys (keyboard only — do not ship, dev builds only)
 

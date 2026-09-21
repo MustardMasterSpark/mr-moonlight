@@ -60,7 +60,7 @@ namespace MrMoonlight.EditorTools.Migration
             // Key 7 / G - throwables
             "HQFPS_Wieldable_FragGrenade",
             "HQFPS_Wieldable_MolotovCocktail",
-            // Heal key (H) - the morphine stand-in. Not on a number key.
+            // Heal key (V) - the morphine stand-in. Not on a number key.
             "HQFPS_Wieldable_Syringe",
         };
 

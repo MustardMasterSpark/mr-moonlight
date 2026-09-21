@@ -50,6 +50,11 @@ namespace PolymindGames.WieldableSystem
         /// <inheritdoc/>
         public void SelectAtIndex(int index, bool allowRefresh = true)
         {
+            // MRM-9: hands are locked while the syringe is mid-heal. Gated here, before any state
+            // changes, so a refused switch cannot leave the selection and the equip stack desynced.
+            if (_controller.ActiveWieldable is HealingWieldable { IsHealing: true })
+                return;
+
             index = Mathf.Clamp(index, -1, _holster.SlotsCount - 1);
             if (index == SelectedIndex && _equippedWieldable != null)
             {

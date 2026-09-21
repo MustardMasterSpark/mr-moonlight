@@ -54,6 +54,8 @@ namespace MrMoonlight.Player
         {
             "Frag Grenade",
             "Molotov Cocktail",
+            // Syringe added 2026-09-20: its StackSize was raised 1 -> 3 so a use no longer empties the slot.
+            "Syringe",
         };
 
         [Tooltip("Stack size to hold each throwable at. Clamped down to the item definition's own "

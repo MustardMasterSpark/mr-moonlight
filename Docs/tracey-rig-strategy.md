@@ -434,3 +434,8 @@ prefab wiring is reproducible by re-running the tool — the same pattern as the
   white. It exists so the arm-set swap is visible; it is not art.
 - **Not yet seen in play mode.** Verification so far is an offscreen preview-scene render. Per
   `verification_requires_a_build`, the real confirmation is the built exe.
+
+
+---
+
+**Update 2026-09-21 (MRM-87):** how a new hand-held item or weapon is added on top of this two-rig architecture, and what to keep compatible with Tracey's own arms and QuickMagic mocap, is in `Docs/hands-items-and-weapons-pipeline.md` (section 6).
