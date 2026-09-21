@@ -1,0 +1,46 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-87: Syringe on V (any-time use, hands locked while healing, unlimited) + hands-item pipeline doc
+
+
+DESCRIPTION (the body field)
+============================
+
+Makes the HQ FPS Syringe a usable stand-in consumable and records how to add new hand-held items and weapons.
+Carlos's rule: any item can be used at any time, even if wasted; that is the player's responsibility. The Syringe is
+really morphine and will later carry non-heal effects (defence buff etc.).
+
+Behaviour
+- Heal key moved H -> V (Assets/InputSystem_Actions.inputactions + regenerated wrapper). The keyboard binding on
+  EquipMelee was removed (V used to close the not-yet-built InventoryUIController; its gamepad East binding is kept).
+- Usable at any health: removed the IsFullHealth() gate in WieldableHealingHandler.TryHeal.
+- Hands locked while a heal runs: HealingWieldable.Use no longer cancels the heal (returns IsHealing);
+  WieldableInventory.SelectAtIndex returns early while healing (gated before any state change so the previous weapon
+  is not dropped from the equip stack); WieldablesController.TryEquipWieldable rejects equips while healing (covers
+  throwables). The previous weapon returns afterwards through the vendor's existing equip stack.
+- Unlimited: HQFPS_Syringe.asset StackSize 1 -> 3 (with 1, a use emptied the slot permanently) and "Syringe" added to
+  MoonlightInfiniteThrowables.throwables on Player_Tracey.prefab (and to the component's default list).
+
+Docs
+- NEW Docs/hands-items-and-weapons-pipeline.md: how the wieldable system works, the checklist for adding a weapon or
+  item (model, prefab, animation, item definition, registration, key), worked plans for the map/compass and drugs,
+  traps, and the provisions for Tracey's own arms and QuickMagic mocap (two-rig rule, camera-space clips, hand-bone
+  parenting, QuickMagic -> Arms_Root bake as an untested route).
+- Docs/controls.md (V = Heal), Docs/mrm25-weapon-test-arsenal.md (key table, Syringe section, pointers),
+  Docs/tracey-rig-strategy.md and CLAUDE.md (pointers), Docs/interim-small-tasks-prompt.txt (work log),
+  Docs/performance-sessions.md section 8 (change record C-003).
+
+Not verified in Unity by Claude: compile state. Carlos tested V in Play Mode (heals repeatedly, at any health,
+hands locked while it runs).
+
+HOW TO COMMIT THIS
+
+- Branch: mrm-87 (created with --no-track from origin/main; upstream is not main).
+- The working tree also holds changes that are NOT part of this issue: `Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset`
+  (dynamic font atlas, harmless), `Assets/_Project/Scenes/Island_Legion.unity` and `Docs/asset-import-update-process.md`
+  (already modified before this session). Leave them out of this commit unless Carlos wants them in.
+
+Linear: MRM-87 (main), MRM-81 (umbrella), MRM-85 (change record C-003), MRM-25 / MRM-9 / MRM-41 (cross-issue notes).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

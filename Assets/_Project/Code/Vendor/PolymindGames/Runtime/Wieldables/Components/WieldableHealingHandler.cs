@@ -37,9 +37,11 @@ namespace PolymindGames.WieldableSystem
 
         public bool TryHeal()
         {
-            if (_healSlots.Count == 0
-                || Character.HealthManager.IsFullHealth()
-                || _controller.State != WieldableControllerState.None)
+            // MRM-9: no full-health gate. Any item can be used at any time, even if it is wasted;
+            // that is the player's call (Carlos, 2026-09-20). The Syringe is the morphine and will
+            // grow effects beyond healing (e.g. a defence buff), so "already at full health" must
+            // not decide whether it can be used.
+            if (_healSlots.Count == 0 || _controller.State != WieldableControllerState.None)
                 return false;
             
             if (_healSlots[0].TryGetItem(out var item))

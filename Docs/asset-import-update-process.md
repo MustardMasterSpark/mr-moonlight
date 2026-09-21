@@ -284,6 +284,25 @@ example 2:
 - `up to date?`: AST-143 Cineaster = **No** (file v1.0.2, store 1.0.3), the other 12 = Yes.
 - The Legend's "Source file" line moved down one row to make room for a second 2026-09-19 change line.
 
+### Follow-up, same day: AST-232 staged in Playground, and the `._.` trap
+
+**Staging a brand-new `.unitypackage` in Playground without Unity's importer.** Scan the tarball once
+(`tarfile`, stream mode, read only the `pathname` entries) to get a `guid -> pathname` map. Check every GUID
+with `AssetDatabase.GUIDToAssetPath` (0 collisions expected) and `Assets/<VendorFolder>` not existing. Then
+stream-unpack `asset` + `asset.meta` for each GUID straight to `Assets/PLAYGROUND/AST-###/<VendorFolder>/...`.
+Folder entries carry only an `asset.meta`. **Skip `Packages/manifest.json`** if the package ships one: it
+would overwrite the host project's package list. Then `refresh_unity`; it times out during a multi-GB import
+(expected), so poll the Playground `Unity.exe` CPU until idle. AST-232 Beach Bundle (4 GB package, 938 GUIDs,
+all under `Assets/IdaFaber/`) imported clean: 938/938 GUIDs resolve, 352 materials on `Shader Graphs/IDA_*`
+and none broken, 14 prefabs, 3 demo scenes under `IdaFaber/Maps/`. Not installed in Mr. Moonlight.
+
+**A folder that will not delete = a file literally named `._.`.** macOS AppleDouble stubs (`._name`) inside
+archives packed on a Mac; when the name is `._.` the trailing dot makes Win32/Explorer unable to address it.
+It is harmless metadata (magic `00 05 16 07`, "Mac OS X", a `com.apple.macl` attribute), not malware and not
+locked. Delete it with the extended-length prefix:
+`Remove-Item -LiteralPath '\\?\C:\...\AST-055' -Recurse -Force`. Found in
+`02_extracted\AST-055\...\_urp_unpacked\`.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —

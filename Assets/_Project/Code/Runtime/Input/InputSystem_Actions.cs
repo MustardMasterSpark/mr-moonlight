@@ -591,17 +591,6 @@ namespace MrMoonlight.Input
                 },
                 {
                     ""name"": """",
-                    ""id"": ""aaaaaaa2-0007-4002-8002-aaaaaaaa0007"",
-                    ""path"": ""<Keyboard>/v"",
-                    ""interactions"": """",
-                    ""processors"": """",
-                    ""groups"": "";Keyboard&Mouse"",
-                    ""action"": ""EquipMelee"",
-                    ""isComposite"": false,
-                    ""isPartOfComposite"": false
-                },
-                {
-                    ""name"": """",
                     ""id"": ""aaaaaaa2-0008-4002-8002-aaaaaaaa0008"",
                     ""path"": ""<Gamepad>/buttonEast"",
                     ""interactions"": """",
@@ -823,7 +812,7 @@ namespace MrMoonlight.Input
                 {
                     ""name"": """",
                     ""id"": ""aaaaaaa5-2500-4025-8025-000000000016"",
-                    ""path"": ""<Keyboard>/h"",
+                    ""path"": ""<Keyboard>/v"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": "";Keyboard&Mouse"",

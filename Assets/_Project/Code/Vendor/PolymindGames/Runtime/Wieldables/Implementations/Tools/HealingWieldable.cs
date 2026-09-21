@@ -47,23 +47,17 @@ namespace PolymindGames.WieldableSystem
         }
 
         /// <summary>
-        /// Cancels healing
+        /// MRM-9: the heal cannot be cancelled by the fire input. It used to stop the routine and
+        /// leave the syringe in the hands; now the input is swallowed until the heal completes and
+        /// <see cref="WieldableHealingHandler"/> holsters it, which re-equips the previous weapon.
         /// </summary>
-        public bool Use(WieldableInputPhase inputPhase)
-        {
-            if (inputPhase == WieldableInputPhase.Start && IsHealing)
-            {
-                CoroutineUtility.StopCoroutine(this, ref _healRoutine);
-                return true;
-            }
-
-            return false;
-        }
+        public bool Use(WieldableInputPhase inputPhase) => IsHealing;
 
         public override bool IsCrosshairActive() => !IsHealing;
 
         private void Start() => SpeedModifier.AddModifier(() => IsHealing ? _healMovementSpeedMod : 1f);
-        private void OnDisable() => Use(WieldableInputPhase.Start);
+        // Still cancels if the syringe is forced away (death, teleport, disabled object).
+        private void OnDisable() => CoroutineUtility.StopCoroutine(this, ref _healRoutine);
 
         private IEnumerator HealDelayed(UnityAction healCallback, float delay)
         {
