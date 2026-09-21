@@ -576,3 +576,19 @@ hull meshes (see the correction below); the LOD experiment (parked, Carlos: "lat
   **Known limit:** the tool's folder is a compile-time constant (`WoodColliderTool.PrefabFolder` =
   `.../AST116_ColliderTest/`), so a new asset outside that folder needs either its prefab copied there or a
   small refactor that makes the folder a parameter. Do that refactor with the first non-vegetation asset.
+
+## Leaf-card colliders found and removed (2026-09-21, MRM-84 follow-up)
+
+Carlos clicked trees in `Island_Legion` and found colliders on flat leaf planes (mistakenly painted as wood).
+- **Detector:** `Code/Editor/Migration/WoodColliderLeafAudit.cs`, read-only. A painted triangle on an alpha-cutout
+  submesh whose base-map alpha under the triangle is mostly clear is a leaf card. Bark that happens to use a cutout
+  material (all `RF_*`, `Break_*`, pagoda) reads alpha 1.0 and is not flagged. `Run()` all prefabs, `Detail(names)`
+  sizes and positions, `Highlight(name)` red-suspects PNG. Blind spot: a leaf card on an OPAQUE material is not seen.
+- **Fix loop:** Carlos removes the faces in Technie and saves the prefab, then `WoodColliderTool.Run` + `RayTest`,
+  then `Run()` of the audit to confirm 0. Done for `AP_Tree_04_GTree01_03_SM`, `AP_Tree_04_PTree_02_SM`,
+  `AP_Tree_Blackpoplar01_SM`, `AP_Tree_10_ArgassTree_SM` (6/6 re-run VERIFY + RAYTEST OK).
+- **False positive:** `AP_Tree_04_M01_05_SM` (12 tris) are slivers along branch edges. Leave.
+- **NavMesh:** no rebake. The removed cards were 3.5 m+ above ground; agent height is 2 m, so they never shaped
+  the walkable surface. Only a collider change that reaches within 2 m of the ground, or changes the trunk
+  footprint, needs a rebake (Legion surface, own asset `NavMesh-Island_Legion.asset`).
+- Numbers and per-prefab notes: `Docs/tree-collider-tracker.md` "Leaf-card audit + re-run 2026-09-21".

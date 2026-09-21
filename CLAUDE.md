@@ -159,5 +159,12 @@ re-asking what he means (step 4 added 2026-09-19):
    - if it touches anything light-related, update `Docs/lighting.md` too (its §8 change history).
    Keep it as simple as it can be while still traceable: date, what, where, which log lines.
 
+**Show the commit message (added 2026-09-21).** When the four steps are done, the final report **always
+prints the full contents of the commit message file** (the SUMMARY line and the DESCRIPTION body, verbatim,
+in a code block) so Carlos can paste it straight into GitHub Desktop. Don't just give the file path and
+don't make him ask what it says (Carlos, 2026-09-21: "I have to ask you what the contents of this are or I
+need to go and find it and that takes a little bit of time"). Also list, in one short line each, what to
+include in the commit and any modified files to leave out (Unity re-save noise).
+
 Do all four before reporting back — this phrase is the signal that the session is wrapping, not a
 request to ask which of the four he wants.

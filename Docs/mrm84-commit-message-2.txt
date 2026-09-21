@@ -1,0 +1,41 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-84: Remove colliders from leaf cards on 4 trees (re-run WoodColliderTool) + read-only leaf-card audit tool
+
+
+DESCRIPTION (the body field)
+============================
+
+Carlos found colliders on flat leaf planes when clicking trees in Island_Legion (AP_Tree_04_GTree01_03_SM: a ~35 m2
+blob of leaf card 10 m up). Those faces had been painted as wood by mistake. He repainted them out in Technie and the
+colliders were rebuilt from the corrected paint.
+
+Audit (new, read-only): Code/Editor/Migration/WoodColliderLeafAudit.cs. Flags painted triangles that sit on an
+alpha-cutout submesh where the base-map alpha under the triangle is mostly clear (= visible air). Run() = table of all
+109 painted prefabs, Detail(names) = size/height/offset of each suspect group, Highlight(name) = PNG with suspects in
+red. Writes only to Temp/TreeColliders/. Found 5 prefabs with leaf-card paint (+2 with ~0 m2 slivers).
+
+Fixed by Carlos in Technie (Painting Data assets): AP_Tree_04_GTree01_03_SM (40 leaf tris), AP_Tree_04_PTree_02_SM (12),
+AP_Tree_Blackpoplar01_SM (4), AP_Tree_10_ArgassTree_SM (6). WoodColliderTool.Run re-ran on those 4 plus
+AP_Tree_04_M01_04_SM and AP_Tree_04_GTree01_06_SM (paint unchanged, slivers only): 6/6 VERIFY OK, 6/6 RAYTEST OK
+(3000 rays each, 0 hits in air, 0 shots through wood). The four now audit at 0 painted leaf tris. Wood mesh assets are
+overwritten in place, so every Island_Legion instance picks the change up; Island.unity is untouched.
+
+Left on purpose: AP_Tree_04_M01_05_SM (its 12 flagged tris are thin slivers along branch edges, verified in a
+close-up render, not cards), AP_Tree_Deadtree06_SM (586 twig-card tris, Carlos's deliberate choice).
+
+NavMesh: no rebake needed. The removed leaf-card colliders were all 3.5 m or more above ground (agent height 2 m);
+the walkable surface cannot have depended on them.
+
+Files
+- Assets/_Project/Code/Editor/Migration/WoodColliderLeafAudit.cs (+ .meta): new
+- 6 prefabs + 4 WoodColliders/*_Wood.asset (rebuilt) + 4 "Visual N Painting Data.asset" (Carlos's repaint) under
+  Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/
+- Docs/tree-collider-tracker.md, Docs/technie-vegetation-collider-process.md, Docs/performance-sessions.md (change
+  record C-004), Docs/interim-small-tasks-prompt.txt (work log)
+
+Not for this commit (Unity re-serialisation noise, safe to discard): Assets/_Project/Scenes/Island_Legion.unity
+(Gaia m_hasErrors 1 -> 0 flags only), Assets/_Project/Settings/VP_HazeGlobalFog.asset (active flag).
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

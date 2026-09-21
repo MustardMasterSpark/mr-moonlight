@@ -32,7 +32,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 3163718765483700458}
+  - {fileID: 2741509672154085968}
   m_Father: {fileID: 8015813920992188734}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &7351006126048010270
@@ -139,7 +139,7 @@ Transform:
   - {fileID: 7684476837609016763}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &3368775963454209204
+--- !u!1 &6616471576832300189
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,8 +147,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 3163718765483700458}
-  - component: {fileID: 3267199240956759844}
+  - component: {fileID: 2741509672154085968}
+  - component: {fileID: 5043682982713478381}
   m_Layer: 0
   m_Name: WoodCollider
   m_TagString: Untagged
@@ -156,13 +156,13 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
   m_IsActive: 1
---- !u!4 &3163718765483700458
+--- !u!4 &2741509672154085968
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3368775963454209204}
+  m_GameObject: {fileID: 6616471576832300189}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -171,13 +171,13 @@ Transform:
   m_Children: []
   m_Father: {fileID: 7684476837609016763}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!64 &3267199240956759844
+--- !u!64 &5043682982713478381
 MeshCollider:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3368775963454209204}
+  m_GameObject: {fileID: 6616471576832300189}
   m_Material: {fileID: 0}
   m_IncludeLayers:
     serializedVersion: 2

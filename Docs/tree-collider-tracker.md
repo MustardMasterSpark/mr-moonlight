@@ -144,3 +144,15 @@ All 109 wood-collider prefabs are used by `Assets/_Project/Scenes/Island_Legion.
 instances) and were played in builds 35 and 36. Carlos's live check of the colliders was positive.
 `Island.unity` and the live prefabs still use the old colliders on purpose. See
 `Docs/technie-vegetation-collider-process.md` "Legion island scene".
+
+## Leaf-card audit + re-run 2026-09-21 (Carlos: colliders on leaf planes)
+
+Carlos found colliders on leaf cards (Island_Legion instance of `AP_Tree_04_GTree01_03_SM`). Read-only audit
+`Code/Editor/Migration/WoodColliderLeafAudit.cs` (`Run()`, `Detail(names)`, `Highlight(name)` -> `Temp/TreeColliders/`):
+painted tris on a cutout submesh whose base-map alpha under the tri is mostly clear = leaf card.
+Carlos re-painted 4 prefabs (`AP_Tree_04_GTree01_03_SM` 40 leaf tris, `AP_Tree_04_PTree_02_SM` 12,
+`AP_Tree_Blackpoplar01_SM` 4, `AP_Tree_10_ArgassTree_SM` 6); `WoodColliderTool.Run` re-ran on them
+(+ `AP_Tree_04_M01_04_SM`, `AP_Tree_04_GTree01_06_SM`, unchanged paint): 6/6 `VERIFY OK`, 6/6 `RAYTEST OK` (3000 rays).
+The 4 now audit at 0 painted leaf tris. Left on purpose: `AP_Tree_04_M01_05_SM` (12 tris are thin slivers along
+branch edges, not cards), `M01_04` (8 tris) and `GTree01_06` (6 tris) are ~0 m2 slivers, `AP_Tree_Deadtree06_SM`
+586 twig-card tris (Carlos's deliberate twigs). Mesh assets overwritten in place, so Island_Legion instances pick it up.
