@@ -1,0 +1,31 @@
+SUMMARY
+
+Docs: asset-index housekeeping (AST-116 correction) + MRM-86 prep handoff, no game code
+
+DESCRIPTION
+
+Two documentation-only updates to `main`, no Mr. Moonlight runtime code, scene, prefab or shipped
+asset touched:
+
+- `Docs/asset-import-update-process.md`: recorded two sessions of asset-collection work — a
+  13-file rename batch (all already-wishlisted assets, no new AST-### IDs) and a correction to
+  AST-116 Technie Collider Creator 2's row (it was already installed and in use for MRM-84's tree
+  colliders; the sheet said "not yet in project"). Also documents a large body of Playground-only
+  groundwork for the upcoming MRM-86 weather/skybox/illumination rework: importing and fixing
+  AST-054 Skybox Blender / AST-147 Asset Optimizer Pro / AST-164 Ether Skyboxes, converting all
+  218 Ether `Skybox/6 Sided` materials (plus 2 AllSky orphans) to `Skybox/Cubemap`, and building a
+  new Skybox Reviewer scene so Carlos can page through all 438 candidate skies and approve/reject
+  them, with the decision log persisted to a plain JSON file he and Claude can both read. None of
+  this touched the Mr. Moonlight project — see the doc for the full record.
+- `Docs/asset-index/ASSETS-Index.xlsx`: re-synced mirror of the (external) master spreadsheet,
+  reflecting the AST-116 correction and the 13 renamed rows moving out of the wishlist section.
+- `Docs/lighting-rework-opus-prompt.txt`: added a 2026-09-23 addendum for whoever opens the next
+  MRM-86 session — don't auto-start, flag the Opus-vs-Sonnet model question to Carlos rather than
+  picking one, and read the new Skybox Reviewer status file for his picks instead of asking him to
+  repeat them.
+- `Docs/performance-sessions.md`: change record C-005 (documents that nothing runtime changed).
+
+Files to leave out of the commit: none — every file listed above should be included, nothing else
+changed on this branch.
+
+Co-Authored-By: Claude Sonnet 5 <noreply@anthropic.com>

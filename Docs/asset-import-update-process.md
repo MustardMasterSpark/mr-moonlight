@@ -131,6 +131,26 @@ calling it (this project's shells mix Git Bash and native Windows Python).
    someone (Carlos) actually presses Play on it, **runtime** errors can surface that a static
    compile check won't catch — see the Highlight Plus 2 case below.
 
+### STANDING RULE (Carlos, 2026-09-21): every newly staged asset with an interactive demo scene gets the Input System check *as part of the import*
+
+Do not wait for Carlos to press Play and hit the `InvalidOperationException`. Whenever an asset is staged in
+Playground (or Mr. Moonlight) and ships a demo/example scene, run this before reporting the import done:
+
+1. **Scripts:** `grep -rnE "\bInput\.[A-Za-z]+" <asset folder> --include=*.cs | grep -v InputSystem`. Any hit that
+   runs at play time gets `PGHybridInput` (below). Editor-only scripts are not affected.
+2. **Scenes:** for each demo `.unity`, `grep -c 4f231c4fb786f3946a6b90b886c48677 <scene>` (the GUID of Unity's
+   legacy `StandaloneInputModule`). A hit means the scene has a legacy EventSystem module: swap it for
+   `UnityEngine.InputSystem.UI.InputSystemUIInputModule` (GUID `01614664b831546d2ae94a42149d80ac`) via
+   `manage_components`, Play Mode **off**, save the scene, then re-grep to confirm 0 / 1.
+3. **Prove it:** enter Play Mode, inject a real key with
+   `InputSystem.QueueStateEvent(Keyboard.current, new KeyboardState(Key.Space))` (release next call with an empty
+   `KeyboardState`; do it a few hundred frames after entering Play, not on frame 1), and confirm the demo reacted
+   and the console has no `InvalidOperationException`.
+4. A scene with no `EventSystem` and no script that reads input (AST-147's `Example.unity`, AST-164's
+   `Demo Scene.unity`) needs nothing. Say so in the report, don't skip the check.
+
+This also applies to version updates (see below: the sync silently reverts the fix).
+
 ### Recurring runtime failure: legacy `Input` class vs. Input System package
 
 Both Mr. Moonlight and Playground run **Input System package only** (no "Both" fallback). Any
@@ -302,6 +322,160 @@ It is harmless metadata (magic `00 05 16 07`, "Mac OS X", a `com.apple.macl` att
 locked. Delete it with the extended-length prefix:
 `Remove-Item -LiteralPath '\\?\C:\...\AST-055' -Recurse -Force`. Found in
 `02_extracted\AST-055\...\_urp_unpacked\`.
+
+## Standing exception: `Assets.zip`
+
+`01_DOWNLOAD\Assets.zip` (2.7 GB, 2026-09-05) is not an asset row. **Never rename, extract, move, delete or
+assign an ID to it**, and drop it from the new-file list before name-matching (Carlos, 2026-09-19 and again
+2026-09-21). It is also excluded from the "unmatched file" check.
+
+## Worked example 4 (2026-09-21) — 13 files, all already wishlist
+
+Filtered the full listing for names not starting `AST-`, minus `Assets.zip`: 13 files, each matched a
+wishlist row by name, so **no new IDs**. Renamed in place, logged in `_rename-log 2026-09-21.csv`, nothing
+extracted or installed.
+
+| ID | Asset | File version | `up to date?` |
+|---|---|---|---|
+| AST-130 | The Thin Woman: Victorian Dress | 1.0 | Yes |
+| AST-133 | Classic Female Ghost | 1.0 | Yes |
+| AST-139 | Goblin Anims | 1.0 | Yes |
+| AST-150 | Combat Magic Spells - Sound Effects | 3.0 | Yes |
+| AST-151 | Monster Sounds Pack | 1.0 | Unknown (no store version) |
+| AST-155 | Cats pack | 2.0 | Yes |
+| AST-162 | Abandoned Swimming Pool Environment | 2.1 | Yes |
+| AST-163 | Female Anim Starter Pack | 1.1 | Yes |
+| AST-164 | Ether Skyboxes | 1.0 | Yes |
+| AST-165 | Crest Water 5 - Whirlpool | 1.0.3 | **No** (store 1.1.2) |
+| AST-166 | Small Boat Anim Set | 1.0 | Yes |
+| AST-171 | Camera Stabilization | 1.0 | Yes |
+| AST-173 | DunGen | 2.18.14 | **No** (store 2.19.13) |
+
+Sheet: same in-place rewrite as example 3 (266 IDs in, 266 out, 552 hyperlinks kept, rows in ID order
+inside "OWNED (FROM WISHLIST)"). Both dry-runs (zebra rule: 240 rows, 0 mismatches; Legend tier formula:
+all 5 lines reproduced) passed before writing. New tier totals: P1 14 / $133.41, P2 15 / $852.83,
+P3 40 / $2,286.33, P4 and P5 unchanged. Legend got a "2026-09-21 update" line, the sheet header now reads
+"Updated 2026-09-21", and the repo mirror was re-copied. The `downloaded file` value is the original
+filename minus its extension, parenthesised dates kept (`Camera Stabilization v1.0 (05 Aug 2020)`).
+
+Heads-up for later: AST-165 Whirlpool needs Crest 5 (AST-050, also behind the store: file 5.9.2, store
+5.10.1), and the two "No" rows will need a re-download before they are installed.
+
+### Follow-up, same day: three assets staged in Playground, and AST-116 corrected
+
+Carlos asked for AST-054, AST-147 and AST-164 in Playground (same method as AST-232 above: scan the
+tarball for `guid -> pathname`, check GUID collisions, stream `asset` + `asset.meta` to
+`Assets/PLAYGROUND/AST-###/<VendorFolder>/...`, then refresh):
+
+| ID | Result |
+|---|---|
+| AST-054 Skybox Blender | **Already installed** (25/25 GUIDs present in `PLAYGROUND/AST-054`, same v2.2.3). Nothing imported. |
+| AST-147 Asset Optimizer Pro | 20 assets, Editor scripts compile (`OptimizationTools.*`), no errors. |
+| AST-164 Ether Skyboxes | 1,766 assets (1,308 PNG, 220 materials, 1 demo scene), 3.4 GB. 0 broken materials (219 `Skybox/6 Sided`, 1 `Standard`). Import took a few minutes; the refresh call disconnects mid-import (expected), poll the Unity window title until it stops saying "Importing". |
+
+The one GUID collision (AST-164's `Demo Scene.unity` vs a scene in AST-042's `ExampleScenes~` folder) is
+harmless: Unity ignores `~` folders. Console afterwards: only the known residents. The MCP WebSocket
+"connection closed" lines during a long import are the bridge dropping, not a vendor error.
+
+**Input System fix, same day (Carlos hit the error pressing Play on AST-054 demo 1):** the three imports had
+not been checked. AST-054 had both causes: `Demos/SpacebarClick.cs`, `SpacebarClick2.cs`, `SpacebarClick3.cs`
+called `Input.GetKeyDown` (now `PGHybridInput.GetKeyDown`, `using PampelGames.Shared.Utility;`, resolves through
+the auto-referenced `PG.Shared` asmdef in AST-040), and `demo 1/2/3.unity` each had a legacy
+`StandaloneInputModule` (now `InputSystemUIInputModule`, scenes saved, disk re-grepped: 0 legacy / 1 new).
+AST-147 and AST-164 needed nothing (no EventSystem, no input-reading script; AST-164's demo scene has no
+GameObjects at all, only skybox/lighting settings, so it has no camera in Play Mode). Verified live by
+injecting Space through the Input System: demo 1 and demo 3 switched `Sky1_mat` → `Skybox Blend Material`,
+demo 2 ran with no errors. This caused the standing rule above. Note AST-054 now depends on AST-040 being
+present in Playground.
+
+**Skybox Blender compatibility (AST-164 → AST-054), same day.** Skybox Blender reads `_Tex` (a **Cubemap**) and
+`_Tint` from every material in its list; Ether's materials were `Skybox/6 Sided` (six face textures), so Carlos
+got "Material '…' with Shader 'Skybox/6 Sided' doesn't have a texture property '_Tex'". Fix: all 218 Ether
+materials converted **in place** (same GUIDs, so the list in demo 1 kept working) by
+`Assets/PLAYGROUND/AST-164/Editor/EtherToSkyboxBlender.cs` (local tool, not vendor code): it builds one
+2048², BC7, sRGB, mipmapped Cubemap per material into `AST-164/Ether Skybox Collection/Cubemaps/<same folders>/`
+(`.cubemap`), then switches the material to `Skybox/Cubemap` and sets `_Tex`. The six-face properties stay
+on the material, so setting its shader back to `Skybox/6 Sided` undoes it. Skipped: `Temp Skybox.mat` (no
+textures at all) and `Temp Ground.mat` (Standard shader).
+- **Face mapping:** Left +X, Right -X, Up +Y, Down -Y, Front +Z, Back -Z, and every face needs a **vertical
+  flip**. Found by rendering the 6-sided material and the cubemap through a camera and diffing pixels (0.3/255
+  with the flip; 5-200 for every other transform). Don't guess this, measure it.
+- **Traps hit:** `new Cubemap(size, TextureFormat.RGBA32, …)` is **linear**, so the sky rendered too bright
+  (diff 16-44): create it with `GraphicsFormat.R8G8B8A8_SRGB` / the sRGB compressed format. `EditorUtility.
+  CompressTexture` only accepts `Texture2D`, so compress each face as a 2D texture and copy the mip data across
+  with `Cubemap.SetPixelData`. `Cubemap` has no `SetPixels32`.
+- **Verified:** every conversion re-rendered against the original at 6 axes (fail-safe: worst diff > 3/255
+  deletes the cubemap and skips the material; none failed, spot check worst 1.15/255 over 8 directions); the
+  audit shows 218 cubemap-shader materials, 218 unique BC7 cubemaps; live in demo 1 the blend ran through
+  night_002 → dusk_014 → sunrise_018 with zero errors.
+- **Cost:** the `.cubemap` files are **13.6 GB** (Force Text serialization doubles the compressed data), 39 GB
+  Playground `Library`, E: had 83 GB free afterwards. Halving `FaceSize` to 1024 quarters that.
+- **Reuse (asked, not done):** the tool is hard-wired to the AST-164 folders. AST-086 AllSky would need the two
+  path constants changed, `Mobile/Skybox` accepted as well as `Skybox/6 Sided`, and `FaceSize` read from the
+  source faces instead of fixed 2048. Its 218 `Skybox/Cubemap` materials already work.
+
+**Skybox Reviewer scene, same day.** New scene `Assets/PLAYGROUND/AST-054/Demos/Skybox Reviewer.unity` (duplicated
+from `demo 1.unity`), for Carlos to page through every candidate sky and pick favourites for Mr. Moonlight.
+- **Manual paging, not the automatic sweep.** `SkyboxReviewer.cs` (new, same folder) calls `SkyboxBlender.
+  Blend(int, rotate:false)` — **E** advances, **Q** goes back, both wrap at the ends. `rotate:false` so it never
+  fights `SkyRotator`'s own continuous `_Rotation` write. `SpacebarClick` was removed from the Skybox Blender
+  GameObject so Space no longer does anything here. `blendSpeed` raised to 2.5 and `timeToWait` to 0 (demo 1 kept
+  its own 0.45/1, untouched) so paging through hundreds of skies doesn't sit in a 3s wait each time; `Blend(int)`
+  ignores a call while already mid-blend, so a rapid-fire E just waits for the current one to land — expected,
+  not a bug.
+- **All 438 candidate skies wired in one array**, `AllSky:` first (path order) then `Ether:` (path order), built
+  in code from every `Skybox/Cubemap` material under `AST-086` and `AST-164` — no manual list-building. New
+  bottom-of-screen "Name Label" Text shows `"{i+1} / {total} — {pack}: {name}"`, driving off `SkyboxBlender.
+  CurrentIndex`; the top instructions Text was rewritten for E/Q.
+- **AllSky (AST-086) needed almost no conversion, unlike Ether.** It ships a ready `Skybox/Cubemap` "Equirect"
+  sibling material next to nearly every `Mobile/Skybox` / `Skybox/6 Sided` one (171 of 173 Mobile, all 47
+  SixSided) — **218 already-cubemap materials existed, zero work**. Only **2** had no sibling (`Cartoon_
+  BlueSkyPainted_NoSun`, `FantasyClouds1_Low`) and got one built the same way as Ether (same face transform,
+  verified against a known-good AllSky cubemap sibling elsewhere in the pack, not against the Mobile/Skybox
+  shader's own render — that comparison is noisy because `Mobile/Skybox` has no `_Tint`/`_Exposure`, so its
+  absolute colours never match `Skybox/Cubemap`'s even at the right orientation). New tool: `Assets/PLAYGROUND/
+  AST-086/Editor/AllSkyOrphanConvert.cs`, one-off (2 materials only, not a general batch tool). **This corrects
+  the memory/doc note left after the Ether work**, which assumed AllSky needed ~220 conversions the same way
+  Ether did — it needed 2.
+- **Verified live:** initial load lands on index 0 (`makeFirstMaterialSkybox = true`), 2×E advanced 0→1→2 with
+  the label matching each time, Q from index 2 went back to 1, and a forced jump to index 0 + Q wrapped to 437
+  (the last Ether entry) — console clean throughout.
+
+**Approve/reject review log, same day, added to the Skybox Reviewer scene.** `SkyboxReviewer.cs` extended
+with a persistent per-sky status (Pending/Approved/Rejected):
+- **Keys:** **O** approves the current sky, **P** rejects it. Rejecting an **already-approved** sky asks to
+  confirm first (Y/N modal); every other transition (Pending→either, Rejected→Approved to "rescue" one) is
+  instant, no confirmation.
+- **Startup prompt:** on Play, a modal asks "Include already-rejected skyboxes in this session? [Y]/[N]".
+  **Y** = all 438 navigable. **N** = rejected ones are skipped when paging — but **not removed from view until
+  you move away**: reject the one you're looking at and it stays on screen (still tagged `[REJECTED]`, the
+  position/count already drops it from the denominator), only the *next* E/Q skips it. The only way back to a
+  hidden-rejected sky is answering Y on a later run.
+- **Persistence:** `Assets/PLAYGROUND/AST-054/Demos/SkyboxReviewStatus.json`, plain JSON, keyed by each
+  material's **asset GUID** (not list index, so it survives the array being rebuilt/reordered), rewritten in
+  full after every O/P — no `AssetDatabase.Refresh()` on save (would re-scan on every keypress in Play Mode;
+  the file is complete on disk immediately regardless, Unity notices it on its own next focus/refresh). This
+  is a plain-text project file specifically so Claude can read it directly (`Read` tool) without a Unity round
+  trip, any time Carlos wants a summary of what he's approved/rejected so far.
+- **On-screen visibility:** the bottom label shows `{rank} / {visible count} [(hiding rejected)] — {pack}:
+  {name}  [STATUS]`, colour-coded (green/red/black), plus a running `Approved N · Rejected N · Pending N of
+  438` line.
+- **Verified live**, two full Play Mode sessions: modal blocks E/Q/O/P until answered; O approves (label,
+  colour, disk file all updated instantly — checked by reading the JSON straight off disk mid-Play-Mode); P on
+  a Pending sky rejects instantly; P on an Approved sky opens the confirm modal, N cancels (stays Approved), a
+  second P + Y commits the reject; E/Q correctly skip a hidden-rejected sky when passing over it, confirmed
+  both directions plus a full wrap; **stopping and restarting Play Mode reloaded the exact same statuses from
+  disk** (persistence across sessions, the actual point of the feature); console clean throughout. The test
+  run's fabricated approvals/rejections were cleared (`SkyboxReviewStatus.json` deleted) before handing back,
+  so Carlos's first real session starts with all 438 Pending.
+
+**Row placement rule learned:** "OWNED (FROM WISHLIST) — not yet in project" means not yet in **Mr.
+Moonlight** (Playground staging does not move a row; note it in the notes column instead). A wishlist
+row that turns out to be installed and in use (AST-116 Technie Collider Creator 2, at
+`Assets/Technie/PhysicsCreator`, used for MRM-84) moves to "OWNED — downloaded assets" with
+`in Mr Moonlight? = Yes`. Check `Assets/Technie`-style folders, not just `ThirdParty/AST-###`, before
+calling something "not yet in project". Excel had the master open during this edit (`~$` lock file);
+Carlos closed it without saving.
 
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 

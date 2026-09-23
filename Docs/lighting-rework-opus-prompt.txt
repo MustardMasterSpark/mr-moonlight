@@ -116,3 +116,46 @@ and the other light sources."
 Done means: baselines per time of day exist as data, the sun/sky/fog/ambient/hands' light all follow one time value,
 nothing in the hands' code reads a preset, the three unwired tunables are wired or gone, Docs/lighting.md is current, and
 Carlos has judged it in a build.
+
+===========================================================================
+6. ADDENDUM 2026-09-23 — read this before starting, it changes how the session opens
+===========================================================================
+Carlos, 2026-09-23, ending a Playground session: *"The next session is still going to be one of the interim tasks but
+we are going to start revamping the weather system... We're going to define the way we can change the skyboxes and how
+we can change the illumination. It will be thanks to a selection of these skyboxes that we do here... In the next
+session you will wait for my list of skyboxes and how we are going to do this. It's possible that we are going to
+create a special scene just to test the new mechanism for how to change the weather."*
+
+This is MRM-86's scope, word for word (skyboxes + illumination + a new switching mechanism). Two things this means
+for how the next session actually opens:
+
+1. **DO NOT AUTO-START, and don't jump to a big Opus design pass.** Carlos wants to hand over a *list of chosen
+   skyboxes* first (picked with the tool below) and describe the mechanism himself before any building starts. Wait
+   for that.
+2. **Model mismatch to flag to Carlos, not silently resolve:** section "MODEL" above says Opus, because this issue
+   was scoped as a from-scratch system design. Carlos is now calling the next session "one of the interim tasks" and
+   wants to start from his own concrete picks/mechanism idea rather than an abstract design pass — that reads more
+   like Sonnet-shaped work (build toward a spec he's already forming) than Opus-shaped work (design the system from
+   open questions). Say this to him plainly at the start of the session and let him choose; don't just pick one.
+
+**Where his skybox picks will come from — read this doc's own history, don't re-derive it:**
+`Docs/asset-import-update-process.md`, the two 2026-09-21 "Skybox Blender compatibility" / "Skybox Reviewer scene"
+sections. In short: a new Playground scene, `Assets/PLAYGROUND/AST-054/Demos/Skybox Reviewer.unity`, lets Carlos page
+through all 438 candidate skies (220 from AllSky/AST-086, 218 from Ether/AST-164, all already `Skybox/Cubemap`) with
+E/Q, approve with O, reject with P. His decisions persist to `Assets/PLAYGROUND/AST-054/Demos/SkyboxReviewStatus.json`
+(plain JSON, keyed by each material's GUID) — **read that file directly** (it's a normal project file, no Unity round
+trip needed) to see what he's approved before asking him to repeat himself. If the file doesn't exist yet, he hasn't
+run a review session — ask him to, or ask for his list some other way.
+
+**Nothing about Mr. Moonlight changed in that Playground work** (change record C-005, `Docs/performance-sessions.md`
+§8) — no code, scene, prefab or shipped skybox was touched. The 218 Ether cubemaps and the AllSky ones are sitting in
+the Playground project only; if Carlos's picks include Ether skies, they (or converted equivalents) will need to
+actually be brought into Mr. Moonlight as part of this issue's work, the same GUID-sync mechanics as any other new
+asset (`Docs/asset-import-update-process.md` step 3) — they are not already "in the project" just because they're
+reviewable in Playground.
+
+Carlos also said a **standalone test scene for the new switching mechanism** is possible ("It's possible that we are
+going to create a special scene just to test the new mechanism for how to change the weather") — treat that as likely,
+not certain; confirm with him before building one, and decide with him whether it lives in Mr. Moonlight (a real
+Sandbox-style scene, `Docs/feedback_scene_agnostic_mechanics`-style: build it as a drag-and-drop mechanism, not
+hardcoded to one scene) or stays a Playground prototype first.
