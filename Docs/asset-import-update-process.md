@@ -521,6 +521,22 @@ The reviewer sessions ended and Carlos assigned his picks to acts (7 story parts
   AST-164 Ether, AST-054 Skybox Blender). If the asset index should record "in Mr Moonlight? = Yes (20 skies)" for
   AST-086 / AST-164, that is a sheet edit still to do.
 
+## Worked example 7 (2026-09-29) - 20 files, 9 wishlist, 11 genuinely new
+
+Files without an `AST-` prefix (minus `Assets.zip`): 9 matched wishlist rows (AST-175 Dungeon Architect, 176 Anti-Cheat
+Toolkit, 177 Obfuscator Pro, 183 BoneToPix, 187 Undertone, 189 Town Generator, 190 InteliMap PRO, 194 Time Rewind,
+195 BoZo), 11 were on no list: **AST-269** Advanced Dissolve, **270** Medieval Wells Props, **271** Draw Debug Tools,
+**272** Dynamic Water Physics 2, **273** Essential Footsteps SFX, **274** Exporter for Unreal to/for Unity, **275** Magic
+Time, **276** Sci-Fi Game Sound Effects, **277** SmartBuilder, **278** Survival Essentials Pack ("HQ Survival Pack"),
+**279** Ultimate Sound FX Bundle (no store page: publisher/price/version `Unknown`). Renamed in place, logged in
+`_rename-log 2026-09-29.csv`, nothing extracted or installed. Sheet: 279 IDs, rewritten in place; zebra dry-run 263 rows /
+0 mismatches. `up to date?` = No for 175, 176, 177, 183, 190, 195. New tier total: P3 28 / $1,501.42 (others unchanged).
+- **New yellow rows live at the end of "OWNED (FROM WISHLIST)"** (that is where AST-264 to 268 already sat), sorted by ID,
+  not in the "OWNED / IN PROJECT" section. Zebra skips yellow rows but still counts them in the index.
+- Store data via `WebFetch` (one call per store page, in parallel). Version strings `v3.0` vs store `3.0.0` treated as equal.
+- Excel had the master open again (lock file); Carlos closed it. A `inspect.py` scratch script shadows the stdlib and
+  breaks openpyxl's numpy import: don't name scripts after stdlib modules.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —
