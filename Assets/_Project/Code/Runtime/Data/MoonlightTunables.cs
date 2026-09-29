@@ -1080,6 +1080,31 @@ namespace MrMoonlight.Data
         /// <summary>Seconds between scans that decide which world lights reach the hands. Lights spawn at runtime (dropped lamps, flares), so this is a periodic rescan, not a one-time setup. Owner: MRM-44</summary>
         public float ViewModelWorldLightRescanSeconds = 0.5f;
 
+        [Header("Sky proximity blend — Lighting Test Scene — MRM-86 (2026-09-29)")]
+        /// <summary>Radius, in metres, of the outer "Blender radius" sphere around a sky marker. Walking inside it starts cross-fading the current sky toward the marker's sky; the closer to the marker, the stronger the blend. Distance is measured flat (ignoring height). Applied by <see cref="World.SkyProximityCircuit"/>. Owner: MRM-86</summary>
+        public float SkyBlendStartRadius = 8f;
+
+        /// <summary>Radius, in metres, of the inner "Complete blend" sphere. Reaching it locks the marker's sky in at 100% and moves the marker to the next corner. Must be smaller than <see cref="SkyBlendStartRadius"/>. Owner: MRM-86</summary>
+        public float SkyBlendCompleteRadius = 2f;
+
+        /// <summary>Height, in metres above the marker's base, of the centre of both debug spheres (roughly the player's chest, so the spheres wrap the player as they walk in). Visual only: the blend uses flat distance. Owner: MRM-86</summary>
+        public float SkyBlendSphereHeight = 1f;
+
+        /// <summary>Line segments per ring of the debug spheres (Draw Debug Tools, AST-271). Higher is rounder and costs more lines. Owner: MRM-86</summary>
+        public int SkyBlendSphereSegments = 24;
+
+        /// <summary>Colour of the outer "Blender radius" debug sphere (pink, like Carlos's sketch). Owner: MRM-86</summary>
+        public Color SkyBlendStartColor = new Color(1f, 0.25f, 0.55f, 1f);
+
+        /// <summary>Colour of the inner "Complete blend" debug sphere (green, like Carlos's sketch). Owner: MRM-86</summary>
+        public Color SkyBlendCompleteColor = new Color(0.1f, 0.9f, 0.3f, 1f);
+
+        /// <summary>Face size, in pixels, of the one-time snapshot <see cref="World.SkyBlender"/> takes of the scene's starting sky (Unity's default procedural sky in the Lighting Test Scene), so the first cross-fade has something to fade FROM. The default sky is smooth, so 256-512 is plenty. Owner: MRM-86</summary>
+        public int SkyBlendCaptureResolution = 512;
+
+        /// <summary>Seconds between recomputing the skybox-driven ambient light while a weather blend is running (<see cref="World.Weather.WeatherSystem"/>). Each recompute costs a few milliseconds, so it is throttled; it always runs once when a weather locks in. Owner: MRM-86</summary>
+        public float WeatherAmbientRefreshSeconds = 0.25f;
+
         [Header("Session log — perf test tagging by scene (MRM-84, 2026-09-18)")]
         /// <summary>Master switch for SessionLog (the build's timestamped, scene-tagged session log). On during development; switch off for the final release build. Read once at startup, so it needs a restart. Owner: MRM-84</summary>
         public bool SessionLogEnabled = true;

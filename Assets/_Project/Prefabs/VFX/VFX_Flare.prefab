@@ -100,6 +100,7 @@ GameObject:
   m_Component:
   - component: {fileID: 8084216004603093225}
   - component: {fileID: 7893653001002669483}
+  - component: {fileID: 2428763617630982877}
   m_Layer: 0
   m_Name: Flare Light
   m_TagString: Untagged
@@ -187,6 +188,19 @@ Light:
   m_LightUnit: 1
   m_LuxAtDistance: 1
   m_EnableSpotReflector: 1
+--- !u!114 &2428763617630982877
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4957355777474035767}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 81117ab7d99865049acc4c376b690f9d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.World.Weather.WeatherLightSource
+  category: 1
 --- !u!1 &5683985548382779073
 GameObject:
   m_ObjectHideFlags: 0
