@@ -240,8 +240,8 @@ The tracked-but-unrelated modified files at the time of writing: `Assets/_Projec
 Full reference: **Docs/weather-profiles.md**. Change record C-007 (Docs/performance-sessions.md §8). Commit message:
 Docs/mrm86-commit-message.txt (Carlos commits from GitHub Desktop; fill the C-007 hash with `git log -1` when he says so).
 
-GIT: branch `mrm-86`, fast-forwarded to main (fcfbd0e0) at the start of the session, no upstream (checked). All the work
-below is uncommitted at the time of writing, unless Carlos says he committed.
+GIT: branch `mrm-86`, fast-forwarded to main (fcfbd0e0) at the start of the session, no upstream (checked). Committed as
+**6ba4d414** (2026-09-29). One follow-up after it: the O-key component added to the scene (Docs/mrm86-commit-message-2.txt).
 
 WHAT CARLOS DECIDED (2026-09-29)
 - The skies from section 7 get a WEATHER PROFILE each: sky + sun + ambient + "special light sources" + fog now; rain,
@@ -269,9 +269,9 @@ WHAT EXISTS (see weather-profiles.md for every detail)
   exactly and moves the marker; profile edits apply live; a direct fog edit survives and Save Fog writes it to disk; a
   lamp override restyled all 10 Spotter lamps; the P panel frees the cursor. NOT visually judged by Claude (editor
   screenshots are unreliable here) - Carlos has to walk it.
-- PENDING AT HANDOFF: if `Weather` in LightingTestScene has no EnemyVisibilityToggle component, add it (Unity was in Play
-  Mode when the O key was written, so the scene could not be edited). Check first: the component may have been added
-  after this file was written. Also confirm the O key and the key reminder in Play Mode.
+- The O-key component (EnemyVisibilityToggle) is on the scene's `Weather` object. Verified in Play Mode: 10 enemies hidden,
+  none respawned, all 10 restored on the NavMesh with the spawner re-enabled. The on-screen key reminder has not been
+  looked at by Carlos yet.
 
 TRAPS FOUND THIS SESSION (details in weather-profiles.md)
 - FindGameObjectWithTag("Player") can return Body/Hitbox; use .transform.root.
