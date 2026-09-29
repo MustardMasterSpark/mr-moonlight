@@ -477,6 +477,50 @@ row that turns out to be installed and in use (AST-116 Technie Collider Creator 
 calling something "not yet in project". Excel had the master open during this edit (`~$` lock file);
 Carlos closed it without saving.
 
+## Worked example 5 (2026-09-25) - 9 files, 7 wishlist, 2 genuinely new
+
+Files without an `AST-` prefix (minus `Assets.zip`): 7 matched wishlist rows (AST-167 FS Swimming System 2,
+168 Swim Mocap Animation, 169 Advanced Zombie AI, 170 Motion Blur, 184 RealToon, 205 Stylized WW1, 206 Mexican
+Desert Vegetation), 2 were on no list: **AST-267 Cutscene Engine** v1.7.2 (olivecrow, $35) and **AST-268 Procedural
+Generation Grid (Beta)** v1.6.6.2.12 (FImpossible Creations, $45.99). Renamed in place, logged in
+`_rename-log 2026-09-25.csv`, nothing extracted or installed. Sheet: 268 IDs, same in-place rewrite as example 3
+(the row count grew by 2, so rows 3..N were rewritten); zebra dry-run 240 rows / 0 mismatches. New tier totals:
+P1 14 / $133.41, P2 11 / $748.83, P3 37 / $2,196.34, P4 and P5 unchanged. `up to date?` = No for AST-167
+(file v1.0, store 2.0.2 - the file name says "FS Swimming System", not "2"; check before installing), AST-169
+(1.0.3 vs 1.0.4), AST-206 (2.2 vs 2.3.0); Yes for the other four and both new rows. New rows have no collection
+URL (Carlos supplied none), so the Asset Store link sits in the source column and the price uses the red style.
+Store data came from `WebFetch` on the Asset Store page (the GraphQL endpoint needs a CSRF token).
+Heredocs containing `'` inside Python strings broke the Bash tool once: write the script with the Write tool.
+
+## Worked example 6 (2026-09-28) - the Skybox Reviewer picks become Mr. Moonlight's sky catalog
+
+The reviewer sessions ended and Carlos assigned his picks to acts (7 story parts, 20 Legion acts; full map in
+`Docs/sky-catalog.md`). Steps that are worth repeating:
+
+- **Custom skies added to the reviewer (Playground only), 9 of them:** ChatGPT-made face sets (Mammatus Day Dark Green,
+  Dawn 021 noMoon, Dusk 006-edit, Dusk 028-edit, Night 006 Moonless Fire, Night Skyglow Bloodstorm, Nebula Red Thin
+  Clouds, Day Sun Horizon Overcast-edit) plus a pure-black sky. **The Skybox Blender only accepts `Skybox/Cubemap`
+  materials** (it reads `_Tex`), so a `Skybox/6 Sided` material throws "doesn't have a texture property '_Tex'" and shows
+  gray. Recipe used: import the six PNGs (Clamp, no mipmaps), put them on a temporary `Skybox/6 Sided` material,
+  `Camera.RenderToCubemap` into a `Cubemap`, `EditorUtility.CompressCubemapTexture` to BC7, save as an asset, make a
+  `Skybox/Cubemap` material, append it to `SkyboxBlender.skyboxMaterials` **and** `SkyboxReviewer.displayNames`. Do it
+  with Play Mode **off**: scene edits made in Play Mode are discarded on stop.
+- **Orientation tool (Playground only):** `SkyboxOrientationTool.cs` adds Yaw/Pitch/Roll sliders and an "Update the
+  origin point of this Skybox" button to the reviewer. Values persist to `AST-054/Demos/SkyboxOrientation.json`
+  (keyed by material GUID). The blend shader `SkyboxBlender.shader` got `_Orient1` / `_Orient2` (per-texture yaw, pitch,
+  roll). Three bugs worth remembering: `FindFirstObjectByType<Canvas>` returned a runtime-spawned fade-screen canvas with
+  no `GraphicRaycaster` (sliders got no clicks: use the reviewer's own canvas); the locked-cursor mouse look meant no
+  pointer could hover the UI (`DemoMouseLook.holdMiddleToLook` now frees the cursor and looks only while the middle
+  button is held); and the Sky Rotator is switched off in the scene so the origin can be judged. Only one sky was
+  re-oriented: Nebula Red Thin Clouds (yaw 0, pitch -90, roll 56).
+- **Import into Mr. Moonlight:** see `Docs/sky-catalog.md` for the layout and the two traps (a native `.cubemap` is stored
+  as hex text here, and the importer flips every face of a 6-face strip vertically). AllSky PNGs were copied with their
+  reviewed `.meta` settings and a fresh GUID (the vendor `AssetOrigin` block stripped); Ether and custom skies were
+  re-rendered to flipped 6-face strip PNGs. Nothing was wired to a scene, preset or switcher (that is MRM-86).
+- **Not done here:** the spreadsheet rows are unchanged (these are picks from packs already owned: AST-086 AllSky,
+  AST-164 Ether, AST-054 Skybox Blender). If the asset index should record "in Mr Moonlight? = Yes (20 skies)" for
+  AST-086 / AST-164, that is a sheet edit still to do.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —

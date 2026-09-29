@@ -31,6 +31,7 @@ This file is the map and the index of facts. Deep dives stay in their own docs a
 | `SunController` | Applies a `SunState` (elevation, azimuth, colour, intensity, optional colour temperature) instantly. Also owns the cabin's fast indoor dim (`SetIndoorDim`, placeholder trigger) | `Code/Runtime/World/SunController.cs` | Pure mechanism, no preset knowledge (MRM-47) |
 | `TimeManager` | Named presets = skybox + `SunState`. `ApplyPreset(index/name, seconds)`; the sun lerps over the duration, **the skybox swaps instantly** | `Code/Runtime/World/TimeManager.cs` | MRM-69. `CurrentPresetIndex`, context menu "Apply Test Preset" |
 | `SkyboxSwitcher` | Swaps `RenderSettings.skybox` from a list and refreshes ambient/reflections | `World/SkyboxSwitcher.cs` | Swaps are never blended: the story hides them (MRM-47) |
+| **Sky catalog** | The 27 act materials (7 story parts + 20 Legion acts) and their 20 sky textures, in `Assets/_Project/Art/Environment/Skies/`. **Not wired to anything yet**: no preset or switcher uses them | `Docs/sky-catalog.md` | Added 2026-09-28, for the MRM-86 rework. The old `Environment/Skyboxes/` folder (4 presets) is untouched |
 | `MoonTint` | Hue/intensity tint on the Moon's BaseColor (RetroLit `_BaseColor`) | `World/MoonTint.cs` | Cosmetic, `[ExecuteAlways]` |
 | `IslandStartupPreset` | **Demo-only LEGACY.** On scene start picks Morning + fog ON or Night + fog OFF at random | `World/IslandStartupPreset.cs` | Added 2026-09-10 for the class demo |
 | **HAZE fog** | Volumetric fog: `HazeRendererFeature` on `PC_Renderer`, global Volume `VP_HazeGlobalFog` + a `HazeDensityVolume` box | `Assets/ThirdParty/HAZE` (git-ignored) | Needs camera **post-processing ON**; lit by punctual lights (`_additionalLightContribution` = 1): the flashlight and Spotter lamps light the fog. See `pc-build-target.md` |
@@ -195,6 +196,7 @@ The three "NO" rows break the no-hardcoded-values rule and are prime cleanup can
 
 | Date | Change | Where recorded |
 |---|---|---|
+| 2026-09-28 | Sky catalog imported: 27 act materials + 20 sky textures under `Art/Environment/Skies/`, nothing wired yet (for MRM-86) | `sky-catalog.md` |
 | 2026-09-19 | Lighting rework issue **MRM-86** created (branch `mrm-86`); process rules updated (branch `--no-track`, final-instructions step 4), change record C-002 | `performance-sessions.md` §8; Linear MRM-86, MRM-85 |
 | 2026-09-19 | This file created; SessionLog v4 (`flashlight`/`handLights` in `[PERF]`, `[PLAYER] flashlight` lines); change-record system added to `performance-sessions.md` §8 | `changelog.md` MRM-44 entry; MRM-85 comment; commit `e99866fd` (change record C-001) |
 | 2026-09-18 | Flashlight tunables + live tuning; hands on the `ViewModel` layer; hands' directional light following the sun with a night floor; world lights (lamps, flares, fires) light the hands; 21 HQ mask maps restored (guns PBR), arms matte | `viewmodel-light-layers.md`, `changelog.md` MRM-44 entries; commit `e99866fd` (C-001) |

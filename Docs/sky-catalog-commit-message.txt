@@ -1,0 +1,42 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-86 prep: import the chosen skies as a per-act sky catalog (7 story + 20 Legion acts), nothing wired yet
+
+
+DESCRIPTION (the body field)
+============================
+
+Carlos picked 20 unique skies in the Playground Skybox Reviewer and assigned them to the game's acts. This brings them
+into Mr. Moonlight under Assets/_Project/Art/Environment/Skies/ so the MRM-86 lighting/weather rework starts with the
+assets in place. No game code, scene, prefab, preset or switcher changed; nothing references the new materials, and the
+old Environment/Skyboxes/ folder is untouched.
+
+Assets
+- 01_Story/: 7 materials (M_Sky_Story_1_Campsite ... 7_Apocalypse).
+- 02_Legion/: 20 materials (M_Sky_Legion_W<wave>_A<act>_<Beginning|Conflict|Ending>; wave 7 has only two acts).
+- Textures/: 20 sky textures (T_Sky_*), shared by acts that reuse a sky. 7 AllSky PNGs copied with their reviewed
+  import settings (fresh GUIDs, vendor AssetOrigin stripped); 12 Ether / custom skies re-rendered as 6-face strip PNGs
+  (importer flips faces vertically, so faces were written flipped; verified pixel-exact) imported as BC7 cubemaps; one
+  16 px pure-black .cubemap. Nebula Red's yaw 0 / pitch -90 / roll 56 is baked into its texture.
+- Every material is Skybox/Cubemap, Tint 0.5, Exposure 1, Rotation 0.
+- About 237 MB of new PNG through Git LFS (native .cubemap files would have been 700 MB of hex text, so they are not used).
+
+Docs
+- NEW Docs/sky-catalog.md: layout, naming, act -> material -> texture -> source map with Carlos's per-act notes, the
+  import traps, size and open decisions (about 365 MB in a build once referenced; wave 7 has no Ending; LFS quota).
+- Docs/lighting.md: sky-catalog row in 1.1, change-history row.
+- Docs/asset-import-update-process.md: worked example 6 (custom skies, orientation tool, the import into this project).
+- Docs/performance-sessions.md: change record C-006.
+- Docs/lighting-rework-opus-prompt.txt: 2026-09-28 addendum (section 7) so the next session knows the skies are chosen,
+  the act structure, the traps and the open decisions.
+
+Playground-only work this session (not in this repo): 9 custom skies added to the reviewer, Yaw/Pitch/Roll orientation
+sliders with a per-sky origin file, blend-shader orientation properties, hold-middle-mouse look, Sky Rotator disabled.
+
+Include in the commit: Assets/_Project/Art/Environment/Skies/ and its .meta, Docs/sky-catalog.md, Docs/lighting.md,
+Docs/asset-import-update-process.md, Docs/performance-sessions.md, Docs/lighting-rework-opus-prompt.txt, this file.
+Leave out: Assets/_Project/Settings/VP_HazeGlobalFog.asset (HAZE active-flag noise) and Docs/asset-index/ASSETS-Index.xlsx
+unless Carlos changed them on purpose.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

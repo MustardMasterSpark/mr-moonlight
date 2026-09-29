@@ -1,6 +1,7 @@
 Context prompt: LIGHTING REWORK (Opus suggested). Read this cold; don't rely on chat scrollback.
 
-WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions), UPDATED the same day.
+WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions), UPDATED the same day, ADDENDA 2026-09-23
+(section 6) and 2026-09-28 (section 7: THE SKIES ARE CHOSEN AND ALREADY IN THIS PROJECT; read section 7 first).
 LINEAR ISSUE: **MRM-86** "Lighting system rework: TimeManager, fog, skyboxes and light sources" (created 2026-09-19 at Carlos's
 go-ahead; Opus, M2, High). GIT BRANCH: **`mrm-86`**, already created LOCALLY from `main` (e99866fd) with `--no-track`; it does
 not exist on GitHub yet. Carlos publishes it from GitHub Desktop and opens the PR to `main`. Start the session with
@@ -159,3 +160,75 @@ going to create a special scene just to test the new mechanism for how to change
 not certain; confirm with him before building one, and decide with him whether it lives in Mr. Moonlight (a real
 Sandbox-style scene, `Docs/feedback_scene_agnostic_mechanics`-style: build it as a drag-and-drop mechanism, not
 hardcoded to one scene) or stays a Playground prototype first.
+
+===========================================================================
+7. ADDENDUM 2026-09-28 — THE SKIES ARE CHOSEN, ASSIGNED TO ACTS, AND ALREADY IN MR. MOONLIGHT
+===========================================================================
+This supersedes the "wait for his list" part of section 6 (the list arrived) and answers its "model mismatch" note:
+Carlos said the next session is to run on **Opus**, so the model line above stands. Still do NOT auto-start; wait for his
+go-ahead and let HIM describe the switching mechanism (section 6 point 1 still holds).
+
+WHAT HAPPENED (change record C-006 in Docs/performance-sessions.md section 8; commit was being made by Carlos on `main`
+right after the session, so `git log -1` may already show it):
+- Carlos finished the Skybox Reviewer pass in the Playground project, picked 20 unique skies and assigned them to the
+  game's acts. The reviewer list grew from 438 to 448 skies (he made 9 custom ones from ChatGPT images).
+- The picks were brought into THIS project: `Assets/_Project/Art/Environment/Skies/` with `01_Story/` (7 materials),
+  `02_Legion/` (20 materials) and `Textures/` (20 sky textures, shared between acts). **Read Docs/sky-catalog.md**: it has
+  the full act -> material -> texture -> source map, Carlos's own one-line description of each sky, the naming scheme and
+  the import traps. The materials are `Skybox/Cubemap`, Tint 0.5, Exposure 1, like the old skies.
+- **NOTHING IS WIRED.** No `TimeManager` preset, `SkyboxSwitcher` list, scene or prefab references the new materials. The
+  old `Assets/_Project/Art/Environment/Skyboxes/` folder (6 skies, used by today's four presets) is untouched.
+
+THE STRUCTURE THE SKIES NOW HAVE (this is new information for the design; it is act-shaped, not clock-shaped):
+- STORY MODE: 7 parts in order: 1 Campsite, 2 MovingToGlade, 3 Glade, 4 MovingToCabin, 5 MineEntrance, 6 Fountain,
+  7 Apocalypse. One sky each.
+- LEGION MODE: 7 waves. Waves 1 to 6 have 3 acts: A1 Beginning, A2 Conflict, A3 Ending ("get the hell out to safety",
+  the zone closing in, PUBG-style). Wave 7 (finale) has only A1 and A2. 20 acts in all.
+- Consecutive waves share skies at the boundary on purpose (W1 Ending = W2 Beginning "dark, cloudy, rain"; W2 Ending =
+  W3 Beginning; W3 Ending = W4 Beginning). Reused textures: Overcast3High (Story 1, W1 A2), FantasyHeavy1 (W1 A3, W2 A1,
+  W4 A2), Afternoon011 (W2 A3, W3 A1), Dawn016 (Story 4, W3 A3, W4 A1), Dawn021Edit (Story 6, W5 A1).
+- Carlos's per-act notes also carry WEATHER and AUDIO cues, not just sky looks: rain, flies, heavy flies, birds, wind,
+  sandstorm, ash storm, smoke, forest fire, blood storm, "ambient sounds, static moon", "darkness vacuum, no sounds"
+  (W5 A2 is the pure-black sky). The catalog keeps his wording. That is the "weather system" he called the revamp on
+  2026-09-23: this rework probably has to define per-act weather state (sky + sun + fog + ambient + hands' light, and
+  hooks for particles / audio), not just swap a skybox. Ask him where the boundary is.
+- The old model (four fixed TimeManager presets, an instant swap, sun lerp) does not map onto this 27-state list cleanly.
+  Reconcile it with section 1's "sun is dynamic and continuous": e.g. per-act baselines (a state per act) that a
+  continuous time value moves between within an act. Put that to Carlos as a recommendation before building.
+
+OPEN DECISIONS FOR CARLOS (the catalog also lists them):
+1. Skybox swaps are instant by design (MRM-47). Do the transitions BETWEEN acts (Beginning -> Conflict -> Ending, and
+   across waves) need a cross-fade? A ready-made blend exists in the Playground project: AST-054 Skybox Blender, whose
+   `SkyboxBlender.shader` blends two cubemaps and now also takes a per-texture yaw/pitch/roll (`_Orient1`/`_Orient2`,
+   local edit). It lives only in the Playground project. Vendor code must move to a TRACKED location if it is used
+   here (`Assets/ThirdParty/**` is git-ignored: memory thirdparty_gitignored).
+2. SIZE: the 20 skies are about 365 MB of GPU-compressed texture data once referenced, against the 1 GB itch.io
+   ceiling. Most night skies are near-black; dropping those to 1024 saves about 19 MB each. Decide before launch.
+3. Wave 7 has no Ending act. Does the finale need one?
+4. The catalog files add about 237 MB of PNG to Git LFS; check the LFS quota.
+5. Per-sky orientation: only Nebula Red was re-oriented (yaw 0, pitch -90, roll 56) and it is BAKED into its texture. The
+   stock `Skybox/Cubemap` shader only rotates around Y (`_Rotation`). If the blend/switch mechanism uses its own shader,
+   it can carry full orientation; otherwise later re-orientations must be baked (Playground reviewer has the tool).
+
+TRAPS FOUND IMPORTING THE SKIES (details in Docs/sky-catalog.md):
+- Native `.cubemap` assets are stored as hex TEXT in this project (Force Text serialisation): 50 to 67 MB each and not
+  LFS-tracked. Skies are 6-face strip PNGs instead. The importer FLIPS EVERY FACE VERTICALLY: write faces flipped,
+  order +X,-X,+Y,-Y,+Z,-Z. Verified pixel-exact.
+- The editor camera in THIS project cannot judge a sky: a temporary camera rendered identical pixels for every material,
+  old and new. Judge skies in a build or a real scene (memory: verification_requires_a_build). The data itself was verified
+  in the Playground project.
+- The Playground Skybox Blender only accepts `Skybox/Cubemap` materials with `_Tex` (a `Skybox/6 Sided` one throws and
+  shows gray).
+- Unreferenced assets are left out of a build, so the skies cost nothing until the rework wires them.
+
+WHERE THE PLAYGROUND REVIEW LIVES (still useful for previewing or re-picking): project `E:\playground\Playground` (Unity
+MCP port 8081), scene `Assets/PLAYGROUND/AST-054/Demos/Skybox Reviewer.unity`: E/Q page, O approve, P reject (JSON
+`SkyboxReviewStatus.json`, 103 approved at the last count), Yaw/Pitch/Roll sliders + "Update the origin point" button
+(JSON `SkyboxOrientation.json`), middle-mouse-hold looks around (the cursor is free so the panel is clickable), the Sky
+Rotator is disabled. Details: Docs/asset-import-update-process.md, worked example 6.
+
+GIT AT THE START OF THE SESSION: branch `mrm-86` exists LOCALLY (created 2026-09-19, --no-track, not on GitHub yet).
+The sky import was done on `main`; if it is not committed yet, ask Carlos before switching branches (never carry
+uncommitted work across branches silently). Confirm `git config --get branch.mrm-86.merge` prints nothing.
+The tracked-but-unrelated modified files at the time of writing: `Assets/_Project/Settings/VP_HazeGlobalFog.asset` (HAZE
+`active` flip is known noise: memory haze_fog_active_toggle_noise), `Docs/asset-index/ASSETS-Index.xlsx` (Carlos's).
