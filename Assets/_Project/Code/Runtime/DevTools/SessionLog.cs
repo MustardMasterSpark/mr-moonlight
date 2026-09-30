@@ -295,7 +295,7 @@ namespace MrMoonlight.DevTools
         {
             string flash = _flashlight == null ? Unknown : (_flashlight.IsOn ? "on" : "off");
             string hands = _viewModelLighting == null ? Unknown : _viewModelLighting.WorldLightsOnHands.ToString();
-            return $"flashlight {flash} handLights {hands}";
+            return $"flashlight {flash} handLights {hands} treeFires {TreeFireToggle.BurningCount} fireLights {TreeFireToggle.LitCount}";
         }
 
         private void UnsubscribeWieldables()

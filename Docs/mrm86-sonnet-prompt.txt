@@ -1,0 +1,53 @@
+Context prompt: MRM-86 WEATHER + TREE FIRES, next session (SONNET). Read this cold; don't rely on chat scrollback.
+
+WRITTEN: 2026-09-30, end of the session that built the weather control board and the tree fire experiment.
+LINEAR: MRM-86 (weather / lighting rework). Performance records: MRM-85. GIT: branch `mrm-86` (no upstream, checked
+2026-09-29). This session's work is uncommitted until Carlos commits it with Docs/mrm86-commit-message-3.txt; when he
+gives the hash, fill it into C-008 in Docs/performance-sessions.md section 8.
+
+Do NOT auto-start. Wait for Carlos's go-ahead. He said he will keep tweaking values himself first.
+
+READ FIRST
+1. Docs/weather-profiles.md (esp. "Using the Lighting Test Scene" and "Session 2026-09-30")
+2. Docs/tree-fire-experiment.md (every fire change and measurement; ADD A DATED ENTRY FOR EVERY CHANGE to the fires,
+   standing request from Carlos)
+3. Docs/lighting.md (single lighting reference) and CLAUDE.md ("run the final instructions" = 4 steps)
+4. The older handoff Docs/lighting-rework-opus-prompt.txt section 8 for the weather-profile background.
+
+WHAT IS DONE
+- Weather profiles (27, one per story part / Legion act) tuned ONLY in Scenes/LightingTestScene.unity. Not wired into
+  Island / Island_Legion (Carlos decides how, later).
+- CONTROL BOARD: select the `Weather` object. Its Inspector shows every section of the current weather; edits go
+  live to the real sun / RenderSettings / lights / HAZE fog. Buttons: Save everything / lighting / fog, Revert. P panel
+  saves the same. Direct edits on SUN or HAZE objects are NOT saved (tune through the board).
+- Special light sources: Lamps, Flares, Moon Glow, Tree Fires (new). Player's two lights still NOT added (planned).
+- TREE FIRES (I key): TreeFireToggle on `Weather`, effect Prefabs/VFX/TreeFire_FX (AST-015 Burning Tree without its
+  tree). Pool of 60 fires within 80 m of the camera, 10 real lights, 6 sounds, all Inspector settings. 174 fps vs
+  6-13 fps when every tree burned.
+- Demo intro (Letterbox + subtitles) removed from the test scene; standing rule: strip it from new scenes.
+
+WHAT IS NEXT (Carlos's words 2026-09-30: "I'm still going to be tweaking stuff but later I want to add more stuff and
+probably try out a new fog asset and a new culling asset to improve performance")
+- Carlos tunes profiles + fire settings; record his numbers when he reports them (tree-fire-experiment.md).
+- A new FOG asset (candidate Volumetric Fog & Mist 2, Kronnect): only FogSettings (WeatherProfile.cs) and
+  HazeFogAdapter.cs should change. Record how the fires look/cost under it.
+- A new CULLING asset: would replace/complement TreeFireToggle's distance scoring; record as v3 with before/after at
+  the same spot and weather (Story 6 · Fountain, enemies off, is the baseline).
+- Asset import rule: Docs/asset-import-update-process.md (Playground first, copy with .meta to keep GUIDs).
+- Player's two lights into the special light sources; rain / wind / particles / audio per profile.
+
+TRAPS (already hit)
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode: Polymind MotionBehaviour throws NREs and the
+  session is broken. Read mcpforunity://editor/state (play_mode.is_playing) BEFORE every compile. Happened again
+  2026-09-30 while Carlos was playing.
+- Key I is ALSO bound to the vendor "Inventory" action in FPS_InputActions. Not confirmed whether anything reacts.
+- AST-015 files live in git-ignored Assets/ThirdParty/AST-015: a fresh clone has no fire effect.
+- The vendor LightFlicker caches its world position in Start: never keep it on a light that moves (pool lights use
+  their own flicker).
+- Unity plays only ~512 virtual voices: thousands of AudioSources spam "Ran out of virtual channels".
+- The editor's frame rate is not a build's: always note which one a measurement came from.
+- Adding a field to WeatherProfile: the 27 existing entries got the field initializer values (verified); still check
+  the asset after adding one, and write it (SetDirty + SaveAssetIfDirty) so the diff is explicit.
+
+MODEL: Sonnet fits (tuning and extending existing systems). If a new fog asset means redesigning the fog section or
+wiring profiles into Island, consider Opus for that session.

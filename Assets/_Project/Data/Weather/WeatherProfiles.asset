@@ -18,13 +18,13 @@ MonoBehaviour:
     Sun:
       Elevation: 50
       Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
+      Color: {r: 1, g: 0.9759549, b: 0.9103774, a: 1}
+      UseColorTemperature: 1
       ColorTemperature: 6570
-      Intensity: 1
+      Intensity: 1.84
       IndirectMultiplier: 1
-      Shadows: 2
-      ShadowStrength: 1
+      Shadows: 1
+      ShadowStrength: 0.561
     Environment:
       Source: 0
       SkyboxIntensity: 1
@@ -53,6 +53,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -72,7 +79,7 @@ MonoBehaviour:
       Area:
         Weight: 1
         Density: 1
-        NoiseThreshold: 0.5
+        NoiseThreshold: -5.65
         AmbientColor: {r: 1, g: 1, b: 1, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
@@ -97,15 +104,15 @@ MonoBehaviour:
   - Name: "Story 2 \xB7 Moving To Glade"
     Skybox: {fileID: 2100000, guid: 52562d428f26ca94fa7a9b436893e16e, type: 2}
     Sun:
-      Elevation: 50
+      Elevation: 90
       Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
-      ColorTemperature: 6570
-      Intensity: 1
+      Color: {r: 0.9150943, g: 0.9150943, b: 0.9150943, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 4948
+      Intensity: 1.9
       IndirectMultiplier: 1
-      Shadows: 2
-      ShadowStrength: 1
+      Shadows: 1
+      ShadowStrength: 0.907
     Environment:
       Source: 0
       SkyboxIntensity: 1
@@ -134,6 +141,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -152,9 +166,9 @@ MonoBehaviour:
         SecondaryLightDensityBoost: 0
       Area:
         Weight: 1
-        Density: 1
+        Density: 2.6
         NoiseThreshold: 0.5
-        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        AmbientColor: {r: 0.49661803, g: 0.6792453, b: 0.6755935, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
         HeightFogFactor: 0
@@ -178,14 +192,14 @@ MonoBehaviour:
   - Name: "Story 3 \xB7 Glade"
     Skybox: {fileID: 2100000, guid: 18097e9272c26c6458b5be58464a8eae, type: 2}
     Sun:
-      Elevation: 50
+      Elevation: 79.8
       Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
-      ColorTemperature: 6570
-      Intensity: 1
+      Color: {r: 0.9021419, g: 0.9245283, b: 0.58873266, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 7265
+      Intensity: 3.91
       IndirectMultiplier: 1
-      Shadows: 2
+      Shadows: 1
       ShadowStrength: 1
     Environment:
       Source: 0
@@ -215,6 +229,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -232,9 +253,9 @@ MonoBehaviour:
         MainLightDensityBoost: 0
         SecondaryLightDensityBoost: 0
       Area:
-        Weight: 1
-        Density: 1
-        NoiseThreshold: 0.5
+        Weight: 0.4
+        Density: 0.2
+        NoiseThreshold: 0
         AmbientColor: {r: 1, g: 1, b: 1, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
@@ -259,15 +280,15 @@ MonoBehaviour:
   - Name: "Story 4 \xB7 Moving To Cabin"
     Skybox: {fileID: 2100000, guid: 814a09d8ae7f84e43a8f844270436158, type: 2}
     Sun:
-      Elevation: 50
+      Elevation: 90
       Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      Color: {r: 0.990566, g: 0.7285947, b: 0.5186454, a: 1}
       UseColorTemperature: 0
       ColorTemperature: 6570
-      Intensity: 1
+      Intensity: 1.9
       IndirectMultiplier: 1
-      Shadows: 2
-      ShadowStrength: 1
+      Shadows: 1
+      ShadowStrength: 0.72
     Environment:
       Source: 0
       SkyboxIntensity: 1
@@ -296,6 +317,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -313,9 +341,9 @@ MonoBehaviour:
         MainLightDensityBoost: 0
         SecondaryLightDensityBoost: 0
       Area:
-        Weight: 1
+        Weight: 0.179
         Density: 1
-        NoiseThreshold: 0.5
+        NoiseThreshold: 0.56
         AmbientColor: {r: 1, g: 1, b: 1, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
@@ -340,14 +368,14 @@ MonoBehaviour:
   - Name: "Story 5 \xB7 Mine Entrance"
     Skybox: {fileID: 2100000, guid: 8ccb6264a6186a048bf4bdbf6b7eda9f, type: 2}
     Sun:
-      Elevation: 50
-      Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
-      ColorTemperature: 6570
-      Intensity: 1
+      Elevation: 40.2
+      Azimuth: 255
+      Color: {r: 0.9433962, g: 0.57367235, b: 0.30704877, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 4939
+      Intensity: 2.9
       IndirectMultiplier: 1
-      Shadows: 2
+      Shadows: 1
       ShadowStrength: 1
     Environment:
       Source: 0
@@ -377,6 +405,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -394,9 +429,9 @@ MonoBehaviour:
         MainLightDensityBoost: 0
         SecondaryLightDensityBoost: 0
       Area:
-        Weight: 1
-        Density: 1
-        NoiseThreshold: 0.5
+        Weight: 0.02
+        Density: 0.85
+        NoiseThreshold: 0.63
         AmbientColor: {r: 1, g: 1, b: 1, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
@@ -423,12 +458,12 @@ MonoBehaviour:
     Sun:
       Elevation: 50
       Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      Color: {r: 0, g: 0.12523589, b: 0.254717, a: 1}
       UseColorTemperature: 0
-      ColorTemperature: 6570
+      ColorTemperature: 6484
       Intensity: 1
       IndirectMultiplier: 1
-      Shadows: 2
+      Shadows: 0
       ShadowStrength: 1
     Environment:
       Source: 0
@@ -458,6 +493,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -475,10 +517,10 @@ MonoBehaviour:
         MainLightDensityBoost: 0
         SecondaryLightDensityBoost: 0
       Area:
-        Weight: 1
+        Weight: 0.033
         Density: 1
-        NoiseThreshold: 0.5
-        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        NoiseThreshold: 2.18
+        AmbientColor: {r: 0.009433985, g: 0.009433985, b: 0.009433985, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
         HeightFogFactor: 0
@@ -502,14 +544,14 @@ MonoBehaviour:
   - Name: "Story 7 \xB7 Apocalypse"
     Skybox: {fileID: 2100000, guid: 4179590a4186f2f469cafe4cf2e13bef, type: 2}
     Sun:
-      Elevation: 50
-      Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
-      ColorTemperature: 6570
-      Intensity: 1
+      Elevation: 72.4
+      Azimuth: 178
+      Color: {r: 1, g: 0.116793975, b: 0.10849059, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 3094
+      Intensity: 5.56
       IndirectMultiplier: 1
-      Shadows: 2
+      Shadows: 1
       ShadowStrength: 1
     Environment:
       Source: 0
@@ -539,6 +581,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -556,11 +605,11 @@ MonoBehaviour:
         MainLightDensityBoost: 0
         SecondaryLightDensityBoost: 0
       Area:
-        Weight: 1
-        Density: 1
-        NoiseThreshold: 0.5
-        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
-        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        Weight: 0.065
+        Density: 0.84
+        NoiseThreshold: 0.62
+        AmbientColor: {r: 0.8207547, g: 0.096787095, b: 0.096787095, a: 1}
+        MainLightContribution: {r: 0.8773585, g: 0.062077243, b: 0.062077243, a: 1}
         GradientLightScattering: 0.5
         HeightFogFactor: 0
         MaxFogHeight: 0
@@ -583,18 +632,18 @@ MonoBehaviour:
   - Name: "Legion W1 A1 \xB7 Beginning"
     Skybox: {fileID: 2100000, guid: e873304edb4996644a14b77a77cc5761, type: 2}
     Sun:
-      Elevation: 50
-      Azimuth: 330
-      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
-      UseColorTemperature: 0
-      ColorTemperature: 6570
+      Elevation: 90
+      Azimuth: 97
+      Color: {r: 1, g: 1, b: 1, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 6175
       Intensity: 1
       IndirectMultiplier: 1
-      Shadows: 2
-      ShadowStrength: 1
+      Shadows: 1
+      ShadowStrength: 0.963
     Environment:
       Source: 0
-      SkyboxIntensity: 1
+      SkyboxIntensity: 0.5
       SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
       EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
       GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
@@ -620,6 +669,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -638,8 +694,8 @@ MonoBehaviour:
         SecondaryLightDensityBoost: 0
       Area:
         Weight: 1
-        Density: 1
-        NoiseThreshold: 0.5
+        Density: 15
+        NoiseThreshold: -2
         AmbientColor: {r: 1, g: 1, b: 1, a: 1}
         MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
         GradientLightScattering: 0.5
@@ -699,6 +755,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -782,6 +845,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -861,6 +931,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -944,6 +1021,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1023,6 +1107,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1106,6 +1197,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1185,6 +1283,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1268,6 +1373,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1347,6 +1459,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1430,6 +1549,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1509,6 +1635,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1592,6 +1725,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1671,6 +1811,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1754,6 +1901,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1833,6 +1987,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -1916,6 +2077,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -1995,6 +2163,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:
@@ -2078,6 +2253,13 @@ MonoBehaviour:
       Range: 1
       Shadows: 0
       ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
     Fog:
       Enabled: 1
       Global:
@@ -2157,6 +2339,13 @@ MonoBehaviour:
       Color: {r: 1, g: 0.15, b: 0.1, a: 1}
       Intensity: 1.5
       Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
       Shadows: 0
       ShadowStrength: 1
     Fog:

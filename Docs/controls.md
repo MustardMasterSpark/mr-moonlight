@@ -76,8 +76,9 @@ intended player experience.
 
 | Key | What it does |
 |---|---|
-| **P** | Weather tuning panel, bottom-right: Save Lighting Values / Save Fog Values into the current weather profile; frees the mouse while open |
+| **P** | Weather tuning panel, bottom-right: Save Lighting Values / Save Fog Values copy the `Weather` control board into the current weather profile; frees the mouse while open |
 | **O** | Enemies off / on: hides every enemy and pauses spawning, then brings the same enemies back |
+| **I** | Tree fires on / off (experiment, 2026-09-30, `Docs/tree-fire-experiment.md`): the nearest trees burn, following the camera. **I is also bound to the vendor Inventory action** in `FPS_InputActions` |
 
 ## UI navigation (menus, when not in gameplay)
 

@@ -537,6 +537,21 @@ Time, **276** Sci-Fi Game Sound Effects, **277** SmartBuilder, **278** Survival 
 - Excel had the master open again (lock file); Carlos closed it. A `inspect.py` scratch script shadows the stdlib and
   breaks openpyxl's numpy import: don't name scripts after stdlib modules.
 
+## Worked example 8 (2026-09-30) - 11 files: 1 re-download, 7 wishlist, 3 genuinely new
+
+Files without an `AST-` prefix (minus `Assets.zip`): **AST-113** Realistic Blood VFX was already owned (file v3.0), the
+new file is v4.0, so it is a version update (old `AST-113.zip` deleted, row stays put, `downloaded file` and notes
+updated, `up to date?` Yes). 7 wishlist rows moved to "OWNED (FROM WISHLIST)": AST-174 MapMagic, 180 Edgar Pro, 181
+Realistic Car Controller Pro, 192 InfiniTREE (the non-PRO row; AST-191 is InfiniTREE PRO), 196 Low Poly Animated
+People, 197 Animation to Sprite Sheet, 250 Anime Girl Characters - Bikini. 3 on no list: **AST-280** Beautify 3
+(Kronnect, $51.99, 30.1), **AST-281** Toolkit for Steamworks 2026 (Heathen, $110, store 6.1.13), **AST-282** Volumetric
+Fog & Mist 2 (Kronnect, $69.99, 31.4.2). Log: `_rename-log 2026-09-30.csv`. Sheet: 282 IDs, tiers P3 19 / $929.94, P5 27.
+Behind the store: 174, 180, 181, 281. Nothing extracted or installed.
+- In the current file every cell in a section shares one fill (owned blue-green, wishlist orange), so a moved row only
+  needs its fill swapped to the owned one, not re-striped. The tier formula and category counts still reproduced exactly.
+- Two similarly named pairs to check by name, not by guess: InfiniTREE vs InfiniTREE PRO, Volumetric Fog & Mist 2 vs
+  HAZE (AST-078, in use).
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —

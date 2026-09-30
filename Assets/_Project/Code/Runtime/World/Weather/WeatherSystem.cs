@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using Haze.Runtime;
 using MrMoonlight.Data;
@@ -19,15 +20,19 @@ namespace MrMoonlight.World.Weather
     /// <see cref="Lock"/> at 1. The blend runs FROM the current weather (the scene's starting look before the
     /// first lock) TO the target, everything at once.</para>
     ///
-    /// <para><b>Live editing</b> (Play Mode). While no blend is running, the current weather is live:</para>
+    /// <para><b>Control board</b> (Play Mode). This component's Inspector is the place to tune the weather: the
+    /// <c>live</c> profile at the top has a section for everything a weather holds (sky, sun, environment, special
+    /// light sources, fog, and more later). It owns none of it: every change is written straight to the real sun,
+    /// RenderSettings, world lights and fog, in real time. While no blend runs:</para>
     /// <list type="bullet">
-    ///   <item>edit its entry in the profile library and the scene follows immediately, one section at a time
-    ///   (only the section you changed is re-applied);</item>
-    ///   <item>or edit the SUN light, the Lighting window's Environment values, the fog Volume or the fog box
-    ///   directly, then press Save Lighting Values / Save Fog Values (<see cref="WeatherTuningPanel"/>) to copy
-    ///   them into the current profile. Unsaved direct edits are lost when the next blend starts.</item>
+    ///   <item>edit the board and the scene follows, one section at a time;</item>
+    ///   <item>edit the current weather's entry in the profile asset and the board follows it;</item>
+    ///   <item>press Save (Inspector buttons or the P panel) to copy the board into the current profile.
+    ///   "Revert" reloads the board from the profile. The board is reloaded from the profile whenever a
+    ///   blend locks, so unsaved edits are lost then.</item>
     /// </list>
-    /// World lights (lamps, flares, moon glow) are tuned in the profile only: one edit restyles every lamp.
+    /// Editing the SUN light or the fog Volume directly still shows on screen, but the board does not see it and
+    /// Save will not keep it: tune through the board.
     ///
     /// <para>Saving writes the library asset, so it works in the editor only (Play Mode edits to an asset
     /// persist). A build can apply profiles but not save them.</para>
@@ -37,6 +42,12 @@ namespace MrMoonlight.World.Weather
     [AddComponentMenu("Mr. Moonlight/World/Weather System")]
     public sealed class WeatherSystem : MonoBehaviour
     {
+        [Header("CONTROL BOARD (Play Mode): edit here, the scene changes live. Save copies it to the current profile.")]
+        [Tooltip("The values being applied to the scene right now. Not the owner of anything: each section is written "
+                 + "straight to the real sun, ambient, lights and fog. Reloaded from the profile when a blend locks.")]
+        [SerializeField] private WeatherProfile live = new WeatherProfile();
+
+        [Header("Wiring (set once)")]
         [Tooltip("The weather profiles.")]
         [SerializeField] private WeatherProfileLibrary library;
 
@@ -71,9 +82,16 @@ namespace MrMoonlight.World.Weather
         private bool _wasBlending;
         private float _nextAmbientRefresh;
 
-        // What was last applied for each section of the current profile, to spot live edits.
-        private string _appliedSun, _appliedEnvironment, _appliedLights, _appliedFog;
-        private Material _appliedSky;
+        private Section[] _sections;
+
+        /// <summary>One part of a weather (sky, sun...): how to read it, copy it, apply it, and what was last seen.</summary>
+        private sealed class Section
+        {
+            public Func<WeatherProfile, string> Json;
+            public Action<WeatherProfile, WeatherProfile> Copy; // (from, to)
+            public Action Apply;                                // writes the board's values to the scene
+            public string Profile, Live;                        // last seen in the profile / on the board
+        }
 
         /// <summary>The WeatherSystem in the loaded scene, if any.</summary>
         public static WeatherSystem Active { get; private set; }
@@ -120,7 +138,57 @@ namespace MrMoonlight.World.Weather
             }
 
             _fog = new HazeFogAdapter(global, noise, areaFog);
+
+            _sections = new[]
+            {
+                new Section
+                {
+                    Json = p => p.Skybox != null ? p.Skybox.GetInstanceID().ToString() : string.Empty,
+                    Copy = (from, to) => to.Skybox = from.Skybox,
+                    Apply = () =>
+                    {
+                        if (live.Skybox == null) return;
+                        skyBlender.SetFrom(live.Skybox);
+                        skyBlender.SetBlend(0f);
+                        RefreshAmbient(true);
+                    },
+                },
+                new Section
+                {
+                    Json = p => JsonUtility.ToJson(p.Sun),
+                    Copy = (from, to) => Overwrite(from.Sun, to.Sun),
+                    Apply = () => live.Sun.Apply(sun),
+                },
+                new Section
+                {
+                    Json = p => JsonUtility.ToJson(p.Environment),
+                    Copy = (from, to) => Overwrite(from.Environment, to.Environment),
+                    Apply = () => { live.Environment.Apply(); RefreshAmbient(true); },
+                },
+                new Section
+                {
+                    Json = LightsJson,
+                    Copy = (from, to) =>
+                    {
+                        Overwrite(from.Lamps, to.Lamps);
+                        Overwrite(from.Flares, to.Flares);
+                        Overwrite(from.MoonGlow, to.MoonGlow);
+                        Overwrite(from.TreeFires, to.TreeFires);
+                    },
+                    Apply = () => ApplyWorldLights(live, live, 1f),
+                },
+                new Section
+                {
+                    Json = p => JsonUtility.ToJson(p.Fog),
+                    Copy = (from, to) => Overwrite(from.Fog, to.Fog),
+                    Apply = () => _fog.ApplyBlend(live.Fog, live.Fog, 1f),
+                },
+            };
         }
+
+        private const int SkySection = 0, SunSection = 1, EnvironmentSection = 2, LightsSection = 3, FogSection = 4;
+
+        private static void Overwrite(object from, object to) => JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(from), to);
 
         private IEnumerator Start()
         {
@@ -135,6 +203,7 @@ namespace MrMoonlight.World.Weather
 
             yield return skyBlender.CaptureCurrentSky();
             skyBlender.SetFromCaptured();
+            LoadLive();
             _ready = true;
         }
 
@@ -191,7 +260,7 @@ namespace MrMoonlight.World.Weather
         public void ApplyTo(WeatherLightSource source)
         {
             if (!_ready || source == null || source.Light == null) return;
-            WeatherProfile from = CurrentProfile;
+            WeatherProfile from = IsBlending ? CurrentProfile : live;
             WorldLightSettings a = Effective(from, source);
             if (_target >= 0 && blend > 0f)
             {
@@ -203,25 +272,62 @@ namespace MrMoonlight.World.Weather
             }
         }
 
-        /// <summary>Copies the live sun and environment light into the current weather. Editor only.</summary>
-        public bool SaveLighting()
+        /// <summary>
+        /// The tree fire light values for right now: the control board's when no blend runs, a blend of the two
+        /// weathers during one. A weather whose Tree Fires override is off contributes <paramref name="prefab"/>
+        /// (the fire effect's own light). Returns false when neither weather overrides them (use the prefab values).
+        /// Read every frame by <see cref="MrMoonlight.DevTools.TreeFireToggle"/>, which owns those lights.
+        /// </summary>
+        public bool TryGetTreeFireLights(WorldLightSettings prefab, WorldLightSettings result)
         {
-            if (!CanSave(out string reason)) { lastSave = reason; return false; }
-            WeatherProfile profile = library[_current];
-            profile.Sun.Capture(sun);
-            profile.Environment.Capture();
-            RememberApplied(profile);
-            return WriteLibrary("Lighting saved to " + profile.Name);
+            if (!_ready) return false;
+
+            if (IsBlending && _target >= 0)
+            {
+                WorldLightSettings a = CurrentProfile.TreeFires, b = library[_target].TreeFires;
+                if (!a.Override && !b.Override) return false;
+                WorldLightSettings.Lerp(a.Override ? a : prefab, b.Override ? b : prefab, blend, result);
+                return true;
+            }
+
+            if (!live.TreeFires.Override) return false;
+            WorldLightSettings.Lerp(live.TreeFires, live.TreeFires, 1f, result);
+            return true;
         }
 
-        /// <summary>Copies the live fog into the current weather. Editor only.</summary>
-        public bool SaveFog()
+        /// <summary>Copies the board's sky, sun, ambient and special lights into the current weather. Editor only.</summary>
+        public bool SaveLighting()
+        {
+            return Save("Lighting saved to ", SkySection, SunSection, EnvironmentSection, LightsSection);
+        }
+
+        /// <summary>Copies the board's fog into the current weather. Editor only.</summary>
+        public bool SaveFog() => Save("Fog saved to ", FogSection);
+
+        /// <summary>Copies every section of the board into the current weather. Editor only.</summary>
+        public bool SaveAll()
+        {
+            return Save("Everything saved to ", SkySection, SunSection, EnvironmentSection, LightsSection, FogSection);
+        }
+
+        /// <summary>Reloads the board from the current weather's profile, dropping unsaved edits.</summary>
+        public void RevertToProfile()
+        {
+            if (!_ready || IsBlending) return;
+            ApplyCurrent();
+        }
+
+        private bool Save(string message, params int[] sections)
         {
             if (!CanSave(out string reason)) { lastSave = reason; return false; }
             WeatherProfile profile = library[_current];
-            _fog.Capture(profile.Fog);
-            RememberApplied(profile);
-            return WriteLibrary("Fog saved to " + profile.Name);
+            foreach (int i in sections)
+            {
+                _sections[i].Copy(live, profile);
+                _sections[i].Profile = _sections[i].Json(profile);
+            }
+
+            return WriteLibrary(message + profile.Name);
         }
 
         /// <summary>Whether Save can run right now, and why not.</summary>
@@ -241,30 +347,30 @@ namespace MrMoonlight.World.Weather
 
         private void Update()
         {
-            if (!_ready || _current < 0 || IsBlending) return;
+            if (!_ready || IsBlending) return;
 
-            // Live editing: re-apply only the section of the current profile that changed.
-            WeatherProfile p = library[_current];
-
-            if (p.Skybox != _appliedSky)
+            // One section at a time: a change to the profile asset flows onto the board, a change on the board
+            // flows to the scene.
+            WeatherProfile p = CurrentProfile;
+            foreach (Section section in _sections)
             {
-                skyBlender.SetFrom(p.Skybox);
-                skyBlender.SetBlend(0f);
-                _appliedSky = p.Skybox;
-                RefreshAmbient(true);
+                string profileJson = section.Json(p);
+                if (profileJson != section.Profile)
+                {
+                    section.Copy(p, live);
+                    section.Profile = profileJson;
+                    section.Live = section.Json(live);
+                    section.Apply();
+                    continue;
+                }
+
+                string liveJson = section.Json(live);
+                if (liveJson != section.Live)
+                {
+                    section.Live = liveJson;
+                    section.Apply();
+                }
             }
-
-            string json = JsonUtility.ToJson(p.Sun);
-            if (json != _appliedSun) { p.Sun.Apply(sun); _appliedSun = json; }
-
-            json = JsonUtility.ToJson(p.Environment);
-            if (json != _appliedEnvironment) { p.Environment.Apply(); _appliedEnvironment = json; RefreshAmbient(true); }
-
-            json = LightsJson(p);
-            if (json != _appliedLights) { ApplyWorldLights(p, p, 1f); _appliedLights = json; }
-
-            json = JsonUtility.ToJson(p.Fog);
-            if (json != _appliedFog) { _fog.ApplyBlend(p.Fog, p.Fog, 1f); _appliedFog = json; }
         }
 
         private WeatherProfile CurrentProfile => _current >= 0 ? library[_current] : _sceneStart;
@@ -277,7 +383,6 @@ namespace MrMoonlight.World.Weather
             {
                 skyBlender.SetFrom(p.Skybox);
                 skyBlender.SetBlend(0f);
-                RememberApplied(p);
             }
             else
             {
@@ -285,7 +390,21 @@ namespace MrMoonlight.World.Weather
                 skyBlender.SetBlend(0f);
             }
 
+            LoadLive();
             RefreshAmbient(true);
+        }
+
+        /// <summary>Fills the control board from the current profile (no scene writes) and records what was seen.</summary>
+        private void LoadLive()
+        {
+            WeatherProfile p = CurrentProfile;
+            live.Name = p.Name;
+            foreach (Section section in _sections)
+            {
+                section.Copy(p, live);
+                section.Profile = section.Json(p);
+                section.Live = section.Json(live);
+            }
         }
 
         private void ApplyBlend(WeatherProfile a, WeatherProfile b, float t)
@@ -331,17 +450,9 @@ namespace MrMoonlight.World.Weather
             return p;
         }
 
-        private void RememberApplied(WeatherProfile p)
-        {
-            _appliedSky = p.Skybox;
-            _appliedSun = JsonUtility.ToJson(p.Sun);
-            _appliedEnvironment = JsonUtility.ToJson(p.Environment);
-            _appliedLights = LightsJson(p);
-            _appliedFog = JsonUtility.ToJson(p.Fog);
-        }
-
         private static string LightsJson(WeatherProfile p) =>
-            JsonUtility.ToJson(p.Lamps) + JsonUtility.ToJson(p.Flares) + JsonUtility.ToJson(p.MoonGlow);
+            JsonUtility.ToJson(p.Lamps) + JsonUtility.ToJson(p.Flares) + JsonUtility.ToJson(p.MoonGlow)
+            + JsonUtility.ToJson(p.TreeFires);
 
         private bool WriteLibrary(string message)
         {

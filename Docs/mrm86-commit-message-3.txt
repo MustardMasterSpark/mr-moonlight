@@ -1,0 +1,27 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-86: Weather control board, Tree Fires light source, tree fire experiment (I) in the Lighting Test Scene
+
+
+DESCRIPTION (the body field)
+============================
+
+- WeatherSystem (the scene's Weather object) is now a control board: a live profile at the top of its Inspector
+  with every section (sky, sun, environment, special light sources, fog), written live to the real objects section
+  by section; a profile-asset edit flows onto the board. New WeatherSystemInspector: Save everything / Save lighting /
+  Save fog / Revert buttons. The P panel's saves copy the board (Save Lighting now includes sky + special lights).
+- New special light source "Tree Fires" in every weather profile (Override off = the fire effect's own light;
+  all 27 profiles written with the vendor defaults), blended with the weather; WeatherSystem.TryGetTreeFireLights.
+- Tree fire experiment, I key (TreeFireToggle on Weather): AST-015 Burning Tree effect as Prefabs/VFX/TreeFire_FX
+  (tree removed, particles scale with the tree, sound made 3D). A pool of 60 fires follows the camera within 80 m,
+  the 10 nearest get a real fading/flickering point light, the 6 nearest a sound. v1 (every tree, 8,128) ran at
+  6-13 fps; v2 at 174 fps. Key reminder shows [I] tree fires.
+- SessionLog v5: [PERF] lines end with treeFires N fireLights M.
+- LightingTestScene: demo-only Letterbox + Demo Intro Subtitles removed; TreeFireToggle added.
+- Docs: new tree-fire-experiment.md (living record of every fire change); weather-profiles.md session 2026-09-30;
+  lighting.md, controls.md, performance-sessions.md (log v5, change record C-008, C-007 follow-up hash);
+  mrm86-sonnet-prompt.txt handoff.
+- Vendor files (13, AST-015 Burning Tree + dependencies) were copied into the git-ignored Assets/ThirdParty/AST-015.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

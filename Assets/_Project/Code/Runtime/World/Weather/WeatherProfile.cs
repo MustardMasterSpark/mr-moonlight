@@ -46,6 +46,14 @@ namespace MrMoonlight.World.Weather
         [Tooltip("* Special light source. The moon prop's glow (lights tagged WeatherLightSource: MoonGlow).")]
         public WorldLightSettings MoonGlow = new WorldLightSettings();
 
+        [Tooltip("* Special light source. The tree fire lights (Lighting Test Scene, I key: TreeFireToggle; only the "
+                 + "nearest few fires have one). Override off = the fire effect's own light (the values below are the "
+                 + "vendor's). The flicker is added on top of Intensity. Shadows here cost one shadow map per fire light.")]
+        public WorldLightSettings TreeFires = new WorldLightSettings
+        {
+            Color = new Color(1f, 0.5448276f, 0.25f), Intensity = 0.89f, Range = 30f,
+        };
+
         [Header("Fog")]
         [Tooltip("Fog. HAZE-shaped for now: this section may change if the fog asset changes "
                  + "(Volumetric Fog & Mist 2 is being considered for sandstorms).")]
@@ -233,6 +241,17 @@ namespace MrMoonlight.World.Weather
             light.range = Range;
             light.shadows = Shadows;
             light.shadowStrength = ShadowStrength;
+        }
+
+        /// <summary>Writes a blend of two settings into <paramref name="result"/> (Override on).</summary>
+        public static void Lerp(WorldLightSettings a, WorldLightSettings b, float t, WorldLightSettings result)
+        {
+            result.Override = true;
+            result.Color = Color.Lerp(a.Color, b.Color, t);
+            result.Intensity = Mathf.Lerp(a.Intensity, b.Intensity, t);
+            result.Range = Mathf.Lerp(a.Range, b.Range, t);
+            result.Shadows = t >= 1f ? b.Shadows : a.Shadows;
+            result.ShadowStrength = Mathf.Lerp(a.ShadowStrength, b.ShadowStrength, t);
         }
 
         /// <summary>Blends two settings onto a light; shadow type switches when the blend is complete.</summary>

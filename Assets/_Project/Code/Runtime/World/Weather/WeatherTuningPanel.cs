@@ -11,7 +11,7 @@ namespace MrMoonlight.World.Weather
     /// "Save Lighting Values" copies the live sun and ambient light into the current weather profile; "Save
     /// Fog Values" copies the live fog. Saving is editor-only (it writes the profile asset). While the panel is
     /// closed, a status line and a key reminder stay on screen: [P] this panel, [O] enemies on/off
-    /// (<see cref="EnemyVisibilityToggle"/>). Development tool, same family as the F-key overlays.
+    /// (<see cref="EnemyVisibilityToggle"/>), [I] tree fires (<see cref="TreeFireToggle"/>). Development tool, same family as the F-key overlays.
     /// Owner: MRM-86.
     /// </summary>
     [AddComponentMenu("Mr. Moonlight/World/Weather Tuning Panel")]
@@ -28,6 +28,7 @@ namespace MrMoonlight.World.Weather
         private bool _open;
         private MoonlightPlayerRig _rig;
         private EnemyVisibilityToggle _enemies;
+        private TreeFireToggle _fires;
         private GUIStyle _box, _label, _small, _status, _button;
 
         private void Update()
@@ -68,9 +69,11 @@ namespace MrMoonlight.World.Weather
             }
 
             if (_enemies == null) _enemies = FindAnyObjectByType<EnemyVisibilityToggle>();
+            if (_fires == null) _fires = FindAnyObjectByType<TreeFireToggle>();
             string keys = "[P] tuning panel" + (_enemies != null
                 ? "    [O] enemies " + (_enemies.EnemiesHidden ? "OFF (" + _enemies.HiddenCount + " hidden)" : "ON")
-                : string.Empty);
+                : string.Empty)
+                + (_fires != null ? "    [I] tree fires " + (_fires.IsOn ? "ON" : "OFF") : string.Empty);
 
             if (!_open)
             {
