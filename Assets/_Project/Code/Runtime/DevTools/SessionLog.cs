@@ -6,6 +6,7 @@ using System.Text;
 using MrMoonlight.Data;
 using MrMoonlight.Enemies;
 using MrMoonlight.Player;
+using MrMoonlight.World.Weather;
 using PolymindGames.WieldableSystem;
 using Unity.Profiling;
 using UnityEngine;
@@ -100,6 +101,10 @@ namespace MrMoonlight.DevTools
         private int _updateSamples;
         private long _lastWindowWriteTicks;
 
+        // World state, to log a [WORLD] line when the weather or the tree fires change (SessionLog v5, MRM-85).
+        private string _lastWeather = Unknown;
+        private bool _lastFiresBurning;
+
         // Display state, to catch the window/mode changes that are otherwise invisible in the log.
         private int _lastWidth, _lastHeight;
         private FullScreenMode _lastMode;
@@ -164,6 +169,7 @@ namespace MrMoonlight.DevTools
         {
             PublishClock();
             CheckDisplayChange();
+            CheckWorldState();
 
             // Scene-load hitches are real but say nothing about steady-state cost: skip them.
             if (Time.realtimeSinceStartup - _sceneEnteredAt < Tunables.I.SessionLogPerfWarmupSeconds)
@@ -198,6 +204,37 @@ namespace MrMoonlight.DevTools
             _lastMode = Screen.fullScreenMode;
             if (!first)
                 Debug.Log($"[APP] display changed: {_lastWidth}x{_lastHeight} {_lastMode} (window/mode switch - a visible flicker if it happened on a scene load)");
+        }
+
+        // Weather profile and tree fires are logged on change, so a perf window can be read against them (v5).
+        private void CheckWorldState()
+        {
+            // Keyed on the names only: the blend value moves every frame and would flood the log.
+            WeatherSystem active = WeatherSystem.Active;
+            string weather = active == null ? "none" : $"{active.CurrentName}|{active.TargetName}";
+            if (weather != _lastWeather)
+            {
+                _lastWeather = weather;
+                PublishClock();
+                Debug.Log($"[WORLD] weather -> {WeatherState()}");
+            }
+
+            bool burning = TreeFireToggle.BurningCount > 0;
+            if (burning != _lastFiresBurning)
+            {
+                _lastFiresBurning = burning;
+                PublishClock();
+                Debug.Log($"[WORLD] tree fires -> {(burning ? "on" : "off")} ({TreeFireToggle.BurningCount} burning)");
+            }
+        }
+
+        private static string WeatherState()
+        {
+            WeatherSystem weather = WeatherSystem.Active;
+            if (weather == null)
+                return "none";
+
+            return weather.IsBlending ? $"{weather.CurrentName} -> {weather.TargetName} {weather.Blend:0.00}" : weather.CurrentName;
         }
 
         // Refreshed before every marker too, so scene-switch lines carry the switch frame, not the last Update's.
@@ -295,7 +332,7 @@ namespace MrMoonlight.DevTools
         {
             string flash = _flashlight == null ? Unknown : (_flashlight.IsOn ? "on" : "off");
             string hands = _viewModelLighting == null ? Unknown : _viewModelLighting.WorldLightsOnHands.ToString();
-            return $"flashlight {flash} handLights {hands} treeFires {TreeFireToggle.BurningCount} fireLights {TreeFireToggle.LitCount}";
+            return $"vsync {QualitySettings.vSyncCount} cap {Application.targetFrameRate} | weather {WeatherState()} | flashlight {flash} handLights {hands} treeFires {TreeFireToggle.BurningCount} fireLights {TreeFireToggle.LitCount}";
         }
 
         private void UnsubscribeWieldables()

@@ -161,3 +161,15 @@ Answer recorded for Carlos: the fire is one universal effect scaled only by tree
 width/shape analysis. Proposed later: 4-6 shape classes in the vegetation gallery.
 
 **Update:** Base Fire (Medium) scaled x2 (local scale 2, was 1) at Carlos's request; position unchanged (0, 0.4, 0).
+
+## 7. 2026-09-30 (evening): what the fires cost at rest (first measurement, build 38)
+
+Same spot, standing still at "Story 6 - Fountain" in the Windows build (build 38, vsync off, Ryzen 7 9800X3D / RX 9070 XT), fire size 1.2, light x3, medium base fire:
+
+| State | fps | frame ms | GPU ms | draws | SetPass | tris |
+|---|---|---|---|---|---|---|
+| Fires off | 118.1 | 8.5 | 8.2 | 19,570 | 335 | 89.2 M |
+| Fires on (60 burning, 10 lights) | 89.8 | 11.1 | 10.9 | 19,800 | 486 | 89.2 M |
+
+The 60 fires cost **28 fps (-24%), +2.6 ms**, all of it GPU (particles, overdraw, 10 real lights), none of it geometry. Logged as H11 in
+`Docs/performance-sessions.md`. This is the "before" for the culling test (`Docs/culling-ast145.md`); fires on a culled tree is one of its test items.
