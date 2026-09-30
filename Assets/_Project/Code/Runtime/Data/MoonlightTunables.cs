@@ -571,6 +571,47 @@ namespace MrMoonlight.Data
         /// <summary>Seconds to wait after death before stripping a corpse down to an inert prop (colliders and AI/attack/patrol behaviours disabled). Must stay longer than Blaze's own death animation/ragdoll settle, or the corpse visibly glitches mid-animation. Owner: island-demo-wrapup, 2026-09-10</summary>
         public float EnemyCorpseCleanupDelay = 3.5f;
 
+        [Header("Corpse optimization — MRM-85 (2026-09-30, Legion-mode test; story mode will revisit)")]
+
+        /// <summary>Master switch for the "settle" pass that runs on every corpse after <see cref="EnemyCorpseCleanupDelay"/> + <see cref="CorpseSettleDelay"/>. Off = corpses behave exactly as before this change. Owner: MRM-85</summary>
+        public bool CorpseOptimizeEnabled = true;
+
+        /// <summary>Seconds after the AI cleanup before the render/physics settle pass runs. Must outlast the death animation and ragdoll settle, or the pose freezes mid-fall. Owner: MRM-85</summary>
+        public float CorpseSettleDelay = 5f;
+
+        /// <summary>Step 1: the corpse's renderers stop casting shadows (each cast is an extra draw per shadow cascade). Owner: MRM-85</summary>
+        public bool CorpseShadowsOff = true;
+
+        /// <summary>Step 2: the corpse's Animator is disabled once settled (the pose stays; no more evaluation or skinning-rig updates). Owner: MRM-85</summary>
+        public bool CorpseDisableAnimator = true;
+
+        /// <summary>Step 3: GoreSimulator is disabled and blood particle systems on the corpse are stopped. STORY MODE WANTS THIS FALSE: shooting and dismembering corpses needs the GoreSimulator alive (Carlos, 2026-09-30). Owner: MRM-85</summary>
+        public bool CorpseDisableGore = true;
+
+        /// <summary>Step 4: once the dropped lamp's fire and light have burned out (its own timeline, unchanged), its Light, rigidbody and colliders are removed. Owner: MRM-85</summary>
+        public bool CorpseLampCleanupAfterOut = true;
+
+        /// <summary>Step 5: the ragdoll's CharacterJoints and Rigidbodies are destroyed once settled (colliders are already off). A dismemberable corpse needs them, so STORY MODE SHOULD TURN THIS OFF TOO, together with <see cref="CorpseDisableGore"/>. Owner: MRM-85</summary>
+        public bool CorpseStripPhysics = true;
+
+        /// <summary>Step 6: a dropped prop made of several LOD meshes (the shotgun draws LOD0, LOD1 and LOD2 at once, about 14 renderers) keeps only this LOD index and shadows-off renderers. -1 = leave drops alone. Owner: MRM-85</summary>
+        public int CorpseDropKeepLodIndex = 1;
+
+        /// <summary>Step 7: corpses are handed to AST-145 Dynamic Culling (when the scene has a Dynamic Culling controller and the bridge is present): the body renderer is switched off while no ray from the camera hits its proxy box. The body stays in the world. Owner: MRM-85</summary>
+        public bool CorpseCullingEnabled = true;
+
+        /// <summary>Dissolve and remove corpses (Legion mode; MRM-85, 2026-09-30). The body burns away, then the lamp and dropped props dissolve while the lamp light dims out, and then the whole enemy (body, drops, culling proxy, registrations) is destroyed and freed. STORY MODE WANTS THIS OFF: corpses stay and can be shot and dismembered. Owner: MRM-85</summary>
+        public bool CorpseDissolveEnabled = true;
+
+        /// <summary>Seconds a corpse lies still, after the settle pass, before the dissolve starts. Owner: MRM-85</summary>
+        public float CorpseDissolveDelay = 3f;
+
+        /// <summary>Seconds the body takes to burn away (0 to 1). Skipped (instant) when no camera can see the body. Owner: MRM-85</summary>
+        public float CorpseDissolveDuration = 3f;
+
+        /// <summary>Seconds the dropped lamp and props take to dissolve once the body is gone, which is also how long the lamp light takes to dim to zero. Owner: MRM-85</summary>
+        public float CorpseLampDissolveDuration = 3f;
+
         [Header("Island scene startup preset — LEGACY, demo-only, 2026-09-10 (see IslandStartupPreset)")]
 
         /// <summary>Intensity of the small point light attached to the player's camera, so the player is never standing in total black regardless of which startup preset (or later cheat-key change) is active.</summary>

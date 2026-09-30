@@ -1,0 +1,52 @@
+Context prompt: MRM-85 performance, NEXT SESSION = COMPARE THE NEW FOG ASSET WITH HAZE (OPUS suggested for the integration, SONNET for the measuring). Read this cold; don't rely on chat scrollback.
+
+WRITTEN: 2026-09-30, end of the session that locked culling C, optimized the corpses and added the corpse dissolve.
+Branch `mrm-86` (upstream is mrm-86, not main). Carlos commits with Docs/mrm85-commit-message-2.txt; when he says "I committed", read the hash with
+`git log -1` and fill it into C-012 and C-013 in Docs/performance-sessions.md section 8 (they say `pending`), then make build 44 from that commit.
+Supersedes Docs/mrm85-culling-corpses-sonnet-prompt.txt (that job is DONE). The MRM-86 lighting context in Docs/mrm86-sonnet-prompt.txt still stands.
+
+Do NOT auto-start. Wait for Carlos's go-ahead. Never commit or push (GitHub Desktop). Linear issue: MRM-85 ("Performance reports", never closed).
+
+THE PLAN (Carlos, 2026-09-30): stop working on corpses for now. NEXT: test the other fog asset ("Volumetric Fog & Mist 2") against HAZE and find which performs better.
+Goal of it all: the best combination (culling + corpses + fog + fires) for performance.
+
+===========================================================================
+1. WHAT WAS DONE THIS SESSION (details: Docs/corpse-optimization.md, Docs/culling-ast145.md section 12, Docs/performance-sessions.md sections 3, 5, 7, 8)
+===========================================================================
+- Culling C (AST-145 Dynamic, FullDisable) is in Island, Island_Legion and LightingTestScene. The two CullingTest scenes are now redundant copies.
+- Corpse settle pass (shadows off, Animator off, gore off, ragdoll stripped, shotgun LOD1, AST-145 corpse culling) and the corpse DISSOLVE (RetroLit burn dissolve from AST-063,
+  body then lamp, then the enemy is destroyed, ~17 s after death). Everything is a tunable ("Corpse optimization" in MoonlightTunables); Legion mode only, story mode turns
+  CorpseDisableGore, CorpseStripPhysics and CorpseDissolveEnabled OFF (Carlos wants to shoot and dismember corpses there; he defines the real story behaviour after the Fable pass).
+- Build 43 (corpse optimization, before the dissolve) analysis: corpse geometry fell 40% at 30+ corpses but the frame at 60-100 corpses stayed 24 ms. New hypothesis H13: dynamic
+  lights (alive lamps + dropped lamps + fire lights, handLights ~52) limit the frame. The dissolve removes dropped lamps after ~17 s, so the next fight run tells H13 from H1.
+- The dissolve and the settle pass are verified in Play Mode only. NOT yet seen in a build: the burn look with the real post stack, 20+ dissolves at once, blood decals left in the world.
+  Build 44 (from the commit) is the first build with the dissolve.
+
+===========================================================================
+2. JOB: FOG COMPARISON (HAZE vs Volumetric Fog & Mist 2)
+===========================================================================
+a) The fog asset is NOT imported yet as far as the repo shows (no folder in Assets, none in the Playground project). Ask Carlos for its AST id / zip in
+   `Documents\Asset Collection\01_DOWNLOAD` and follow Docs/asset-import-update-process.md; Playground first (dual-project workflow), legacy-Input check on any demo scene
+   (standing rule), Assets.zip never touched. Only FogSettings (`Runtime/World/Weather/WeatherProfile.cs`) and `HazeFogAdapter.cs` should need to change for the swap (MRM-86 prompt).
+b) Read Docs/lighting.md section 1.1 and Docs/pc-build-target.md section HAZE first. HAZE traps: fog needs camera post-processing ON (`UniversalAdditionalCameraData`), HAZE is git-ignored
+   (Assets/ThirdParty/HAZE), `VP_HazeGlobalFog.asset` `active` flips are noise, F6 toggles fog.
+c) Measure inside the same A/B framework so the numbers compare: LightingTestScene (start spot player (218.06, 33.37, -5.23) yaw 311.3), no combat first: spawn still 10 s, Fountain still fires off 30 s,
+   fires on 30 s; same weather, same yaw (camera yaw is NOT in the log; idea: add it to [PERF] and log it). Runs: A = HAZE, B = new fog, (C = fog off as the floor). Compare mean ms and GPU ms per phase,
+   draws/SetPass/tris. Only then a fight run. Record every step as new Hn rows + a section 8 C-number in Docs/performance-sessions.md and as a comment on MRM-85.
+d) Build process: memory build_process.md (numbered folder under E:\Builds: next is 44, `<N> - <2 words> - <date>`, Build.zip with '/' separators via a .ps1 file, verify backslashes/zero-byte,
+   pass the scene list to manage_build). Check the console for errors ~30 s after scheduling (a build that failed looks like a disconnect).
+
+===========================================================================
+3. TRAPS ALREADY FOUND (do not repeat)
+===========================================================================
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode. Play Mode edits to scene components are discarded; tunables assets edited in Play Mode persist in memory (restore them).
+- UnityMCP execute_code is C# 6 CodeDom: no `using` in-body, no tuples, fully qualify types; `Object` is ambiguous (write UnityEngine.Object).
+- Python/heredoc: a bash heredoc with awkward quoting failed silently once; write scripts to the scratchpad with the Write tool and run them. Docs are CRLF; edit with newline='' to keep it.
+- The AST-145 folder and the corpse culling bridge (`Assets/ThirdParty/AST-145/MrMoonlightBridge`) are git-ignored: a fresh clone builds and plays without corpse culling.
+- The player camera cannot be aimed by script (the controller resets it); for screenshots use `manage_camera screenshot` with `view_position` + `view_target` (renders from any point).
+- The editor renders slower than a build; never compare editor fps with build logs.
+- Open items: bullets against the layer-29 tree hulls and corpse proxy boxes (player weapon masks not read); an upright "standing corpse" Carlos saw (suspect: Animator frozen on a fixed timer, wait
+  for a still pose instead); a tree pop-in he saw (suspect: corpse proxy boxes blocking culling rays; test `CorpseCullingEnabled` off); the lamp-light shadows-off test (H13, one flag) is still pending.
+- Reminder: corpse-optimization.md section 7 lists what dissolve did NOT do (blood decals/pieces are not freed) and the shadow-caster pass of RetroLit has no dissolve clip (corpses have shadows off).
+
+MODEL: Opus for integrating the fog asset if it needs shader or volume work; Sonnet for running and analysing the A/B/C fog runs.

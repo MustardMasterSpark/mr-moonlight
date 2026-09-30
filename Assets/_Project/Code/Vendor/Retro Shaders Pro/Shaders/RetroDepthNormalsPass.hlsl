@@ -14,6 +14,7 @@ struct v2f
 	float4 positionCS : SV_POSITION;
 	float2 uv : TEXCOORD0;
 	float3 normalWS : TEXCOORD1;
+	float3 positionWS : TEXCOORD2;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 	UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -32,6 +33,7 @@ v2f depthNormalsVert(appdata v)
 
 	o.normalWS = TransformObjectToWorldNormal(v.normalOS);
 	o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+	o.positionWS = TransformObjectToWorld(v.positionOS.xyz);
 
 	return o;
 }
@@ -57,6 +59,10 @@ void depthNormalsFrag(
 #endif
 
 	Alpha(baseColor.a, _BaseColor, _Cutoff);
+
+#ifdef _USE_DISSOLVE
+	clip(DissolveDistance(i.positionWS));
+#endif
 
 	outNormalWS = float4(NormalizeNormalPerPixel(i.normalWS), 0.0f);
 		

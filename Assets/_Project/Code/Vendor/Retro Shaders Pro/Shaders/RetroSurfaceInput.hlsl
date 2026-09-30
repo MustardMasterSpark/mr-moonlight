@@ -41,7 +41,42 @@ float _WindEnabled;
 float _WindCategory;
 float _WindHeight;
 float _WindFlexibility;
+// Burn dissolve (MRM-85, corpse dissolve; look ported from INab Dissolve FX "Burn Dissolve", AST-063).
+// Only acts when _USE_DISSOLVE is on; the properties are declared unconditionally so the
+// UnityPerMaterial layout stays identical across every pass and keyword combination.
+float _DissolveAmount;
+float _DissolveMinY;
+float _DissolveMaxY;
+float _DissolveNoiseScale;
+float _DissolveNoiseInfluence;
+float _DissolveNoiseContrast;
+float _DissolveBurnWidth;
+float _DissolveCharWidth;
+float _DissolveCharDarkness;
+float _DissolveBurnPower;
+float4 _DissolveBurnColor;
 CBUFFER_END
+
+TEXTURE2D(_DissolveNoise);
+
+// Dissolve distance for a world position: negative = already dissolved (clip), 0..BurnWidth =
+// glowing edge, then the charred band, then untouched. The front sweeps from the top of the
+// object (_DissolveMaxY) to the bottom (_DissolveMinY), broken up by world-space noise
+// (three planar samples, no normal needed so the depth passes can use it too).
+float DissolveDistance(float3 positionWS)
+{
+	float height = max(_DissolveMaxY - _DissolveMinY, 1e-4);
+	float sweep = saturate((_DissolveMaxY - positionWS.y) / height);
+
+	float n = SAMPLE_TEXTURE2D_LOD(_DissolveNoise, sampler_LinearRepeat, positionWS.xz * _DissolveNoiseScale, 0).r
+			+ SAMPLE_TEXTURE2D_LOD(_DissolveNoise, sampler_LinearRepeat, positionWS.xy * _DissolveNoiseScale, 0).r
+			+ SAMPLE_TEXTURE2D_LOD(_DissolveNoise, sampler_LinearRepeat, positionWS.zy * _DissolveNoiseScale, 0).r;
+	n = saturate((n / 3.0 - 0.5) * _DissolveNoiseContrast + 0.5);
+
+	float v = lerp(sweep, n, _DissolveNoiseInfluence);
+	float front = lerp(-(_DissolveBurnWidth + _DissolveCharWidth), 1.001, _DissolveAmount);
+	return v - front;
+}
 
 // Pixel Size used for dithering, set by CRT effect (if one is active).
 int _RetroPixelSize = 1;

@@ -1,0 +1,41 @@
+SUMMARY:
+MRM-85: Culling C in every forest scene, corpse optimization, corpse dissolve and removal (RetroLit burn dissolve)
+
+DESCRIPTION:
+Performance work on mrm-86 (Linear MRM-85). Change records C-012 and C-013 in
+Docs/performance-sessions.md section 8; details in Docs/corpse-optimization.md.
+
+Culling C locked (C-012): AST-145 Dynamic Culling, FullDisable, now in Island (5,990
+trees), Island_Legion and LightingTestScene (8,786 each): controller, camera on
+PlayerCamera, baked layer-29 colliders on every Gaia tree. Sandbox, MainMenu and the
+galleries have no Gaia trees. (The AST-145 asset itself stays git-ignored.)
+
+Corpse optimization (C-012): new CorpseOptimizer settle pass 5 s after the AI strip:
+shadows off, Animator off, GoreSimulator + blood particles off, ragdoll joints and
+rigidbodies destroyed, dropped shotgun shows LOD1 only, corpse culling through AST-145
+(CorpseCullingHooks; the bridge lives in the git-ignored asset folder). EnemyDeathDrop
+exposes DroppedItems. 10 Corpse* tunables in MoonlightTunables. Legion mode only: story
+mode must turn CorpseDisableGore, CorpseStripPhysics and CorpseDissolveEnabled off.
+
+Corpse dissolve (C-013): the AST-063 Dissolve FX "Burn Dissolve" look ported into RetroLit
+as an opt-in _USE_DISSOLVE feature (RetroLit.shader, RetroSurfaceInput.hlsl, depth passes;
+off for every existing material), noise texture Art/VFX/Dissolve/Dissolve_Noise.png, five
+*_Dissolve.mat variants, CorpseDissolve component on Enemy_Spotter.prefab, editor menu
+Mr. Moonlight > Corpse Dissolve > Rebuild Material Variants. After the settle pass: 3 s,
+body burns 3 s, lamp and props burn 3 s while the lamp light dims (LampFireEffect
+.FadeOutAndFinish), then the enemy, its drops, its culling proxy and registrations are
+destroyed. This replaces the earlier "lamp keeps its own timeline" rule for corpses.
+
+SessionLog v5.2 / v5.3: enemy counts read "corpses N (settled S, dissolved D, culling
+C/R)", corpses is the live count, two [CORPSE] lines per dissolved corpse.
+
+Build 43 analysis (Docs/performance-sessions.md section 5, new H13): corpse geometry cost
+fell 40% at 30+ corpses (draws -44%, SetPass -39%, +21% fps at 30-59 corpses) but the frame
+at 60-100 corpses did not improve: dynamic lights (alive and dropped lamps, fires) are the
+next suspect.
+
+Docs: corpse-optimization.md (new), culling-ast145.md section 12, lighting.md section 8,
+performance-sessions.md sections 3, 5, 7, 8. Next: fog asset comparison (see
+Docs/mrm85-fog-compare-prompt.txt).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

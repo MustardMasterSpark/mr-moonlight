@@ -1161,6 +1161,7 @@ GameObject:
   - component: {fileID: 4091795701585800007}
   - component: {fileID: 2046724622904657197}
   - component: {fileID: 2569506990065294519}
+  - component: {fileID: 7207932442724839051}
   m_Layer: 6
   m_Name: Enemy_Spotter
   m_TagString: Enemy
@@ -2753,6 +2754,29 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b783f6f33a7f92743b59212b82c8e6d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.Spotter.SpotterDetectionAlert
+--- !u!114 &7207932442724839051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1499000362912248528}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee6e5853645e9b7478ad00dae7d7481f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.Enemies.CorpseDissolve
+  materials:
+  - source: {fileID: 2100000, guid: 271e9f0a1aab57f448505c81c9f09265, type: 2}
+    dissolve: {fileID: 2100000, guid: 871f96383298be24dbd0e5d13cf9119c, type: 2}
+  - source: {fileID: 2100000, guid: 056bfe1a309d6224a8511de7088ebfbb, type: 2}
+    dissolve: {fileID: 2100000, guid: 5b159bb777c07574b9c5f9c55658ff87, type: 2}
+  - source: {fileID: 2100000, guid: 2cbd6d0af035a694aa76feca398cc44f, type: 2}
+    dissolve: {fileID: 2100000, guid: d7b443fed156bb94b956449099149a6e, type: 2}
+  - source: {fileID: 2100000, guid: 9d655bc6e58949f40ab8138bd37ad7f5, type: 2}
+    dissolve: {fileID: 2100000, guid: a888af2a71285e645a0386ef630cf392, type: 2}
+  - source: {fileID: 2100000, guid: 5fc6e8138bf830945ae5bc00076d1310, type: 2}
+    dissolve: {fileID: 2100000, guid: 6c4edd30e3ebe2146a5d44092defb35a, type: 2}
 --- !u!1 &1529947185680349093
 GameObject:
   m_ObjectHideFlags: 0

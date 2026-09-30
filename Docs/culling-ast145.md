@@ -214,3 +214,24 @@ The two scenes are ~66.5 MB each (GitHub warns at 50 MB per file, blocks at 100 
 
 **Next sessions:** (1) wire the chosen method into the real scenes, finish the open tests (bullets vs leaves), tune, and optimize the corpses (what stays active after death:
 see the prompt, section 4); (2) swap HAZE for Volumetric Fog & Mist 2; (3) find the best combination.
+
+## 12. LOCKED 2026-09-30: C (FullDisable) in every forest scene, and corpses get culled too
+
+**Decision (Carlos, 2026-09-30): build C is the way forward.** Applied to every scene that has a Gaia forest, using the rebuild recipe
+(controller, camera, sources, bake) and read back from disk afterwards:
+
+| Scene | Tree sources | Read-back |
+|---|---|---|
+| `Island` | 5,990 | FullDisable 5,990, baked 5,990, layer-29 colliders 5,990, controller default FullDisable, lifetime 2, camera PlayerCamera |
+| `Island_Legion` | 8,786 | same, all 8,786 |
+| `LightingTestScene` | 8,786 | same, all 8,786 (the start spot and circuit are unchanged) |
+
+`Sandbox`, `MainMenu`, `VegetationGallery` and `VegetationGallery_TechnieColliderTest` have no Gaia Terrains (0 tree renderers): nothing to cull.
+The two test scenes `LightingTestSceneCullingTest` (B) and `...Full` (C) are now redundant copies; keep or delete, Carlos decides.
+**Any future scene with a forest gets the same recipe.** B (KeepShadows) stays the documented fallback (section 11).
+New scenes are +30 MB and +N GameObjects each (N = tree count). Cost of the ray jobs in the CPU number: still not isolated.
+
+**Corpses are culled by the same system (step 7 of `corpse-optimization.md`).** A second controller, `Dynamic Culling (Corpses)` (ID 1,
+`MergeInGroups` off), is created at runtime by `Assets/ThirdParty/AST-145/MrMoonlightBridge/CorpseCullingBridge.cs` (git-ignored, like the asset)
+when the first corpse settles in a scene that already has the tree controller. Verified in Play Mode: looking away for 4 s switched the body off,
+looking back switched it on. **Still open:** bullets against the layer-29 tree hulls and the corpse proxy boxes (player weapon masks not read yet).

@@ -45,6 +45,10 @@ namespace MrMoonlight.Enemies
         [SerializeField] private Transform dropParent;
 
         private readonly List<Rigidbody> _dropped = new List<Rigidbody>();
+        private readonly List<Transform> _droppedItems = new List<Transform>();
+
+        /// <summary>Every prop this enemy has detached so far (lamp, shotgun). Read by <see cref="CorpseOptimizer"/>.</summary>
+        public IReadOnlyList<Transform> DroppedItems => _droppedItems;
 
         /// <summary>Wired to <see cref="EnemyHealth.Died"/>. Safe to call twice.</summary>
         public void DropAll()
@@ -62,6 +66,7 @@ namespace MrMoonlight.Enemies
             Transform item = drop.item;
             item.SetParent(dropParent, worldPositionStays: true);
             item.gameObject.SetActive(true);
+            _droppedItems.Add(item);
 
             if (drop.groundSnapNoPhysics)
             {

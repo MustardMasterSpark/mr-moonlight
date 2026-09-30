@@ -1,6 +1,8 @@
 using DG.Tweening;
 using MrMoonlight.Data;
+using MrMoonlight.World.Weather;
 using UnityEngine;
+using UnityEngine.Rendering.Universal;
 
 namespace MrMoonlight.Enemies
 {
@@ -39,6 +41,9 @@ namespace MrMoonlight.Enemies
         [SerializeField] private AudioSource impactAudioSource;
 
         private Rigidbody _body;
+        private Sequence _fireSequence;
+        private Sequence _lightSequence;
+        private GameObject _fire;
         private Renderer[] _lampRenderers;
         private float _settledTimer;
         private bool _ignited;
@@ -195,17 +200,89 @@ namespace MrMoonlight.Enemies
             if (audio != null) sequence.Join(DOTween.To(() => audio.volume, v => audio.volume = v, 0f, fadeOutDuration));
 
             sequence.SetLink(fire).OnComplete(() => Destroy(fire));
+            _fire = fire;
+            _fireSequence = sequence;
         }
 
         private void FadeLampLight()
         {
             if (lampLight == null) return;
 
-            DOTween.Sequence()
+            _lightSequence = DOTween.Sequence()
                 .AppendInterval(Tunables.I.LampFireBurnDuration)
                 .Append(lampLight.DOIntensity(0f, Tunables.I.LampLightFadeDuration))
                 .SetLink(gameObject)
-                .OnComplete(() => lampLight.enabled = false);
+                .OnComplete(OnLampOut);
+        }
+
+        /// <summary>
+        /// The lamp's own timeline is unchanged (burn, then fade over LampLightFadeDuration); this is what
+        /// happens once it is fully out. The light was already at zero, so removing it is invisible.
+        /// With <see cref="MoonlightTunables.CorpseLampCleanupAfterOut"/> the Light (and its weather and URP
+        /// companions), the lamp's rigidbody and colliders, and this component are all removed, so a
+        /// burnt-out lamp is a plain mesh that costs nothing. MRM-85.
+        /// </summary>
+        /// <summary>
+        /// Cuts the burn timeline short: the lamp light, the fire's light, flame and sound all fade to zero over
+        /// <paramref name="duration"/>, then the same clean-up as a natural burn-out runs. Used by the corpse
+        /// dissolve (MRM-85, Carlos 2026-09-30): the lamp's dissolve is what dims its light. Safe to call at
+        /// any point, before or after ignition.
+        /// </summary>
+        public void FadeOutAndFinish(float duration)
+        {
+            _ignited = true; // a lamp that has not ignited yet never will
+            _lightSequence?.Kill();
+            _fireSequence?.Kill();
+
+            Sequence fade = DOTween.Sequence();
+            if (lampLight != null) fade.Join(lampLight.DOIntensity(0f, duration));
+
+            if (_fire != null)
+            {
+                var flicker = _fire.GetComponentInChildren<LightFlicker>();
+                if (flicker != null) flicker.enabled = false; // it would fight the fade
+                foreach (ParticleSystem ps in _fire.GetComponentsInChildren<ParticleSystem>())
+                    ps.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+
+                Light fireLight = _fire.GetComponentInChildren<Light>();
+                if (fireLight != null) fade.Join(fireLight.DOIntensity(0f, duration));
+
+                AudioSource audio = _fire.GetComponentInChildren<AudioSource>();
+                if (audio != null) fade.Join(DOTween.To(() => audio.volume, v => audio.volume = v, 0f, duration));
+            }
+
+            fade.SetLink(gameObject).OnComplete(() =>
+            {
+                if (_fire != null) Destroy(_fire);
+                OnLampOut();
+            });
+        }
+
+        private void OnLampOut()
+        {
+            if (lampLight == null) return;
+
+            if (!Tunables.I.CorpseLampCleanupAfterOut)
+            {
+                lampLight.enabled = false;
+                return;
+            }
+
+            GameObject lightObject = lampLight.gameObject;
+            if (lightObject != gameObject)
+            {
+                Destroy(lightObject); // a dedicated child: takes Light, URP data and the weather source with it
+            }
+            else
+            {
+                if (TryGetComponent(out WeatherLightSource weather)) Destroy(weather);
+                if (TryGetComponent(out UniversalAdditionalLightData extra)) Destroy(extra);
+                Destroy(lampLight);
+            }
+
+            foreach (Collider col in GetComponentsInChildren<Collider>(true)) Destroy(col);
+            if (TryGetComponent(out Rigidbody body)) Destroy(body);
+            enabled = false;
         }
     }
 }

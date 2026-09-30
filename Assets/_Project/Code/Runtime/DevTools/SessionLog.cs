@@ -475,6 +475,7 @@ namespace MrMoonlight.DevTools
 
         private int CorpsesIn(int sceneHandle)
         {
+            _corpses.RemoveWhere(h => h == null); // dissolved corpses are destroyed: forget them
             int count = 0;
             foreach (EnemyHealth h in _corpses)
             {
@@ -506,7 +507,7 @@ namespace MrMoonlight.DevTools
             }
 
             SceneStats stats = StatsFor(sceneHandle);
-            return $"alive {total}{(kinds.Length > 0 ? $" ({kinds})" : "")}, corpses {CorpsesIn(sceneHandle)} | scene so far: {stats.Spawned} spawned, {stats.Killed} killed";
+            return $"alive {total}{(kinds.Length > 0 ? $" ({kinds})" : "")}, corpses {CorpsesIn(sceneHandle)} (settled {CorpseOptimizer.SettledCount}, dissolved {CorpseOptimizer.DissolvedCount}, culling {CorpseCullingHooks.CulledNow}/{CorpseCullingHooks.Registered}) | scene so far: {stats.Spawned} spawned, {stats.Killed} killed";
         }
 
         // --- perf ---------------------------------------------------------------------------
