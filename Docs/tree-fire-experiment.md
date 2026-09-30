@@ -135,3 +135,29 @@ off-screen, with large overlapping transparent sprites (overdraw); 8,128 `LightF
 - Fog: the fires light the HAZE fog through Forward+. When the fog changes (tuning, or Volumetric Fog & Mist 2), record
   how the fires look and cost here.
 - **New fog asset** (Carlos may try Volumetric Fog & Mist 2): record how the fires look and cost under it here.
+
+## 6. 2026-09-30 (later): bigger fires, brighter lights, glow ball off
+
+Carlos's request after looking at screenshots (Story 6 · Fountain): fires 20% bigger (may poke outside the tree),
+fire lights much more visible at night, and remove "a tiny ball of light in the center of the fire" but keep the fire.
+Three new `TreeFireToggle` Inspector settings (code only; no profile or prefab values touched):
+- `fireSizeMultiplier` = **1.2** (multiplies the tree-height scale in `Ignite`; live).
+- `lightIntensityMultiplier` = **3** (multiplies the weather profile's Tree Fires Intensity; flicker added after; live).
+- `showGlowBall` = **off**: the prefab's `glow` child (a sprite-glow particle system at the fire's centre, my best
+  guess for the ball; not confirmed by a screenshot) is destroyed when the pool is built. If a ball remains, it is
+  another child (`LogFire`, `Fire`, `Smoke`). Changing it needs the I key pressed for the first time after Play starts.
+Not measured yet: the cost of the larger particles or the brighter lights. Carlos to tune the multipliers by eye.
+
+## 7. 2026-09-30 (later still): Medium Fire at the base of each tree fire
+
+Carlos: add AST-015's "Fire Medium" at the base of the trees, like on the log body; some logs are partly buried, so
+"base" means where the terrain starts. Copied from Playground with `.meta` into git-ignored `ThirdParty/AST-015`:
+`Fire Medium URP.prefab`, `FloorFireAURP.mat`, `FireBaseA.png`. Added to `TreeFire_FX.prefab` as the child
+**Base Fire (Medium)** at local (0, 0.4, 0), unpacked, with its Light, AudioSource and `base` ground-disc mesh removed
+(pooled lights and sounds already cover those). It scales with the tree (child of the fire) and is pooled with it,
+so the particle count per fire rose (8 systems now). `showGlowBall` off also removes its `Glow`. The 0.4 m height
+(scaled by tree size) is a first guess for buried logs; tune in the prefab. Not measured yet.
+Answer recorded for Carlos: the fire is one universal effect scaled only by tree height / 12 m; no per-species or
+width/shape analysis. Proposed later: 4-6 shape classes in the vegetation gallery.
+
+**Update:** Base Fire (Medium) scaled x2 (local scale 2, was 1) at Carlos's request; position unchanged (0, 0.4, 0).

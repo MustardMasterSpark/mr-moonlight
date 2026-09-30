@@ -42,6 +42,14 @@ namespace MrMoonlight.DevTools
                  + "Each fire is scaled by its tree's height divided by this.")]
         [Min(0.1f)] [SerializeField] private float referenceTreeHeight = 12f;
 
+        [Tooltip("Extra size on every fire on top of the tree-height scale (1.2 = 20% bigger). It may poke outside "
+                 + "the tree. Applied live.")]
+        [Min(0.1f)] [SerializeField] private float fireSizeMultiplier = 1.2f;
+
+        [Tooltip("Show the effect's 'glow' sprite, the small bright ball at the heart of each fire. Off = flames "
+                 + "and smoke only. Read at the first press.")]
+        [SerializeField] private bool showGlowBall;
+
         [Tooltip("Vegetation shorter than this (stumps, logs, bushes) gets no fire, metres. Read at the first press.")]
         [Min(0f)] [SerializeField] private float minTreeHeight = 3f;
 
@@ -67,6 +75,10 @@ namespace MrMoonlight.DevTools
         [Tooltip("How many of the nearest fires get a real point light. The main cost lever for lighting "
                  + "(each light also lights the HAZE fog and the smoke). Read at the first press.")]
         [Min(0)] [SerializeField] private int maxLights = 10;
+
+        [Tooltip("Multiplies the weather profile's Tree Fires light intensity (the flicker is added after). "
+                 + "Raise it so the fires read at night. Applied live.")]
+        [Min(0f)] [SerializeField] private float lightIntensityMultiplier = 3f;
 
         [Tooltip("Seconds for a fire light to fade in or out.")]
         [Min(0.01f)] [SerializeField] private float lightFadeSeconds = 1f;
@@ -254,6 +266,18 @@ namespace MrMoonlight.DevTools
                     Destroy(light.gameObject);
                 }
 
+                if (!showGlowBall)
+                {
+                    // Every 'glow' sprite: the main fire's and the base fire's. Immediate: Systems is collected right below.
+                    foreach (Transform child in go.GetComponentsInChildren<Transform>(true))
+                    {
+                        if (child != go.transform && child.name.ToLowerInvariant() == "glow")
+                        {
+                            DestroyImmediate(child.gameObject);
+                        }
+                    }
+                }
+
                 var fire = new Fire { Go = go, Systems = go.GetComponentsInChildren<ParticleSystem>(true) };
                 foreach (ParticleSystem system in fire.Systems)
                 {
@@ -398,7 +422,7 @@ namespace MrMoonlight.DevTools
             _byTree[tree] = fire;
             fire.Go.transform.SetPositionAndRotation(_trees[tree].Position,
                 Quaternion.Euler(0f, (tree * 137.5f) % 360f, 0f));
-            fire.Go.transform.localScale = Vector3.one * _trees[tree].Scale;
+            fire.Go.transform.localScale = Vector3.one * (_trees[tree].Scale * fireSizeMultiplier);
             fire.Go.SetActive(true);
             foreach (ParticleSystem system in fire.Systems)
             {
@@ -522,7 +546,7 @@ namespace MrMoonlight.DevTools
                 light.Light.range = look.Range;
                 light.Light.shadows = look.Shadows;
                 light.Light.shadowStrength = look.ShadowStrength;
-                light.Light.intensity = (look.Intensity + noise * flickerAmount) * light.Fade;
+                light.Light.intensity = (look.Intensity * lightIntensityMultiplier + noise * flickerAmount) * light.Fade;
                 on++;
             }
 

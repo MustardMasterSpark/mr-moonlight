@@ -1,0 +1,23 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-86: Tree fire tuning (size, light intensity, no glow ball), Medium Fire at the tree base
+
+
+DESCRIPTION (the body field)
+============================
+
+- TreeFireToggle: new Inspector settings fireSizeMultiplier (1.2, fires 20% bigger), lightIntensityMultiplier (3,
+  scales the weather profile's Tree Fires intensity so the fires read at night) and showGlowBall (off: removes the
+  fire effect's "glow" sprites, the small bright ball at the heart of each fire).
+- TreeFire_FX.prefab: new child "Base Fire (Medium)" (AST-015 Fire Medium URP, scale 2, 0.4 m up so it sits at the
+  terrain line of partly buried logs), its Light, AudioSource and base disc removed. Pooled and scaled with the fire.
+- Fix: removing the glow with Destroy left a dead ParticleSystem in the fire's list, so every ignite threw
+  MissingReferenceException while walking and aborted the reassign pass (late, dropping, relighting fires). Now
+  DestroyImmediate.
+- Docs: tree-fire-experiment.md sections 6-7, lighting.md section 8, performance-sessions.md change record C-009
+  (and C-008's commit hash 94976b95 filled in), handoff prompt mrm86-sonnet-prompt.txt now points at AST-145.
+- Vendor files (Fire Medium URP prefab, FloorFireAURP.mat, FireBaseA.png) are in git-ignored ThirdParty/AST-015.
+- Not measured: the frame cost of the bigger fires and brighter lights.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
