@@ -48,6 +48,12 @@ namespace MrMoonlight.Runtime
 
         private bool _applying;
 
+        /// <summary>
+        /// True while the fog is switched off here. The weather system (<c>HazeFogAdapter</c>, <c>Vf2FogAdapter</c>) checks
+        /// it after every write, so a weather change or blend never turns the fog back on behind this switch.
+        /// </summary>
+        public static bool FogSuppressed { get; private set; }
+
         public bool FogEnabled
         {
             get => fogEnabled;
@@ -60,7 +66,11 @@ namespace MrMoonlight.Runtime
             set { crtEnabled = value; Apply(); }
         }
 
-        private void OnEnable() => SyncFromProfile();
+        private void OnEnable()
+        {
+            SyncFromProfile();
+            FogSuppressed = !fogEnabled;
+        }
 
         private void OnValidate()
         {
@@ -110,8 +120,12 @@ namespace MrMoonlight.Runtime
             _applying = false;
         }
 
+        private void OnDestroy() => FogSuppressed = false;
+
         private void Apply()
         {
+            FogSuppressed = !fogEnabled;
+
             var haze = FindVolumeComponent(HazeGlobalComponentTypeName);
             var crt = FindVolumeComponent(CrtComponentTypeName);
 

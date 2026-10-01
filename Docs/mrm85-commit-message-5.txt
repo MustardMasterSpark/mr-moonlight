@@ -1,0 +1,19 @@
+SUMMARY:
+Scene Effects Toggle (F6 fog / F7 CRT) added to scene 07; the fog switch now wins over weather changes
+
+DESCRIPTION:
+Only this change (the rest of the session is in mrm85-commit-message-4.txt).
+
+Scene 07 LightingTestScene had no Scene Effects Toggle (only Island and Island_Legion did).
+Added the Scene Effects Toggle prefab with SceneEffectsDebugToggle (F6 fog, F7 CRT, font set)
+and its Target Volume = HAZE Global Fog, for level-design staging without fog/CRT.
+
+New static SceneEffectsToggle.FogSuppressed: HazeFogAdapter and Vf2FogAdapter check it after
+every write, so a weather change or blend (circuit, tuning panel) no longer turns the fog back
+on behind the switch. Verified: edit mode (fog/CRT off and on again) and Play Mode (fog switch
+OFF, forced weather transitions Story 2 and 3: HAZE global fog, area box and CRT stayed off;
+switch ON: the next weather change shows the fog again).
+
+Not done: the toggle is still missing from scene 08 (Fog Experiment).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

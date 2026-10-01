@@ -149,7 +149,7 @@ namespace MrMoonlight.World.Weather
 
             // The component stays enabled so the material keeps updating; only the mesh is hidden when off.
             _fog.UpdateMaterialProperties();
-            Visible = va.Enabled || vb.Enabled;
+            Visible = (va.Enabled || vb.Enabled) && !MrMoonlight.Runtime.SceneEffectsToggle.FogSuppressed;
         }
     }
 }

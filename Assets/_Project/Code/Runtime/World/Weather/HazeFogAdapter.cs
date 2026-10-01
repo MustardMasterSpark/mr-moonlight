@@ -158,6 +158,14 @@ namespace MrMoonlight.World.Weather
                 _area.MainLightDensityBoost = Mathf.Lerp(aa.MainLightDensityBoost, ab.MainLightDensityBoost, t);
                 _area.SecondaryLightDensityBoost = Mathf.Lerp(aa.SecondaryLightDensityBoost, ab.SecondaryLightDensityBoost, t);
             }
+        
+
+            // The scene's fog switch (F6 / Scene Effects Toggle) wins over any weather write.
+            if (MrMoonlight.Runtime.SceneEffectsToggle.FogSuppressed)
+            {
+                if (_global != null) _global.active = false;
+                if (_area != null) _area.enabled = false;
+            }
         }
 
         private static void Set(UnityEngine.Rendering.VolumeParameter<float> p, float value)

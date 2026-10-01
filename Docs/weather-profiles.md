@@ -174,3 +174,4 @@ lost then.
 - VF2 inputs (about 45) are in `Vf2FogSettings`; what the main ones do and the traps are in `fog-experiment-ast282.md`.
 - The `Scene Effects Toggle` prefab (F6 fog, F7 CRT, inspector checkboxes) was added to scene 07 on 2026-10-01 (it was only in
   Island and Island_Legion).
+- `SceneEffectsToggle.FogSuppressed` (static): while the fog switch (F6 / checkbox) is off, `HazeFogAdapter` and `Vf2FogAdapter` re-apply "off" after every weather write, so blends and weather changes cannot turn the fog back on. Verified in Play Mode in scene 07.
