@@ -38,7 +38,7 @@ namespace MrMoonlight.World
         private const string PlayerTag = "Player";
 
         [Tooltip("Applies and blends the weather profiles.")]
-        [SerializeField] private WeatherSystem weather;
+        [SerializeField] private WeatherSystemBase weather;
 
         [Tooltip("The marker (cylinder, no collider) moved from corner to corner.")]
         [SerializeField] private Transform marker;

@@ -47,7 +47,7 @@ namespace MrMoonlight.UI
 
         [Header("Scenes")]
         [Tooltip("Scene the Main Menu button loads. Matches MainMenuController's own serialized scene name.")]
-        [SerializeField] private string mainMenuSceneName = "MainMenu";
+        [SerializeField] private string mainMenuSceneName = "03 MainMenu";
 
         [Header("Transition")]
         [Tooltip("Optional full-screen black Image faded to opaque before either button loads. Assign the HUD's Black Screen.")]

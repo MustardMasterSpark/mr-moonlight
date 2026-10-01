@@ -517,7 +517,7 @@ namespace MrMoonlight.DevTools
             float step = Time.deltaTime / lightFadeSeconds;
 
             // The weather's Tree Fires light section when it overrides them, else the effect's own light.
-            WeatherSystem weather = WeatherSystem.Active;
+            WeatherSystemBase weather = WeatherSystemBase.Active;
             WorldLightSettings look = weather != null && weather.TryGetTreeFireLights(_prefabLight, _weatherLight)
                 ? _weatherLight
                 : _prefabLight;

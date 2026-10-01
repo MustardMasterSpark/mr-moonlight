@@ -156,3 +156,21 @@ lost then.
   deleted from `LightingTestScene` (Carlos: they were only for the first demo; strip them from new scenes). Island and
   Island_Legion still have them.
 - **Tree fire experiment** (I key): see `tree-fire-experiment.md`.
+
+## Session 2026-09-30 (evening): two weather systems, one per fog asset
+- The weather code is now split so each fog asset has its own system and data (Carlos's ruling: no HAZE values in the VF2
+  scene, no VF2 values in the HAZE scene).
+  - `WeatherProfileBase` = name, sky, sun, environment, lamps/flares/moon/tree fires. `WeatherProfile` (HAZE) adds `Fog` =
+    `FogSettings`; `Vf2WeatherProfile` adds `Fog` = `Vf2FogSettings`.
+  - `WeatherProfileLibraryBase` -> `WeatherProfileLibrary` (HAZE, `Data/Weather/WeatherProfiles.asset`) and
+    `Vf2WeatherProfileLibrary` (`Data/Weather/WeatherProfiles_VF2.asset`). A ScriptableObject class must live in a file named
+    after it (the VF2 library was first in the wrong file and its asset got `m_Script: 0`).
+  - `WeatherSystemBase` (abstract; blend, board, save, tree fire lights) -> `WeatherSystem` (HAZE) and `Vf2WeatherSystem`
+    (menu "Weather System (Volumetric Fog 2)"). `WeatherSystemBase.Active` is what the circuit, panel, tree fires, light
+    sources and session log use.
+  - `IFogAdapter`: `HazeFogAdapter`, `Vf2FogAdapter` (works on a runtime copy of the VF2 fog profile; "Enabled" off hides the
+    fog mesh).
+- Scene 07 `LightingTestScene` uses the HAZE system and library (unchanged); scene 08 uses the VF2 ones.
+- VF2 inputs (about 45) are in `Vf2FogSettings`; what the main ones do and the traps are in `fog-experiment-ast282.md`.
+- The `Scene Effects Toggle` prefab (F6 fog, F7 CRT, inspector checkboxes) was added to scene 07 on 2026-10-01 (it was only in
+  Island and Island_Legion).

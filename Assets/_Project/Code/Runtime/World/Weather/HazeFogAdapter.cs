@@ -5,15 +5,15 @@ namespace MrMoonlight.World.Weather
 {
     /// <summary>
     /// The only code that knows HAZE (AST-078): reads and writes <see cref="FogSettings"/> from and to the HAZE
-    /// global volume override, the HAZE noise/scattering override and one HAZE density box. Swapping the fog
-    /// asset (e.g. to Volumetric Fog &amp; Mist 2) means replacing this class and <see cref="FogSettings"/>.
+    /// global volume override, the HAZE noise/scattering override and one HAZE density box. The Volumetric Fog &amp;
+    /// Mist 2 equivalent is <see cref="Vf2FogAdapter"/>.
     ///
     /// <para>Volume parameters only take effect with their override switch on, so every write sets
     /// <c>overrideState</c>. "Fog off" is written as zero density and zero box weight so it can fade.</para>
     ///
     /// Owner: MRM-86.
     /// </summary>
-    public sealed class HazeFogAdapter
+    public sealed class HazeFogAdapter : IFogAdapter
     {
         private readonly HazeGlobalFogVolumeComponent _global;
         private readonly HazeOverridesVolumeComponent _noise;
@@ -30,6 +30,11 @@ namespace MrMoonlight.World.Weather
         }
 
         public bool HasGlobal => _global != null;
+
+        void IFogAdapter.Capture(WeatherProfileBase profile) => Capture(((WeatherProfile)profile).Fog);
+
+        void IFogAdapter.ApplyBlend(WeatherProfileBase a, WeatherProfileBase b, float t) =>
+            ApplyBlend(((WeatherProfile)a).Fog, ((WeatherProfile)b).Fog, t);
 
         /// <summary>Reads what the fog objects show right now.</summary>
         public void Capture(FogSettings fog)

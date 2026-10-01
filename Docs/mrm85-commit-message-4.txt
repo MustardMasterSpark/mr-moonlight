@@ -1,0 +1,33 @@
+SUMMARY:
+MRM-85/86: Volumetric Fog & Mist 2 experiment (scene 08), weather systems split per fog asset, scenes numbered
+
+DESCRIPTION:
+Fog experiment parked here (change record C-015 in Docs/performance-sessions.md section 8,
+H14 open). No build was made from this; the HAZE vs VF2 frame cost is NOT measured.
+
+Fog experiment (AST-282 Volumetric Fog & Mist 2): imported (scripts, editor, resources, no
+demos) to git-ignored Assets/ThirdParty/AST-282. New scene "08 LightingTestScene Fog
+Experiment" = copy of 07 with all HAZE removed, its own renderer PC_Renderer_VF2 (index 1 of
+PC_RPAsset), one VF2 fog box covering the island (-700..700, y -10..120) and a Volumetric Fog
+Manager. Findings in Docs/fog-experiment-ast282.md section 6 (the full-screen weave is the
+Jittering value, Native Lights Multiplier 0 removes the fog, Brightness ~ 1/sun, disabling the
+component leaves the mesh drawing).
+
+Weather profiles split in two (Carlos: no HAZE values in the VF2 scene and the reverse):
+WeatherSystemBase + WeatherSystem (HAZE, original library untouched) + Vf2WeatherSystem (own
+library WeatherProfiles_VF2.asset, 27 profiles, ~45 VF2 inputs), IFogAdapter, HazeFogAdapter,
+Vf2FogAdapter. Circuit, tuning panel, tree fires, light sources and session log use
+WeatherSystemBase.Active.
+
+Scenes renamed with a creation-order number prefix (01 Sandbox ... 08 LightingTestScene Fog
+Experiment); the scene-name strings the game loads by (MainMenuController, GameOverPanel and
+their serialized values) and Build Settings updated. Deleted the redundant scenes
+LightingTestSceneCullingTest, LightingTestSceneCullingTestFull and the Legion fog copy.
+Docs/scene-numbering.md.
+
+SceneEffectsToggle (F6/F7) also hides the VF2 mesh; the Scene Effects Toggle prefab added to
+scene 07. Docs: fog-experiment-ast282.md, scene-numbering.md, weather-profiles.md,
+lighting.md (1.1, 8), performance-sessions.md (H14, C-014 hash, C-015), context prompts for
+the next sessions (mrm85-fog-vf2-continue-prompt.txt, demo-update-opus-prompt.txt).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

@@ -56,9 +56,9 @@ namespace MrMoonlight.World.Weather
         private void OnEnable()
         {
             ActiveSources.Add(this);
-            if (WeatherSystem.Active != null)
+            if (WeatherSystemBase.Active != null)
             {
-                WeatherSystem.Active.ApplyTo(this);
+                WeatherSystemBase.Active.ApplyTo(this);
             }
         }
 

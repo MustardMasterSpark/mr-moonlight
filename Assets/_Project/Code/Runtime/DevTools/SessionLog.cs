@@ -210,7 +210,7 @@ namespace MrMoonlight.DevTools
         private void CheckWorldState()
         {
             // Keyed on the names only: the blend value moves every frame and would flood the log.
-            WeatherSystem active = WeatherSystem.Active;
+            WeatherSystemBase active = WeatherSystemBase.Active;
             string weather = active == null ? "none" : $"{active.CurrentName}|{active.TargetName}";
             if (weather != _lastWeather)
             {
@@ -230,7 +230,7 @@ namespace MrMoonlight.DevTools
 
         private static string WeatherState()
         {
-            WeatherSystem weather = WeatherSystem.Active;
+            WeatherSystemBase weather = WeatherSystemBase.Active;
             if (weather == null)
                 return "none";
 

@@ -19,7 +19,7 @@ namespace MrMoonlight.World.Weather
     /// Owner: MRM-86.
     /// </summary>
     [Serializable]
-    public sealed class WeatherProfile
+    public abstract class WeatherProfileBase
     {
         [Tooltip("The moment of the game this weather belongs to (story part or Legion act). Shown as the list entry's title.")]
         public string Name = "New weather";
@@ -54,11 +54,6 @@ namespace MrMoonlight.World.Weather
             Color = new Color(1f, 0.5448276f, 0.25f), Intensity = 0.89f, Range = 30f,
         };
 
-        [Header("Fog")]
-        [Tooltip("Fog. HAZE-shaped for now: this section may change if the fog asset changes "
-                 + "(Volumetric Fog & Mist 2 is being considered for sandstorms).")]
-        public FogSettings Fog = new FogSettings();
-
         /// <summary>The world-light section for a category.</summary>
         public WorldLightSettings GetWorldLights(WeatherLightCategory category)
         {
@@ -70,9 +65,54 @@ namespace MrMoonlight.World.Weather
             }
         }
 
+        /// <summary>The fog section as text, to tell whether it changed.</summary>
+        public abstract string FogJson();
+
+        /// <summary>Copies the fog section of <paramref name="from"/> (the same kind of profile) into this one.</summary>
+        public abstract void CopyFogFrom(WeatherProfileBase from);
+    }
+
+    /// <summary>
+    /// A weather for the HAZE fog scenes (AST-078). Everything but the fog is in <see cref="WeatherProfileBase"/>.
+    /// Lives in a <see cref="WeatherProfileLibrary"/>. Owner: MRM-86
+    /// </summary>
+    [Serializable]
+    public sealed class WeatherProfile : WeatherProfileBase
+    {
+        [Header("Fog (HAZE)")]
+        [Tooltip("HAZE fog: its global volume override, noise/scattering override and the scene's area density box.")]
+        public FogSettings Fog = new FogSettings();
+
+        public override string FogJson() => JsonUtility.ToJson(Fog);
+
+        public override void CopyFogFrom(WeatherProfileBase from) =>
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(((WeatherProfile)from).Fog), Fog);
+
         /// <summary>A deep copy (material references are shared, not copied).</summary>
         public WeatherProfile Clone() => JsonUtility.FromJson<WeatherProfile>(JsonUtility.ToJson(this));
     }
+
+    /// <summary>
+    /// A weather for the Volumetric Fog &amp; Mist 2 scenes (AST-282, the fog experiment). Same sky, sun, ambient and
+    /// lights as <see cref="WeatherProfile"/>, but the fog is only VF2's values: no HAZE data at all.
+    /// Lives in a <see cref="Vf2WeatherProfileLibrary"/>. Owner: MRM-85/86
+    /// </summary>
+    [Serializable]
+    public sealed class Vf2WeatherProfile : WeatherProfileBase
+    {
+        [Header("Fog (Volumetric Fog & Mist 2)")]
+        [Tooltip("Volumetric Fog & Mist 2 fog.")]
+        public Vf2FogSettings Fog = new Vf2FogSettings();
+
+        public override string FogJson() => JsonUtility.ToJson(Fog);
+
+        public override void CopyFogFrom(WeatherProfileBase from) =>
+            JsonUtility.FromJsonOverwrite(JsonUtility.ToJson(((Vf2WeatherProfile)from).Fog), Fog);
+
+        /// <summary>A deep copy (material references are shared, not copied).</summary>
+        public Vf2WeatherProfile Clone() => JsonUtility.FromJson<Vf2WeatherProfile>(JsonUtility.ToJson(this));
+    }
+
 
     /// <summary>Everything that describes the global directional light. Field defaults are Unity's own new-light defaults. Owner: MRM-86</summary>
     [Serializable]
@@ -266,10 +306,8 @@ namespace MrMoonlight.World.Weather
     }
 
     /// <summary>
-    /// Fog. <b>HAZE-shaped</b> (AST-078): its global volume override, its optional noise/scattering override,
-    /// and the scene's one "area" density box. If the project moves to Volumetric Fog &amp; Mist 2 (under
-    /// consideration, Carlos 2026-09-29, mainly for sandstorms), this section and <see cref="HazeFogAdapter"/>
-    /// are what change; the rest of the profile does not. Owner: MRM-86
+    /// HAZE fog (AST-078): its global volume override, its optional noise/scattering override, and the scene's one
+    /// "area" density box. The Volumetric Fog &amp; Mist 2 equivalent is <see cref="Vf2FogSettings"/>. Owner: MRM-86
     /// </summary>
     [Serializable]
     public sealed class FogSettings
@@ -285,6 +323,106 @@ namespace MrMoonlight.World.Weather
 
         [Tooltip("HAZE noise and multiple scattering (the optional HAZE Overrides volume component).")]
         public HazeNoiseSettings Noise = new HazeNoiseSettings();
+    }
+
+    /// <summary>
+    /// The Volumetric Fog &amp; Mist 2 fog look: the parts of its fog profile a weather changes. Field defaults are
+    /// the experiment's starting look. The sun's colour and brightness in the fog follow the scene sun. Owner: MRM-85/86
+    /// </summary>
+    [Serializable]
+    public sealed class Vf2FogSettings
+    {
+        [Tooltip("Fog on or off. Off fades the fog out (density to zero) rather than cutting it.")]
+        public bool Enabled = true;
+
+        [Header("Density")]
+        [Tooltip("Master fog amount. 0 = no fog.")]
+        [Min(0f)] public float Density = 0.6f;
+        [Tooltip("Size of the noise clouds, metres-ish: bigger = larger, smoother cloud shapes.")]
+        [Min(0.1f)] public float NoiseScale = 40f;
+        [Tooltip("How much the noise breaks the fog up, 0 = even, 3 = very patchy.")]
+        [Range(0f, 3f)] public float NoiseStrength = 1f;
+
+        [Header("Colour")]
+        [Tooltip("Colour of the fog itself.")]
+        [ColorUsage(false)] public Color Albedo = new Color(0.62f, 0.63f, 0.65f, 1f);
+        [Min(0f)] public float Brightness = 1f;
+        [Tooltip("Darkens the fog deep inside the volume, 0-2.")]
+        [Range(0f, 2f)] public float DeepObscurance = 1f;
+
+        [Header("Lighting")]
+        [Tooltip("How much the ambient light lights the fog.")]
+        [Min(0f)] public float AmbientLightMultiplier = 1f;
+        [Tooltip("Sun halo brightness in the fog.")]
+        [Min(0f)] public float LightDiffusionIntensity = 0.4f;
+        [Tooltip("Sun halo tightness in the fog.")]
+        [Range(1f, 256f)] public float LightDiffusionPower = 32f;
+        [Tooltip("How much lamps, flares, the flashlight etc. light the fog (the VF2 native lights multiplier). The AdditionalLightContribution of HAZE.")]
+        [Min(0f)] public float NativeLightsMultiplier = 1f;
+
+        [Header("Motion")]
+        [Min(0f)] public float Turbulence = 0.73f;
+        [Tooltip("How fast the whole fog drifts, per axis (x, y, z). The wind in the fog. 0 = still.")]
+        public Vector3 WindDirection = new Vector3(0.02f, 0f, 0.01f);
+        [Tooltip("Drift of the fine detail noise layer, per axis. Only used when Custom Detail Wind is on.")]
+        public Vector3 DetailNoiseWindDirection = new Vector3(0.02f, 0f, 0f);
+        public bool CustomDetailWind;
+
+        [Tooltip("Extra sun-halo shape: silver glow when looking away from the sun, 0-1.")]
+        [Range(0f, 1f)] public float LightDiffusionBackScatter = 0.3f;
+        [Tooltip("Base brightness of the fog regardless of the sun direction: 1 = evenly lit, lower = more contrast around the sun.")]
+        [Range(0f, 1f)] public float DiffusionFloor = 1f;
+        [Tooltip("Dims the sun halo close to the camera (stops the fog glaring when you stand in it).")]
+        [Min(0f)] public float LightDiffusionNearDepthAtten;
+        [Tooltip("Sun shadows in the fog (god rays). COSTS performance.")]
+        public bool ReceiveShadows;
+        [Range(0f, 1f)] public float ShadowIntensity = 0.5f;
+        [Min(0f)] public float ShadowMaxDistance = 250f;
+
+        [Header("Noise detail")]
+        [Tooltip("Multiplies the final noise value.")]
+        [Min(0f)] public float NoiseFinalMultiplier = 1f;
+        [Tooltip("A second, finer noise layer (3D). COSTS a little.")]
+        public bool UseDetailNoise;
+        [Min(0.01f)] public float DetailScale = 0.35f;
+        [Range(0f, 1f)] public float DetailStrength = 0.5f;
+        public float DetailOffset = -0.5f;
+        [Tooltip("0 = the noise keeps one size at every height, 1 = the noise gets smaller/larger with the volume height.")]
+        [Range(0f, 1f)] public float ScaleNoiseWithHeight;
+
+        [Header("Shape and edges")]
+        [Tooltip("Softness of the volume's edge, 0-2.")]
+        [Range(0f, 2f)] public float Border = 0.05f;
+        [Tooltip("0 = use the volume object's own height. Above 0: this height, metres (the fog layer's thickness).")]
+        [Min(0f)] public float Height;
+        [Tooltip("Moves the fog layer up (+) or down (-), metres. Used with Height.")]
+        public float VerticalOffset;
+
+        [Header("Reach")]
+        [Tooltip("Fog starts this far from the camera, metres. Raise it if the fog around the player looks noisy or fills the screen.")]
+        [Min(0f)] public float Distance;
+        [Tooltip("How softly the near start fades in, 0-1.")]
+        [Range(0f, 1f)] public float DistanceFallOff = 0.93f;
+        [Tooltip("Fog is not drawn beyond this distance from the camera, metres.")]
+        [Min(1f)] public float MaxDistance = 600f;
+        [Tooltip("How softly the far end fades out, 0-1.")]
+        [Range(0f, 1f)] public float MaxDistanceFallOff = 0.5f;
+
+        [Header("Quality (cost vs noise)")]
+        [Tooltip("Raymarch samples. Higher = smoother and slower.")]
+        [Range(1, 16)] public int RaymarchQuality = 6;
+        [Tooltip("More samples at short range, 0-50.")]
+        [Range(0f, 50f)] public float RaymarchNearStepping = 8f;
+        [Tooltip("Random offset of the samples. Hides banding; too much shows as grain.")]
+        [Min(0f)] public float Jittering = 0.5f;
+        [Tooltip("Dither pattern strength, 0-2. This is the weave/grain you see up close; lower it, or raise Distance.")]
+        [Range(0f, 2f)] public float Dithering = 1f;
+
+        [Header("Distant fog (horizon)")]
+        public bool DistantFog;
+        [Min(0f)] public float DistantFogStartDistance = 1000f;
+        [Min(0f)] public float DistantFogDensity = 0.5f;
+        public Color DistantFogColor = new Color(0.358f, 0.358f, 0.358f);
     }
 
     /// <summary>HAZE global fog volume override, every parameter. Field defaults are HAZE's own. Owner: MRM-86</summary>

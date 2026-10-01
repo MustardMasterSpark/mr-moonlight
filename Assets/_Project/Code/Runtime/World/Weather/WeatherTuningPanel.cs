@@ -23,7 +23,7 @@ namespace MrMoonlight.World.Weather
         private const float PanelHeight = 280f;
         private const float Margin = 24f;
 
-        [SerializeField] private WeatherSystem weather;
+        [SerializeField] private WeatherSystemBase weather;
 
         private bool _open;
         private MoonlightPlayerRig _rig;

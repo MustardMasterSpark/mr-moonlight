@@ -110,10 +110,10 @@ namespace MrMoonlight.UI
 
         [Header("Scene")]
         [Tooltip("Scene asset Start loads. Currently \"Island\" - the demo scene's actual asset name; Docs/unity-conventions.md still calls it \"Demo\" conceptually.")]
-        [SerializeField] private string demoSceneName = "Island";
+        [SerializeField] private string demoSceneName = "02 Island";
 
         [Tooltip("Scene asset the Legion button loads: the same island rebuilt with the wood-collider vegetation set (MRM-84). Must be in Build Settings.")]
-        [SerializeField] private string legionSceneName = "Island_Legion";
+        [SerializeField] private string legionSceneName = "06 Island_Legion";
 
         private void Awake()
         {

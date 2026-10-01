@@ -9,14 +9,14 @@ namespace MrMoonlight.EditorTools
     /// <see cref="WeatherSystem"/>'s serialized <c>live</c> profile, drawn by the default inspector).
     /// Owner: MRM-86.
     /// </summary>
-    [CustomEditor(typeof(WeatherSystem))]
+    [CustomEditor(typeof(WeatherSystemBase), true)]
     public sealed class WeatherSystemInspector : Editor
     {
         public override bool RequiresConstantRepaint() => Application.isPlaying;
 
         public override void OnInspectorGUI()
         {
-            var weather = (WeatherSystem)target;
+            var weather = (WeatherSystemBase)target;
 
             if (!Application.isPlaying)
             {
