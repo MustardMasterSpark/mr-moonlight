@@ -49,4 +49,16 @@ d) Build process: memory build_process.md (numbered folder under E:\Builds: next
   for a still pose instead); a tree pop-in he saw (suspect: corpse proxy boxes blocking culling rays; test `CorpseCullingEnabled` off); the lamp-light shadows-off test (H13, one flag) is still pending.
 - Reminder: corpse-optimization.md section 7 lists what dissolve did NOT do (blood decals/pieces are not freed) and the shadow-caster pass of RetroLit has no dissolve clip (corpses have shadows off).
 
+===========================================================================
+4. UPDATE AFTER BUILD 44 (written at the end of the session, supersedes anything above that disagrees)
+===========================================================================
+- Commit `f393402a` (culling C everywhere, corpse optimization, dissolve) is committed; build 44 `E:\Builds\44 - Corpse Dissolve - 2026-09-30` was made from it. The NEXT build number is 45.
+  A docs-only commit (message Docs/mrm85-commit-message-3.txt) follows; when Carlos says he committed it, fill its hash into C-014 in Docs/performance-sessions.md section 8.
+- Build 44 result (Docs/performance-sessions.md section 5, Docs/corpse-optimization.md section 8): dissolve works (85 of 100 freed, corpses never above 21, no exceptions, avg 102.6 fps vs 96-97), but the fight at kills 85-100 is still
+  ~23 ms: frame time tracks the lights near the hands (`handLights` up to ~51, R2 0.94, ~0.3 ms per light), not the corpses. H13. Static phases are unchanged (Fountain fires off 151 fps / 6.6 ms, fires on 105 fps / 9.5 ms): these are the
+  numbers to beat or match in the fog comparison (HAZE column = builds 42-44).
+- CARLOS RULED: DO NOT CHANGE THE LAMPS YET (no lamp shadow change, no light cap). The corpse work is finished for now. The lamp-light shadows-off test and a light cap stay as open H13 ideas; wait for him to bring them up.
+- The fog swap is THE job of the next session. Fog interacts with the lights (HAZE is volumetric: per-light cost is part of the measurement), so keep the fires and lamps exactly as in build 44 while comparing, and use the no-combat phases first.
+- Carlos still has to say how the burn dissolve looked in the build (no screenshot yet). Ask him in one line at the start; do not block the fog work on it.
+
 MODEL: Opus for integrating the fog asset if it needs shader or volume work; Sonnet for running and analysing the A/B/C fog runs.

@@ -118,3 +118,20 @@ the height range now comes from a baked mesh (once, when the dissolve starts). A
 (`dissolve body ... seen True, duration 3.0s`, `freed ... after 6.0s`) are two lines per corpse; remove them if the log gets too noisy.
 
 **Log fields:** `corpses N (settled S, dissolved D, culling C/R)` (SessionLog v5.3). Expected: `corpses` stays around (kills in the last ~17 s) instead of climbing to 100; SetPass and frame time should stop rising with the kill count.
+
+## 8. Results and conclusions (builds 43 and 44, 2026-09-30)
+
+Full tables: `Docs/performance-sessions.md` section 5 (entries for build 43 and build 44) and hypotheses H1, H7, H13 in section 3.
+
+| Build | What | Fight at 60-100 kills | Corpses on screen |
+|---|---|---|---|
+| 42 (C) | culling C only | 43 fps, 24.0 ms, SetPass 2,006, 15.4k draws | up to 100 |
+| 43 | + settle pass, corpse culling | 41 fps, 24.4 ms, SetPass 1,551, 9.1k draws | up to 100 |
+| 44 | + dissolve and removal | 42-44 fps, ~23 ms, SetPass 1.5-1.7k, ~10k draws | never above 21 (85 of 100 freed) |
+
+- **What worked:** the settle pass cut corpse draws 40% and SetPass 23-39% (build 43, +21% fps at 30-59 corpses); the dissolve keeps the corpse count low and frees the memory (session average 102.6 fps in build 44 vs 96-97; no exceptions; no spikes when corpses are freed).
+- **What it showed:** the end of the fight stays at ~23 ms even with 14-21 corpses. In the fight windows with 10+ enemies alive, frame time fits the number of lights near the hands (`handLights`, up to ~51: 20 alive lamps, dropped lamps burning up to ~17 s, 10 fire lights) with R2 0.94 and ~0.3 ms per light in both builds 43 and 44. **Corpses were not the limiter at the end; the dynamic lights are (H13, strongly supported, a proxy-based fit, not proof).**
+- **Decision (Carlos, 2026-09-30): do NOT change the lamps yet.** The lamp-light shadows-off test and a cap on simultaneous lamp lights are the next lighting steps, to be decided later; nothing about the lamps was changed after build 44.
+- **Next session (Carlos):** stop the corpse work and compare the other fog asset (Volumetric Fog & Mist 2) with HAZE for performance: `Docs/mrm85-fog-compare-prompt.txt`.
+- **Still open from this work:** how the burn looks in a real build (Carlos to say); bullets against the layer-29 tree hulls and corpse proxy boxes; the upright corpse and the tree pop-in Carlos saw once in build 43 (not reproduced, not seen again in build 44); blood decals and gore pieces are not freed by the dissolve.
+- **Story mode must undo:** `CorpseDisableGore`, `CorpseStripPhysics`, `CorpseDissolveEnabled` to false (and decide the rest) after the Fable story pass.

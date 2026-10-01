@@ -1,0 +1,20 @@
+SUMMARY:
+MRM-85: Build 44 results (corpse dissolve works, lights limit the late fight), docs and next-session prompt
+
+DESCRIPTION:
+Docs only, no game code or assets (change record C-014 in Docs/performance-sessions.md
+section 8). Build 44 "Corpse Dissolve" was made from commit f393402a.
+
+Build 44 analysis (Docs/performance-sessions.md section 5, hypothesis H13 now strongly
+supported): the dissolve works at scale (85 of 100 kills freed, corpses on screen never
+above 21, no exceptions, session average 102.6 fps vs 96-97 in builds 42/43), but the fight
+at kills 85-100 stays at ~23 ms. Frame time tracks the lights near the hands (handLights up
+to ~51, R2 0.94, ~0.3 ms per light) rather than the corpses. Carlos ruled that the lamps are
+NOT to be changed yet.
+
+Docs/corpse-optimization.md section 8 (results, conclusions, what story mode must undo),
+CLAUDE.md read-first list (item 6), Docs/mrm85-fog-compare-prompt.txt updated for the next
+session: compare Volumetric Fog & Mist 2 with HAZE for performance (build 45 is the next
+build number).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
