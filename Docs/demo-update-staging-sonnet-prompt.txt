@@ -1,0 +1,46 @@
+Context prompt: NEW DEMO, STAGE 1 = PROP PLACEMENT + NAVMESH. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet (placement, tuning, NavMesh rebake on existing systems). Switch to Opus only when a new system is built (new enemy type, store).
+
+WRITTEN: 2026-10-02, end of the session that removed the Gaia preview objects and found the editor-crash cause.
+The overall task and its first-question batch already live in Docs/demo-update-opus-prompt.txt: READ IT FIRST, this file only adds this stage. Do NOT auto-start work: read, report in a few lines, wait for Carlos.
+
+===========================================================================
+1. BRANCH AND ISSUE (do this first)
+===========================================================================
+- Linear check on 2026-10-02: there is NO issue for the new demo (newest MRM issue is MRM-87, 2026-09-21). Ask Carlos for the issue id, or help him create one (team MRM, project MrMoonlightDemo), then
+  `git switch -c <name> --no-track origin/main` and check `git config --get branch.<name>.merge` prints nothing (never refs/heads/main).
+- Before switching: the working tree is on `mrm-86` with UNCOMMITTED work (scenes 02/06/07/08 Gaia cleanup, docs; message in Docs/gaia-cleanup-commit-message.txt). Carlos commits that in GitHub Desktop first,
+  or the scene changes travel into the new branch. Ask him; never commit yourself.
+
+===========================================================================
+2. THIS STAGE (Carlos, 2026-10-02)
+===========================================================================
+- Carlos is moving props from the Playground project (another Claude chat does the import/move). THIS chat analyzes those props and PLACES them in the demo scene (ask which scene; the old prompt says 07 is where he places new props).
+- After placement: re-bake the NavMesh so the new props are included.
+- Later sessions add logic gradually (enemy tweaks, new enemies, little stores) per the staged plan in the old prompt. Running doc to create: Docs/demo-update.md (dated section per stage).
+- Unexpected new files (props, materials, Playground imports) are from the other chat, not from you. Do not clean them up.
+- Placement by hand or by script is Carlos's call: ASK first (CLAUDE.md hard rules), then verify by reading the scene back.
+- New props go through the `/prop` wizard conventions (RetroLit samples ONLY BaseColor + Normal, glowing objects get a real Light) if they need conversion; per-prop history in Docs/prop-log.md.
+
+===========================================================================
+3. NAVMESH FACTS (for the rebake)
+===========================================================================
+- Scene 07 `NavMesh Surface` (Unity.AI.Navigation NavMeshSurface): volume 1024 x 67.5 x 1024, centre (0, 41.25, 0), CollectObjects = Volume, tile size 256, voxel size 0.2. New props must sit INSIDE that volume.
+- Island NavMesh facts: memory/Docs mrm27 (vegetation is GameObjects, not terrain trees). Canopy changes need no rebake; walkable-collision props do. Legion has its own NavMesh (MRM-84).
+- Ask Carlos before running the bake through the UnityMCP bridge; verify the result (NavMesh data asset, enemies still path).
+
+===========================================================================
+4. TRAPS FOUND THIS SESSION (read, they cost hours)
+===========================================================================
+- EDITOR CRASH = Scene-view GIZMO OVERFLOW ("Gizmo vertex count exceeds the maximum size: 38348667 > 38347922" in ScriptableRenderContext.Submit). Cause: AST-145 Dynamic Culling per-object bounds gizmos
+  over thousands of trees. Fix applied: editor gizmo drawing OFF for DC_Controller, DC_SourceSettings, DC_ActivateNearObjects, StaticCullingCamera/Controller/Source (GizmoUtility.SetGizmoEnabled, stored in
+  Library/AnnotationManager: a Library wipe brings it back). A later crash at 08:55 on 2026-10-01 had the same message and it is unverified whether the gizmos were off then. If the editor freezes or crashes in the Scene view:
+  read %LOCALAPPDATA%\Temp\Unity\Editor\Crashes\Crash_*\Editor.log for that line BEFORE blaming an object. Offer Carlos an [InitializeOnLoad] editor script that re-applies the gizmo-off state each open (not written yet).
+  Details: Docs/gaia-world-map-stamper-freeze.md.
+- Gaia: never toggle `Gaia Runtime` in the Hierarchy. Hidden Gaia objects (HideFlags 1/2) cannot be found in the Hierarchy: grep the scene YAML. Remove Gaia tool objects OFFLINE (Unity closed).
+  Scenes 02/06/08 still have an in-file `Gaia Tools` group (Stamper, Scanner, Custom Biome, Session Manager) with preview drawing; scene 07 does not. Gaia recreates an empty Gaia Tools in memory on load
+  and writes a new untracked Assets/Gaia User Data/Sessions/GS-<date>.asset on every project open (junk).
+- Editing scene YAML offline: scripts from this session (strip_worldmap.py / strip_gaiatools.py) lived in the session scratchpad and are gone; the logic is in Docs/gaia-world-map-stamper-freeze.md
+  (compute the reference closure, delete only objects owned by the removed subtree, abort on any dangling reference, patch the parent's m_Children / SceneRoots).
+- UnityMCP: bridge instances are addressed Name@hash (MrMoonlight@<hash>), port numbers do not work in HTTP mode; execute_code is CodeDom C# 6 (no out-var inline in some cases, no tuples).
+- Ask before any Unity-side work through the bridge (CLAUDE.md). Carlos clicks things that crash: prefer reading state to selecting objects.
