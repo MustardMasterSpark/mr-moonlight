@@ -1,0 +1,63 @@
+# Demo update (MRM-88) — running doc
+
+One continuous issue, done in stages. **Linear MRM-88**, branch `mrm-88` (created `--no-track` from `origin/main`).
+Each stage gets a dated section below: what changed, where, how to test, traps. The task description and stage plan
+live in `Docs/demo-update-opus-prompt.txt`; the cold-start handoff for the current stage is the newest
+`Docs/demo-update-*-sonnet-prompt.txt`.
+
+Scene being edited: **`07 LightingTestScene`** (`Assets/_Project/Scenes/07 LightingTestScene.unity`). Carlos places the new
+props there by hand; Claude does the scripted edits through the UnityMCP bridge after asking.
+
+---
+
+## ENDING CHECKLIST — do NOT forget (Carlos, 2026-10-02)
+
+While the demo update is being built, **the NavMesh and the enemies are deliberately switched off in scene 07** so props and
+terrain can change without paying for a re-bake each time. When Carlos says he is done placing props / editing the terrain
+(or says anything that sounds like "we're finished with this stage of placement"), **remind him of this step if he has not
+raised it himself**:
+
+1. Re-enable the root GameObject `NavMesh Surface` (Unity.AI.Navigation `NavMeshSurface`: volume 1024 x 67.5 x 1024, centre
+   (0, 41.25, 0), CollectObjects = Volume, tile 256, voxel 0.2; new props must be inside the volume).
+2. Re-enable the root GameObject `Enemies` (`DemoSpotterPopulationManager` + 10 pooled `Enemy_Spotter(Clone)` children).
+3. **Re-bake the NavMesh** (ask Carlos first; he asked to run the bake himself or authorise it at the very end).
+4. Verify: NavMesh data asset updated, Spotters still path, no errors in the console, `Event Director` behaves.
+5. Save the scene (Ctrl+S) and note it in this doc and in a change-record row.
+
+---
+
+## Stage 1 — Wooden church placed on flattened terrain (2026-10-02)
+
+**State at the end of the session (all saved to disk, scene 07):**
+
+| Thing | Value |
+|---|---|
+| `Prop_WoodenChurch` (AST-070, prefab Variant of the FBX) | position (45.03, 50.03, 60.49), rotation 0, scale 1. Mesh world bounds: x 37.17..52.89, z 45.22..75.75 (door colliders reach z 76.22), y 49.67..77.96. 3 colliders (one MeshCollider, two door BoxColliders) |
+| Player spawn (`Player_Tracey`) | (68.44, **47.80**, 74.01), Y rotation 148.4. About 1 m above the ground (terrain 46.8 there), so the player falls onto it on Play. The XZ and rotation come from a Play-mode Transform Carlos screenshotted. CharacterController was disabled while moving it |
+| `Weather Circuit` (`SkyProximityCircuit`) | (70.02, 46.59, 71.45): 3 m in front of the spawn, base on the terrain. The spawn exists so the church can be checked in Play mode quickly and the weather changed next to it |
+| `NavMesh Surface` and `Enemies` roots | **inactive** (see the ending checklist) |
+| `Event Director` | left active; it has `EventDirector` + `ObjectiveTracker`. Not checked for enemy dependencies; the console had no errors from it |
+
+**Terrain flattened under the church** (terrain `Terrain_0_0-20260829 - 035828`, origin (-512, 0, -512), size 1024 x 1024 x 1024,
+heightmap 2049 = 0.5 m per sample, TerrainData asset `Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/Terrain_0_0-20260829 - 035828.asset`, tracked in git, ~8 MB):
+
+- Plateau level **Y 49.67273** = the lowest vertex of the church mesh (the pivot is 0.36 m above the mesh bottom; the first attempt used the pivot height 50.03 and buried the base). Heightmap precision is 1024/65535 = 1.6 cm, so the baked plateau reads **49.659**, about 1.3 cm below the church base (no clipping, hairline gap hidden by the base).
+- Plateau rectangle = footprint + 1.5 m margin: x 35.67..54.39, z 43.72..77.73. Outside it, a **14 m smoothstep blend** back to the original terrain. Max change from the original 2.58 m. Edited region: heightmap samples x 1066..1162, z 1082..1209 (97 x 128 samples).
+- Only heights were changed. Terrain textures (11 layers), grass details (72 prototypes), the TerrainCollider (enabled, same data, so walkable) are untouched. There are 0 terrain trees: vegetation is GameObjects.
+- **Original heights backup** (normalised 0..1, header `ix0 iz0 w h sizeY`, then h rows of w values): `terrain_backup_church.txt` in the Claude session scratchpad, which is temporary. The permanent route back is `git checkout` of the TerrainData asset (loses any later terrain edit), so any later terrain edit should dump its own backup first.
+- How it was done (reusable): `td.GetHeights` over the region, blend `lerp(old, target, smoothstep(1 - dist/fall))` where `dist` is the distance outside the plateau rectangle, `td.SetHeights`, `AssetDatabase.SaveAssets()`. Restoring from the backup before re-applying avoids blending twice.
+
+**Traps found**
+- **Play mode discards scene edits** (the `SetActive` calls and moves made while Carlos had Play mode on were lost on stop). Check `EditorApplication.isPlaying` before any scene edit; a previous `execute_code` also throws on `MarkSceneDirty` in Play mode, which is the tell.
+- Vegetation GameObjects within ~16 m of the church were NOT repositioned after the terrain change; some may float or be buried. Next session: scan and fix (and Carlos wants more foliage around the church).
+- The TerrainData asset is dirty until `AssetDatabase.SaveAssets()` / Ctrl+S; the scene being saved is not enough.
+- `VP_LightingTest_Fog.asset` shows a diff `active: 1 -> 0` twice every session: confirmed harmless HAZE noise, leave it out of commits.
+- Whenever a prop sits on the ground: terrain pivot Y vs mesh bottom differ (the church mesh bottom is 0.36 m under its pivot). Level to the mesh's lowest vertex, not the pivot.
+
+**Still to do in this stage:** more terrain shaping, foliage around the church, other church extras (Carlos, next session), then the other staged props (Shed, Weeper ghosts, Tombstones, Pool; see `Docs/asset-moves-to-moonlight-sonnet-prompt.txt`), then the ending checklist.
+
+---
+
+## Later stages (from the opus prompt, not started)
+
+2. Enemy behaviour tweaks (Spotter). 3. New enemies. 4. Little stores. Order is Carlos's call.

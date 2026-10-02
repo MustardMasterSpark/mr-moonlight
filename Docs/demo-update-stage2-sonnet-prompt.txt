@@ -1,0 +1,56 @@
+Context prompt: DEMO UPDATE (MRM-88), STAGE 2 = TERRAIN + FOLIAGE + EXTRAS AROUND THE WOODEN CHURCH. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet (placement, terrain and vegetation work on existing systems). Switch to Opus only for a new system (new enemy, store).
+
+WRITTEN: 2026-10-02, end of the session that placed the church and flattened the terrain under it.
+Do NOT auto-start work: read, report in a few lines, wait for Carlos.
+
+READ FIRST: Docs/demo-update.md (running doc; stage 1 section has every number) and Docs/demo-update-opus-prompt.txt (the overall task).
+Older handoff with the editor-crash / Gaia / UnityMCP traps: Docs/demo-update-staging-sonnet-prompt.txt (section 4 still applies).
+
+===========================================================================
+1. STATE
+===========================================================================
+- Branch `mrm-88` (Linear MRM-88, project MrMoonlightDemo), created --no-track from origin/main. Nothing committed yet: Carlos commits in GitHub Desktop
+  (message ready in Docs/mrm88-commit-message.txt). Never commit or push.
+- Scene: `07 LightingTestScene`. Prop_WoodenChurch at (45.03, 50.03, 60.49). Terrain under it is flattened (plateau Y 49.67273, 14 m blend).
+- Player_Tracey spawns at (68.44, 47.80, 74.01) so the church can be checked quickly; Weather Circuit sits 3 m in front of it.
+- **`NavMesh Surface` and `Enemies` (root objects) are INACTIVE on purpose.** Carlos will bake the NavMesh once, at the end.
+
+===========================================================================
+2. THE RULE THAT MUST NOT BE FORGOTTEN
+===========================================================================
+**When Carlos says he is done placing / editing, and he has not mentioned it, REMIND HIM of the ending checklist** (Docs/demo-update.md top):
+re-enable `NavMesh Surface` and `Enemies`, re-bake the NavMesh (ask first), verify the Spotters path, save. Also remind him at every
+"run the final instructions" that comes at the end of the placement work. Carlos asked for this explicitly on 2026-10-02.
+
+===========================================================================
+3. THIS STAGE (what Carlos said he will ask)
+===========================================================================
+- Terrain changes around the church (more shaping).
+- A bit more foliage around the church.
+- Other things for the church (props, set dressing). Ask what.
+Ask before every Unity-side action (CLAUDE.md hard rules), then read the state back. Carlos is the only one who touches Unity otherwise.
+
+===========================================================================
+4. HOW TO DO IT (tested this session) AND TRAPS
+===========================================================================
+- **Check `EditorApplication.isPlaying` first.** Edits in Play mode are discarded on stop. If Carlos is in Play mode, tell him to stop.
+- UnityMCP: both `UnityMCP` and `unityMCP` server names exist; the working one reconnected after Carlos restarted the bridge (Window > MCP For Unity, port 8080). execute_code is CodeDom C# 6.
+- Terrain: `Terrain_0_0-20260829 - 035828`, origin (-512, 0, -512), 1024 m, heightmap 2049 (0.5 m/sample), 1.6 cm height step. Edit with
+  GetHeights/SetHeights, `Undo.RegisterCompleteObjectUndo(td, ...)`, then `AssetDatabase.SaveAssets()` (the asset stays dirty until saved; saving the scene is not enough).
+  Dump the original heights of any new region to a file BEFORE editing (the church one is only in a temp scratchpad). Recipe is in demo-update.md.
+- Level a prop to the mesh's LOWEST VERTEX, not its pivot (the church mesh bottom is 0.36 m under the pivot).
+- Terrain colliders: the TerrainCollider is enabled and shares the TerrainData, so edited terrain is walkable immediately.
+- Vegetation is GameObjects (+ FloraInstanceRenderer for the collidable ones), 0 terrain trees. Vegetation near the church (within ~16 m) was NOT adjusted
+  after the flattening: scan for floating / buried plants. For new foliage read memory `mrm70_vegetation_flora_pipeline` and Docs on the Gaia spawners
+  (`Vegetation Spawners` root in the scene). Painting is Carlos's job; Claude lists and re-runs tools (see memory mrm84_leaf_card_audit).
+- Gaia: never toggle `Gaia Runtime`; never leave preview objects. Editor crash = Scene-view gizmo overflow (see the older handoff, section 4).
+- `VP_LightingTest_Fog.asset` `active: 1 -> 0` diff is harmless noise; leave it out of commits. A new untracked Gaia session asset (GS-<date>.asset) appears on every open: junk.
+- Anything that needs a converted 3D asset: `/prop` wizard (RetroLit samples ONLY BaseColor + Normal; glowing objects get a real Light). Pending moves from Playground
+  (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool): Docs/asset-moves-to-moonlight-sonnet-prompt.txt, one at a time, Carlos names each.
+
+===========================================================================
+5. WRAP-UP WHEN THIS STAGE ENDS
+===========================================================================
+"Run the final instructions" (CLAUDE.md): commit message file (print it in the final report), docs (demo-update.md new dated section), Linear comment on MRM-88 (+ MRM-85),
+change-record row C-nnn in Docs/performance-sessions.md section 8, and a new handoff prompt. Suggest a fresh session at natural stopping points.
