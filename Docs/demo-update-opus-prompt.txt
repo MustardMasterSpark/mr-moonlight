@@ -1,0 +1,63 @@
+Context prompt: QUICK UPDATED DEMO (new continuous issue, long task done in stages with checkpoints). Read this cold; do not rely on chat scrollback.
+Suggested model: Opus for building new systems (new enemy types, enemy behaviour changes, the store); Sonnet for placing props, tuning and polish on systems that already exist.
+
+WRITTEN: 2026-10-01, at the end of the session that parked the fog/lighting/optimization experiments (those are in Docs/mrm85-fog-vf2-continue-prompt.txt, do not work on them here).
+Branch: the last one was `mrm-86`. This task is its own issue, so FIRST ask Carlos for (or help create) the Linear issue, then make its branch from origin/main with `git switch -c <name> --no-track origin/main` and check `git config --get branch.<name>.merge` prints nothing (never refs/heads/main). Never commit or push; Carlos uses GitHub Desktop. Carlos's uncommitted work on `mrm-86` (commit message Docs/mrm85-commit-message-4.txt) should be committed by him before the branch switch; ask.
+Do NOT auto-start the work itself: read this, report in a few lines what you understood and what you need, then wait for Carlos.
+
+===========================================================================
+1. THE TASK (Carlos, 2026-10-01, verbatim intent)
+===========================================================================
+Stop the lighting / fog / optimization experiments and do a quick updated demo. It includes:
+- placing new props on the map;
+- changing the behaviour of the enemies a little;
+- introducing new enemies;
+- trying to put in little stores and similar things.
+"We'll see how much we can get done." It is ONE continuous issue, long session, implemented in STAGES.
+
+HOW THE STAGES WORK
+- Do one stage at a time. After a stage is implemented and tested, Carlos says "run the final instructions" (CLAUDE.md): commit message (text only), close documentation gaps (+ Linear comment), a context prompt for the next session, and the change trace (Docs/performance-sessions.md section 8 C-number + comment on MRM-85). Then a fresh session continues from the new prompt.
+- Keep ONE running doc for this issue, `Docs/demo-update.md`: a dated section per stage (what changed, where, how to test, traps). Each new context prompt should point to it and list what is done / next / traps, so the chain of prompts stays short.
+- Propose the stage list at the start (small stages, each shippable): e.g. (1) props placed, (2) enemy behaviour tweaks, (3) a new enemy, (4) a store prototype. Carlos picks the order. Say honestly how much is realistic.
+- Suggest a fresh session at natural stopping points (CLAUDE.md "Session hygiene").
+
+===========================================================================
+2. FIRST QUESTIONS FOR CARLOS (one short batch, then wait)
+===========================================================================
+- Which scene is the demo: 06 Island_Legion (the Legion arena, 8,786 culling trees, Legion mode flags) or 02 Island (the first demo) or a new scene? Scene 07 LightingTestScene is the test/weather scene he is placing new props in right now; it is NOT the demo scene unless he says so.
+- Which props (the new assets are being imported by ANOTHER Claude session; ask for the list/AST ids and where they sit), and whether the placement is by hand (Carlos) or by script (ask first, CLAUDE.md "Hard rules").
+- What "a little" behaviour change means for the Spotter, and the new enemies (names, role, assets; AST ids).
+- What a "little store" is in this game (sells what, with what currency, is there an economy yet, is it an interaction prompt on a prop?). Check the items/interaction framework first: Docs/mrm41-items-interaction-kickoff.md, Docs/mrm16-interaction-kickoff.md; memory mrm41_42_progress says the framework is code-complete but nothing was scene-tested.
+
+===========================================================================
+3. WHAT ALREADY EXISTS (read before building)
+===========================================================================
+Read in this order: CLAUDE.md, Claude Code Context MDs/kickstart.md, Docs/pc-build-target.md, Docs/unity-conventions.md, Docs/csharp-conventions.md, Docs/glossary.md (canonical names: Tracey, Pickaxe, Furman), then:
+- Enemies: Docs/mrm34-spotter-ai-build.md (the Spotter: 15-box damage, detect->chase->fire->kill->flare->reinforcements, verified live), memory notes blaze_ai_facts (BlazeBehaviour REPLACES a state, use BlazeAISpareState for new ones; Blaze drives the Animator by state name), mrm75_blaze_equip_and_hitstate_facts, mrm76 balance pass. Prefab `Enemy_Spotter.prefab` (GUID kept through the migration). Population: `DemoSpotterPopulationManager`, `EnemyDebugControls`. Corpse handling: Docs/corpse-optimization.md (Legion mode vs story mode flags; the dissolve).
+- New 3D assets (props, characters, weapons): `/prop` skill or Docs/3d-prop-pipeline-wizard.md (MRM-72); per-prop history Docs/prop-log.md. RetroLit samples ONLY BaseColor + Normal; glowing objects get a real Light, never an emission map. Anything that takes over the hands: Docs/hands-items-and-weapons-pipeline.md (MRM-87).
+- Asset import: Docs/asset-import-update-process.md; Docs/new-asset-list.md; the asset index spreadsheet (memory asset_index_spreadsheet). Never touch Assets.zip.
+- Level script / events: Docs/event-director.md (memory mrm11_event_director_traps).
+- Hard rules: no hardcoded values (everything in MoonlightTunables, Docs/unity-conventions.md); scene/inspector work is not an automatic handoff: ASK Carlos before doing Unity scene work through the UnityMCP bridge, then read the state back; same for Blender. One issue, one branch.
+- Build size under 1 GB, Windows 64, 1920x1080 (Docs/pc-build-target.md). Build process: memory build_process.md (next build number is 45).
+- Deadlines: Sept 1 / Sept 8 class gates are past; the target is a Halloween 2026 Kickstarter shop-window demo, so prefer choices that keep improving.
+
+===========================================================================
+4. STATE OF THE PROJECT YOU INHERIT (so nothing surprises you)
+===========================================================================
+- Scenes now have number prefixes (Docs/scene-numbering.md): 01 Sandbox, 02 Island, 03 MainMenu, 04 VegetationGallery, 05 VegetationGallery_TechnieColliderTest, 06 Island_Legion, 07 LightingTestScene, 08 LightingTestScene Fog Experiment. Scene names are loaded by string (MainMenuController, GameOverPanel); Build Settings has 03, 02, 06.
+- Performance work is parked but its decisions stand: culling C everywhere, corpse settle + dissolve in Legion mode, lamps NOT to be changed. New enemies and props must not undo that: any new enemy that leaves corpses needs the same corpse handling, and every new light-casting thing adds to the H13 light cost (frame time tracked the lights near the hands, ~0.3 ms per light). Re-check performance with a build after big additions (Docs/performance-sessions.md section 1 procedure: "I'm going to play a build, check the performance").
+- The fog asset experiment (Volumetric Fog & Mist 2) is parked; HAZE is the fog in every playable scene. Do not wire VF2 in.
+- Another Claude session is importing assets into the project at the same time and Carlos is placing props in scene 07. New assets, new files and changes you did not make are not yours; do not revert or "clean up" them. Ask before touching a scene Carlos has open (Unity asks to save/discard).
+- Weather profiles/tree fires/lighting test tools exist only in scenes 07/08.
+
+===========================================================================
+5. TRAPS ALREADY FOUND (do not repeat)
+===========================================================================
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode; ask Carlos to stop Play Mode. Play Mode edits to scene components are discarded.
+- UnityMCP execute_code is C# 6 CodeDom (no `using` in-body, no tuples, no local functions, fully qualify types, UnityEngine.Object); AssetDatabase.DeleteAsset needs safety_checks=false.
+- Editor screenshots lie (stale frames, editor renders slower, unfocused editor does not render): verification of looks needs a build or a second screenshot (memory: verification_requires_a_build, feedback_confirm_before_declaring_fixed).
+- The player camera cannot be aimed by script; use `manage_camera screenshot` with view_position + view_rotation.
+- Physics detection reads the COLLIDER's own tag, not a parent's (memory unity_tag_must_be_on_collider). Prefab asset edits: SetDirty skips a prefab's own hierarchy; SaveAsPrefabAsset lies under a folder lock (memory unity_prefab_asset_edit_traps).
+- PowerShell 5.1 Get-Content/Set-Content corrupts UTF-8; edit files with the Edit tool or python (binary). Docs are CRLF. Use Windows `tar.exe` (not Git Bash tar) for .unitypackage.
+- Assets/ThirdParty/** is git-ignored (vendor code logic that must ship is moved to tracked `Assets/_Project/Code/Vendor`).
+- Carlos dictates messages (typos expected), values live verification, and answer direct questions first (memory feedback_answer_direct_questions_first).

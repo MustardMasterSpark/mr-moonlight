@@ -36,6 +36,21 @@ Shader "Retro Shaders Pro/Retro Lit"
 		_WindHeight("Wind Height (local units, sway reaches full strength here)", Float) = 1.0
 		_WindFlexibility("Wind Flexibility", Range(0.0, 3.0)) = 1.0
 
+		[Header(Burn Dissolve)]
+		[Toggle(_USE_DISSOLVE)] _UseDissolve("Dissolve Enabled", Float) = 0
+		_DissolveNoise("Dissolve Noise", 2D) = "gray" {}
+		_DissolveAmount("Dissolve Amount (0 intact, 1 gone)", Range(0.0, 1.0)) = 0.0
+		_DissolveMinY("Dissolve World Y Min (bottom)", Float) = 0.0
+		_DissolveMaxY("Dissolve World Y Max (top)", Float) = 1.0
+		_DissolveNoiseScale("Dissolve Noise Scale (per meter)", Float) = 1.5
+		_DissolveNoiseInfluence("Dissolve Noise Influence", Range(0.0, 1.0)) = 0.55
+		_DissolveNoiseContrast("Dissolve Noise Contrast", Range(0.5, 6.0)) = 2.5
+		_DissolveBurnWidth("Dissolve Burn Width", Range(0.01, 0.6)) = 0.14
+		_DissolveCharWidth("Dissolve Char Width", Range(0.01, 0.6)) = 0.2
+		_DissolveCharDarkness("Dissolve Char Darkness", Range(0.0, 1.0)) = 0.12
+		_DissolveBurnPower("Dissolve Burn Hardness", Range(0.5, 6.0)) = 2.0
+		[HDR] _DissolveBurnColor("Dissolve Burn Color", Color) = (9.86, 2.29, 0.52, 1)
+
 		[ToggleUI] _AlphaClip("Alpha Clip", Float) = 0.0
 		[HideInInspector] _Cutoff("Alpha Clip Threshold", Range(0.0, 1.0)) = 0.5
 		[HideInInspector] _SrcBlend("__src", Float) = 1.0
@@ -136,6 +151,7 @@ Shader "Retro Shaders Pro/Retro Lit"
 			#pragma shader_feature_local_fragment _DITHERMODE_SCREEN _DITHERMODE_TEXTURE _DITHERMODE_OFF
 			#pragma shader_feature_local_vertex _SNAPMODE_OBJECT _SNAPMODE_WORLD _SNAPMODE_VIEW _SNAPMODE_OFF
 			#pragma shader_feature_local_fragment _ALPHATEST_ON
+			#pragma shader_feature_local_fragment _USE_DISSOLVE
 			#pragma shader_feature_local _USE_AMBIENT_OVERRIDE
 			#pragma shader_feature_local_fragment _USE_VERTEX_COLORS
 			#pragma shader_feature_local _USE_SPECULAR_LIGHT
@@ -445,6 +461,16 @@ Shader "Retro Shaders Pro/Retro Lit"
 				clip(baseColor.a - _Cutoff);
 #endif
 
+#ifdef _USE_DISSOLVE
+				// Burn dissolve: clip what has burnt away, char the band in front of the glowing edge.
+				float dissolveD = DissolveDistance(i.positionWS);
+				clip(dissolveD);
+				float burnWidth = max(_DissolveBurnWidth, 1e-4);
+				float dissolveGlow = pow(1.0f - saturate(dissolveD / burnWidth), _DissolveBurnPower);
+				float charT = saturate((dissolveD - burnWidth) / max(_DissolveCharWidth, 1e-4));
+				baseColor.rgb *= lerp(_DissolveCharDarkness, 1.0f, charT);
+#endif
+
 				// Posterize the base color.
 				float colorBitDepth = max(2, _ColorBitDepth);
 
@@ -561,6 +587,11 @@ Shader "Retro Shaders Pro/Retro Lit"
 				float3 finalColor = posterizedColor * diffuseLightColor + specularLightColor;
 				finalColor = MixFog(finalColor, i.affineUVAndFog.w);
 
+#ifdef _USE_DISSOLVE
+				// The glowing edge is an emission: added after fog so it stays hot in the haze.
+				finalColor += _DissolveBurnColor.rgb * dissolveGlow;
+#endif
+
 				outColor = float4(finalColor, baseColor.a);
 
 #ifdef _WRITE_RENDERING_LAYERS
@@ -623,6 +654,7 @@ Shader "Retro Shaders Pro/Retro Lit"
 			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
 			#pragma shader_feature_local_fragment _ALPHATEST_ON
+			#pragma shader_feature_local_fragment _USE_DISSOLVE
 			#pragma shader_feature_local_fragment _FILTERMODE_BILINEAR _FILTERMODE_POINT _FILTERMODE_N64
 
 			#include "RetroSurfaceInput.hlsl"
@@ -654,6 +686,7 @@ Shader "Retro Shaders Pro/Retro Lit"
 			#include_with_pragmas "Packages/com.unity.render-pipelines.universal/ShaderLibrary/DOTS.hlsl"
 
 			#pragma shader_feature_local_fragment _ALPHATEST_ON
+			#pragma shader_feature_local_fragment _USE_DISSOLVE
 			#pragma shader_feature_local_fragment _FILTERMODE_BILINEAR _FILTERMODE_POINT _FILTERMODE_N64
 
 			#include "RetroDepthNormalsPass.hlsl"

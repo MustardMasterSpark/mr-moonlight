@@ -70,6 +70,15 @@ intended player experience.
 | **F6** | Toggles the HAZE fog on/off |
 | **F7** | Toggles the CRT retro filter on/off |
 | **F8** | Cycles the time of day: Morning → Sunset → Night → Apocalypse → Morning |
+| **F11** | Draw Debug Tools (AST-271) free-fly debug camera; freezes time. Only exists once something has drawn with DDT (today: the Lighting Test Scene). Moved from the package's F9, which is Infinite Ammo (2026-09-29) |
+
+**Lighting Test Scene only (MRM-86, 2026-09-29, `Docs/weather-profiles.md`):**
+
+| Key | What it does |
+|---|---|
+| **P** | Weather tuning panel, bottom-right: Save Lighting Values / Save Fog Values copy the `Weather` control board into the current weather profile; frees the mouse while open |
+| **O** | Enemies off / on: hides every enemy and pauses spawning, then brings the same enemies back |
+| **I** | Tree fires on / off (experiment, 2026-09-30, `Docs/tree-fire-experiment.md`): the nearest trees burn, following the camera. **I is also bound to the vendor Inventory action** in `FPS_InputActions` |
 
 ## UI navigation (menus, when not in gameplay)
 

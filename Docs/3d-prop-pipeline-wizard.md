@@ -876,6 +876,14 @@ invokes it. **Resolve on the first static prop:** either the hot path gains an e
 step, or it calls `prepare_asset.py`, or `texture_pass.py` learns to recognise common vendor
 names.
 
+**Resolved on the first static prop (AST-070 Wooden church, 2026-10-01):** copy the source maps into a
+throwaway staging folder under the new suffixes (`X.png` → `X_BaseColor.png`, `X_n.png` / `X_norm.png` →
+`X_Normal.png`; a regex on the trailing `_n|_norm` is enough), run `texture_pass.py` on that folder, then
+copy `_out/` into the project. Nothing in the source tree is renamed or overwritten. Side effects seen:
+`--map-size 256` forces every normal to a **square** 256², so non-square sources are stretched (harmless,
+UVs still map 0-1); and non-square BaseColors keep their aspect, so sizes like 434x512 / 308x512 / 344x512
+come out **non-power-of-two and not a multiple of 4** (checked in the project: see the prop log).
+
 ### G3 — Prefab destination is a guess for anything that isn't a prop
 
 The hot path writes `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`. But `Prefabs/World/`

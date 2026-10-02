@@ -30,6 +30,7 @@ resolution, HUD layout, menus — targets **1920×1080**.
 5. `Docs/lighting.md` — **anything that is a light or decides how light looks**: sun / day-night,
    fog, sky, the flashlight, the hands' lighting, enemy lamps, flares, Light Layers, every lighting
    tunable. The single place for lighting; update it whenever you touch a light (added 2026-09-19)
+6. `Docs/corpse-optimization.md` — **dead enemies**: the settle pass, the burn dissolve and removal, culling of corpses, the tunables, what story mode must turn off, and the build 43/44 results (MRM-85, added 2026-09-30). Performance work in general: `Docs/performance-sessions.md`
 
 ## Making a 3D asset — fire the wizard
 Any prop, character, or weapon work: **`/prop`**, or read

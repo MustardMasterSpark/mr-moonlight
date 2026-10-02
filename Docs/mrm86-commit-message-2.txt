@@ -1,0 +1,16 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-86: Add the O enemy toggle to the Lighting Test Scene + record commit 6ba4d414
+
+
+DESCRIPTION (the body field)
+============================
+
+- LightingTestScene: EnemyVisibilityToggle added to the Weather object (O hides every enemy and pauses spawning; O
+  again restores them). Could not be added in 6ba4d414 because Unity was in Play Mode. Verified in Play Mode: 10
+  enemies hidden, none respawned, all 10 restored on the NavMesh, spawner re-enabled.
+- Docs/performance-sessions.md: C-007 now carries commit 6ba4d414.
+- Docs/lighting-rework-opus-prompt.txt: git line and the pending O-key item updated.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

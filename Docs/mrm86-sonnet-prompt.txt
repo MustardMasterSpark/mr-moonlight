@@ -1,0 +1,62 @@
+UPDATE 2026-09-30 (late): the AST-145 job below is DONE. Read Docs/mrm85-culling-corpses-sonnet-prompt.txt for the next session (culling finalize + corpses, then the fog swap).
+
+Context prompt: MRM-86 LIGHTING / WEATHER + TREE FIRES, next session (SONNET). Read this cold; don't rely on chat scrollback.
+
+WRITTEN: 2026-09-30, end of the session that tuned the tree fires. Branch `mrm-86` (no upstream). Commit 94976b95 holds
+the control board + tree fire v2 (C-008 hash filled in). THIS session's work is uncommitted until Carlos commits it with
+Docs/mrm86-commit-message-4.txt; when he gives the hash, fill it into C-009 in Docs/performance-sessions.md section 8.
+
+Do NOT auto-start. Wait for Carlos's go-ahead.
+
+NEXT SESSION'S SPECIFIC JOB: IMPLEMENT AST-145 "Advanced Culling System 2 - Complete Optimization Solution"
+(New Game Studio, v1.5.8, owned, $69.95). Goal: SEE HOW MUCH THE OPTIMIZATION IMPROVES. Carlos's index notes: "Could beat
+the current culling on the island." Occlusion + distance culling for large scenes.
+- The zip is at Documents\Asset Collection\01_DOWNLOAD\AST-145.zip (NOT imported anywhere yet: not in Playground, not in
+  Mr. Moonlight). Follow Docs/asset-import-update-process.md: Playground first (E:\playground\Playground), check legacy
+  Input System / EventSystem on any demo scene (standing rule), then copy into Mr. Moonlight WITH .meta to keep GUIDs.
+  Assets/ThirdParty/** is git-ignored, so vendor logic that must ship goes to tracked code (ThirdParty policy).
+  Asset adoption protocol: fix Linear AND leave a per-asset approach; never judge an asset on size. Assets.zip itself is
+  never touched. Ask Carlos before any Unity scene work via the bridge (kickstart section B.3).
+- MEASURE FIRST, then install, then measure again: same spot, same weather (LightingTestScene "Story 6 - Fountain",
+  enemies off with O), record fps / frame ms / draw calls, noting EDITOR vs BUILD. A BUILD is better
+  (Docs/performance-sessions.md; session logs in %USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs).
+  Known numbers: island measured 21,946 draw calls (WebGL era); tree fires v2 = 174 fps editor with 60 fires.
+- Test the Lighting Test Scene (a copy of Island_Legion) and Island / Island_Legion. Interactions to check: the tree fire
+  pool (TreeFireToggle) does its own distance scoring; Flora renders vegetation (FloraInstanceRenderer, collidable species
+  are GameObjects), HAZE fog, Forward+ lights, Crest water. A culling asset that hides renderers or GameObjects may hide
+  the trees the fires sit on, or their colliders (WoodColliderTool) and NavMesh: verify.
+- Record before/after in a new Docs file (and as a v3 in Docs/tree-fire-experiment.md section 5 for the fire pool), a row in
+  Docs/performance-sessions.md section 8 (next C-number), and a comment on Linear MRM-85. Linear issue for the asset:
+  check/create (MRM-86 is lighting; AST-145 is performance, so MRM-85 or a new issue; ask Carlos).
+
+THE LIGHTING ISSUE (MRM-86) STILL OPEN, the context behind it:
+- 27 weather profiles tuned ONLY in Scenes/LightingTestScene.unity (not wired into Island / Island_Legion; Carlos decides
+  how, later). CONTROL BOARD: select the `Weather` object; edits go live; Save everything / lighting / fog; P panel.
+- Special light sources: Lamps, Flares, Moon Glow, Tree Fires. Player's two lights NOT added yet. Rain / wind / particles /
+  audio per profile still to do. A new FOG asset (Volumetric Fog & Mist 2) may come: only FogSettings + HazeFogAdapter change.
+- Carlos tunes profiles himself between sessions; record his numbers when he reports them.
+
+TREE FIRES, state at end of 2026-09-30 (full history: Docs/tree-fire-experiment.md; ADD A DATED ENTRY FOR EVERY CHANGE):
+- TreeFireToggle (I key) on `Weather`: pool of 60 fires within 80 m, 10 real lights, 6 sounds. New settings:
+  fireSizeMultiplier 1.2, lightIntensityMultiplier 3, showGlowBall off. TreeFire_FX has a child "Base Fire (Medium)"
+  (scale 2, y 0.4 local). Cost of the bigger fires + medium fire NOT measured yet: take it as the "before" for AST-145.
+- The fire is ONE universal effect scaled by tree height / 12 m only: no per-species, width or shape analysis. Proposed
+  (Carlos: fine for now): 4-6 shape classes chosen from tree bounds, tuned in the vegetation gallery, after the culling work.
+- Possibly still open: pool exhaustion when walking fast (released fires burn out for their whole particle lifetime, pool is
+  1.5x maxFires) and trees at the edge of the range swapping. Carlos said it is "better" after the MissingReferenceException
+  fix; if it comes back: adjustable pool size, stop emission at once, hysteresis margin.
+- The "tiny ball of light" Carlos saw is assumed to be the `glow` sprites (removed by showGlowBall off). NOT confirmed by a
+  screenshot; if a ball remains, candidates are the LogFire / Fire / Smoke children.
+
+TRAPS (already hit)
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode: Polymind MotionBehaviour throws NREs and the session is
+  broken. Read mcpforunity://editor/state (play_mode.is_playing) BEFORE every compile. Importing AST-145 scripts compiles too.
+- Destroy() is deferred to end of frame: after removing a child from a pooled prefab use DestroyImmediate before collecting
+  components (caused the MissingReferenceException storm, 2026-09-30).
+- Key I is ALSO bound to the vendor "Inventory" action in FPS_InputActions.
+- AST-015 files live in git-ignored Assets/ThirdParty/AST-015: a fresh clone has no fire effect.
+- The vendor LightFlicker caches its world position in Start: never on a light that moves.
+- Unity plays only ~512 virtual voices. The editor's frame rate is not a build's: always note which one.
+- UnityMCP execute_code needs action: "execute" and is C# 6 CodeDom (no using in-body, fully-qualify names).
+
+MODEL: Sonnet fits. If AST-145 needs deep integration with Flora / streaming / NavMesh, consider Opus.

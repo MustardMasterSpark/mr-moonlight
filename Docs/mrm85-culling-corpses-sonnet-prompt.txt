@@ -1,0 +1,100 @@
+*** SUPERSEDED 2026-09-30 (end of session): culling C is locked and the corpses are done (optimization + dissolve). Next session: Docs/mrm85-fog-compare-prompt.txt ***
+
+Context prompt: MRM-85 performance, NEXT SESSION = FINALIZE AST-145 CULLING + OPTIMIZE CORPSES (SONNET). Read this cold; don't rely on chat scrollback.
+
+WRITTEN: 2026-09-30, end of the session that imported AST-145, unlocked the fps and ran the dense-forest A/B/C test.
+Branch `mrm-86` (upstream is mrm-86, not main). Nothing of this session is committed until Carlos commits it with
+Docs/mrm85-commit-message.txt; when he gives the hash, fill it into C-010 and C-011 in Docs/performance-sessions.md section 8.
+Supersedes the AST-145 part of Docs/mrm86-sonnet-prompt.txt (that job is DONE). The MRM-86 lighting context in that file still stands.
+
+Do NOT auto-start. Wait for Carlos's go-ahead. Never commit or push (GitHub Desktop). Linear issue: MRM-85 ("Performance reports", never closed).
+
+THE PLAN (Carlos, 2026-09-30): three sessions.
+  1. THIS NEXT ONE: finalize the culling asset + optimize the corpses.
+  2. THEN: swap HAZE volumetric fog for the "Volumetric Fog & Mist 2" asset (only FogSettings + HazeFogAdapter change, see the MRM-86 prompt).
+  3. Goal of it all: find the combination (culling + corpses + fog + fires) that gives the best performance.
+
+===========================================================================
+1. WHAT WAS DONE (details: Docs/culling-ast145.md, Docs/performance-sessions.md sections 3, 5, 8)
+===========================================================================
+- 75 fps was vSync, not a cap. Polymind GraphicsOptions forced vSyncCount=1 at boot; our override ran only in MainMenu.
+  Fixed by Assets/_Project/Code/Runtime/Data/DisplayBootSettings.cs (vSync per GameSettings.VSyncEnabled, default off; cap -1). C-010.
+- SessionLog v5.1: weather in [PERF], [WORLD] weather / tree fires lines, "vsync N cap N" in [PERF]. Idea not done: log camera YAW
+  (a still player who looks around changes the numbers; build B's fires-on windows were unusable for that reason).
+- AST-145 Advanced Culling System 2 v1.5.8 imported to Assets/ThirdParty/AST-145 (GIT-IGNORED: a fresh clone has no culling). Dynamic module.
+- Test scenes (copies of LightingTestScene, ~66 MB each): LightingTestSceneCullingTest (KeepShadows) and LightingTestSceneCullingTestFull
+  (FullDisable). 8,786 trees have DC_SourceSettings + a BAKED DC_Collider child (layer ACSCulling = 29). DC_Controller on "Dynamic Culling"
+  (lifetime 2 s, MergeInGroups on, cell 10 m), DC_Camera (1500 rays) on PlayerCamera only.
+- LightingTestScene itself now starts at the dense-forest test spot: player (218.06, 33.37, -5.23) yaw 311.3; circuit = 22 m square,
+  corners (218.06,-7.23) (218.06,14.77) (240.06,14.77) (240.06,-7.23). Old start: player (403.60, 23.10, -74.20), circuit root (414.60, 22.91, -65.20).
+- Builds (E:\Builds): 37 baseline (vSync-locked, ignore), 38 unlocked baseline (old start), 39 culling (old start), 40 Forest A (no culling),
+  41 Forest B (KeepShadows), 42 Forest C (FullDisable), all new start. Zips 473 MB. Build process: memory build_process.md; zip script pattern
+  = entry-by-entry with '/' separators, verify backslashes/zero-byte, pass the scene list to manage_build so EditorBuildSettings stays untouched.
+
+RESULTS (dense forest, mean frame time per phase): spawn still A 111.7 / B 126.1 / C 132.9 fps; Fountain still fires off 107.3 / 140.6 / 145.1;
+fires on A 80.5 / C 109.7; circuit 113.9 / 129.1 / 132.7; session avg 81.0 / 95.4 / 96.8. Draws -66% to -87%. FullDisable beats KeepShadows by 3-5%.
+Carlos saw NO visual problem in build C (no blinking trees, nothing odd in B or C). Bullets vs leaves NEVER verified (DC colliders are full-mesh,
+non-trigger, layer 29: raycasts with a mask including layer 29 would hit them). Fires cost 3.1 ms (A) / 2.2 ms (C).
+CORPSES DOMINATE: frame ~9.7 ms at 0 corpses -> 24-29 ms at 60-100 corpses, SetPass ~600 -> ~2,000, IDENTICAL with and without culling. All three end at 34-42 fps
+at 100 corpses. This is the biggest cost left (H1/H7).
+
+B vs C (Carlos asked): both are the same Dynamic Culling system (raycasts from the camera against hidden colliders; a tree no ray hits for 2 s is culled).
+Only what "culled" means differs. B KeepShadows: the tree is set to shadows-only (not drawn in colour, still casts its shadow). C FullDisable: the renderer is
+switched off (no colour, no shadow), saving the shadow draw too. Risk of C: a hidden tree that casts a shadow onto visible ground loses that shadow (shadow pop).
+Carlos saw none. Decision so far: prefer C; B is the fallback ("we might want to go back to B"). Switching is one scene-wide edit (see section 4).
+
+===========================================================================
+2. THE UNCOMMITTED STATE AND ITS TRAPS
+===========================================================================
+- The two CullingTest scenes (66.5 MB each) and Assets/ThirdParty/AST-145 are NOT safe to rely on from git: ThirdParty is git-ignored, so a clone
+  has scenes with missing scripts; and GitHub warns at 50 MB per file. Carlos decides whether to commit the scenes. If they are not committed, REBUILD
+  RECIPE (all scripted, UnityMCP execute_code, C# 6 CodeDom, Edit Mode only): copy LightingTestScene.unity; LayersHelper.CreateLayer("ACSCulling") +
+  DisableCollisions; new GameObject "Dynamic Culling" + DC_Controller; ctrl.AddCamera(PlayerCamera, 1500); for every MeshRenderer under "Gaia Terrains"
+  ctrl.AddObjectForCulling(renderer, CullingMethod.X); DC_ControllerEditorUtil.BakeScene(); save. Trees: 88 unique meshes, none readable, so BAKE is required
+  (runtime colliders need readable meshes). Namespaces: NGS.AdvancedCullingSystem(.Dynamic).
+- ProjectSettings TagManager/DynamicsManager/Physics2DSettings changed (layer 29). Rollback of everything: Docs/culling-rollback.ps1 (Unity closed).
+- Assets/_Recovery/0 (5).unity is Unity's autosave from a blackout: leave it alone, never commit it.
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode (Polymind NREs). Read play state first. Play Mode edits are discarded on stop.
+- Scene edits through the bridge: ask Carlos first (kickstart B.3); he has been saying yes to this work, but say what you will touch.
+- Python/heredoc trap hit TWICE: in non-raw Python strings a path like E:\Builds\40 becomes an octal escape (control char, space, "!"). Write paths with
+  forward slashes or build the backslash with chr(92). The Edit tool can fail silently on CRLF multi-line matches: grep to verify every edit. Docs are CRLF.
+- Alt-Tab during a run shows as 300 ms frames: look for "[APP] window LOST focus" before trusting a worst frame.
+- Carlos sometimes runs a build twice: take the latest log. Log folder: %USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs.
+  Helper scripts used (recreate if needed): per-window table parser (regex over "[PERF] window" lines) and a per-phase mean-frame-time comparison.
+
+===========================================================================
+3. JOB 1: FINALIZE THE CULLING (ask Carlos before each scene change)
+===========================================================================
+a) Confirm C (FullDisable) as the choice (Carlos: fine, B is the fallback). Record it in Docs/culling-ast145.md.
+b) Wire it into Island and/or Island_Legion (the real scenes) and LightingTestScene? Ask Carlos which. Same recipe as above; check extra costs: scene +30 MB,
+   8,786 more GameObjects, NavMesh untouched? (DC_Collider is layer 29, but rebake NOT needed). Verify wood colliders, tree fires and Blaze still work.
+c) Open tests: bullets vs leaves (shoot a canopy, check the hit; if bullets stop at leaf cards, exclude layer 29 from the weapon/AI masks or make the DC colliders
+   triggers ignored by queries), enemy line of sight through foliage, tree fire on a culled tree (Carlos saw none).
+d) Tuning knobs not tried: ObjectsLifetime 2 -> 1 s, rays 1500 -> lower (CPU cost of the ray jobs was never isolated; CPU ms ~= GPU ms in the log), cell size,
+   terrain as DC_Occluder (hills hiding trees), the LOD/impostor question. The remaining ~70 M triangles at the Fountain are NOT these trees: census them.
+e) Fixed benchmark: stand at the new spawn, no combat, 30 s, same yaw, fires off; same for fires on. Log camera yaw first.
+
+===========================================================================
+4. JOB 2: OPTIMIZE THE CORPSES (Carlos: "is there active stuff when the enemy dies that still costs processing?")
+===========================================================================
+What the code does today (EnemyCorpseCleanup.cs, runs after EnemyCorpseCleanupDelay): disables every Collider, NavMeshAgent, BlazeAI, BlazeAISpareState, every
+BlazeBehaviour, EnemyRangedAttack, EnemyFirearm, EnemyReinforcementSpawner, SpotterFlareCall, SpotterPanicCall, EnemyPatrolRoute, EnemyAudioHooks, EnemyDebugControls.
+DELIBERATELY LEFT ON: Animator, AudioSource, GoreSimulator, EnemyIdentity, EnemyHealth, EnemyDeathDrop. So the AI is off (CPU), but the RENDER side is fully alive. Suspects (none measured):
+  - SkinnedMeshRenderers still cast shadows and use several materials each (SetPass ~600 -> ~2,000 at 100 corpses points at materials/passes, not AI).
+  - Animator still evaluating (skinning cost) on a motionless body.
+  - GoreSimulator mesh pieces / blood particle systems / decals accumulating.
+  - The dropped lamp's point light keeps burning (LampLightFadeDuration) and LampFireEffect: real lights, soft shadows, many of them (H10).
+  - Rigidbodies / ragdoll joints possibly still simulating.
+Strategy ladder (cheapest first, A/B each at the SAME spot and kill count, log SetPass + ms): (1) corpse renderers shadowCastingMode Off; (2) Animator disabled after
+the death pose settles (cullingMode / enabled=false); (3) stop GoreSimulator/particles after settle; (4) corpse lamp light off or fewer; (5) rigidbody sleep / kinematic;
+(6) fewer materials (merge) or a simple LOD for corpses; (7) cap the corpse count (fade and despawn the oldest or the farthest; Carlos wants corpses to stay looking like corpses:
+ask before removing any); (8) let AST-145 cull corpses (custom target) when out of sight. Existing tests: H1, H7 in Docs/performance-sessions.md section 3.
+Benchmark idea: a key that kills/spawns N corpses in front of the camera so the same load can be reproduced (check the O enemy toggle in the Lighting Test Scene).
+
+===========================================================================
+5. FOR THE SESSION AFTER (fog swap) AND MODEL CHOICE
+===========================================================================
+Swap HAZE for Volumetric Fog & Mist 2: read Docs/lighting.md and the MRM-86 prompt (HAZE needs camera post-processing ON; HazeFogAdapter + FogSettings only).
+Measure it inside the same A/B/C framework (same spot, same yaw, fires off/on) so the culling + corpses + fog combination can be compared. Record every step in
+Docs/performance-sessions.md (new Hn rows, section 8 C-number) and as a MRM-85 comment.
+MODEL: Sonnet fits culling tuning and corpse optimization (tuning an existing system). Consider Opus for the fog-asset integration if it needs deep shader/volume work.

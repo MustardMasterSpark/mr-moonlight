@@ -139,6 +139,16 @@ and only for a concrete reason.
    `Assets/_Project/Settings/PC_Renderer.asset` — those are the two assets that reference third-party
    types by GUID.
 
+> **2026-09-29 (MRM-86):** **AST-271 Draw Debug Tools v3.0** (QInteract, debug lines/shapes/text/graphs, about 1 MB) installed
+> whole, tracked, at `Assets/_Project/Code/Vendor/AST-271 Draw Debug Tools/`, because game code calls it
+> (`MrMoonlight.Runtime.asmdef` references `DrawDebugTools`). Its debug-camera key was changed in
+> `Resources/Settings/DDTSettings.asset` from F9 (Infinite Ammo) to **F11**. Draw calls are stripped from release builds unless
+> the calling file defines `DDT_ENABLED` (only `SkyProximityCircuit.cs` does). **AST-054 Skybox Blender:** only its
+> `SkyboxBlender.shader` (the Playground copy, with the local `_Orient1/_Orient2` edit) was brought in, tracked, at
+> `Assets/_Project/Code/Vendor/AST-054 Skybox Blender/`; its `SkyboxBlender` component was not (it blends on a timer and
+> edits its shared material). `MrMoonlight.Runtime.asmdef` now also references **`Haze.Runtime`** (AST-078, git-ignored),
+> for `HazeFogAdapter`. Details: `Docs/weather-profiles.md`.
+
 ## Load-bearing packages
 
 These are referenced by GUID from tracked assets. **Without them the project does not work.**

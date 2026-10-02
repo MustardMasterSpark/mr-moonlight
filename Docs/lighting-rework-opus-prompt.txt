@@ -1,7 +1,8 @@
 Context prompt: LIGHTING REWORK (Opus suggested). Read this cold; don't rely on chat scrollback.
 
 WRITTEN: 2026-09-19 (end of the MRM-44 flashlight / hands-lighting sessions), UPDATED the same day, ADDENDA 2026-09-23
-(section 6) and 2026-09-28 (section 7: THE SKIES ARE CHOSEN AND ALREADY IN THIS PROJECT; read section 7 first).
+(section 6), 2026-09-28 (section 7: the skies) and 2026-09-29 (section 8: WEATHER PROFILES ARE BUILT; READ SECTION 8
+FIRST, it supersedes the open questions in sections 1-7).
 LINEAR ISSUE: **MRM-86** "Lighting system rework: TimeManager, fog, skyboxes and light sources" (created 2026-09-19 at Carlos's
 go-ahead; Opus, M2, High). GIT BRANCH: **`mrm-86`**, already created LOCALLY from `main` (e99866fd) with `--no-track`; it does
 not exist on GitHub yet. Carlos publishes it from GitHub Desktop and opens the PR to `main`. Start the session with
@@ -232,3 +233,66 @@ The sky import was done on `main`; if it is not committed yet, ask Carlos before
 uncommitted work across branches silently). Confirm `git config --get branch.mrm-86.merge` prints nothing.
 The tracked-but-unrelated modified files at the time of writing: `Assets/_Project/Settings/VP_HazeGlobalFog.asset` (HAZE
 `active` flip is known noise: memory haze_fog_active_toggle_noise), `Docs/asset-index/ASSETS-Index.xlsx` (Carlos's).
+
+===========================================================================
+8. ADDENDUM 2026-09-29 — WEATHER PROFILES + LIGHTING TEST SCENE ARE BUILT (read this first)
+===========================================================================
+Full reference: **Docs/weather-profiles.md**. Change record C-007 (Docs/performance-sessions.md §8). Commit message:
+Docs/mrm86-commit-message.txt (Carlos commits from GitHub Desktop; fill the C-007 hash with `git log -1` when he says so).
+
+GIT: branch `mrm-86`, fast-forwarded to main (fcfbd0e0) at the start of the session, no upstream (checked). Committed as
+**6ba4d414** (2026-09-29). One follow-up after it: the O-key component added to the scene (Docs/mrm86-commit-message-2.txt).
+
+WHAT CARLOS DECIDED (2026-09-29)
+- The skies from section 7 get a WEATHER PROFILE each: sky + sun + ambient + "special light sources" + fog now; rain,
+  wind, particles, audio and the player's two lights later. One asset, a list of 27 entries named by moment.
+- Build and tune ONLY in a test scene for now. "The things I listed that the island scene has right now were just for
+  context but we will change the approach and even the objects... We will first want to define the profiles and then I
+  will later tell you how this will be implemented on the game itself." => DO NOT wire profiles into Island /
+  Island_Legion, and do not delete the old SUN / TimeManager / SkyboxSwitcher / Scene Effects Toggle / HAZE objects,
+  until Carlos describes the in-game approach.
+- Fog stays HAZE. He may later try Volumetric Fog & Mist 2 (Kronnect, $34.99 at 50% off, ships a sandstorm preset) for a
+  comparison, performance included. The profile's Fog section is marked "may change"; only FogSettings + HazeFogAdapter
+  would change.
+- Include every other light source (lamps, flares, moon glow) but NOT the player's own lights for now. They are grouped
+  under the header "* Special light sources" and the player's personal light + hands' light will join that group later.
+- Start clean: every profile and the test scene begin at Unity's default sun/ambient and HAZE's default fog (global
+  density 0; the area box keeps HAZE's default density 1). Nothing carried over from the old presets.
+- Keys in the test scene: P = tuning panel (Save Lighting Values / Save Fog Values), O = enemies off/on, F11 = DDT debug
+  camera (moved from F9 = Infinite Ammo). A key reminder sits bottom-right.
+
+WHAT EXISTS (see weather-profiles.md for every detail)
+- Assets/_Project/Data/Weather/WeatherProfiles.asset, code in Code/Runtime/World/Weather/, SkyBlender + SkyProximityCircuit
+  in World/, EnemyVisibilityToggle in DevTools/. Scenes/LightingTestScene.unity = copy of Island_Legion, own fog profile,
+  circuit 58 m south of the Glade (centre 414.6, -65.2, corners 22 m apart, player spawns 2 m inside corner 0).
+- Verified in Play Mode by reading values back: 50% blend = exact midpoints (sun, fog, sky); lock applies the target
+  exactly and moves the marker; profile edits apply live; a direct fog edit survives and Save Fog writes it to disk; a
+  lamp override restyled all 10 Spotter lamps; the P panel frees the cursor. NOT visually judged by Claude (editor
+  screenshots are unreliable here) - Carlos has to walk it.
+- The O-key component (EnemyVisibilityToggle) is on the scene's `Weather` object. Verified in Play Mode: 10 enemies hidden,
+  none respawned, all 10 restored on the NavMesh with the spawner re-enabled. The on-screen key reminder has not been
+  looked at by Carlos yet.
+
+TRAPS FOUND THIS SESSION (details in weather-profiles.md)
+- FindGameObjectWithTag("Player") can return Body/Hitbox; use .transform.root.
+- MoonTint writes the shared M_Moon.mat whenever a Prop_Moon is loaded (even for a prefab edit): revert it if modified.
+- Realtime reflection probes are off in Quality settings: probe-based sky capture fails (SkyBlender uses RenderToCubemap).
+- Opening Island_Legion marks it dirty with no edit: never save it by accident.
+- Do not compile while Unity is in Play Mode: Polymind MotionBehaviour.OnEnable throws NullReferenceExceptions.
+- The UnityMCP bridge blocks AssetDatabase.DeleteAsset / MoveAssetToTrash: overwrite (SaveScene as copy) instead, or ask
+  Carlos to delete.
+
+WHAT IS NEXT (Carlos to choose)
+1. Carlos tunes the 27 profiles himself in the test scene (no Claude needed).
+2. Add the player's two lights (PlayerAmbientLight, the hands' ViewModelLight / MoonlightViewModelLighting floor and
+   factor) to the "* Special light sources" group. Keep MoonlightViewModelLighting's contract: it follows
+   RenderSettings.sun every frame, so the sun section already drives the hands.
+3. Carlos describes how profiles are wired into the game (Event Director verb? act triggers? time?), then replace
+   Island's SUN / TimeManager / SkyboxSwitcher / Scene Effects Toggle / F8 cycle with WeatherSystem. The three unwired
+   tunables from section 3 are still unwired.
+4. Rain / wind / particles / audio sections per profile (Carlos's per-act notes are in sky-catalog.md).
+5. HAZE vs Volumetric Fog & Mist 2 comparison build.
+
+MODEL: step 1 needs no model. Step 2 alone suits Sonnet (extending an existing system). Step 3 (replacing the old
+sun/time/fog objects across the real scenes with a design Carlos describes) suits Opus.
+

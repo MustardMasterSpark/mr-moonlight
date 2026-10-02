@@ -1,0 +1,2391 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6546dc3a5de4f9a489f75e513f9fe982, type: 3}
+  m_Name: WeatherProfiles
+  m_EditorClassIdentifier: MrMoonlight.Runtime::MrMoonlight.World.Weather.WeatherProfileLibrary
+  Profiles:
+  - Name: "Story 1 \xB7 Campsite"
+    Skybox: {fileID: 2100000, guid: 77621a719f62a7b4ca68db49b78d06f5, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9759549, b: 0.9103774, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 6570
+      Intensity: 1.84
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 0.561
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: -5.65
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 2 \xB7 Moving To Glade"
+    Skybox: {fileID: 2100000, guid: 52562d428f26ca94fa7a9b436893e16e, type: 2}
+    Sun:
+      Elevation: 90
+      Azimuth: 330
+      Color: {r: 0.9150943, g: 0.9150943, b: 0.9150943, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 4948
+      Intensity: 1.9
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 0.907
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 2.6
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 0.49661803, g: 0.6792453, b: 0.6755935, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 3 \xB7 Glade"
+    Skybox: {fileID: 2100000, guid: 18097e9272c26c6458b5be58464a8eae, type: 2}
+    Sun:
+      Elevation: 79.8
+      Azimuth: 330
+      Color: {r: 0.9021419, g: 0.9245283, b: 0.58873266, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 7265
+      Intensity: 3.91
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 0.4
+        Density: 0.2
+        NoiseThreshold: 0
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 4 \xB7 Moving To Cabin"
+    Skybox: {fileID: 2100000, guid: 814a09d8ae7f84e43a8f844270436158, type: 2}
+    Sun:
+      Elevation: 90
+      Azimuth: 330
+      Color: {r: 0.990566, g: 0.7285947, b: 0.5186454, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1.9
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 0.72
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 0.179
+        Density: 1
+        NoiseThreshold: 0.56
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 5 \xB7 Mine Entrance"
+    Skybox: {fileID: 2100000, guid: 8ccb6264a6186a048bf4bdbf6b7eda9f, type: 2}
+    Sun:
+      Elevation: 40.2
+      Azimuth: 255
+      Color: {r: 0.9433962, g: 0.57367235, b: 0.30704877, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 4939
+      Intensity: 2.9
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 0.02
+        Density: 0.85
+        NoiseThreshold: 0.63
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 6 \xB7 Fountain"
+    Skybox: {fileID: 2100000, guid: 1142f182d8376a642a4375cf0507f605, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 0, g: 0.12523589, b: 0.254717, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6484
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 0
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 1
+      Color: {r: 1, g: 0.51908946, b: 0.25098038, a: 1}
+      Intensity: 200
+      Range: 60
+      Shadows: 0
+      ShadowStrength: 0.341
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 0.033
+        Density: 1
+        NoiseThreshold: 2.18
+        AmbientColor: {r: 0.009433985, g: 0.009433985, b: 0.009433985, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Story 7 \xB7 Apocalypse"
+    Skybox: {fileID: 2100000, guid: 4179590a4186f2f469cafe4cf2e13bef, type: 2}
+    Sun:
+      Elevation: 72.4
+      Azimuth: 178
+      Color: {r: 1, g: 0.116793975, b: 0.10849059, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 3094
+      Intensity: 5.56
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 0.065
+        Density: 0.84
+        NoiseThreshold: 0.62
+        AmbientColor: {r: 0.8207547, g: 0.096787095, b: 0.096787095, a: 1}
+        MainLightContribution: {r: 0.8773585, g: 0.062077243, b: 0.062077243, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W1 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: e873304edb4996644a14b77a77cc5761, type: 2}
+    Sun:
+      Elevation: 90
+      Azimuth: 97
+      Color: {r: 1, g: 1, b: 1, a: 1}
+      UseColorTemperature: 1
+      ColorTemperature: 6175
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 1
+      ShadowStrength: 0.963
+    Environment:
+      Source: 0
+      SkyboxIntensity: 0.5
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 15
+        NoiseThreshold: -2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W1 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: f7b0a347c430837428b4bb0cf002da33, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W1 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: 67cea6b6417516644ba9d6c8f2469798, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W2 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: 4f69ab3e5a312b34d945b8c85e62ff0b, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W2 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: 7017776aa4f4eab448bbee20056bd9f1, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W2 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: 3f88a24615602704b955851d2c747258, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W3 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: a058e0a2710f5084c824ebf63d008c63, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W3 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: 0aeea6479dd80e24f9bd6fa81d406cc2, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W3 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: 46b0cd2b5edb6e445b74bdb6d0ba05c9, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W4 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: aea4d08bbf6bc14489ee4e00008a61ff, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W4 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: 52ace29811243454091453af8e46f19d, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W4 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: d6f22493667b9794187848f39c8daf4a, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W5 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: 2f087c6fba788014996107b383f967ba, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W5 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: 55e35243b4f320542bbedc696774a8b3, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W5 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: 0dba2dfa12435fa4eb9a361dd74aebbe, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W6 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: 9d6b0e89edd331143b8699d7c614fb07, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W6 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: b6eba0f0599ed5448acf39ef3e22e602, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W6 A3 \xB7 Ending"
+    Skybox: {fileID: 2100000, guid: 183d8bbeceb40b943bfcf6a1831752e4, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W7 A1 \xB7 Beginning"
+    Skybox: {fileID: 2100000, guid: 2bf492fe7cb02ed49a26b26db8d538a8, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5
+  - Name: "Legion W7 A2 \xB7 Conflict"
+    Skybox: {fileID: 2100000, guid: 019c2f2864b49dd4292b92eb1894c1e9, type: 2}
+    Sun:
+      Elevation: 50
+      Azimuth: 330
+      Color: {r: 1, g: 0.9568627, b: 0.8392157, a: 1}
+      UseColorTemperature: 0
+      ColorTemperature: 6570
+      Intensity: 1
+      IndirectMultiplier: 1
+      Shadows: 2
+      ShadowStrength: 1
+    Environment:
+      Source: 0
+      SkyboxIntensity: 1
+      SkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+      EquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
+      GroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
+      ReflectionIntensity: 1
+    Lamps:
+      Override: 0
+      Color: {r: 1, g: 0.82, b: 0.55, a: 1}
+      Intensity: 2.5
+      Range: 14
+      Shadows: 2
+      ShadowStrength: 1
+    Flares:
+      Override: 0
+      Color: {r: 1, g: 0.02, b: 0, a: 1}
+      Intensity: 9
+      Range: 20
+      Shadows: 2
+      ShadowStrength: 1
+    MoonGlow:
+      Override: 0
+      Color: {r: 1, g: 0.15, b: 0.1, a: 1}
+      Intensity: 1.5
+      Range: 1
+      Shadows: 0
+      ShadowStrength: 1
+    TreeFires:
+      Override: 0
+      Color: {r: 1, g: 0.5448276, b: 0.25, a: 1}
+      Intensity: 0.89
+      Range: 30
+      Shadows: 0
+      ShadowStrength: 1
+    Fog:
+      Enabled: 1
+      Global:
+        DensityMultiplier: 0
+        DensityThreshold: 0.2
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0
+        CameraRelativeHeightFog: 0
+        AdditionalLightContribution: 0
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Area:
+        Weight: 1
+        Density: 1
+        NoiseThreshold: 0.5
+        AmbientColor: {r: 1, g: 1, b: 1, a: 1}
+        MainLightContribution: {r: 1, g: 1, b: 1, a: 1}
+        GradientLightScattering: 0.5
+        HeightFogFactor: 0
+        MaxFogHeight: 0
+        HeightFogSmoothness: 0.1
+        AdditionalLightContribution: 1
+        ProbeVolumeContribution: 0
+        MainLightScattering: 1
+        MainLightDensityBoost: 0
+        SecondaryLightDensityBoost: 0
+      Noise:
+        Override: 0
+        NoiseTiling: 0.001
+        NoisePanningSpeed: {x: 0, y: 0, z: 0}
+        NoiseWeights: {x: 1, y: 1, z: 1, w: 1}
+        MultipleScatteringIntensity: 1
+        MultipleScatteringRadius: 7
+        MultipleScatteringScatter: 1
+        MultipleScatteringThreshold: 0
+        MaxMultipleScatteringIterations: 5

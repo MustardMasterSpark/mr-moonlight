@@ -1,0 +1,29 @@
+SUMMARY (the title field in GitHub Desktop)
+===========================================
+
+MRM-86: Remove hidden Gaia preview objects from scenes 02/06/07/08, document the Scene-view gizmo-overflow editor crash
+
+
+DESCRIPTION (the body field)
+============================
+
+- Scenes 02 Island, 06 Island_Legion, 07 LightingTestScene, 08 LightingTestScene Fog Experiment: deleted the Gaia
+  World Designer and its hidden child World Map Stamper (40 objects per scene: both GameObjects, their components,
+  26 loose StamperSettings and the other Gaia settings objects only they used, the cached preview RenderTexture).
+  Removed offline from the scene YAML with Unity closed (editing them in the editor froze it); a dry run found zero
+  dangling references. The diff is deletions only.
+- Scene 07 only: the whole Gaia Tools group is also gone (Stamper, Scanner with its pink preview plane at y=512,
+  Custom Biome, Session Manager; 23 more objects). Terrain, Gaia Terrains, Gaia Runtime and the vegetation spawners
+  are untouched. Gaia recreates an empty Gaia Tools group in memory on load; saving the scene writes it back (harmless).
+- Editor crash root cause found (not Gaia): Scene-view "Gizmo vertex count exceeds the maximum size: 38348667 >
+  38347922" in ScriptableRenderContext.Submit, 4+ crashes on 2026-10-01. The wire box that crashed on click is the
+  NavMesh Surface volume (1024 x 67.5 x 1024), a victim. Fix applied through the UnityMCP bridge: editor gizmo drawing
+  switched OFF for six AST-145 types (DC_Controller, DC_SourceSettings, DC_ActivateNearObjects, StaticCullingCamera,
+  StaticCullingController, StaticCullingSource), stored in Library/AnnotationManager (not committed, not in builds).
+  Components and culling still run. Applies to every island-scale scene with Dynamic Culling.
+- Docs: new Docs/gaia-world-map-stamper-freeze.md (cause, correction of my first wrong diagnosis, rules),
+  addendum in Docs/gaia-stamper-lessons-learned.md, change record C-016 in Docs/performance-sessions.md,
+  next-session prompt Docs/demo-update-staging-sonnet-prompt.txt.
+- No runtime code changed; nothing here ships in a build (Gaia Tools is EditorOnly).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

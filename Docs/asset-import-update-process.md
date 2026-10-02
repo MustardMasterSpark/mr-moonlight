@@ -205,8 +205,21 @@ sheet and rename the new one into its place. Verify afterward: total `AST-###` I
 identical before and after (263 in, 263 out, last time), and hyperlinks must still resolve on a
 handful of spot-checked rows.
 
-**After editing:** copy the saved file over `Docs/asset-index/ASSETS-Index.xlsx` in this repo (see
-next section) — every time, not just on request.
+**After editing:** run `python Tools/pipeline/build_asset_browse_sheet.py --mirror`. It regenerates the two
+browsing sheets (see below) and copies the saved file over `Docs/asset-index/ASSETS-Index.xlsx` in this
+repo (next section) — every time, not just on request.
+
+**Browsing sheets (added 2026-10-02, Carlos: "it's taking me way too long to find a single asset").**
+`Asset Index` can't be sorted or filtered, because its section-divider rows sit mid-table. Two **generated**
+sheets sit in front of it, rebuilt from it in full on every run, **never edited by hand**:
+- **Browse by Category** — one flat table, filter buttons on every column, sorted category → owned-first →
+  section → id. A `section` column keeps what the divider rows said (Owned / Owned (added later) / Owned
+  (not in project) / Wishlist P1–P5).
+- **By Category** — one row per category: owned, wishlist, total, in-Mr-Moonlight, as live `COUNTIFS`
+  against the flat table (Excel calculates them on open).
+
+`Asset Index` itself is unchanged and stays the only sheet this process edits. Close the workbook in Excel
+before running the script (stale `~$` lock files are harmless; check `Get-Process EXCEL` first).
 
 **If the spreadsheet is open in Excel** when you need to write it, `openpyxl` can't save over the
 lock (`~$ASSETS - Index ....xlsx` appears next to it). Ask Carlos to close it — "Don't Save" is
@@ -536,6 +549,41 @@ Time, **276** Sci-Fi Game Sound Effects, **277** SmartBuilder, **278** Survival 
 - Store data via `WebFetch` (one call per store page, in parallel). Version strings `v3.0` vs store `3.0.0` treated as equal.
 - Excel had the master open again (lock file); Carlos closed it. A `inspect.py` scratch script shadows the stdlib and
   breaks openpyxl's numpy import: don't name scripts after stdlib modules.
+
+## Worked example 8 (2026-09-30) - 11 files: 1 re-download, 7 wishlist, 3 genuinely new
+
+Files without an `AST-` prefix (minus `Assets.zip`): **AST-113** Realistic Blood VFX was already owned (file v3.0), the
+new file is v4.0, so it is a version update (old `AST-113.zip` deleted, row stays put, `downloaded file` and notes
+updated, `up to date?` Yes). 7 wishlist rows moved to "OWNED (FROM WISHLIST)": AST-174 MapMagic, 180 Edgar Pro, 181
+Realistic Car Controller Pro, 192 InfiniTREE (the non-PRO row; AST-191 is InfiniTREE PRO), 196 Low Poly Animated
+People, 197 Animation to Sprite Sheet, 250 Anime Girl Characters - Bikini. 3 on no list: **AST-280** Beautify 3
+(Kronnect, $51.99, 30.1), **AST-281** Toolkit for Steamworks 2026 (Heathen, $110, store 6.1.13), **AST-282** Volumetric
+Fog & Mist 2 (Kronnect, $69.99, 31.4.2). Log: `_rename-log 2026-09-30.csv`. Sheet: 282 IDs, tiers P3 19 / $929.94, P5 27.
+Behind the store: 174, 180, 181, 281. Nothing extracted or installed.
+- In the current file every cell in a section shares one fill (owned blue-green, wishlist orange), so a moved row only
+  needs its fill swapped to the owned one, not re-striped. The tier formula and category counts still reproduced exactly.
+- Two similarly named pairs to check by name, not by guess: InfiniTREE vs InfiniTREE PRO, Volumetric Fog & Mist 2 vs
+  HAZE (AST-078, in use).
+
+## Worked example 9 (2026-10-02) - 3 rows removed, 13 files, all already wishlist
+
+**Removal (Carlos no longer has access):** AST-154 Fantasy Animals Pack, AST-231 Cu Cat Maker, AST-235 Yuka. All three were
+wishlist rows, not installed anywhere, no files in `01_DOWNLOAD`. The rows were **deleted** (IDs are never reused, wishlist
+ranks keep their gaps) and the Legend's change log says so. Before deleting, check the row is not owned or installed.
+
+**Files:** non-`AST-` files minus `Assets.zip` = 13, each a wishlist row: AST-198 URP Toon Shader, 199 Anime Shading Plus,
+200 Pixel Art Vegetation Wind Shader Graph, 202 Medieval Castle Interior, 217 Space Combat Kit, 223 000 Endless Maze,
+230 Cats - Strays, 233 Gobi, 234 Haruka, 240 Survivor Girl 1, 241 Mechanic Girl Modular, 242 Vampire Girl Modular, 249 Ami.
+Renamed in place, logged in `_rename-log 2026-10-02.csv`, nothing extracted or installed. Behind the store: 198, 199, 242, 249;
+234 has no store version (`Unknown`). Tiers now P1 14 / $133.41, P2 6 / $138.95, P3 19 / $1,136.94, P4 14 / $767.96, P5 20 / $1,510.94.
+- **A file whose name matches no row may still be a row.** "Ami Bikini School Uniform" looked new (best name match 0.52), but the
+  wishlist row AST-249 "Ami" has a collection URL ending `ami-bikini-school-uniform-free-download`. **Check the collection-URL
+  slug, not just the name**, before assigning a new ID.
+- Dry-run first: the tier/category formulas reproduced the Legend exactly (the only differences were the three removed rows'
+  prices), 32/32 category counts matched. Then the same in-place rewrite as example 3, but the row count **shrank** (297 to 294), so
+  the trailing rows are cleared (value, style, hyperlink, height). Verified against a pre-change snapshot: 0 other rows changed,
+  589 hyperlinks became 583 (-6 = the three removed rows' two links each), owned-from-wishlist section still sorted by ID.
+- The Browse by Category / By Category sheets were regenerated with `Tools/pipeline/build_asset_browse_sheet.py --mirror`.
 
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 

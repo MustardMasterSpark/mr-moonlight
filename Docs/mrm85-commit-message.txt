@@ -1,0 +1,34 @@
+SUMMARY:
+MRM-85: Unlock fps (vSync off at boot), AST-145 Dynamic Culling test scenes, SessionLog v5.1, forest test start
+
+DESCRIPTION:
+Performance work on mrm-86 (Linear MRM-85, touches MRM-78's vSync area).
+
+FPS unlock (C-010): Polymind GraphicsOptions.Apply() forces vSyncCount = 1 at every
+boot and our override lived only in MainMenu's SettingsPanel, so every other start
+scene ran at the monitor's 75 Hz. New DisplayBootSettings (BeforeSceneLoad) applies
+GameSettings.VSyncEnabled (default off) and targetFrameRate = -1 in any scene.
+
+SessionLog v5.1: weather profile in every [PERF] window, [WORLD] weather / tree fires
+lines (keyed on profile names, not the blend value), vsync + cap in [PERF].
+
+AST-145 Advanced Culling System 2, Dynamic module (C-011), tested in separate scenes:
+LightingTestSceneCullingTest (KeepShadows) and LightingTestSceneCullingTestFull
+(FullDisable) = copies of LightingTestScene with DC_Controller, DC_Camera on PlayerCamera
+and baked DC_Collider + DC_SourceSettings on 8,786 trees. New layer ACSCulling (29):
+TagManager, DynamicsManager, Physics2DSettings. The asset itself is in git-ignored
+Assets/ThirdParty/AST-145. Rollback: Docs/culling-rollback.ps1.
+
+LightingTestScene: player spawn and weather circuit moved to a dense-forest test spot
+(player 218.06, 33.37, -5.23, yaw 311.3; was 403.60, 23.10, -74.20).
+
+Results (builds 37-42, Docs/culling-ast145.md section 10): culling +13-19% fps at the
+spawn, +31-35% at the Fountain, draws -66% to -87%; FullDisable beats KeepShadows by
+3-5%. Corpses dominate the fight (9.7 ms -> 24-29 ms at 60-100 corpses, SetPass ~600 ->
+~2,000) with or without culling. Fires cost 2.2-3.1 ms. H11/H12 added, H1 strengthened.
+
+Docs: culling-ast145.md, culling-rollback.ps1, culling-baseline-sessionlog-v5.patch,
+performance-sessions.md (H1/H11/H12, entries, section 7 v5.1, section 8 C-010/C-011),
+tree-fire-experiment.md section 7, mrm85-culling-corpses-sonnet-prompt.txt (handoff).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

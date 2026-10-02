@@ -12,6 +12,7 @@ struct v2f
 {
 	float4 positionCS : SV_POSITION;
 	float2 uv : TEXCOORD0;
+	float3 positionWS : TEXCOORD1;
 	UNITY_VERTEX_INPUT_INSTANCE_ID
 	UNITY_VERTEX_OUTPUT_STEREO
 };
@@ -29,6 +30,7 @@ v2f depthOnlyVert(appdata v)
 	o.positionCS = mul(UNITY_MATRIX_P, positionVS);
 
 	o.uv = TRANSFORM_TEX(v.uv, _BaseMap);
+	o.positionWS = TransformObjectToWorld(v.positionOS.xyz);
 
 	return o;
 }
@@ -38,6 +40,10 @@ float depthOnlyFrag(v2f i) : SV_TARGET
 	UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
 
 	Alpha(SampleAlbedoAlpha(i.uv, TEXTURE2D_ARGS(_BaseMap, sampler_BaseMap)).a, _BaseColor, _Cutoff);
+
+#ifdef _USE_DISSOLVE
+	clip(DissolveDistance(i.positionWS));
+#endif
 
 	return i.positionCS.z;
 }

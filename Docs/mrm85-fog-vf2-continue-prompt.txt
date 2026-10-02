@@ -1,0 +1,46 @@
+Context prompt: MRM-85 / MRM-86 fog + lighting + optimization, PARKED. For Carlos to resume AFTER the quick updated demo. Read this cold; do not rely on chat scrollback.
+Suggested model: Opus to wire VF2 into the game or fix its lighting; Sonnet to run and analyse the HAZE vs VF2 builds.
+
+WRITTEN: 2026-10-01 (work done 2026-09-30). Branch `mrm-86` (upstream is mrm-86, not main). Never commit or push (Carlos uses GitHub Desktop). Linear: MRM-85 ("Performance reports", never closed) and MRM-86 (lighting rework).
+Do NOT auto-start; this prompt is context. Carlos decides when the optimization work resumes.
+Commit message for the work described here: Docs/mrm85-commit-message-4.txt. When Carlos says he committed, read the hash with `git log -1` and fill it into C-015 in Docs/performance-sessions.md section 8 (it says `pending`).
+
+===========================================================================
+1. WHERE THINGS STAND
+===========================================================================
+Optimization state (details: Docs/performance-sessions.md sections 3, 5, 8; Docs/corpse-optimization.md; Docs/culling-ast145.md):
+- Culling C (AST-145 Dynamic, FullDisable) is in scenes 02 Island, 06 Island_Legion, 07 LightingTestScene (and the copy 08). Corpse settle pass + burn dissolve are in (Legion mode; story mode must turn CorpseDisableGore, CorpseStripPhysics, CorpseDissolveEnabled OFF).
+- Build 44 (commit f393402a): dissolve works, session avg 102.6 fps, but the late fight stays ~23 ms and tracks the lights near the hands (H13, handLights up to ~51, ~0.3 ms per light).
+- **Carlos ruled: do NOT change the lamps yet** (no lamp shadow change, no light cap). The lamp-light-shadows-off test and a light cap stay open H13 ideas; wait for him to raise them.
+- Open items not touched: bullets vs the layer-29 tree hulls and corpse proxy boxes; an upright "standing corpse"; a tree pop-in (suspect corpse proxy boxes); no screenshot of the burn dissolve in a build.
+- Tree fires and the weather system (MRM-86) exist in the lighting test scenes only.
+
+Fog experiment (details: Docs/fog-experiment-ast282.md, read it first):
+- AST-282 Volumetric Fog & Mist 2 is imported (Assets/ThirdParty/AST-282, git-ignored). Scene `08 LightingTestScene Fog Experiment` has it, with ALL HAZE removed, on its own renderer PC_Renderer_VF2.
+- `07 LightingTestScene` keeps HAZE, `WeatherSystem` and the original `WeatherProfiles.asset`. The weather code is split: WeatherSystemBase -> WeatherSystem (HAZE) / Vf2WeatherSystem (library `Data/Weather/WeatherProfiles_VF2.asset`, VF2 values only). Never mix the two data sets (Carlos's ruling).
+- H14 (VF2 vs HAZE cost) is UNMEASURED. Editor fps is not comparable with builds.
+- Carlos's verdict so far: the fog behaves differently and "is kind of uncontrollable right now"; he did not have time to test it fully.
+
+===========================================================================
+2. WHAT TO DO WHEN RESUMING (in order; full list in fog-experiment-ast282.md section 7)
+===========================================================================
+1. Apply the Jittering fix: set Jittering 0 on all 27 VF2 profiles and in the Vf2FogSettings defaults (the full-screen weave is Jittering; Dithering is not the cause).
+2. Resolve the fog lighting: Native Lights Multiplier 0 gives NO fog (verified); 1 washes the fog to white and brightens it from every light incl. PlayerAmbientLight. Try 0.02-0.2 with Jittering 0, or VF2's own point lights. The fog is also lit by the SUN at full intensity: Brightness ~ 1/sun intensity (several story profiles have sun 2-5.6).
+3. Add the `Scene Effects Toggle` prefab (Assets/_Project/Prefabs/DevTools) to scene 08 (set Target Volume = "Global Post Volume (CRT)", add `SceneEffectsDebugToggle` with the SpecialElite font). It is already in 07.
+4. Build 45 (next build number; memory build_process.md: numbered folder under E:\Builds, `<N> - <2 words> - <date>`, Build.zip with '/' separators via a .ps1 file, pass the scene list to manage_build; scenes 03, 02, 06 are in Build Settings, add 07 and 08). Runs in the same A/B framework as builds 38-44: player (218.06, 33.37, -5.23) yaw 311.3, spawn still 10 s, Fountain fires off 30 s, fires on 30 s, no combat first; A = HAZE (07), B = VF2 (08, look matched), C = fog off (F6). Then a fight run. Compare mean ms, GPU ms, draws/SetPass/tris per phase; record as H14 results + a section 8 C-number + a comment on MRM-85. Keep the lamps and fires exactly as in build 44.
+5. Match the look (HAZE global density, height fog and noise were not mapped to VF2), tune the 27 profiles; if VF2 wins, replace HAZE in Island / Island_Legion (not decided).
+6. Then the other open performance items above, in the order Carlos picks.
+
+===========================================================================
+3. TRAPS ALREADY FOUND (do not repeat)
+===========================================================================
+- NEVER compile (refresh_unity compile) while Unity is in Play Mode. Play Mode edits to scene components are discarded; tunables assets edited in Play Mode persist in memory (restore them). Carlos often has Play Mode on: ask him to stop it.
+- UnityMCP execute_code is C# 6 CodeDom: no `using` in-body, no tuples, no local functions, no nested classes; fully qualify types; `Object` is ambiguous (UnityEngine.Object). `AssetDatabase.DeleteAsset` needs safety_checks=false.
+- Editor screenshots can show a stale frame right after a change: take one more before concluding (an earlier wrong conclusion came from this).
+- The player camera cannot be aimed by script; `manage_camera screenshot` with view_position + view_rotation renders from any point.
+- Disabling the `VolumetricFog` component does not hide the fog (it is a mesh); hide the MeshRenderer too (done in Vf2FogAdapter and SceneEffectsToggle).
+- A ScriptableObject class must be in a file named after it (else `m_Script: {fileID: 0}`).
+- Windows tar: use `C:\Windows\System32\tar.exe`, not Git Bash's. PowerShell 5.1 `Get-Content`/`Set-Content` corrupts UTF-8 (em dashes): edit files with python in binary or the Edit tool. Docs are CRLF; keep it.
+- Scene names are loaded BY STRING (MainMenuController demo/legion names, GameOverPanel main menu name + their serialized values). Scenes now carry a number prefix (Docs/scene-numbering.md); renaming a scene again means updating those.
+- Assets/ThirdParty/** is git-ignored: a fresh clone loses HAZE, AST-145, AST-282 and the code that references them by type.
+- Another Claude session may be open on this project importing assets; unexpected new assets or modified files (e.g. Docs/3d-prop-pipeline-wizard.md) are not yours.

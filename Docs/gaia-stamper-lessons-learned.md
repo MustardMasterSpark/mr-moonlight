@@ -111,3 +111,9 @@ heavy session, restart the Editor before debugging further** — cheaper than ch
 5. Create → tick → stamp, not create-and-stamp in one shot.
 6. Verify results via `GetHeights()` stats, not screenshots, until a screenshot actually shows relief.
 7. Long heavy session acting weird? Restart the Editor before assuming it's a Gaia bug.
+
+---
+
+## Addendum 2026-10-01: hidden World Map Stamper freezes the editor
+Duplicated Gaia scenes carry a hidden `World Designer` / `World Map Stamper` that draws a pink preview and a huge box; clicking it freezes Unity.
+Removed from scenes 02, 06, 07, 08. Details and rules: `Docs/gaia-world-map-stamper-freeze.md`.

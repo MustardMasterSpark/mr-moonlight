@@ -43,9 +43,16 @@ namespace MrMoonlight.Runtime
 
         private const string HazeGlobalComponentTypeName = "HazeGlobalFogVolumeComponent";
         private const string HazeDensityVolumeTypeName = "HazeDensityVolume";
+        private const string VolumetricFogTypeName = "VolumetricFog";
         private const string CrtComponentTypeName = "CRTSettings";
 
         private bool _applying;
+
+        /// <summary>
+        /// True while the fog is switched off here. The weather system (<c>HazeFogAdapter</c>, <c>Vf2FogAdapter</c>) checks
+        /// it after every write, so a weather change or blend never turns the fog back on behind this switch.
+        /// </summary>
+        public static bool FogSuppressed { get; private set; }
 
         public bool FogEnabled
         {
@@ -59,7 +66,11 @@ namespace MrMoonlight.Runtime
             set { crtEnabled = value; Apply(); }
         }
 
-        private void OnEnable() => SyncFromProfile();
+        private void OnEnable()
+        {
+            SyncFromProfile();
+            FogSuppressed = !fogEnabled;
+        }
 
         private void OnValidate()
         {
@@ -87,7 +98,10 @@ namespace MrMoonlight.Runtime
             var all = FindObjectsByType<MonoBehaviour>(FindObjectsInactive.Include, FindObjectsSortMode.None);
             foreach (var mb in all)
             {
-                if (mb != null && mb.GetType().Name == HazeDensityVolumeTypeName)
+                if (mb == null) continue;
+                string typeName = mb.GetType().Name;
+                // VolumetricFog = Volumetric Fog & Mist 2 (AST-282, fog experiment): same on/off switch as a HAZE box.
+                if (typeName == HazeDensityVolumeTypeName || typeName == VolumetricFogTypeName)
                     result.Add(mb);
             }
             return result;
@@ -106,8 +120,12 @@ namespace MrMoonlight.Runtime
             _applying = false;
         }
 
+        private void OnDestroy() => FogSuppressed = false;
+
         private void Apply()
         {
+            FogSuppressed = !fogEnabled;
+
             var haze = FindVolumeComponent(HazeGlobalComponentTypeName);
             var crt = FindVolumeComponent(CrtComponentTypeName);
 
@@ -115,7 +133,15 @@ namespace MrMoonlight.Runtime
             if (crt != null) crt.active = crtEnabled;
 
             foreach (var density in FindDensityVolumes())
+            {
                 density.enabled = fogEnabled;
+                // VF2 draws its fog as a mesh: disabling the component alone leaves it on screen.
+                if (density.GetType().Name == VolumetricFogTypeName)
+                {
+                    var mesh = density.GetComponent<MeshRenderer>();
+                    if (mesh != null) mesh.enabled = fogEnabled;
+                }
+            }
 
 #if UNITY_EDITOR
             if (targetVolume != null && targetVolume.sharedProfile != null)
