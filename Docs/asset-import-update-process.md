@@ -585,6 +585,43 @@ Renamed in place, logged in `_rename-log 2026-10-02.csv`, nothing extracted or i
   589 hyperlinks became 583 (-6 = the three removed rows' two links each), owned-from-wishlist section still sorted by ID.
 - The Browse by Category / By Category sheets were regenerated with `Tools/pipeline/build_asset_browse_sheet.py --mirror`.
 
+## Worked example 10 (2026-09-30 to 2026-10-01) - seven assets staged in Playground, one built in Mr. Moonlight
+
+Carlos asked for AST-063, 070, 074, 076, 108, 131 and 162 in Playground "ready, no errors", then (2026-10-01) to move them into Mr. Moonlight
+**one at a time after he reviews each**. Same method as AST-232 above (scan the tarball for `guid -> pathname`, check GUID collisions, stream
+`asset` + `asset.meta` to `Assets/PLAYGROUND/AST-###/`, refresh), run through a parametrised script (`stage2.py <pkg> <AST-###> [scan]`, kept in
+the session scratchpad: it is 40 lines, rewrite it from this paragraph). File counts written: 1,117 / 74 / 109 / 1,754 / 314 / 141 / 1,677.
+- **AST-108 The Shed has no file in `01_DOWNLOAD`**: Carlos downloaded it through the Package Manager. The package is in
+  `%APPDATA%\Unity\Asset Store-5.x\<publisher>\<category>\<Name>.unitypackage`. Copy it to `01_DOWNLOAD\AST-###.unitypackage` (and
+  `02_extracted\AST-###\`), then stage as usual. Its wishlist row moves to owned like any other (`downloaded file` says where it came from).
+- **GUID collisions are not always a problem**: AST-063 collided on 26 GUIDs with Unity's Starter Assets character already in AST-039 (identical
+  files). Skip the colliding GUIDs; do not import twice. **A package that ships `Packages/manifest.json` (AST-074): skip it** or it overwrites the
+  host project's package list. Both are automatic in the script (`g in skip`, `startswith("Assets/")`).
+- **Compile errors that are really missing packages**: AST-063's Master Kit needs the Visual Effect Graph package. Added `com.unity.visualeffectgraph`
+  17.3.0 to Playground's `Packages/manifest.json` (Carlos approved). The Editor only resolves it when focused: if `packages-lock.json` doesn't gain
+  the entry after a few minutes, ask him to click into the window.
+- **Input System (standing rule), AST-131**: 11 demo scripts moved to `PGHybridInput` by a regex pass (`Input.GetAxis` replaced by key reads /
+  `MouseDelta * 0.1`), then `CS0246: PampelGames`: **the vendor's own asmdef (`MagicPigGames.Shared`) must reference `PG.Shared`**; asmdef assemblies do
+  not auto-reference. One demo scene held a legacy `StandaloneInputModule`: swapped by opening the scene **additively**, editing, saving only that
+  scene and closing it (the scene Carlos has open is never touched). Re-grep the saved file: 0 legacy / 1 new.
+- **Pink is not only the error shader.** `Shader.isSupported` and "is it `Hidden/InternalErrorShader`" both pass for Built-in `Standard`, `Legacy
+  Shaders/*`, `Nature/Tree*` and `Autodesk Interactive`, which render pink in URP (the same trap was found on 2026-09-03: see
+  `Docs/dual-project-workflow.md`). The audit that works lists the shader name of every material **and** scans the renderers of every demo scene
+  and prefab for **null material slots and built-in (`Resources/unity_builtin_extra`) materials**. Found and fixed: 108 HDRP/Lit (AST-162), 11 + 5 Standard,
+  43 legacy particle materials (AST-131), a Plane with no material (the church "terrain"), built-in Default-Diffuse on scene cubes, vendor wood
+  materials with an empty albedo slot although the PNG was in the package (assign by name), ~1,250 renderers in the Weeper scene whose environment pack
+  was never included (category-coloured placeholder materials). Unity's own `MaterialUpgrader.UpgradeProjectFolder` with `StandardUpgrader` exists and
+  was not used (local tools in `Assets/PLAYGROUND/_Local/Editor/` and `AST-162/Editor/` were written instead): **try it first next time.**
+- **Vendor omissions to report, not fix**: AST-108's ivy has no texture anywhere in the package (flat green material); AST-131's "Magic Slow Ray"
+  prefab is missing; three AST-108 `Tree` components warn they need `Nature/Soft Occlusion` (they now use URP/Lit).
+- `execute_code`: C# 6, so no local functions and no `out var`; it blocks `AssetDatabase.DeleteAsset`; scenes opened additively must be closed in a
+  `finally` or a thrown exception leaves them open in Carlos's Editor.
+- **"Refresh timed out / no Unity session" during a multi-GB import is not a failure**: poll the Unity process's `MainWindowTitle` for "Importing"; the
+  MCP bridge only reconnects after the import (AST-162 was 2.9 GB of zip, about 5 GB of data).
+
+**Moving one into Mr. Moonlight** is the prop wizard (`/prop`), see `Docs/3d-prop-pipeline-wizard.md` G17 to G20. AST-070 is the first one through it.
+Row bookkeeping done 2026-10-02: notes on the 7 rows, AST-070 marked `in Mr Moonlight? = Yes`, AST-108 moved to owned.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —

@@ -210,3 +210,14 @@ Retarget Pro V5, HQ FPS Weapons 2.0 (`FP_Arms`), Ultimate Animation Collection (
 Cult Animations, Knife MocapAnimPack, and the Wendigo. Clips are baked here; **only the baked
 `.anim`/`.fbx` files migrate** into `Assets/_Project/Art/Animations/<Character>/`. The tool itself
 never enters Mr. Moonlight. See `Docs/retarget-pro-strategy.md` §5.
+
+## Playground URP fixes for imported assets (2026-10-01)
+
+Playground is URP, so any asset authored for Built-in or HDRP renders pink until its materials are converted. The 2026-09-03 trap above came back
+(an "is it the error shader?" check passed while Standard materials were pink), so the check is now: list every material's shader **and** scan scene
+and prefab renderers for null slots and built-in materials. Local converters live in Playground only (never copied to Mr. Moonlight):
+`Assets/PLAYGROUND/_Local/Editor/StandardToUrpConvert.cs` (Standard, Autodesk Interactive, Nature/Tree Soft Occlusion -> URP/Lit),
+`LegacyParticlesToUrp.cs` (Legacy Particles -> URP Particles/Unlit), `AST-162/Editor/HdrpToUrpMaterialConvert.cs` (HDRP/Lit, read from the
+serialized saved properties because the shader is missing), and `_Local/DissolveDemoFlyCam.cs` (free-fly camera that attaches itself in `AST-063`
+scenes). All convert in place with the GUID kept. Unity's `MaterialUpgrader` is the first thing to try. Full record:
+`Docs/asset-import-update-process.md` worked example 10.

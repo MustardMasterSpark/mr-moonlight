@@ -1,0 +1,35 @@
+SUMMARY
+
+Docs: Playground -> Mr. Moonlight asset moves (church done, five to go), wizard lessons G17-G20, change record C-017
+
+DESCRIPTION
+
+Documentation and handoff only. No game code, scene, prefab or shipped asset is touched by this commit: the church assets,
+the spreadsheet browsing script and the first round of doc edits already landed in 16296e4c / 8cee3ec4 (PR #36).
+
+Session summary: seven assets (AST-063, 070, 074, 076, 108, 131, 162) were staged in the Playground project and made URP-clean
+(pink materials, input system, missing packages), and AST-070 Old Wooden church was moved into Mr. Moonlight through the prop
+wizard (Blender axis fix, 9 RetroLit materials, albedos pixelated at 512, prefab Prop_WoodenChurch, not placed in any scene,
+awaiting Carlos's sign-off). The asset spreadsheet got Browse by Category / By Category sheets, 3 dead wishlist rows removed
+(AST-154, 231, 235), 14 downloads renamed and entered (13 files + The Shed via Package Manager), tiers and counts recomputed.
+
+- `Docs/3d-prop-pipeline-wizard.md`: G1 closed with the real outcome (NPOT albedos are rescaled by the importer); new gaps G17
+  (3ds Max group node / offset / facing fixed in Blender, Bake Axis Conversion does not clear a root rotation), G18 (Unity
+  submesh order is not Blender's slot order: match by triangle count), G19 (clone a known-good RetroLit material), G20
+  (prefab as a Variant of the FBX, vendor pose matched by world bounds, execute_code blocks DeleteAsset).
+- `Docs/asset-import-update-process.md`: worked example 10 (staging seven assets in Playground: Package Manager downloads,
+  GUID collisions, manifest.json skip, missing VFX Graph package, asmdef reference for PGHybridInput, additive scene edits,
+  why "not the error shader" is not "not pink", vendor omissions) and a pointer to the wizard for the actual move.
+- `Docs/dual-project-workflow.md`: Playground URP fix tools and the audit that actually finds pink.
+- `Docs/asset-moves-to-moonlight-sonnet-prompt.txt` (new): cold-start handoff for moving The Shed, Weeper ghosts, Graveyard
+  Tombstones, Heavy Action music and the Abandoned Swimming Pool one at a time, with what is done, per-asset gaps, the steps
+  that worked, and the traps (Mr. Moonlight MCP bridge was down at the end of the session).
+- `Docs/interim-small-tasks-prompt.txt`: interim work log entry.
+- `Docs/performance-sessions.md`: change record C-017 (nothing visible in the logs until the church is placed in a scene).
+- `Docs/asset-index/ASSETS-Index.xlsx`: mirror re-synced (284 assets; AST-070 marked in Mr. Moonlight, notes on the six other
+  staged assets, AST-108 now owned).
+
+Files to leave out of the commit: none of the above. If GitHub Desktop also lists Unity re-save noise (scene or
+ProjectSettings files you did not change on purpose), leave those out; the new `.meta` files for the church are already committed.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

@@ -1,0 +1,95 @@
+Context prompt: MOVING PLAYGROUND ASSETS INTO MR. MOONLIGHT, ONE AT A TIME (reusable until the six below are done)
+
+WRITTEN: 2026-10-02. Suggested model: SONNET (the pipeline exists and this is verification-heavy work). Exceptions flagged per asset below.
+Do not auto-start on this file: read it, say what you understood in a few lines, and wait for Carlos to name the first asset.
+
+===========================================================================
+1. WHAT THE SESSION IS
+===========================================================================
+Carlos reviews each staged asset in Playground, we fix what is wrong, and then HE tells you, one asset at a time, to move it into Mr. Moonlight.
+Only what the game really needs gets moved (1 GB build ceiling; assets are for the demo, `Docs/new-asset-list.md`). Never batch, never move on your own.
+Every move is the prop wizard: invoke `/prop` (skill `prop-wizard`), or read `Docs/3d-prop-pipeline-wizard.md` (G17 to G20 are new). It is still
+in SHAKEDOWN: narrate each step, stop at each step boundary, ask rather than assume, fix the wizard doc the moment a gap appears.
+Rule on 3D models (Carlos, 2026-10-01): **every model's BaseColor goes through the pixelation filter** (`Tools/pipeline/texture_pass.py`, normals are
+never pixelated). Ask the texture size every time (512 props / 1024 weapons / 1024-2048 characters / 256-512 small items).
+
+===========================================================================
+2. WHERE THINGS STAND (2026-10-02)
+===========================================================================
+DONE, in Mr. Moonlight and already on `main`: AST-070 Old Wooden church, built through the wizard, AWAITING CARLOS'S SIGN-OFF (he has not reviewed it
+rendered yet; it is not placed in any scene).
+- `Assets/_Project/Art/Environment/WoodenChurch/`: `WoodenChurch.fbx` (re-exported from Blender, see G17), `Materials/M_*.mat` (9, RetroLit cloned from
+  M_Spotter), `Textures/T_*_BaseColor.png` (pixelated at 512) + `T_*_Normal.png` (256).
+- `Assets/_Project/Prefabs/World/Prop_WoodenChurch.prefab`: Variant of the FBX, root (0,0,0)/scale 1, vendor MeshCollider on the building + a BoxCollider per
+  door, doors ajar exactly like the vendor prefab, Occluder+Occludee static on the building only. 16,160 tris, 15.7 x 28.3 x 30.5 m.
+- Vendor colour tints were kept as `_BaseColor` (0.588 grey on the woods, 1.0 roof, 0.79 door): ask if Carlos wants them neutral.
+- When he says it is good: **write the entry in `Docs/prop-log.md`** (the wizard says not before), then edit the pipeline where this prop cost time. The
+  lessons are already in the wizard doc (G1 resolved, G17 to G20). Entry facts: path = static prop, source = Playground pack mesh (pre-built), Tripo n/a,
+  not high-poly, 512, ~16k tris kept (hero building, no decimation), step 2 NPOT albedos rescaled by the importer, Blender needed (3ds Max group node),
+  MeshCollider kept at Carlos's choice, door pose matched to 0.001 m, revisions: none yet.
+
+STAGED IN PLAYGROUND (`E:\playground\Playground\Assets\PLAYGROUND\AST-###`, clean console, URP-fixed, NOT in Mr. Moonlight), in the order Carlos listed:
+1. AST-108 The Shed (Blackant Master Studio). 1 prefab `The Shed.prefab`, scene `The shed.unity`. Materials converted Standard -> URP/Lit. KNOWN GAPS:
+   the ivy has no texture in the package (flat green `The Shed Ivy.mat`, offered AST-047 ivy textures, Carlos has not answered); 3 `Tree` components warn
+   about `Nature/Soft Occlusion`; one scene rock (`Rock_01 (1)`) belongs to a prefab the vendor never shipped. Intended use: dock-area staging/props.
+2. AST-131 Weeper Horror Ghost Pack (Magic Pig / Infinity PBR). A CHARACTER pack with its own equipment system: this is the character path (big doc section 4)
+   or a special case, NOT the static-prop hot path. Ask Carlos what he wants from it (Legion enemy or the merchant) BEFORE anything: it may need an
+   Opus-sized decision. Playground-side changes you will have to undo or re-do: 11 demo scripts on `PGHybridInput`, `MagicPigGames.Shared.asmdef` references
+   `PG.Shared` (AST-040), 43 legacy particle materials converted, ~1,250 placeholder materials in the demo scene (the vendor's environment pack is missing).
+3. AST-074 Graveyard Tombstones (Lyrebird Studio). 63 prefabs, clean, nothing was fixed. Church-graveyard staging. Many small props: ask which of the 63 he
+   wants (not all), and note several props = one folder per subject.
+4. AST-076 Heavy Action Music Pack. 60 audio clips, no scene. NOT the prop wizard: audio goes through `Docs/audio-import-workflow.md` (clip prefix ->
+   preset routing). Intended for Legion mode. Audio mixer / routing is cleanup territory: only IMPORT the clips.
+5. AST-162 Abandoned Swimming Pool Environment (Leartes Studios). 2.9 GB zip, 845 assets, 149 prefabs, 229 materials. Almost certainly far too big for the
+   1 GB ceiling as a whole: ask which pieces he really wants. The 108 HDRP/Lit materials were converted IN PLACE to URP/Lit in Playground (tool
+   `AST-162/Editor/HdrpToUrpMaterialConvert.cs`); the textures there are NOT pixelated, so the filter applies to what moves. 2 materials (M_BaseWorld,
+   M_Tree_3) point at shader graphs the vendor omitted and are unused.
+(AST-063 Dissolve FX Master Kit is also staged in Playground but is not on Carlos's move list; its Burn Dissolve look is already ported, MRM-85/C-013.)
+
+===========================================================================
+3. HOW TO MOVE ONE (the shape that worked for the church)
+===========================================================================
+1. Inspect from the Playground MCP (read-only): tris, submeshes, materials, textures, transform, colliders. Report, ask the 3 decisions (texture size,
+   destination folder `Assets/_Project/Art/<Category>/<Prop>/`, collider). Narrate, stop.
+2. Texture pass: copy sources to a scratch folder renaming to `_BaseColor` / `_Normal` (`X_n`, `X_norm` -> `_Normal`), run
+   `python Tools/pipeline/texture_pass.py run <folder> --size 512 --map-size 256`, LOOK at a before/after sheet, then copy `_out/` in as
+   `T_<Name>_BaseColor.png` / `_Normal.png`. Confirm `MoonlightTextureImporter` fired (Point + sRGB; normals bilinear).
+3. FBX: copy WITHOUT the vendor `.meta`. Importer: Materials = None, Read/Write off, tangents Mikktspace, Optimize on. Then check the FBX asset's root
+   rotation/scale. If not (0,0,0)/1 -> Blender (G17). Blender MCP: Carlos gave permission for the church; ask again per piece. The Blender addon is
+   protocol 4 (expected 13) but `execute_blender_code` works. Never save a `.blend`, export over the same path, `path_mode='STRIP'`.
+4. Materials: clone a known-good RetroLit `.mat` (G19), assign textures, verify the saved YAML. Prefab: G20. Identify submeshes by triangle count (G18).
+5. Read everything back from the saved prefab; console must have no new errors; ask Carlos before placing it in any scene. He reviews. Then the log.
+Each move is untracked files under `Assets/_Project/...`: Carlos commits them himself.
+
+PARALLEL WORK (read before touching scenes): a separate "quick demo update" session (`Docs/demo-update-opus-prompt.txt`, memory quick-demo-update-task) places the
+props moved from Playground into scene 07 (LightingTestScene) and rebakes the NavMesh. This file's job stops at a reviewed prefab in `Prefabs/World/`; do NOT place
+props in scenes, and tell Carlos if you see scene edits you did not make. New untracked files under `Assets/_Project/` that you did not create are that session's.
+The church is the first prop it will place (check collider cost on the NavMesh bake: 16k-tri MeshCollider).
+
+===========================================================================
+4. TRAPS ALREADY HIT (do not rediscover)
+===========================================================================
+- **Check the Mr. Moonlight MCP is connected first.** At the end of the last session `unityMCP` (Mr. Moonlight, port 8080) answered ECONNREFUSED, as did the
+  `unityMCP_fpstest` / `_weapons` ones. Port is manual: ask Carlos to Start the bridge in Window > MCP for Unity (Playground is 8081). Confirm with
+  `Application.dataPath` that you are talking to the project you think you are (and `EditorApplication.isPlaying == false`) before any write.
+- The Mr. Moonlight Editor's open scene has lights that print "Reduced additional punctual light shadows resolution" and an old "script on this Behaviour
+  is missing" message. Both pre-existing, not yours.
+- `execute_code` is C# 6 (no local functions / `out var` / tuples), blocks `AssetDatabase.DeleteAsset` (delete your own untracked files on disk + `.meta`),
+  and refresh times out during big imports: poll the Unity window title for "Importing" (`Docs/asset-import-update-process.md` worked example 10).
+- Unity's submesh order is NOT Blender's slot order (G18). Materials = None names every embedded material "Lit".
+- "Is it the error shader?" does not find pink in URP. Audit every material's shader AND scene/prefab renderers for null slots and built-in materials.
+- Wizard says transforms (0,0,0)/1 on the prefab root: fix in Blender, never compensate on the instance.
+- Never `git commit`/`push` (GitHub Desktop). Carlos said on 2026-10-02 he commits wrap-up work straight to `main`; there was no feature branch then
+  (the previous work was merged through PR #36). If a new issue needs a branch: `git switch -c <name> --no-track origin/main`.
+
+===========================================================================
+5. FILES THAT CHANGED THIS SESSION (all already on `main` except the wrap-up files)
+===========================================================================
+Code/Tools: `Tools/pipeline/build_asset_browse_sheet.py` (spreadsheet browsing sheets). Playground-only (not in this repo): `_Local/Editor/
+StandardToUrpConvert.cs`, `LegacyParticlesToUrp.cs`, `_Local/DissolveDemoFlyCam.cs`, `AST-162/Editor/HdrpToUrpMaterialConvert.cs`.
+Docs: `3d-prop-pipeline-wizard.md` (G1 resolved, G17-G20), `asset-import-update-process.md` (browsing sheets, worked examples 9 and 10),
+`dual-project-workflow.md` (Playground URP fixes), `performance-sessions.md` (C-017), `interim-small-tasks-prompt.txt` (log entry), this file,
+`asset-index/ASSETS-Index.xlsx` (mirror of the master spreadsheet: 284 assets; Browse by Category + By Category sheets in front).
+Spreadsheet master (outside the repo): `C:\Users\calva\Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx`. After ANY edit to it run
+`python Tools/pipeline/build_asset_browse_sheet.py --mirror` (close Excel first). When an asset is moved into Mr. Moonlight set `in Mr Moonlight? = Yes`
+on its row (done for AST-070) and add a note.

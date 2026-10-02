@@ -882,7 +882,9 @@ throwaway staging folder under the new suffixes (`X.png` → `X_BaseColor.png`, 
 copy `_out/` into the project. Nothing in the source tree is renamed or overwritten. Side effects seen:
 `--map-size 256` forces every normal to a **square** 256², so non-square sources are stretched (harmless,
 UVs still map 0-1); and non-square BaseColors keep their aspect, so sizes like 434x512 / 308x512 / 344x512
-come out **non-power-of-two and not a multiple of 4** (checked in the project: see the prop log).
+come out **non-power-of-two and not a multiple of 4**. Checked in the project: `MoonlightTextureImporter`'s NPOT
+"To Nearest" rescales them (434x512 -> 512x512, 512x344 -> 512x256, 308x512 -> 256x512), so they still compress as DXT1; harmless,
+the UVs map 0-1. Normals import as 256x256 normal maps.
 
 ### G3 — Prefab destination is a guess for anything that isn't a prop
 
@@ -1000,6 +1002,45 @@ Colour mood (a moon's red tint, etc.) should be carried by `_BaseColor` (multipl
 texture sample in every light mode) rather than baked into the ambient override, which has no
 colour channel to carry it. Applies to any singular, always-visible sky/background prop lit by
 this project's deliberately sparse night lighting — suns, other planets, distant beacons.
+
+### G17 — A vendor FBX from 3ds Max carries a scaled group node, an offset and a non-standard facing (AST-070, 2026-10-01)
+
+Symptom: after import the FBX root still reads Rotation (90, 0, 0) **even with "Bake Axis Conversion" on** (that flag does not clear a
+root node's own rotation), and the building sits ~0.39 m off its origin. Cause: the source has an empty `<name>_gr` scaled 0.0254 (inches)
+with a small translation, parenting every mesh. **Fix it in Blender, not on the instance** (the Blender export rule stands):
+1. Import the FBX. `matrix_world` bounds per object show the real size/orientation (Blender's own `dimensions` can mislead).
+2. Clear parent (keep transform), delete the empty, then remove the group's translation: `matrix_world = T(+offset) @ matrix_world`.
+3. **Match the orientation the vendor prefab already had** (Carlos reviewed that one in Playground). Compare an asymmetric probe's
+   world position in both projects (here the doors: vendor front at +Z, mine came out at -Z) and apply the 180° turn in Blender, not
+   by eye. Unity forward is +Z.
+4. Main mesh: Apply All Transforms (origin -> 0,0,0). **Separate pieces that move (doors): apply rotation + scale only**, so the hinge
+   pivot survives. Remove unused material slots (the importer shares the whole material list across every mesh).
+5. Export over the **same path** (GUID kept) with the recipe in the Blender-export notes, **`path_mode='STRIP'`** (with `'COPY'` it writes
+   texture copies next to the FBX: trash). Verify in Unity from the FBX asset: root and children Rotation (0,0,0), Scale 1, bounds and
+   triangle count unchanged. Do not touch the Blender scene after: it is untitled and never saved.
+
+### G18 — Unity's submesh order is not Blender's material-slot order (AST-070)
+
+With Materials = None the renderer's embedded materials all read "Lit", so names tell you nothing, and the order came out different from the
+Blender slots. **Identify every submesh by its triangle count**: per-slot counts in Blender (`len(p.vertices)-2` per polygon) against
+`mesh.GetIndexCount(i)/3` in Unity (they differ by a few tris from ngon triangulation; the match is still unambiguous), then assign
+`sharedMaterials` as a full array in that order. A wrong order paints plausible-looking but wrong textures.
+
+### G19 — Building the RetroLit materials (AST-070)
+
+Cloning a known-good material beats building from scratch: `AssetDatabase.CopyAsset("Art/Enemies/Spotter/M_Spotter.mat", dest)` (opaque,
+Point, View snap, TexelLit, 8192 / 256), then set `_BaseMap`, `_NormalMap` and `_BaseColor`. The keywords come across with the copy. A source
+with no normal map must have `_NormalMap` **explicitly nulled** (the clone still points at the Spotter's). Keep the vendor's colour tint as
+`_BaseColor` (the wood was 0.588 grey; dropping it changes the look). **Verify in the saved `.mat` YAML**, not by reading ints back from
+script. Only create materials the mesh actually uses (the vendor listed one the mesh never referenced: its two textures were deleted).
+
+### G20 — Prefab from a Playground FBX (AST-070)
+
+Instantiate the FBX in the project (`PrefabUtility.InstantiatePrefab`), assign materials, add colliders, set flags, `SaveAsPrefabAsset`:
+the result is a **Variant** of the model, which is what we want. Door colliders sized from `mesh.bounds` match the vendor's boxes. A vendor
+pose (doors ajar) is reproduced by trying both rotation signs and keeping the one whose world bounds match the vendor's (error 0.001),
+not by copying Euler angles across a changed axis convention. `execute_code` blocks `AssetDatabase.DeleteAsset` by design: delete your own
+untracked files from the filesystem (plus the `.meta`) instead of disabling the safety check.
 
 ### Closed gaps
 
