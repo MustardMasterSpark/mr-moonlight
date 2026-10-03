@@ -1,0 +1,28 @@
+SUMMARY
+
+MRM-88: Foliage pass 2 (18 new terrain details, ~290 rocks/stumps), FlakTower + Mountain bumps, church site cleaned, weather circuit raised
+
+DESCRIPTION
+
+Stage 2 of the demo update (Docs/demo-update.md). Scene 07 LightingTestScene only. No game code changed.
+
+- 18 new terrain-detail prototypes on the island terrain (72 -> 90): RF_Bush1-3, RF_Fern1-2, AP_Tree_Dry_N02 (mesh details) and
+  GFF_Grass01/02 + GFF_GrassFlower01-10 (billboard details). About 495k new instances painted per biome from Carlos's
+  spreadsheet (Docs/foliage-distribution-sheet.xlsx); Forest holds ~459k. The original 72 details were not changed.
+- About 290 collider objects (RF boulders and stumps, AP_Tree_Break_02, AP stump) under a new root "Foliage Pass 2 Objects".
+- After build 46: FlakTower GRASS_TSA_BushDry_A/B Very dense (~17k each), Heather A/B Light; Mountain GRASS_TSA_Bush_A/B
+  Dense (~11.5k each), WildGrass_General Medium.
+- Church site cleaned: 1,614 detail instances removed in x 33.2..56.9, z 41.2..80.2 (no trees or rocks were in the area).
+- Weather Circuit corners 0-2 raised to terrain + 1.5 m (X/Z unchanged), Marker follows Corner 1, so the circuit is no longer
+  buried in the terrain.
+- Builds made: 45 "Pre Foliage" (baseline) and 46 "More Foliage" under E:\Builds. Performance: foliage pass cost ~+0.4 ms
+  CPU/GPU and ~+400 draw calls (Docs/performance-sessions.md section 5). Distant tree pop-in with fog and CRT off logged as
+  hypothesis H15 (AST-145 culler), not fixed.
+- Docs: demo-update.md (Stage 2), performance-sessions.md (builds 45/46 entry, H15, change record C-019),
+  foliage-distribution-sheet.xlsx, demo-update-stage3-sonnet-prompt.txt (handoff).
+
+Files to include: 07 LightingTestScene.unity, the TerrainData asset (Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/Terrain_0_0-20260829 - 035828.asset),
+and the Docs files above plus this message. Leave out: Assets/_Project/Scenes/LightingTestScene/VP_LightingTest_Fog.asset (HAZE active flip)
+and Assets/_Project/Art/UI/Fonts/SpecialElite SDF.asset only if you do not want the font atlas noise (Carlos usually commits it).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

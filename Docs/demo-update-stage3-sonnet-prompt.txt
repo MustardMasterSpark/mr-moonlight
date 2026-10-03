@@ -1,0 +1,50 @@
+Context prompt: DEMO UPDATE (MRM-88), STAGE 3 = PROP PLACEMENT. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet (placement on existing systems; each prop goes through the /prop wizard). Switch to Opus only for a new system (new enemy, store).
+
+WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
+
+READ FIRST: Docs/demo-update.md (running doc; stages 1 and 2 have every number), Docs/demo-update-opus-prompt.txt (the overall task),
+Docs/asset-moves-to-moonlight-sonnet-prompt.txt (pending Playground moves: Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool; one at a time, Carlos names each).
+
+===========================================================================
+1. STATE
+===========================================================================
+- Branch `mrm-88` (Linear MRM-88). Stage 1 (church) is committed (82da1564). Stage 2 (foliage) is in the working tree; message ready in
+  Docs/mrm88-commit-message-2.txt. Never commit or push.
+- Scene `07 LightingTestScene`. Church at (45.03, 50.03, 60.49) in the FlakTower biome, site cleaned of foliage (x 33.2..56.9, z 41.2..80.2).
+- Foliage work is FINISHED by Carlos's decision (scene is a test scene, not final). Do not add more foliage unless he asks.
+- **`NavMesh Surface` and `Enemies` (root objects) are INACTIVE on purpose** until placement ends. REMINDER RULE: when Carlos says he is done placing,
+  or at "run the final instructions" for the placement work, REMIND him of the ending checklist at the top of Docs/demo-update.md (re-enable both,
+  re-bake the NavMesh after asking, verify Spotters path, save).
+- Builds 45 (Pre Foliage) and 46 (More Foliage) exist in E:\Builds. FlakTower/Mountain bumps and the church clean came AFTER build 46.
+
+===========================================================================
+2. WHAT CARLOS WANTS NEXT
+===========================================================================
+- Continue with PROP placement (his words). Ask which prop and where; ask before every Unity-side action (CLAUDE.md hard rules), then read the state back.
+- A build 47 with FOG (F6) and CRT (F7) ENABLED is wanted at some point ("we should make another build with those enabled"). Both are scene toggles in
+  `Scene Effects Toggle`; builds 45 and 46 had them off. Ask when.
+- Open problem H15 (performance-sessions.md): distant trees pop in with fog and CRT off (AST-145 Dynamic Culling, occlusion-based, not distance). Not fixed.
+  Test the culler off (or fog on) before touching it.
+
+===========================================================================
+3. HOW TO DO IT AND TRAPS
+===========================================================================
+- Check `EditorApplication.isPlaying` first. Edits in Play mode are discarded on stop.
+- Terrain: `Terrain_0_0-20260829 - 035828`, TerrainData asset under Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/ (Undo.RegisterCompleteObjectUndo, then
+  AssetDatabase.SaveAssets). Detail layer res 512 (2 m cells), 90 prototypes now. To clear foliage under a new prop, zero all detail layers in the footprint rectangle
+  (+ ~4 m margin) and delete Gaia objects / "Foliage Pass 2 Objects" children inside it. Recipe and numbers: demo-update.md Stage 2 and Stage 1.
+- Level a prop to the mesh's LOWEST VERTEX, not its pivot.
+- Detail foliage is drawn by Unity's native detail renderer (distance 150, density 0.5); Flora EnableRendering is False.
+- UnityMCP: execute_code is CodeDom C# 6 (no tuples, no `using` in-body); a Unity busy building fails queries; a background asset refresh can stall unfocused.
+- Builds: next number after 46, folder `<N> - <Two Words> - <date>` under E:\Builds, zip entry by entry from a .ps1 file (memory build_process), skip
+  *_BurstDebugInformation_DoNotShip, check for backslashes and zero-byte entries. Build only scene 07 via manage_build `scenes`.
+- Gaia: never toggle `Gaia Runtime`; the editor crashes on a Scene-view gizmo overflow (see Docs/demo-update-staging-sonnet-prompt.txt section 4).
+- `VP_LightingTest_Fog.asset` `active: 1 -> 0` diff is harmless noise; leave it out of commits. A new untracked Gaia session asset (GS-<date>.asset) appears on every open: junk.
+- New 3D assets: `/prop` wizard (RetroLit samples ONLY BaseColor + Normal; glowing objects get a real Light).
+
+===========================================================================
+4. WRAP-UP WHEN THIS STAGE ENDS
+===========================================================================
+"Run the final instructions" (CLAUDE.md): commit message file (print it in the final report), docs (demo-update.md new dated section), Linear comment on MRM-88 (+ MRM-85),
+change-record row C-nnn in Docs/performance-sessions.md section 8 (next is C-020), and a new handoff prompt. Suggest a fresh session at natural stopping points.

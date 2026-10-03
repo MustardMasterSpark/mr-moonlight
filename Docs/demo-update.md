@@ -54,7 +54,20 @@ heightmap 2049 = 0.5 m per sample, TerrainData asset `Assets/Gaia User Data/Sess
 - `VP_LightingTest_Fog.asset` shows a diff `active: 1 -> 0` twice every session: confirmed harmless HAZE noise, leave it out of commits.
 - Whenever a prop sits on the ground: terrain pivot Y vs mesh bottom differ (the church mesh bottom is 0.36 m under its pivot). Level to the mesh's lowest vertex, not the pivot.
 
-**Still to do in this stage:** more terrain shaping, foliage around the church, other church extras (Carlos, next session), then the other staged props (Shed, Weeper ghosts, Tombstones, Pool; see `Docs/asset-moves-to-moonlight-sonnet-prompt.txt`), then the ending checklist.
+**Still to do in this stage:** foliage is DONE (Stage 2). Remaining: other church extras and the other staged props (Shed, Weeper ghosts, Tombstones, Pool; see `Docs/asset-moves-to-moonlight-sonnet-prompt.txt`), then the ending checklist.
+
+## Stage 2 - Foliage pass, church site clean, circuit raised (2026-10-02)
+
+Scene 07 only. Source of truth for the distribution is Carlos's spreadsheet `Desktop\Foliage_Distribution_Sheet.xlsx` (not in the repo; 108 rows, 9 biome columns with dropdowns 0 None .. 5 Very dense, a "Current in scene" tab). Levels are instances per 2x2 m terrain-detail cell: <0.005 none, <0.05 sparse (target 0.03), <0.2 light (0.1), <0.6 medium (0.35), <1.2 dense (0.9), else very dense (1.8). Collider objects use objects per hectare of the biome (sparse 0.5, light 2, medium 5, dense 12, very dense 25).
+
+- **Biomes** (dominant paint of 1024 m): Forest 35.8%, AutumnForest 5.4%, Mountain 4.9%, FlakTower 3.6%, Beach 3.4%, Glade 0.9%, EerieForest 0.9%, HereticForest 0.8%, Fountain 0.4%, Path 0.1%, Seafloor 43.7%. **The church stands in FlakTower**; the rock at (86, 45, 102) is Mountain.
+- **How the foliage is rendered:** the 72 original details (all GRASS PREFABS) are mesh details, VertexLit, instanced, drawn by Unity's built-in terrain detail renderer (detail distance 150, density scale 0.5, instance-count mode, detail resolution 512). `Flora Scene Settings.EnableRendering` is False, so Flora does NOT accelerate them (Flora only takes terrain foliage when EnableRendering is on, FloraSystem.cs:746; that flag is tied to the phantom-tree bug, untested).
+- **Pass 2 (build 46):** 18 new prototypes (72 -> 90): RF_Bush1-3, RF_Fern1-2, AP_Tree_Dry_N02 as mesh details; GFF_Grass01/02 and GFF_GrassFlower01-10 as GrassBillboard texture details (size 0.8-1.4 x 0.6-1.0 m is a guess). ~495k instances (Forest ~459k). ~290 collider objects under root `Foliage Pass 2 Objects` (land only, slope <30 deg, 22 m away from the church).
+- **After build 46 (NOT in any build yet):** FlakTower BushDry A/B Very dense (~17k each), Heather A/B Light; Mountain Bush A/B Dense (~11.5k each), WildGrass_General Medium; church site cleared (x 33.2-56.9, z 41.2-80.2: 1,614 detail instances, no trees); `Weather Circuit` corners 0-2 raised to terrain + 1.5 m (Marker follows Corner 1).
+- **Method:** `execute_code` writes via `td.detailPrototypes` + `SetDetailLayer`; painting replaces a biome's cells with random p = target/2.5 and value 2-3 (matches the original style). Backups of terrain data and scene before the pass sit in the session scratchpad only (lost with the session): `git diff` of the TerrainData asset is the real record. Biome masks come from the splat map at the detail cell.
+- **Performance:** see `Docs/performance-sessions.md` section 5 (builds 45/46) and change record C-019. Foliage pass cost about +0.4 ms and +400 draws.
+- **Open: distant tree pop-in** (H15) with fog and CRT off. Build 47 is meant to have fog (F6) and CRT (F7) on; test the culler on/off before changing it.
+- Carlos's call: **stop foliage work here, continue with prop placement** (scene is a test scene, not the final one).
 
 ---
 
