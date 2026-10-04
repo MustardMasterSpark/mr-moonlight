@@ -164,4 +164,12 @@ float EncodeMeshRenderingLayer()
 }
 #endif
 
+// PS1 wobble master scale (2026-10-02). ONE global: 0 = off, 1 = full effect. Driven live by
+// MrMoonlight.VFX.RetroWobble from MoonlightTunables.RetroWobbleScale. It scales BOTH the vertex
+// snapping and the affine texture swim on every RetroLit material, so no material has to change.
+// A global nobody sets reads as 0, so the effect is OFF by default. See Docs/retro-wobble-global.md
+float _RetroWobbleScale;
+float4 RetroWobbleSnap(float4 p) { return lerp(p, floor(p * _SnapsPerUnit) / _SnapsPerUnit, _RetroWobbleScale); }
+float3 RetroWobbleSnap(float3 p) { return lerp(p, floor(p * _SnapsPerUnit) / _SnapsPerUnit, _RetroWobbleScale); }
+
 #endif // RETRO_INPUT_SURFACE_INCLUDED

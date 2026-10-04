@@ -177,6 +177,8 @@ before being caught by comparing against an Editor-built reference material's `m
 ### 5. 🔧 Prefab — `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`
 
 - Material **assigned on the prefab**, not left for later
+- **Any collider work follows `Docs/collider-policy.md`**: evaluate each prop's use case and whether it needs a collider at all, report the
+  verdict, flag deviations from Carlos's literal request (standing rule, 2026-10-03)
 - Collider: **Box or Capsule by default**; Mesh Collider only when the silhouette matters —
   **except anything meant to be spawned via Gaia as a Terrain Tree instance, which must stay
   Capsule/Box/Sphere: Unity terrain trees silently reject Mesh Colliders, no exception**

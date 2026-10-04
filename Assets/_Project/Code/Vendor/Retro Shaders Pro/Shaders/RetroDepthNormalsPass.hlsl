@@ -28,7 +28,7 @@ v2f depthNormalsVert(appdata v)
 	ApplyMoonlightWind(v.positionOS.xyz, float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23));
 
 	float4 positionVS = mul(UNITY_MATRIX_MV, v.positionOS);
-	positionVS = floor(positionVS * _SnapsPerUnit) / _SnapsPerUnit;
+	positionVS = RetroWobbleSnap(positionVS);
 	o.positionCS = mul(UNITY_MATRIX_P, positionVS);
 
 	o.normalWS = TransformObjectToWorldNormal(v.normalOS);

@@ -67,6 +67,10 @@ If an issue and a document disagree, the issue wins.
   bridge, not just advises — but still **ask Carlos for permission first** on each piece of actual
   Blender work, then do it, verify by reading the actual scene/mesh/material state back, and
   document what changed. Same wait-if-he'd-rather-do-it-himself rule as Unity.
+- **Colliders: evaluate each prop first (Carlos, 2026-10-03).** Any request about colliders (add, fix, mesh colliders, "make them
+  accurate") means: judge each prop's use case and whether it deserves a collider at all (none / primitive / reduced-mesh / LOD0 mesh),
+  report the per-prop verdict with the triangle cost, apply it and flag every deviation from what he literally asked. Applies to every prop
+  and every future scenario. Full rule: `Docs/collider-policy.md`.
 - One issue, one branch, one PR.
 - **Create issue branches with `git switch -c <name> --no-track origin/main`**, never plain
   `git checkout -b <name> origin/main`: that sets the branch's upstream to `origin/main`, and GitHub

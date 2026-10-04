@@ -1,0 +1,25 @@
+SUMMARY
+
+MRM-88: PS1 wobble off everywhere via one shader global, church textures to a 256 limit, SmartBuilder (AST-277) installed
+
+DESCRIPTION
+
+Side work during the demo update (Docs/demo-update.md). No scene file changed.
+
+- PS1 wobble: new shader global _RetroWobbleScale (0 = off, default; 1 = old look) scales RetroLit's vertex snapping and affine texture
+  strength in all passes (RetroLit.shader, RetroSurfaceInput.hlsl, RetroDepthOnlyPass, RetroDepthNormalsPass, RetroMetaPass). New
+  MrMoonlight.VFX.RetroWobble (Set(0..1), applied at boot) and MoonlightTunables.RetroWobbleScale (default 0). No material edited; the
+  AST-079 terrain shaders (git-ignored vendor) are untouched. Live-changeable later for drug effects.
+- Church: the 9 Prop_WoodenChurch materials have _ResolutionLimit 256 (was 8192) as a reversible preview; PNGs unchanged.
+- SmartBuilder (AST-277, HeurekaGames 1.2.15) installed as embedded packages com.heurekagames.smartbuilder and com.heurekagames.utils
+  (all Editor-only, nothing in builds). Adds scripting define HEUREKAGAMES_SMARTBUILDER.
+- Docs: retro-wobble-global.md, smartbuilder.md, 00-INDEX.md, 3d-prop-pipeline-wizard.md (affine row), performance-sessions.md (change
+  record C-020), folder-reorg-opus-prompt.txt (handoff for the folder reorganisation).
+
+Files to include: Assets/_Project/Code/Vendor/Retro Shaders Pro/Shaders/*, Assets/_Project/Code/Runtime/VFX/RetroWobble.cs (+ .meta),
+Assets/_Project/Code/Runtime/Data/MoonlightTunables.cs, the 9 church .mat files, Packages/com.heurekagames.smartbuilder/**,
+Packages/com.heurekagames.utils/**, Packages/packages-lock.json, ProjectSettings/ProjectSettings.asset (the define), and the Docs files above.
+Leave out (other work or noise): CLAUDE.md and Docs/collider-policy.md (collider rule), MedievalWells assets, .claude/skills/prop-wizard/SKILL.md,
+Docs/asset-index/ASSETS-Index.xlsx, VP_LightingTest_Fog.asset (HAZE active flip). Docs/3d-prop-pipeline-wizard.md also holds other chats' hunks.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
