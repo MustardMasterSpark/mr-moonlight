@@ -56,6 +56,31 @@ heightmap 2049 = 0.5 m per sample, TerrainData asset `Assets/Gaia User Data/Sess
 
 **Still to do in this stage:** foliage is DONE (Stage 2). Remaining: other church extras and the other staged props (Shed, Weeper ghosts, Tombstones, Pool; see `Docs/asset-moves-to-moonlight-sonnet-prompt.txt`), then the ending checklist.
 
+## Stage 3 - Prop placement (started 2026-10-05)
+
+Scene 07, saved by Carlos on 2026-10-05.
+
+- **Placed:** `Prop_MVillage_Well_01` at (52.944, 49.659, 73.761) and `Prop_MVillage_WellWall_01` at (54.26, 49.659, 78.95), yaw 29.2 deg,
+  both from `Prefabs/Buildings/`, on the church plateau (Y 49.659 = plateau height). AST-145 Dynamic Culling registered their renderers
+  automatically (scene diff in its object list).
+- **`Scene Effects Toggle`: fog and CRT saved OFF** (`fogEnabled` and `crtEnabled` 1 -> 0). Builds 45/46 also had them off; a build made
+  from this scene starts with fog and CRT off (F6/F7 still toggle them).
+- **Order agreed with Carlos (2026-10-05):** (1) finish placing every prop (remaining Playground moves: Shed, Weeper ghosts, Tombstones,
+  Heavy Action music, Pool); (2) then the embellishment pass, prop by prop: lights, lamps, small logic; the church interior fog is decided
+  here; (3) then the ending checklist (enemies + NavMesh back on, re-bake); (4) then builds and optimisation testing again.
+- **On hold:** build 47 (fog + CRT on) and the fog choice, HAZE (AST-078) vs Volumetric Fog & Mist 2 (AST-282), undecided (see
+  `Docs/mrm85-fog-vf2-continue-prompt.txt`). Do not raise them until placement is done unless Carlos does.
+
+## Side session - folder reorganisation (2026-10-03 to 05)
+
+Not a placement stage: done so placement can find its prefabs. Every placeable prefab moved to `Assets/_Project/Prefabs/<semantic folder>/`
+(Buildings, Props, Sets, Nature/{Trees, Rocks & Logs, Grass & Plants, Old (Rough Colliders)}, Characters, Sky & Lighting, VFX, UI,
+Dev & Tests); art grouped by subject; vendor folders `AST-### (Short Name)`. The church is now `Prefabs/Buildings/Prop_WoodenChurch`,
+the Medieval Wells pieces are split over `Buildings/`, `Props/`, `Sets/` and `Nature/Rocks & Logs/`. The original vegetation (rough
+capsule/box collider) is `Old_*`; scene 07 still uses about 40 of them plus its Gaia objects, unchanged. **Place new trees and rocks
+from `Nature/Trees` and `Nature/Rocks & Logs`** (exact wood colliders). No scene changed. Full map: `Docs/folder-map.md`; record C-021,
+commit `e5f3941d`.
+
 ## Stage 2 - Foliage pass, church site clean, circuit raised (2026-10-02)
 
 Scene 07 only. Source of truth for the distribution is Carlos's spreadsheet `Desktop\Foliage_Distribution_Sheet.xlsx` (not in the repo; 108 rows, 9 biome columns with dropdowns 0 None .. 5 Very dense, a "Current in scene" tab). Levels are instances per 2x2 m terrain-detail cell: <0.005 none, <0.05 sparse (target 0.03), <0.2 light (0.1), <0.6 medium (0.35), <1.2 dense (0.9), else very dense (1.8). Collider objects use objects per hectare of the biome (sparse 0.5, light 2, medium 5, dense 12, very dense 25).

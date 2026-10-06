@@ -1,6 +1,6 @@
 # Folder map: where things live
 
-**Decided 2026-10-03 (Carlos; done on branch `mrm-88`, see change record C-021).** Replaces the old "Folder structure" and "Art folder breakdown"
+**Decided 2026-10-03 (Carlos). Committed on `mrm-88` in `e5f3941d` (2026-10-05), change record C-021.** Replaces the old "Folder structure" and "Art folder breakdown"
 rules in `unity-conventions.md`. The aim: **one folder for level design** with semantic names, few folders, and no vendor or
 renderer names.
 
@@ -53,7 +53,7 @@ Art/
     Tree Colliders/    Wood Meshes (WoodColliderTool output) + Technie Paint (Carlos's paint data, MUST be kept)
   Terrain/             terrain textures and layers, M_IslandTerrain, Backups
   Sky & Water/         Skies, Skyboxes, Moon, Water
-  Characters/ Enemies/ Weapons/ Items/   one subfolder per subject
+  Characters/ Enemies/ Weapons/   one subfolder per subject, created when the asset is made (no empty placeholders)
   UI/                  menus, fonts, HUD (Veins), title cards
   VFX/                 Dissolve, Flare, Shared
   Materials/           four flat debug colours
@@ -123,6 +123,13 @@ Docs written before 2026-10-03 quote the old paths. They were not rewritten (his
 | `Art/Environment/WoodenChurch`, `MedievalWells`, `Art/Props/*` | `Art/Buildings & Props/...` |
 | `Art/HUD Textures/` | `Art/UI/HUD/` |
 | `ThirdParty/AST-###/` | `ThirdParty/AST-### (Short Name)/` (except 049, 085) |
+
+## Cleanup (2026-10-05)
+
+The 10 emptied old folders were deleted (Art/Environment, Art/Props, Art/HUD Textures, Art/VegetationPrefabs, Prefabs/World, Player,
+Enemies, MainMenu, DevTools, Legacy), plus 7 empty placeholder folders from the August scaffolding (Art/Enemies/Furman, Wolf, Zealot,
+Art/Items, Art/Weapons/Pickaxe, Pistol, Turret). Each was re-checked for files first; nothing referenced them. `Audio/VO` is kept (the
+dialogue category). Rule from now on: no empty placeholder folders; the `/prop` wizard creates a subject folder when it makes the asset.
 
 ## How it was done (so it can be repeated safely)
 
