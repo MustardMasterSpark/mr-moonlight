@@ -224,8 +224,7 @@ Assets/_Project/Art/<Category>/<Prop>/
     M_<Prop>.mat                  created in 3.2
 ```
 
-Categories, per `Docs/unity-conventions.md`: `Characters/`, `Enemies/`, `Weapons/`, `Items/`,
-`Props/`, `Environment/`.
+Categories, per `Docs/folder-map.md` (2026-10-03): `Characters/` `Enemies/` `Weapons/` `Items/` `Buildings & Props/` `Nature/` `Terrain/` `Sky & Water/` `UI/` `VFX/` (see `Docs/folder-map.md`).
 
 **One folder per subject — everything for it in one place.** Model, material and textures live
 together, never split into parallel `Materials/` or `Textures/` trees. Name the folder for **what
@@ -291,8 +290,11 @@ Read/Write off, Optimize Mesh on.** Never let the importer generate materials.
 Create it in Unity, with the material already assigned:
 
 ```
-Assets/_Project/Prefabs/World/Prop_<Name>.prefab
+Assets/_Project/Prefabs/<Folder>/Prop_<Name>.prefab
 ```
+
+`<Folder>` = the level-design category in `Docs/folder-map.md`: `Buildings/`, `Props/`, `Nature/Trees`,
+`Nature/Rocks & Logs`, `Nature/Grass & Plants`, `Sky & Lighting/`, `Characters/`, `Weapons/<Category>/`, `VFX/`, `UI/`.
 
 | Step | Rule |
 |---|---|
@@ -886,7 +888,12 @@ come out **non-power-of-two and not a multiple of 4**. Checked in the project: `
 "To Nearest" rescales them (434x512 -> 512x512, 512x344 -> 512x256, 308x512 -> 256x512), so they still compress as DXT1; harmless,
 the UVs map 0-1. Normals import as 256x256 normal maps.
 
-### G3 — Prefab destination is a guess for anything that isn't a prop
+### G3 — Prefab destination is a guess for anything that isn't a prop (RESOLVED 2026-10-03)
+
+**Resolved by the folder reorganisation:** every drag-and-drop prefab lives in one semantic folder under
+`Assets/_Project/Prefabs/`, see `Docs/folder-map.md` (characters and enemies in `Characters/`, items in
+`Weapons/Item/`). The text below is the original note.
+
 
 The hot path writes `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`. But `Prefabs/World/`
 currently holds **world systems** — `SUN`, `SkyboxSwitcher`, `TimeManager`, `Vegetation` — not

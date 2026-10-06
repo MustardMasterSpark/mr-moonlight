@@ -1,0 +1,36 @@
+SUMMARY
+
+Folder reorg: every placeable prefab in Prefabs/<semantic folder>, art grouped by subject, rough-collider vegetation renamed Old_
+
+DESCRIPTION
+
+Carlos's call (2026-10-03): level design was hard to navigate (prefabs spread over six places, vendor-named folders, every tree twice
+in SmartBuilder). Done on mrm-88 alongside the demo update. All moves through AssetDatabase.MoveAsset, so GUIDs are kept: GitHub
+Desktop shows them as delete + add pairs, and no scene, material or prefab reference changed.
+
+- Prefabs/: Buildings, Props, Sets, Nature/{Trees, Rocks & Logs, Grass & Plants, Old (Rough Colliders)}, Weapons (unchanged),
+  Characters, Sky & Lighting, VFX, UI, Dev & Tests. Prefabs/World, Player, Enemies, MainMenu, DevTools and Legacy emptied.
+- Vegetation duplicates: Art/VegetationPrefabs/AST116_ColliderTest was the Technie test copy; its prefabs (exact wood MeshColliders)
+  are now the main set in Nature/Trees and Nature/Rocks & Logs. The 112 originals (one rough capsule/box collider) are renamed Old_*
+  and kept, still used by scenes 02, 03 and 07. The 42 Technie grass copies went to Dev & Tests/Technie Grass Copies.
+- Art/: Buildings & Props, Nature (packs renamed by meaning, Tree Colliders/{Wood Meshes, Technie Paint}), Terrain, Sky & Water,
+  UI/HUD. Art/Environment, Props, HUD Textures, VegetationPrefabs emptied.
+- ThirdParty folders renamed AST-### (Short Name), except AST-049 (Gaia) and AST-085 (git-ignored, not in this commit).
+- Editor tools updated to the new paths: WoodColliderTool (PrefabFolder = Prefabs/Nature/, recursive exact-name lookup),
+  TreeColliderTool, TreeColliderReset, AST116TechnieBatchCollider, VegetationMaterialFix, VegetationTerrainPrep, PSXMaterialMigration,
+  CorpseDissolveTool, PolymindPlayerBuild, MoonlightWeaponSetBuild, the AST-046 paths in MoonlightTraceyArmsBuild,
+  MoonlightWeaponAudioBuild, MoonlightWeaponSet and PolymindLayerRemap; Tools/vegetation/measure_prefabs.cs.
+- Verified: 6,551 GUIDs before = after (+16 new folders), console clean after recompile, WoodColliderTool finds all 109 painted trees
+  with their wood meshes.
+- Docs: new folder-map.md (layout, where a new asset goes, AST naming rule, old -> new path table); unity-conventions.md,
+  3d-prop-pipeline-wizard.md and the prop-wizard SKILL.md (new prefab destinations), CLAUDE.md (pointer), lighting.md, smartbuilder.md,
+  technie-vegetation-collider-process.md, asset-import-update-process.md, hands-items-and-weapons-pipeline.md,
+  asset-moves-to-moonlight-sonnet-prompt.txt, folder-reorg-opus-prompt.txt (marked done), demo-update-stage3-sonnet-prompt.txt
+  (path note), performance-sessions.md (change record C-021).
+
+Files to include: everything under Assets/_Project/Art/ and Assets/_Project/Prefabs/ (the renames, deletions and new folder .meta
+files), the Code/Editor scripts above, Tools/vegetation/measure_prefabs.cs, .claude/skills/prop-wizard/SKILL.md, CLAUDE.md and the
+Docs files above, including the new Docs/folder-map.md and this message file.
+Leave out: Docs/playground-asset-log.md (the other chat's work, commit it with that chat). Assets/ThirdParty never appears (git-ignored).
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

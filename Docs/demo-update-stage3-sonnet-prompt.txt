@@ -3,6 +3,15 @@ Suggested model: Sonnet (placement on existing systems; each prop goes through t
 
 WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
 
+UPDATE 2026-10-04 (folder reorg, change record C-021): the project folders were reorganised. Read Docs/folder-map.md FIRST.
+- Every placeable prefab is in Assets/_Project/Prefabs/<semantic folder>/: Buildings (church, wells), Props, Sets (ready-made groups),
+  Nature/Trees + Nature/Rocks & Logs (exact wood colliders, USE THESE), Nature/Grass & Plants, Sky & Lighting, Characters, VFX, UI.
+  Prefabs/World/ no longer exists; any path below that says Prefabs/World or Art/Environment is translated by the table in folder-map.md.
+- Old_* prefabs in Nature/Old (Rough Colliders) are the older duplicates with one rough capsule/box collider. Do not place new ones;
+  do not delete them (scenes 02, 03, 07 still use them; repointing those scenes is an open question for Carlos).
+- Ten empty old folders may still exist (Art/Environment, Art/Props, Art/HUD Textures, Art/VegetationPrefabs, Prefabs/World, Player,
+  Enemies, MainMenu, DevTools, Legacy) if Carlos has not deleted them yet; they hold no files.
+
 READ FIRST: Docs/demo-update.md (running doc; stages 1 and 2 have every number), Docs/demo-update-opus-prompt.txt (the overall task),
 Docs/asset-moves-to-moonlight-sonnet-prompt.txt (pending Playground moves: Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool; one at a time, Carlos names each).
 

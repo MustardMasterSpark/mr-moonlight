@@ -37,10 +37,11 @@ namespace MrMoonlight.EditorTools
     /// </summary>
     public static class VegetationMaterialFix
     {
-        private const string MatDir = "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials";
-        private const string TexDir = "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Textures";
-        private const string PrefabDir = "Assets/_Project/Prefabs/World/Vegetation/RetroRealism";
-        private const string MeshDir = "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Meshes";
+        private const string MatDir = "Assets/_Project/Art/Nature/Retro Forest/Materials";
+        private const string TexDir = "Assets/_Project/Art/Nature/Retro Forest/Textures";
+        // Folder reorg 2026-10-03: the old RF_ prefabs are now Old_RF_* in Nature/Old (Rough Colliders); one-shot MRM-70 tool.
+        private const string PrefabDir = "Assets/_Project/Prefabs/Nature/Old (Rough Colliders)";
+        private const string MeshDir = "Assets/_Project/Art/Nature/Retro Forest/Meshes";
 
         /// <summary>FBX embedded material name -> our material asset name.</summary>
         private static readonly Dictionary<string, string> Bind = new Dictionary<string, string>
@@ -78,7 +79,7 @@ namespace MrMoonlight.EditorTools
 
                 // Authoritative submesh order comes from the raw FBX's renderer, not from
                 // LoadAllAssetsAtPath (which sorts alphabetically).
-                string fbxPath = $"{MeshDir}/{prefab.name}.fbx";
+                string fbxPath = $"{MeshDir}/{(prefab.name.StartsWith("Old_") ? prefab.name.Substring(4) : prefab.name)}.fbx";
                 var fbx = AssetDatabase.LoadAssetAtPath<GameObject>(fbxPath);
                 if (fbx == null) { log.AppendLine($"{prefab.name}: no source FBX, skipped"); continue; }
 

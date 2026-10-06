@@ -114,7 +114,7 @@ Assets/_Project/Art/<Category>/<Prop>/
     M_<Prop>.mat
 ```
 
-Categories: `Characters/` `Enemies/` `Weapons/` `Items/` `Props/` `Environment/`.
+Categories: `Characters/` `Enemies/` `Weapons/` `Items/` `Buildings & Props/` `Nature/` `Terrain/` `Sky & Water/` `UI/` `VFX/` (see `Docs/folder-map.md`).
 **One folder per subject** — model, material and textures together, never split into parallel
 trees. Name the folder for **what it represents**, not the source filename.
 
@@ -174,7 +174,11 @@ materials via `execute_code`/script? Also call `mat.EnableKeyword("_ALPHATEST_ON
 silently ignored — this bit an entire 137-prop batch at once (MRM-70 vegetation, 2026-08-29)
 before being caught by comparing against an Editor-built reference material's `m_ValidKeywords`.
 
-### 5. 🔧 Prefab — `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`
+### 5. 🔧 Prefab — `Assets/_Project/Prefabs/<Folder>/Prop_<Name>.prefab`
+
+`<Folder>` is the level-design category from `Docs/folder-map.md`: `Buildings/` (anything you walk into or
+around: church, wells, walls), `Props/` (set dressing), `Nature/Trees`, `Nature/Rocks & Logs`, `Nature/Grass & Plants`,
+`Sky & Lighting/`, `Characters/`, `Weapons/<Category>/`, `VFX/`, `UI/`. Never `Prefabs/World/` (removed 2026-10-03).
 
 - Material **assigned on the prefab**, not left for later
 - **Any collider work follows `Docs/collider-policy.md`**: evaluate each prop's use case and whether it needs a collider at all, report the

@@ -10,4 +10,4 @@
 - Source: `C:\Users\calva\Documents\Asset Collection\02_extracted\AST-277`.
 
 **Status:** installed, compiles clean, console clean. Not yet judged by Carlos. Spreadsheet row AST-277 still says "Not assigned yet": update it once he decides to keep it.
-**Folder refactor note:** it finds prefabs by `t:prefab` search, so folder moves do not break it. See `Docs/folder-reorg-opus-prompt.txt`.
+**Folder refactor note:** it finds prefabs by `t:prefab` search, so folder moves do not break it. Since 2026-10-03 every placeable prefab is under `Assets/_Project/Prefabs/<semantic folder>/`, see `Docs/folder-map.md`; the `Old_` trees are the rough-collider duplicates, prefer `Nature/Trees`.

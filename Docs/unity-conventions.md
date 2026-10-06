@@ -48,24 +48,11 @@ Movement/PlayerStateMachine.cs`). **Not retroactively applied to every other alr
 package** — only do this for a package when its logic is actually being edited enough to be worth
 tracking, same trigger as Burntwax.
 
-```
-Assets/
-├── _Project/
-│   ├── Art/            Models, textures, materials — see the breakdown below
-│   ├── Audio/          Clips, mixer assets
-│   ├── Code/
-│   │   ├── Runtime/     Player, weapons, enemies, systems, audio, UI, VFX, data, world
-│   │   ├── Editor/      Editor tools, CSV bakers, custom inspectors
-│   │   ├── Tests/       EditMode tests
-│   │   └── Vendor/      Tracked, editable copies of third-party packages' SCRIPT logic only
-│   │                    (e.g. Burntwax FPS Engine/Scripts/) — see note above. The package's own
-│   │                    3D/binary assets stay behind in Assets/ThirdParty/.
-│   ├── Data/           ScriptableObjects — tunables, baked CSV data
-│   ├── Prefabs/        Player, enemies, items, props, UI
-│   ├── Scenes/         MainMenu, Demo, Sandbox
-│   └── Settings/       URP assets, input actions, quality settings
-└── ThirdParty/         Vendor 3D/binary content — git-ignored, never committed
-```
+**Updated 2026-10-03: the folder tree, the prefab categories and the AST naming rule now live in
+[`folder-map.md`](folder-map.md).** In short: everything the project owns is under `Assets/_Project/`
+(`Art/`, `Audio/`, `Code/{Runtime,Editor,Tests,Vendor}/`, `Data/`, `Prefabs/`, `Scenes/`, `Settings/`);
+every drag-and-drop prefab is in `Prefabs/<semantic folder>/`; vendor content is in
+`Assets/ThirdParty/AST-### (Short Name)/`, git-ignored.
 
 **Sandbox scene.** Keep a `Sandbox` scene with a flat plane, a sparring dummy and a spawn point. Every system gets tested there before it goes near the demo scene. This is faster than loading the island every time and it is where most acceptance criteria get checked.
 
@@ -73,18 +60,9 @@ Assets/
 
 ## Art folder breakdown
 
-Decided 2026-08-21, during MRM-9. `Art/` mirrors the category split `Prefabs/` and `Scripts/` already use, rather than a new taxonomy:
-
-```
-Art/
-├── Characters/    One subfolder per character — model, materials and textures
-│   └── Tracey/    co-located, not split into parallel Models/Materials/Textures trees
-├── Enemies/       Spotter/, Zealot/, Wolf/, Furman/
-├── Weapons/       Pickaxe/, Pistol/, Shotgun/, Turret/
-├── Items/         Pickups — Bandages, Crackers, Canteen, Flashlight, etc.
-├── Props/         One-off set-dressing — tents, coolers, the RV, the telescope
-└── Environment/   Terrain textures, foliage, rocks, skyboxes (only the 4 kept from AllSky 220)
-```
+Decided 2026-08-21 (MRM-9), **replaced 2026-10-03** by the semantic layout in [`folder-map.md`](folder-map.md)
+(`Buildings & Props/`, `Nature/`, `Terrain/`, `Sky & Water/`, `Characters/`, `Enemies/`, `Weapons/`, `Items/`, `UI/`, `VFX/`).
+The principles below still hold.
 
 **One folder per subject, everything for it in one place.** A model's materials and textures live next to it, not in a parallel `Materials/` or `Textures/` tree — same reasoning as the C# conventions' governing principle: open one place, not three. Only nest a `Textures/` subfolder under a subject if it actually accumulates enough variants to need one.
 

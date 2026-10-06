@@ -1,0 +1,104 @@
+YOUTUBE LIBRARY REORGANIZATION - CONTEXT PROMPT FOR A FRESH SESSION
+(Not part of the Mr. Moonlight game. Personal task for Carlos. Rewritten 2026-10-05, end of session 5.)
+Suggested model: Sonnet. The system is LIVE and AUTONOMOUS. A new session is only for corrections or reports.
+
+== STATE (end of session 5, 2026-10-05) ==
+GO GIVEN. datosprobado.flag exists and is EMPTY = all lists. Task "Biblioteca YouTube - diario" runs daily 12:00
+(next: 2026-10-06). Test on list 154 verified in YouTube (private, "154 Personal - Dios", 30/30, no duplicates), then a first
+real run: 178 inserts, 7 lists created (001-006 + 154). Remaining ~23,190 inserts at ~190/day = ~122 days (to ~early Feb 2027).
+DECISIONS TAKEN 2026-10-05: (1) NO quota-increase request: slow is fine as long as it is free. (2) Unclassified videos stay in
+the single list 190; BAJA_A_190 stays True (low-confidence videos also go to 190 for Carlos's manual review).
+FIXES this session (diario.py): playlistNotFound is retried (a just-created playlist 404s for a few seconds); retries 4->6;
+transient errors (SERVICE_UNAVAILABLE etc.) are no longer marked permanent "fallidos", they retry next run.
+
+== AFTER THE BACKLOG IS DONE: THE TASK NEVER STOPS (confirmed in code 2026-10-05) ==
+The daily task is permanent. When all ~23k inserts are finished it keeps running every day at 12:00 and only does step 2:
+reads the newest 500 Liked videos (PAGINAS_LIKES=10 x 50), anything not in likes_conocidos is a new like -> auto-placed by
+channel (unknown channel -> 190) and inserted into those playlists in the same run (new likes are inserted before/along with the
+backlog, they are part of the plan). Costs ~50 units per list per new video, so dozens of likes per day are fine.
+NOT covered (Carlos knows): videos he merely SAVES into other playlists, or Watch Later (YouTube API cannot read WL); only LIKES
+are detected. If he wants saves covered: new feature = scan chosen playlists for items not in likes_conocidos/hecho.
+To stop it for good: delete the scheduled task "Biblioteca YouTube - diario" (Task Scheduler) or delete datosprobado.flag
+(simulation only). Re-login toast ("Sesion expirada", ~weekly) still applies forever; likes made while expired are caught on
+the next run as long as they are within the newest 500.
+
+== WHAT CARLOS MUST DO (ongoing) ==
+- Keep the PC on/awake near noon (if off, the task runs when he next logs in).
+- Roughly every 7 days a toast says "Sesion expirada": double-click "Iniciar sesion.bat" once (testing-mode OAuth).
+- Read the daily report (toast opens it) when he wants; nothing else. Nothing is ever deleted or unliked; old playlists stay
+  until he decides. To pause everything: delete datosprobado.flag (runs become simulations).
+- When done (~Feb 2027) review list 190 by hand, or ask Claude "clasifica los nuevos".
+
+== WHAT LIVES WHERE (C:\Users\calva\Desktop\YouTubeBiblioteca\) ==
+  Iniciar sesión.bat / Ejecutar ahora.bat   double-click launchers (login / run the daily job now)
+  categorias_propuestas.txt                 approved tree, 81 lists (source of truth)
+  scripts\comun.py        login, change log, toast        scripts\lotes.py   classification helper
+  scripts\diario.py       THE daily service (see its docstring)   scripts\iniciar_sesion.py   interactive login
+  scripts\catalogo.py / respaldo_likes.py   one-off builders (done)
+  datos\clasificacion.json   video -> lists + confidence       datos\vista_previa.xlsx   what Carlos reviews
+  datos\progreso.json        what is already in YouTube (resumable)   datos\likes_conocidos.json   11k known likes
+  datos\registro_cambios.csv every change ever made           datos\reportes\<fecha>.html   daily report
+  datos\diario.log           output of silent (scheduled) runs        datos\aprobado.flag   THE GATE (does not exist yet)
+  datos\lotes\res_NNN.csv    raw classification answers (keep; re-importable with lotes.py importar)
+Run scripts: cd scripts && PYTHONIOENCODING=utf-8 ../.venv/Scripts/python <script>.py
+Never print or paste credenciales\client_secret.json / token.json.
+
+== HOW THE DAILY JOB WORKS ==
+  1 login non-interactive (token expired -> toast "Sesión expirada: doble clic en Iniciar sesión.bat", exit)
+  2 reads the newest Liked videos; anything not in likes_conocidos is auto-placed by channel (the lists that
+    channel's videos usually went to; unknown channel -> 190) and logged as "nuevo_like"
+  3 (only with aprobado.flag) walks the lists in id order: creates the playlist if missing (PRIVATE, name
+    "NNN <name>", mirror "2NN [Old] <name>" for videos that exist only on the old account), reads the playlist's
+    items first (never inserts a duplicate), inserts until ~9,600 quota units or quotaExceeded, saves every 20
+  4 verifies item counts against YouTube, writes datos\reportes\<fecha>.html, toast that opens the report
+  Flags: --plan (offline) --simular --solo 154 152 --max 20 --silencioso
+  datos\aprobado.flag: empty file = work on everything. A line "solo: 154" restricts a test to those lists.
+  Nothing is ever deleted or unliked. Failed videos (deleted/private) go to progreso.json "fallidos" and the report.
+
+== NUMBERS (important, tell Carlos) ==
+  23,369 planned inserts (not the ~13,000 estimated earlier: videos go into several lists) at 50 units each
+  = ~190 per day = ~123 DAYS. A quota-increase request (free, slow, uncertain) is the only real fix. Carlos has
+  never decided; ASK ONCE, do not file it without him.
+  Biggest lists: 130 Humor/Memes 2,663 | 054 Videojuegos noticias/clips/memes 1,190 | 190 Por clasificar 1,802
+  (745 truly unclassifiable + ~1,057 because of the rule "baja confidence ALSO goes to 190").
+  Dropping that baja->190 rule (diario.py BAJA_A_190 = False) saves ~1,057 inserts (~5.5 days). Carlos decides.
+  2,402 videos are old-account-only -> 75 mirror lists (2NN [Old]); 930 videos are unavailable and never inserted.
+  Lists are created lazily, so empty mirror lists are never created.
+
+== STEPS FOR THE NEXT SESSION ==
+1. (DONE 2026-10-05) review approved, go given. Corrections: tell Claude video/list changes; plan is rebuilt each run (only not-yet-inserted items are affected).
+   lotes.py importar; the plan is rebuilt from clasificacion.json on every run, so edits are safe until inserted).
+   Ask him about: BAJA_A_190, and the quota-increase request.
+2. (DONE) On "go": create datos\aprobado.flag containing "solo: 154" (a small list), run "Ejecutar ahora.bat" or
+   diario.py, check the playlist in YouTube (private, named "154 Personal · Dios", items right, report right).
+   Also tell Carlos the exact count he should see. If OK, empty the flag (all lists) and let the task run.
+3. Watch the first real daily reports; tune (PAUSA, PRESUPUESTO, ordering inside lists, channel auto-placement).
+4. "clasifica los nuevos" = classify list 190's recent additions (progreso.json "nuevos") by title/channel, move them
+   (new likes are placed by channel automatically; unknown channels land in 190).
+Known limitation: YouTube cannot reorder/sort by date here; items appear in id order inside each list.
+
+== WHAT CARLOS MUST DO ==
+- Keep the PC on / awake around noon (if it was off, the task runs when he next logs in).
+- When the toast says "Sesión expirada" (about every 7 days; testing-mode OAuth): double-click "Iniciar sesión.bat" once.
+- Review datos\vista_previa.xlsx and say "go" before the first real insertion.
+- Unlike by hand later (the Liked list caps at 5,000 visible; hidden older likes resurface as he unlikes, and are
+  already in likes_conocidos so they are not reported as new). Delete old playlists only when he decides.
+
+== DECISIONS (all from Carlos, 2026-10-05) ==
+- Every playlist PRIVATE. Names in Spanish, starting with the 3-digit id. Mirror lists: id+200, "[Old] " prefix.
+- Videos liked on BOTH accounts -> once, in the normal list only ([Old] lists hold old-account-only videos).
+- A video may go into several lists, never twice into the same one.
+- HIS OLD PLAYLISTS WERE MIXED BAGS: names are hints only; personal lists (Based, feels, literally me, Characters,
+  God, Jesus is King) ALSO map to 150-154. Music is genre-first; Touhou music = 001-009; non-music Touhou = 050.
+- Unliking NOT automated. Nothing deleted without his explicit word. Old playlists stay until he says.
+- Daily run: Windows Task Scheduler at 12:00 + Windows toast. No cloud, no phone push.
+- He lets Claude drive the browser (Claude in Chrome) for a few clicks; ask him only for logins/consents.
+
+== FACTS / TRAPS ==
+- Liked list via playlistItems.list(playlistId="LL") (videos.list(myRating) stops at ~961). Caps at 5,000.
+- Quota 10,000/day, resets midnight Pacific; playlists.insert / playlistItems.insert = 50 units, reads 1.
+- Testing-mode OAuth refresh token dies every 7 days ("Publicar app" needs a verified domain: not worth it).
+- Takeout CSVs are UTF-8 with BOM; Windows console needs PYTHONIOENCODING=utf-8.
+- Playlist titles: parentheses that are notes to Carlos ("tu lista ...", "incluye ...", "...") are removed from
+  the title (see nombre_limpio in diario.py); 023 is fixed to "Música · Oldies (años 30 a 70)".
+- lote_044 has a row with an embedded newline (harmless). The classifier made ~3 mistyped video ids, all fixed.

@@ -321,7 +321,7 @@ namespace MrMoonlight.EditorTools.Migration
 			StringBuilder sb = new StringBuilder();
 			foreach (string n in prefabNames)
 			{
-				string path = "Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/" + n + ".prefab";
+				string path = WoodColliderTool.FindPrefabPath(n);
 				GameObject root = PrefabUtility.LoadPrefabContents(path);
 				try
 				{

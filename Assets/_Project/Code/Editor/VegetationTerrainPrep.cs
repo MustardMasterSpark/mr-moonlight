@@ -58,8 +58,9 @@ namespace MrMoonlight.EditorTools
     /// </summary>
     public static class VegetationTerrainPrep
     {
-        private const string RetroRoot = "Assets/_Project/Prefabs/World/Vegetation/RetroRealism";
-        private const string BakedFolder = "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Meshes/Baked";
+        // Folder reorg 2026-10-03: the old RF_ prefabs are now Old_RF_* in Nature/Old (Rough Colliders); one-shot MRM-70 tool.
+        private const string RetroRoot = "Assets/_Project/Prefabs/Nature/Old (Rough Colliders)";
+        private const string BakedFolder = "Assets/_Project/Art/Nature/Retro Forest/Meshes/Baked";
 
         // Culling only - LOD0 covers everything up to it. This is a safety net so a 1500 m draw
         // distance cannot try to draw every full-detail trunk on the island, NOT a way to hide a

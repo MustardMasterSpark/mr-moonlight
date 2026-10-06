@@ -32,6 +32,11 @@ resolution, HUD layout, menus — targets **1920×1080**.
    tunable. The single place for lighting; update it whenever you touch a light (added 2026-09-19)
 6. `Docs/corpse-optimization.md` — **dead enemies**: the settle pass, the burn dissolve and removal, culling of corpses, the tunables, what story mode must turn off, and the build 43/44 results (MRM-85, added 2026-09-30). Performance work in general: `Docs/performance-sessions.md`
 
+## Where things live
+**`Docs/folder-map.md`** (2026-10-03): every drag-and-drop prefab is in `Assets/_Project/Prefabs/<semantic folder>/`
+(Buildings, Props, Sets, Nature, Weapons, Characters, Sky & Lighting, VFX, UI, Dev & Tests); art by subject in `Art/`;
+vendor folders named `AST-### (Short Name)`. `Old_*` vegetation = rough-collider duplicates, prefer `Nature/Trees`.
+
 ## Making a 3D asset — fire the wizard
 Any prop, character, or weapon work: **`/prop`**, or read
 `Docs/3d-prop-pipeline-wizard.md` (MRM-72) and run its intake. It is an executable
@@ -71,6 +76,10 @@ If an issue and a document disagree, the issue wins.
   accurate") means: judge each prop's use case and whether it deserves a collider at all (none / primitive / reduced-mesh / LOD0 mesh),
   report the per-prop verdict with the triangle cost, apply it and flag every deviation from what he literally asked. Applies to every prop
   and every future scenario. Full rule: `Docs/collider-policy.md`.
+- **Never delete assets on my own (Carlos, 2026-10-04).** Removing an asset folder (Playground, Mr. Moonlight, `02_extracted`) happens
+  only on Carlos's explicit go-ahead, never as an automatic step after an asset "fulfils its role": suggest it, say what it would free,
+  wait. Playground is a short-lived bench (stage, use, then remove when he says); the log of what came in and went out is
+  `Docs/playground-asset-log.md` (update it on every stage/move/removal). Never touch `01_DOWNLOAD`.
 - One issue, one branch, one PR.
 - **Create issue branches with `git switch -c <name> --no-track origin/main`**, never plain
   `git checkout -b <name> origin/main`: that sets the branch's upstream to `origin/main`, and GitHub

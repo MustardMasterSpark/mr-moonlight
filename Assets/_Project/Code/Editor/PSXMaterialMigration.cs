@@ -52,7 +52,7 @@ namespace MrMoonlight.EditorTools
         private const string UrpLitShaderName = "Universal Render Pipeline/Lit";
         private const string UrpTerrainLitShaderName = "Universal Render Pipeline/Terrain/Lit";
 
-        private const string TerrainMaterialPath = "Assets/_Project/Art/Environment/Terrain/M_IslandTerrain.mat";
+        private const string TerrainMaterialPath = "Assets/_Project/Art/Terrain/M_IslandTerrain.mat";
 
         private const int FilterMode_Point = 1;
         private const int SnapMode_View = 2;
@@ -62,34 +62,34 @@ namespace MrMoonlight.EditorTools
 
         private static readonly string[] VegetationMaterialPaths =
         {
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_Grass01.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_Grass02.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower01.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower02.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower03.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower04.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower05.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower06.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower07.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower08.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower09.mat",
-            "Assets/_Project/Art/Environment/Vegetation/GrassFlowers/Materials/M_GFF_GrassFlower10.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_Boulders.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_BranchFir.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_BranchFirDead.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_Bush.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_Dirt.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_Fern.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_Trees.mat",
-            "Assets/_Project/Art/Environment/Vegetation/RetroRealism/Materials/M_RF_TreesDead.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_Bush.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_BushDry.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_Fern.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_Grass.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_GrassC.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_GrassDry.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_Heather.mat",
-            "Assets/_Project/Art/Environment/Vegetation/TerrainSampleAssets/Materials/M_TSA_Plant.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_Grass01.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_Grass02.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower01.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower02.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower03.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower04.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower05.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower06.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower07.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower08.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower09.mat",
+            "Assets/_Project/Art/Nature/Grass & Flowers/Materials/M_GFF_GrassFlower10.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_Boulders.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_BranchFir.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_BranchFirDead.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_Bush.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_Dirt.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_Fern.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_Trees.mat",
+            "Assets/_Project/Art/Nature/Retro Forest/Materials/M_RF_TreesDead.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_Bush.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_BushDry.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_Fern.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_Grass.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_GrassC.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_GrassDry.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_Heather.mat",
+            "Assets/_Project/Art/Nature/Bushes & Grass/Materials/M_TSA_Plant.mat",
         };
 
         [MenuItem("Tools/Mr. Moonlight/Rendering/Report PSX Material Migration")]

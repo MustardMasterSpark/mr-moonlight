@@ -8,10 +8,7 @@
 // for blockR — how wide the prop blocks the player.
 
 var roots = new string[]{
- "Assets/_Project/Art/VegetationPrefabs",
- "Assets/_Project/Prefabs/World/Vegetation/RetroRealism",
- "Assets/_Project/Prefabs/World/Vegetation/GrassFlowers",
- "Assets/_Project/Prefabs/World/Vegetation/TerrainSampleAssets"};
+ "Assets/_Project/Prefabs/Nature"};  // folder reorg 2026-10-03: all vegetation prefabs live here
 
 var sb = new System.Text.StringBuilder();
 sb.Append("name,folder,visW,visH,visD,footprint,minY,visibleH,blockR,colType,tris\n");

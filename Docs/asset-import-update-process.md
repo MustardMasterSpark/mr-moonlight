@@ -72,8 +72,8 @@ guessing.
 ## Step 3 — decide the target project, then sync by GUID
 
 **First: is this asset already installed anywhere, and where?** Check both:
-- Mr. Moonlight: `Assets/ThirdParty/AST-###/` and `Assets/_Project/Code/Vendor/<PackageName>/`
-- Playground: `Assets/PLAYGROUND/AST-###/`
+- Mr. Moonlight: `Assets/ThirdParty/AST-### (Short Name)/` (named this way since 2026-10-03, see `Docs/folder-map.md`; a new import gets the code plus one or two words in parentheses) and `Assets/_Project/Code/Vendor/<PackageName>/`
+- Playground: `Assets/PLAYGROUND/AST-### (Short Name)/` (same naming rule since 2026-10-05; Playground is a short-lived bench, removal only on Carlos's word, history in `Docs/playground-asset-log.md`)
 
 Only one of these will usually be true (see `Docs/dual-project-workflow.md` — new/unproven assets
 get evaluated in Playground first; only things Carlos has actually adopted into the game live in
