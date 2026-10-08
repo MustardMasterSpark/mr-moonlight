@@ -3,6 +3,23 @@ Suggested model: Sonnet (placement on existing systems; each prop goes through t
 
 WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
 
+UPDATE 2026-10-07, END OF THE SONNET PLACEMENT SESSION (this block wins over everything below where they disagree):
+- Branch `mrm-88`, last commit 7df34c71. Change record: C-024 (pending until Carlos commits and gives the hash). Commit message: Docs/mrm88-commit-message-6.txt.
+- **SCENE 07 IS UNSAVED**: the wall loop (root `WellWall_Run_01`, 57 pieces of Prop_MVillage_WellWall_01 around the church spline) exists only in the open scene.
+  Check `scene.isDirty` first; if Unity was closed without saving, the loop is gone and the recipe in Docs/demo-update.md (Stage 3, session 2026-10-07) re-creates it.
+  The terrain detail clearing inside the loop IS saved (TerrainData asset, 398 cells, 1,595 density).
+- New tool: `PropTerrainSnap` (Ctrl+Shift+T on selected props: base on the terrain, tilted to the slope, yaw kept; window Tools > Moonlight > Prop Terrain Snap
+  for blend / sink). Carlos asked for it and uses it while placing. Ctrl+Shift+G clashes with AMD Adrenalin, do not use it.
+- TRAP: `SplineContainer.Evaluate` already returns WORLD positions; do not TransformPoint them again. Do not use the Spline Instantiate component for terrain walls.
+- Carlos's standing wish for the END of placement (he said "don't do it now"): (a) group every placed prop under folder-style parent objects (e.g. Props_Church,
+  Props_Wells), keep world positions, check nothing finds props by hierarchy path first; (b) clear terrain foliage under each prop's footprint (terrain details by
+  zeroing the 2 m cells, report any terrain trees / Flora / loose objects and wait for go before deleting those). Remind him when he says he is done placing.
+- Carlos is hiding the terrain from scene picking with the Hierarchy hand icon while placing. If he asks, offer a one-click menu item.
+- Playground staging by another chat (not this session): AST-292 Witch Village, 293 Dead Bodies, 294 Barricades, 295 Medieval Furniture, 296 PSX Hospital Church,
+  297 PSX Wooden Fences, 247 Gamer Girl, 298 Horror Sounds are staged in Playground for Carlos's review (Docs/playground-asset-log.md). Their doc edits are
+  uncommitted in the working tree and are NOT part of the C-024 commit.
+- NEXT: Carlos names the next prop or asset to move or place (the demo station). Ask before each Unity-side action, read the state back, never commit.
+
 UPDATE 2026-10-05, END OF THE OPUS SESSION (this block wins over everything below where they disagree):
 - Branch `mrm-88`. Carlos is merging mrm-88 into main as a CHECKPOINT and work CONTINUES on mrm-88 (do not switch branches; do not
   create one unless he asks). Commits: stage 1 82da1564, stage 2 94754da6, wobble/SmartBuilder 19a9afe7, folder reorg + Medieval

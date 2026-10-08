@@ -1,0 +1,17 @@
+SUMMARY
+
+MRM-88: Church wall loop (57 pieces on Carlos's spline), church grounds cleared of foliage, PropTerrainSnap editor tool
+
+DESCRIPTION
+
+Stage 3 prop placement continues on mrm-88.
+
+- New editor tool PropTerrainSnap (Assets/_Project/Code/Editor): Ctrl+Shift+T drops the selected props on the terrain and tilts them
+  to the slope, yaw kept; window Tools > Moonlight > Prop Terrain Snap has slope blend, sink and tilt toggle. Editor-only, no runtime code.
+- Scene 07: 57 Prop_MVillage_WellWall_01 placed along the closed church Spline (root WellWall_Run_01), spaced by a fixed 3D chord
+  that closes the loop exactly, sunk 8 cm, tilted half toward the terrain normal.
+- Island terrain data: terrain detail layers cleared inside the wall loop (398 cells of 2 m, density 1,595, all 90 layers). No terrain trees there.
+- Docs: Docs/demo-update.md (Stage 3 session notes, Spline.Evaluate-is-world-space trap), change record C-024 and C-023 hash in
+  Docs/performance-sessions.md, handoff Docs/demo-update-stage3-sonnet-prompt.txt.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

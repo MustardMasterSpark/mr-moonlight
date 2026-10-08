@@ -71,6 +71,30 @@ Scene 07, saved by Carlos on 2026-10-05.
 - **On hold:** build 47 (fog + CRT on) and the fog choice, HAZE (AST-078) vs Volumetric Fog & Mist 2 (AST-282), undecided (see
   `Docs/mrm85-fog-vf2-continue-prompt.txt`). Do not raise them until placement is done unless Carlos does.
 
+### Session 2026-10-07: snap tool, church wall loop, church grounds cleared
+
+- **New editor tool `PropTerrainSnap`** (`Assets/_Project/Code/Editor/PropTerrainSnap.cs`, namespace `MrMoonlight.EditorTools`). Select props,
+  press **Ctrl+Shift+T** (menu `Tools > Moonlight > Snap Selection To Terrain`; window `Tools > Moonlight > Prop Terrain Snap`). Puts the
+  bottom-centre of the renderer bounds on the terrain and tilts the prop up-axis toward the terrain normal, yaw kept. Settings (EditorPrefs):
+  slope blend (default 1), sink (default 0.05 m), tilt on/off. Each selected object is snapped on its own, so do not select a parent and its
+  child. Ctrl+Shift+G was the first choice and collided with AMD Adrenalin on Carlos's machine. Unity's own Ctrl+Shift surface drag does nothing on terrain.
+- **Church wall loop.** Carlos drew a closed `Spline` (SplineContainer, root object `Spline`, 12 knots, at (61.46, 49.19, 66.89)). Claude filled it with
+  **57 `Prop_MVillage_WellWall_01` pieces** under the new root `WellWall_Run_01` (`WellWall_00`..`WellWall_56`), placed by script, NOT with the Spline
+  Instantiate component (it cannot follow terrain). Piece is 2.56 m long on local X, pivot at the base centre. Algorithm: sample the spline, drop
+  every point on the terrain height, walk it with a fixed 3D chord length, bisect the chord so the loop closes exactly, pick the piece count whose
+  chord is nearest 2.56 m (57 pieces, chord 2.546, X scale 0.995 x 1.03 overlap). Each piece: X along the chord, up = slerp(world up, terrain normal,
+  0.5), sunk 8 cm, alternate pieces +4 mm to avoid z-fighting. Verified: every piece centre within 0.34 m of the spline, closing gap 0.
+  **Not re-run if the spline moves.** The single `Prop_MVillage_WellWall_01` placed on 2026-10-05 is separate and untouched.
+- **Trap found (cost one full wrong run):** `SplineContainer.Evaluate(...)` already returns WORLD-space positions. Calling
+  `transform.TransformPoint` on them again shifts everything by the container's position (the first run landed ~60 m off). Use the values as they are.
+- **Church grounds cleared of foliage** (inside the wall loop): the only foliage inside was terrain details (no terrain trees on this terrain; the
+  only renderers inside were the church and the well). 398 detail cells (2 m) cleared on all 90 layers, detail density removed 1,595 (mostly
+  BushDry A/B, Heather, RF_Bush); cells are those touching the loop polygon, so up to ~1 m past the wall on the outer side. Re-count inside the
+  loop afterwards: 0. TerrainData asset saved (`Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/...`). Recipe: same as stage 2.
+- **Scene 07 was NOT saved by Claude** at the end of this session (57 pieces + `WellWall_Run_01` exist in the open scene only). Carlos must save.
+- Still to do at the very end of placement (Carlos, 2026-10-07): group every placed prop under folder-style parent objects; clear foliage under
+  each prop's footprint (Carlos approved doing it with the steps as the first test: the church loop was done instead).
+
 ## Side session - folder reorganisation (2026-10-03 to 05)
 
 Not a placement stage: done so placement can find its prefabs. Every placeable prefab moved to `Assets/_Project/Prefabs/<semantic folder>/`

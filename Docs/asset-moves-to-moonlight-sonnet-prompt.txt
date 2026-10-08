@@ -14,6 +14,75 @@ Rule on 3D models (Carlos, 2026-10-01): **every model's BaseColor goes through t
 never pixelated). Ask the texture size every time (512 props / 1024 weapons / 1024-2048 characters / 256-512 small items).
 
 ===========================================================================
+1c. UPDATE 2026-10-07 (READ THIS BLOCK FIRST; it supersedes 1b and the lists below where they differ)
+===========================================================================
+SESSION SCOPE NOW: Carlos names new assets; Claude renames them in 01_DOWNLOAD, updates the Excel index, and (only for the ones he marks with asterisks
+or names) stages them in Playground, fixes materials/orientation, makes prefabs, and logs everything. Moving an asset into Mr. Moonlight is still the
+prop wizard, one asset at a time, only when he says. Read: CLAUDE.md, this file, Docs/asset-import-update-process.md (worked examples 11 and 12 are the
+newest), Docs/playground-asset-log.md, Docs/collider-policy.md. Say in a few lines what you understood, then WAIT for him to name the work. Do not suggest
+fresh sessions or wrap-ups; do not run "final instructions" unless he asks.
+
+STANDING RULES (unchanged, still binding)
+ 1. NEVER delete assets (Playground, Mr. Moonlight, 02_extracted) without his explicit instruction. Suggest only when asked. Never touch 01_DOWNLOAD or Assets.zip.
+    Before a deletion: grep the folder's GUIDs against every text asset in Assets/ProjectSettings/Packages (0 references required), keep anything local-only.
+ 2. ANY collider request: evaluate each prop first (none / primitive / reduced / LOD0 mesh), report per-prop verdicts with triangle cost, flag deviations.
+ 3. Do NOT create or switch git branches, commit or push (another chat owns branch mrm-88). Ask Carlos before each piece of Unity or Blender MCP work
+    (a direct request to do that work counts as the go).
+ 4. Confirm with a screenshot / real pixels before saying "fixed". Pink is not only the error shader.
+ 5. Playground folders are named "AST-### (Short Name)" (what the asset IS). Excel master: C:\Users\calva\Documents\Asset Collection\03_documentation\
+    ASSETS - Index 2026-09-16.xlsx (close Excel first; after every edit run: python Tools/pipeline/build_asset_browse_sheet.py --mirror).
+
+STATE OF PLAYGROUND (E:\playground\Playground, MCP tools mcp__unityMCP_playground__*, port 8081). Kept, all awaiting Carlos's review unless noted:
+ AST-040 Blood Factory + _Local (dependencies), AST-070 Wooden Church (built in Mr. Moonlight, awaiting his sign-off), AST-074 Graveyard Tombstones,
+ AST-076 Heavy Action Music, AST-108 The Shed, AST-131 Weeper Ghosts, AST-162 Swimming Pool, AST-270 Medieval Wells (in Mr. Moonlight, props only),
+ and staged 2026-10-05/07: AST-292 Witch Village, AST-293 Dead Bodies, AST-294 Barricades, AST-295 Medieval Furniture, AST-296 PSX Hospital Church,
+ AST-297 PSX Wooden Fences, AST-298 Horror Sounds. AST-247 Gamer Girl was reviewed (fine) and REMOVED 2026-10-07 (restore: 01_DOWNLOAD\AST-247.unitypackage).
+ Per-asset result and restore notes: Docs/playground-asset-log.md.
+
+STATE OF THE EXCEL INDEX: 294 AST ids (highest 298; ids never reused; 239 Alice Style Character removed). New "owned, not on original list" rows sit at the
+ end of "OWNED (FROM WISHLIST)"; rows moved from the wishlist sit in ID order inside it. Behind the store: 224, 225, 244, 246, 288, 298 (and earlier ones).
+ Files renamed but NOT staged anywhere: AST-243 Dryad Girl Fawnia, 244 Cosmo Dragon Girl, 245 Cyberpunk Ninja Girl Vex, 246 K-POP Mina, 251 SuccubusV,
+ 252 Succubus Sisters, 224/225 Toon Soldiers, 152 Guns Sound Essentials (.rar), 288 Modular 3D Text, 289 Crawling Ghoul Animations, 290 Tail Animator,
+ 291 Legs Animator. They are in 01_DOWNLOAD under their ids; stage only when he asks.
+
+LOCAL TOOLS (Playground, Assets/PLAYGROUND/_Local/Editor, not vendor code; all convert IN PLACE, same GUIDs, original properties kept in the saved material)
+ - RenderAudit.Run(folder,outDir,tag,models) / RunChildren(fbx,outDir,tag,maxPages): renders every prefab/model through PreviewRenderUtility in the ACTIVE
+   pipeline, counts magenta pixels, writes 8x6 contact-sheet PNGs to outDir (read them with the Read tool). Flags PINK and BLANK. Run it on every new pack.
+ - HdrpToUrpMaterialConvert.Convert(folder) (in AST-162/Editor), StandardToUrpConvert.Convert(folder), LegacyParticlesToUrp.Convert(folder),
+   ShaderGraphToUrp.Convert(folder) (+ ShaderGraphToUrpFix.Run), PsxPrefabBuilder.BuildAst297 / BuildAst296 (bakes an FBX node's rotation/scale into new
+   meshes and builds identity-transform prefabs).
+ - Staging a .unitypackage without Unity's importer: scratchpad script stage.py (tarfile stream: pathname map, GUID-collision check against existing .meta,
+   write asset + asset.meta under Assets/PLAYGROUND/AST-### (Name)/, skip Packages/manifest.json). It is ~60 lines: rewrite it from
+   Docs/asset-import-update-process.md ("Follow-up: AST-232 staged"). Raw FBX/PNG packs: copy only the FBX + textures. .7z/.rar/.zip open with Windows tar.exe
+   (bsdtar); extract each into its own new empty 02_extracted\AST-###.
+
+TRAPS FOUND (details: process doc, worked examples 11 and 12)
+ - HDRP-ONLY packs (AST-292, AST-295) are wholly pink in URP: HDRP/Lit, Built-in Standard AND HDRP Shader Graphs, which report Shader.isSupported = True
+   yet draw magenta. Only a real render proves it. Shader Graph tint ALPHA is not opacity, and render queue 2475 is NOT a cutout flag (rocks/moss vanished).
+ - Packs shipping per-pipeline folders (AST-247, Built-in/HDRP/URP): use the URP folder, leave the rest (pink by design).
+ - Sketchfab rips (AST-294): 339 skinned meshes, slots named by index with no textures; materialInfo.txt lists the meshes in node order, so the slot index
+   picks the material; remap through ModelImporter.AddRemap(SourceAssetIdentifier(typeof(Material), slotName), mat) + SaveAndReimport. To render one mesh,
+   HIDE the other renderers, never delete nodes (bones live in the same tree). Normal PNGs must be set to the Normal type by script.
+ - Blender FBX with root rotation (270,0,0) scale 100 (AST-297): Unity's "Bake Axis Conversion" flipped a model 180 degrees; bake the transform into new
+   mesh assets instead. AST-296 needed no axis fix, only per-prop prefabs at the origin.
+ - RenderAudit's FIRST render of a session is empty: a warm-up render is now discarded. Earlier "blank" slot [0,0] reports were this artifact.
+ - A multi-GB refresh can hang on "Reloading Domain" with ~0 CPU: force-close and reopen Playground (nothing is lost once the import workers finish).
+   Poll the process by PID (Get-Process Unity): its window title does not contain "Playground".
+ - execute_code is C# 6 (no local functions, out var, tuples) and blocks AssetDatabase.DeleteAsset; delete folders on disk + their .meta, then refresh.
+   The FBX importer already adds a LODGroup. Excel python: run without -I (openpyxl lives in the user site). WebFetch reads the Asset Store pages.
+   Heredocs containing apostrophes break the Bash tool: write files with the Write tool.
+
+OPEN ITEMS (none started; wait for Carlos)
+ - Vendor defects found, NOT fixed: AST-293 Severed_BodyParts_onTable_1.prefab has every child at scale 0; AST-292 has 11 SM_RopeSplineMesh_* prefabs that need
+   the vendor's spline script (not in the package), an HDRP terrain material (M_Terrain) and two HDRP demo scenes; AST-295 SM_Carpet_A is a thin plane.
+ - AST-296 / AST-297 prefabs exist (67 / 71) but have NO colliders; evaluate per prop only when he asks. The AST-270 small-clutter collider verdicts are
+   still unanswered by him.
+ - AST-298 Horror Bundle (3,284 clips): import only; Docs/audio-import-workflow.md (clip-prefix routing) not run.
+ - Still to move into Mr. Moonlight when he names them: AST-108, 131 (character path: ask what he wants), 074 (ask which of the 63), 076 (audio workflow),
+   162 (ask which pieces), and any of AST-292..297 he picks. Each: /prop wizard, texture_pass.py on BaseColor (ask the size every time), log in Docs/prop-log.md
+   only after his sign-off.
+
+===========================================================================
 1b. UPDATE 2026-10-05 (read this block first; it supersedes the lists below where they differ)
 ===========================================================================
 - STANDING RULES added by Carlos: (a) NEVER delete assets without his explicit go-ahead (CLAUDE.md); (b) any collider request = evaluate each prop's use
