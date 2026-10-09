@@ -104,3 +104,10 @@ Scene 05, same standard run. Setup: `MeshFusion Pilot` controller (cell 80, Stan
 Change record C-028. A first build 49 was deleted (no commit behind it); build 49 is remade from the C-028 commit.
 What to read when the log exists (compare by `pos x` against 47 and 48): `draws` and `SetPass` (should fall), `tris` (should climb back toward build 47: merged objects lose Mesh LOD), `verts`, `shadowcasters`,
 GPU/CPU ms, fps, first-seconds hitch (combine), `[SCENE] CENSUS` renderers.
+
+### Build 49 result (log `session-20261008-224122.log`, commit `d2f6fe7f`)
+
+Avg 959.4 fps, 1% low 702.9, 90.0 s. Dense half (x <= 260) averages, 47 / 48 / 49: draws 497 / 504 / 488, SetPass 125 / 126 / 126, tris 1,042k / 949k / 1,060k, verts 888k / 916k / 999k,
+shadow casters 153 / 154 / 145, GPU 0.8 / 0.9 / 0.9 ms, CPU 1.2 ms in all, fps 851 / 859 / 854. Census: 166 renderers (+11 combined cells), no combine hitch (first-window worst 2.4 ms vs 40.9 ms in 47).
+Reading: MeshFusion merged correctly but the gallery has one specimen per species (116 materials for 155 renderers), so there is almost nothing to share per cell: draws -3..-7%, SetPass 0. The Mesh LOD triangle win is gone on merged objects (tris back to the 47 level).
+The gallery cannot prove the draw win; the island can. Full entry: `Docs/performance-sessions.md` section 5.

@@ -173,8 +173,8 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
   Colliders stay on the originals. Scene saved by Carlos after the editor test.
 - **Known trade-offs to measure:** merged copies use LOD0 geometry only (native Mesh LOD, C-027, is lost on merged objects); per-tree culling (AST-145) is replaced by per-cell culling;
   readable meshes cost a CPU copy; the gallery has one specimen per species so the draw saving is only what shares materials inside a cell.
-- **Build 49:** a first build was made and DELETED on Carlos's word (2026-10-08): the commit had not been made, so it could not be traced to a hash. Build 49 is remade from the commit of change record C-028.
-- **Next (planned for the next session):** apply the same to the island (scene 06 Island_Legion first, then 07) with the trees' native Mesh LOD already in place; see `Docs/demo-update-meshfusion-sonnet-prompt.txt`.
+- **Build 49:** a first build was made and DELETED on Carlos's word (2026-10-08): the commit had not been made, so it could not be traced to a hash. Build 49 was remade from `d2f6fe7f` (C-028) and run: draws -3..-7%, SetPass unchanged, tris back to the build 47 level, verts +9%, no hitch; the gallery cannot show the draw win (`Docs/performance-sessions.md` section 5).
+- **Next (next session):** apply it to the island, scene 07 (`07 LightingTestScene`, not Legion 06). Mesh LOD is automatic there (importer-level) but MeshFusion is NOT: it needs a controller, a source on each tree, Read/Write on the island's FBX and Batching Static off; see `Docs/demo-update-meshfusion-sonnet-prompt.txt`.
   Change record C-028.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)
