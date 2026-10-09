@@ -13,7 +13,10 @@ resolution, HUD layout, menus — targets **1920×1080**.
 > mirror-finish ground, an editor-only asmdef breaking the build). A Windows build removes all of
 > them at once and buys ~10x the draw-call headroom.
 >
-> **The 1 GB ceiling still applies** — it is itch.io's upload limit — but it is now only *download
+> **UPDATE 2026-10-09 (Carlos): IGNORE THE 1 GB LIMIT during the demo.** Do not check it, cite it or let it block a choice (e.g. Flora needs
+> BatchRendererGroup Variants = Keep All, which grows builds). Size is reduced in one pass at the very end, once the demo is finished.
+>
+> ~~**The 1 GB ceiling still applies**~~ (historical) — it is itch.io's upload limit — but it is now only *download
 > size*, not runtime memory plus load time plus a graded time-to-play gate. Textures compress
 > (BC/DXT), assets stream from disk, and there is no wasm/JS overhead.
 >

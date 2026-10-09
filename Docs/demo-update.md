@@ -26,7 +26,8 @@ raised it himself**:
 6. ~~Polish: re-run the Foliage Renormalizer (AST-301)~~ **CANCELLED 2026-10-08: Carlos rolled the renormalizer back and the 59 generated meshes were deleted
    (see "Side session - native Mesh LOD" below).** Do not re-run it unless Carlos asks again; if he does, run it BEFORE the Mesh LOD import settings matter (it
    regenerates meshes from the FBX and would need its own LOD handling).
-7. **Polish: try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
+7. ~~**Polish: try to get Flora Renderer working again**~~ **DONE 2026-10-09: Flora is ON in scenes 07, 02, 06, 08 and kept (build 56 = best run, see "Side session - Flora retry" and D7). Re-run `FloraInstanceRendererPass` after painting new trees.** Original text:
+   **try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
    whack").** Flora is installed (`Packages/com.ma.flora`) but OFF: `Flora Scene Settings.EnableRendering = 0` in scenes 02, 06, 07, 08, and no
    `FloraInstanceRenderer` on any object. It was switched off 2026-08-31 for the **phantom tree shapes floating over the water** bug (confirmed by
    an on/off A-B test; notes in `Docs/mrm70-resume-2026-08-31.md`). Re-check only when everything else is set up: (a) re-add the renderers with
@@ -50,9 +51,12 @@ Carlos brought ending-checklist step 7 forward ("Remember Flora? ... Let's try i
   **Fix:** the four call sites (`RetroLit.shader:318`, `RetroDepthNormalsPass.hlsl:28`, `RetroShadowCasterPass.hlsl:27`, `RetroDepthOnlyPass.hlsl:26`) now pass
   `GetObjectToWorldMatrix()._m03_m13_m23`. Same value in the normal path. **Any NEW code added to Retro Lit must not read `unity_ObjectToWorld` / `unity_WorldToObject` directly: use `GetObjectToWorldMatrix()`.**
 - **Carlos's editor check:** no pink, no phantom trees, nothing floating over the water, editor fps looks good. Wind, shadows and occlusion interaction not specifically checked.
-- **Open (build 55 decides):** fps vs build 54 (154.0 avg, 1% low 132.2); whether Flora respects the baked Umbra occlusion (otherwise it behaves like the 110 fps no-culling case); mesh LOD under Flora; the phantom bug in a real build.
-- **Rollback:** `git checkout` the scene 07 file (all Flora state is in it) or the scripted removal; shader patch can stay.
-- **Ending checklist step 7:** Flora is now ON in scene 07; the verdict (keep or revert) comes after build 55. Scenes 02, 06, 08 are still off with no renderers.
+- **Build 55 (from commit `0fb09994`): ALL TREES MISSING in the build**, editor fine. Terrain visible, colliders present, ~300 draws, Player.log clean. Cause: Project Settings > Graphics > **BatchRendererGroup Variants** was `KeepIfEntitiesGraphics`, which strips the DOTS/BRG shader variants from builds when there is no Entities Graphics package (the editor never strips). Flora's own inspector warns about it; I had not looked at the Flora Scene Settings inspector. **Fix: `Keep All` (`m_BrgStripping: 2`).**
+- **Trap while fixing it (mine):** a `LoadSerializedFileAndForget("ProjectSettings/GraphicsSettings.asset")` call in `execute_code` left a second `GraphicsSettings` manager loaded (`Multiple managers are loaded of type: GraphicsSettings`, `errors=2` in the build report) and the first build 56 did not carry the setting. Restarting Unity cleared it. The setting itself is changed with `Resources.FindObjectsOfTypeAll<GraphicsSettings>()` + `SerializedObject("m_BrgStripping")` (the `EditorGraphicsSettings` property is read-only). Never load a ProjectSettings file as an object again.
+- **Build 56 "Flora Keepall" (rebuilt after the restart, scene 07 only, 508.2 MB zipped): WORKS.** 162.1 fps avg vs build 54's 154.0, GPU -31% (6.59 -> 4.56 ms), CPU 6.79 -> 6.17 ms; trees visible, no pop-in, no phantom trees over the water, wind and shadows normal, no flicker. Carlos saw ~170 fps in the dense forest. Details and the counter caveat: `Docs/performance-sessions.md` section 5 and `Docs/optimization-decisions-2026-10.md` D7.
+- **Applied to the other island scenes (Carlos, same night):** scenes 02 (5,990 renderers), 06 (8,786) and 08 (8,786) got `FloraInstanceRendererPass` + `EnableRendering` and were saved; scene 08's occlusion bake was started (scenes 02 and 06 were baked earlier, AST-145 was removed from all four). Not measured in a build. Change record C-035.
+- **Rollback:** per scene `git checkout` the scene file (all Flora state is in it) or the scripted removal; the shader patch and Keep All can stay.
+- **Ending checklist step 7: DONE for the island scenes** (Flora ON, kept; 2026-10-09). The old "(c)/(d)" checks are answered in D7. **New trees painted later need `FloraInstanceRendererPass` re-run.** The occlusion re-bake at the end of placement (scene 07) still stands, and so does the NavMesh / Enemies reminder.
 
 ## Stage 1 — Wooden church placed on flattened terrain (2026-10-02)
 

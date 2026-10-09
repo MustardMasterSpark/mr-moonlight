@@ -15,6 +15,8 @@ Standard route (builds 50-54): spawn near the church, straight line through the 
 | D5 | Leaf cards stay Occluder Static | 2026-10-09 | The feared artifact (trees hidden behind canopy gaps) did NOT show in build 54. If it appears: clear Occluder Static on the tree renderers and keep Occludee Static. | n/a |
 | D6 | Proxy colliders (`DC_Collider`, layer 29 `ACSCulling`, 8,786 per scene) deleted with AST-145 | 2026-10-09 | They existed only for the culler (full tree mesh, matched the renderers exactly). Removing them also removes 8,786 mesh colliders per scene from physics and from the build. The WoodColliders (MRM-84) are untouched. | Not restorable without AST-145 |
 
+| **D7** | **Flora Renderer ON for the island trees** (scenes 07, 02, 06, 08; 8,786 / 5,990 / 8,786 / 8,786 `FloraInstanceRenderer`s, `EnableRendering` on) | 2026-10-09 | Build 56 (scene 07): **162.1 fps avg** vs build 54's 154.0 (+5%), GPU 6.59 -> 4.56 ms (-31%), CPU 6.79 -> 6.17 ms; Carlos saw ~170 fps in the dense forest, "not happening in any other setup". No phantom trees (the 2026-08-31 bug did not reproduce), no pop-in, wind and shadows looked normal, no flicker. **Requirements that cost a day: Retro Lit must not read `unity_ObjectToWorld` directly (use `GetObjectToWorldMatrix()`), and Project Settings > Graphics > BatchRendererGroup Variants must be `Keep All`** (`m_BrgStripping: 2`). Without the second one the build shows NO trees (build 55) while the editor looks perfect. | Scene file `git checkout`, or `EnableRendering` off + remove the `FloraInstanceRenderer`s (`FloraInstanceRendererPass` adds them); the shader patch and Keep All can stay |
+
 ## 2. Timeline (so the story is not lost)
 
 | Build | What | avg fps | Verdict |
@@ -26,6 +28,8 @@ Standard route (builds 50-54): spawn near the church, straight line through the 
 | 52 | Culler off, no fusion (plain frustum + Mesh LOD) | 110.0, no pop-in | Culler worth ~20 fps; pop-in is the culler |
 | 53 | Culler on, 4000 rays / 5 s | 127.7 | Pop-in reduced, not gone (H15) |
 | **54** | **AST-145 off, Umbra occlusion baked** | **154.0** | **Winner (D3)** |
+| 55 | Flora on (8,786 renderers) + shader patch, Keep All NOT set | n/a (all trees missing) | BROKEN: BRG shader variants stripped, colliders stay, ~300 draws, 262 fps meaningless |
+| **56** | **Flora on + BatchRendererGroup Variants = Keep All** | **162.1** | **New best (D7); GPU -31%, CPU-bound at ~6 ms now** |
 
 ## 3. Scene state after the removal (2026-10-09, change record C-033)
 
@@ -51,6 +55,8 @@ Standard route (builds 50-54): spawn near the church, straight line through the 
 4. **Shadows**: 1.7-2.8k shadow casters per window; check shadow distance, cascades and tree shadow LOD against the GPU ms in `[PERF]`.
 5. **Typical-PC headroom**: the test PC is top-end. Before the Kickstarter, run a build on a weaker GPU; settings tiers (lodBias, shadow distance, far clip 1000) are the knobs.
 6. **Fog + CRT build** (on hold): fog hides far trees and allows a shorter far clip. The HAZE vs Volumetric Fog 2 decision is also on hold.
-7. **Flora** (OFF; re-check at the end of the demo, ending checklist step 7) and lights (H13: ~0.3 ms per light) are unchanged.
+7. **Flora is now ON (D7, 2026-10-09).** Open: it replaces the `[PERF]` draw / setpass / tris counters for the trees (build 56 reported 3.2k draws, 0.37M tris against 8.6k / 68.6M in build 54, which is NOT real work: trust fps and GPU ms), whether it uses the baked Umbra occlusion or its own GPU culling, and the CPU still sits at ~6 ms with only 3.2k draws (not the trees any more; look at shadows, terrain, Flora's own update). Lights (H13: ~0.3 ms per light) are unchanged.
+
+**Scene state, Flora (2026-10-09 night, C-035):** Flora renderers + `EnableRendering` on in 07 (8,786), 02 (5,990), 06 (8,786) and 08 (8,786), all saved. Scenes 02, 06, 08 are NOT measured in a build yet. Scene 08's occlusion bake was started the same night (see the result in `Docs/performance-sessions.md` C-035). **Any new tree painted into a scene needs `FloraInstanceRendererPass` run again, or it draws through Unity's normal path (it still works, it is just not accelerated).**
 
 **Bake status (2026-10-09, end of session):** scene 07 = 56.9 MB Umbra data (build 54 measured), scene 06 Island_Legion = 56.9 MB (baked, saved), scene 02 Island = 50.0 MB (baked, saved). Scene 08 (Fog Experiment) is NOT baked. Scenes 06 and 02 have not been measured in a build yet. Each `OcclusionCullingData.asset` is 100-114 MB of YAML and goes to Git LFS. Do not run a long `Thread.Sleep` loop in `execute_code` while a background bake runs: it blocks the editor thread and stalls Unity.
