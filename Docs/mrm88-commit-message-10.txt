@@ -1,0 +1,19 @@
+SUMMARY
+
+MRM-88: MeshFusion Pro (AST-146) pilot on the scene 05 gallery (89 specimens), Read/Write on 89 FBX, pilot tool with rollback
+
+DESCRIPTION
+
+MeshFusion pilot for the vegetation gallery, scene 05. Build 49 is made from this commit (compare against builds 47 and 48); a first build 49 was deleted
+because the commit had not been made yet.
+
+- New editor tool Assets/_Project/Tools/Editor/MeshFusionPilot.cs (menu Tools > MeshFusion Pilot: Apply / ROLLBACK) with MeshFusionPilotManifest.json.
+- Scene 05 saved with a "MeshFusion Pilot" object (RuntimeMeshFusion: cell size 80, Standard mesh type, 65,535 vertex cap, Jobs move) and a StaticMeshFusionSource on
+  the child of 89 gallery specimens at x <= 260. Batching Static cleared on those children (MeshFusion refuses statically batched renderers).
+- Read/Write ticked on the 89 FBX importers behind those meshes (89 .fbx.meta files), required by MeshFusion.
+- At runtime the sources merge into per-cell combined meshes grouped by material; original renderers are disabled, colliders stay. No runtime files. Trade-offs to
+  measure: merged copies use LOD0 only (native Mesh LOD is lost on them), per-tree culling becomes per-cell, readable meshes cost a CPU copy.
+- Docs: Docs/performance-sessions.md (change record C-028), Docs/demo-update.md (side session), Docs/lod-experiment-log.md (build 49 section),
+  handoff Docs/demo-update-meshfusion-sonnet-prompt.txt (next session: apply to the island).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

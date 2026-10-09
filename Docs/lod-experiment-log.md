@@ -57,13 +57,50 @@ computed in the census (sum of mesh vertex-buffer and index-buffer bytes over th
 | Build | Date | Commit | What changed vs baseline | Census tris (k) | Peak window tris (k) / x | Dense-half avg tris (k) | Dense-half avg fps | 1% low (scene) | Dense-half avg GPU ms | Max shadow casters | Max draws / SetPass | Verdict |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|
 | 47 Gallery Baseline | 2026-10-08 | `4bd146a7` | nothing (reference) | 499 | 1,343 / x=63 | 1,042 | 851 | 689 | ~0.9 | 185 | 589 / 141 | reference |
-| 48 Mesh LOD (pending) | 2026-10-09 | `pending` | native Mesh LOD on 80 FBX meshes (importer), renormalizer rolled back (original normals) | | | | | | | | | to be filled after the run |
+| 48 Mesh LOD | 2026-10-08 | `5419dab3` | native Mesh LOD on 80 FBX meshes (importer), renormalizer rolled back (original normals) | 499 (unchanged) | 1,111 / x=71 (build 47: 1,343 / x=63, -17%) | 949 (-9%) | 859 (+1%) | 707 (+3%) | 0.86 (same) | 182 | 604 / 145 (same) | triangles -9% dense half, -12..-23% in x 35-125, ~0 beyond x 150; draws/GPU/fps unchanged; vertices NOT lower. See section below |
 
 How to fill a row: dense-half = windows with x <= 260. Take triangles/fps/GPU from the per-window table of the new log, the census line for the first column.
 
-## Build 48 - Mesh LOD (planned, NOT built yet)
+## Build 48 - Mesh LOD (2026-10-08, commit `5419dab3`) - RESULT
 
-What changes vs build 47: `Generate Mesh LODs` on 80 FBX importers (see `Docs/demo-update.md`, side session 2026-10-09), renormalized meshes gone (original FBX normals). Same standard run.
-Expected: census tris at highest detail ~unchanged (~499k, and `meshes with native Mesh LOD` > 0); window triangles/verts and shadow-pass cost lower for the dense part (x 0-260);
-draws and SetPass about the same. Pilot numbers from the importer: GTree01_05 4146 -> 2109 -> 1088 -> 577 -> ... 64 tris, Curse_H01_2 27,975 -> 64. Built only after Carlos gives the commit hash.
-Compare with `lodBias 2 meshLodThreshold 1 maxLOD 0` as in the header. If the lower levels look bad, tune `QualitySettings.meshLodThreshold` / per-importer `maximumMeshLod` before judging.
+Log: `session-20261008-222108.log` (91.0 s in scene, 85,416 frames, no warnings or errors). Census confirms **80 meshes with native Mesh LOD** (build 47: 0); census tris/verts at the highest
+detail unchanged (499k / 419k). Header `lodBias 2 meshLodThreshold 1 maxLOD 0`. Scene summary: avg **960.4 fps** (47: 952.3), 1% low **706.7** (47: 688.9), worst frame 14.0 ms (47: 40.9 ms).
+
+Windows matched by `pos x` (47 -> 48). Windows start ~8 m apart in time, so x differs by up to 8; the first window (x=8 vs 16) is not comparable (different start of the run).
+
+| x (47/48) | tris k 47 -> 48 | change | verts k 47 -> 48 | gpu ms | fps | draws 47 -> 48 | casters 47 -> 48 |
+|---|---|---|---|---|---|---|---|
+| 35/44 | 1319 -> 1101 | -16.5% | 1081 -> 1100 | 0.6 -> 0.6 | 779 -> 803 | 589 -> 571 | 145 -> 141 |
+| 63/71 | 1343 -> 1111 | -17.3% | 1091 -> 1080 | 0.8 -> 0.7 | 842 -> 863 | 539 -> 525 | 134 -> 128 |
+| 90/98 | 1120 -> 861 | -23.1% | 934 -> 882 | 0.9 -> 0.9 | 844 -> 874 | 517 -> 521 | 131 -> 138 |
+| 117/125 | 901 -> 792 | -12.1% | 803 -> 821 | 1.0 -> 0.9 | 817 -> 820 | 531 -> 528 | 158 -> 162 |
+| 145/150 | 924 -> 883 | -4.4% | 837 -> 861 | 0.9 -> 0.9 | 823 -> 830 | 528 -> 526 | 178 -> 180 |
+| 172/173 | 1007 -> 1003 | -0.4% | 891 -> 917 | 0.9 | 852 -> 878 | 503 -> 496 | 180 -> 178 |
+| 199/200 | 1023 -> 983 | -3.9% | 904 -> 919 | 0.8 -> 0.9 | 925 -> 919 | 481 -> 478 | 185 -> 182 |
+| 226/227 | 920 -> 905 | -1.6% | 801 -> 824 | 0.9 | 920 -> 922 | 420 -> 421 | 155 -> 154 |
+| 253/254 | 799 -> 793 | -0.8% | 672 -> 698 | 0.9 | 883 -> 893 | 371 -> 365 | 139 -> 133 |
+| 306/309 | 383 -> 355 | -7.3% | 333 -> 341 | 0.8 | 961 -> 997 | 270 -> 263 | 101 -> 97 |
+| 333/336 | 217 -> 200 | -7.8% | 195 -> 197 | 0.7 | 1024 -> 1046 | 252 -> 246 | 110 -> 106 |
+| 360/364 | 103 -> 97 | -5.8% | 87 -> 82 | 0.6 | 1129 -> 1152 | 193 -> 186 | 82 -> 76 |
+(x 388-445: -1.4..-2.7%, noise level.)
+
+Dense half (x <= 260), averages: tris **1,042k -> 949k (-9%)**, verts 888k -> 916k (+3%), fps 851 -> 859, GPU 0.85 -> 0.86 ms, CPU 1.18 -> 1.16 ms, draws 497 -> 504, SetPass 125 -> 126.
+Peak window 1,343k -> 1,111k (-17%). `mem mesh/tex/gfx` still n/a (release build).
+
+Reading it (my interpretation; hypotheses marked):
+- **Mesh LOD works and does what it should: triangles fall, nothing else moves.** Draws, SetPass and shadow casters are unchanged, as predicted.
+- **The saving is concentrated in the first ~125 m (-12..-23%) and almost nothing from x ~150-260, although that stretch is just as dense.** Hypothesis: the gallery places one of each prefab in a row
+  and the straight route passes every tree within a few metres, so most trees are at close range where Unity keeps LOD0/LOD1; the bigger trees in the first stretch are seen from further away. This is exactly why
+  a gallery understates it. The real test is a forest seen from many distances (Island_Legion / scene 07).
+- **Vertices did not fall (+3%).** Mesh LOD only trims index ranges; the vertex buffer is shared. The frame counter counts whole-mesh vertices, so it cannot show a vertex-shading win even if the GPU skips unreferenced vertices (unverified).
+- **No fps or GPU change**, as expected at ~0.9 ms GPU on this PC. The win is triangles/shadow-pass geometry, which matters on weaker GPUs.
+- Possible levers to check before judging the LODs "done": `QualitySettings.meshLodThreshold` (1 now) and per-mesh `lodSelectionCurve`/`lodBias` (2 now) decide how early levels switch; a more aggressive setting would
+  push the x 150-260 stretch lower, at the cost of visible popping. Not tried.
+- Not yet looked at by eye: Carlos should check the lower levels do not visibly pop or thin out the leaves at the distances where they switch.
+
+## Build 49 (MeshFusion pilot) - setup, results pending (2026-10-08)
+
+Scene 05, same standard run. Setup: `MeshFusion Pilot` controller (cell 80, Standard mesh, 65,535 vertex cap) + `StaticMeshFusionSource` on 89 specimens at x <= 260; Read/Write on their 89 FBX; Batching Static off on those children.
+Change record C-028. A first build 49 was deleted (no commit behind it); build 49 is remade from the C-028 commit.
+What to read when the log exists (compare by `pos x` against 47 and 48): `draws` and `SetPass` (should fall), `tris` (should climb back toward build 47: merged objects lose Mesh LOD), `verts`, `shadowcasters`,
+GPU/CPU ms, fps, first-seconds hitch (combine), `[SCENE] CENSUS` renderers.

@@ -23,7 +23,7 @@ raised it himself**:
 3. **Re-bake the NavMesh** (ask Carlos first; he asked to run the bake himself or authorise it at the very end).
 4. Verify: NavMesh data asset updated, Spotters still path, no errors in the console, `Event Director` behaves.
 5. Save the scene (Ctrl+S) and note it in this doc and in a change-record row.
-6. ~~Polish: re-run the Foliage Renormalizer (AST-301)~~ **CANCELLED 2026-10-09: Carlos rolled the renormalizer back and the 59 generated meshes were deleted
+6. ~~Polish: re-run the Foliage Renormalizer (AST-301)~~ **CANCELLED 2026-10-08: Carlos rolled the renormalizer back and the 59 generated meshes were deleted
    (see "Side session - native Mesh LOD" below).** Do not re-run it unless Carlos asks again; if he does, run it BEFORE the Mesh LOD import settings matter (it
    regenerates meshes from the FBX and would need its own LOD handling).
 7. **Polish: try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
@@ -145,7 +145,7 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
   no LODs, 0 errors, 369.6 MB zipped. Scene 05 holds one of each prefab, so it is a visual/triangle baseline, not an island fps test. Carlos plays it and says so; analysis follows
   `performance-sessions.md` section 1. Change record C-026. Next session: `Docs/demo-update-lod-sonnet-prompt.txt`.
 
-## Side session - renormalizer rolled back, native Mesh LOD applied to scene 05's vegetation (2026-10-09)
+## Side session - renormalizer rolled back, native Mesh LOD applied to scene 05's vegetation (2026-10-08)
 
 - **Renormalizer undone on Carlos's word:** `Tools > Foliage Renormalizer > ROLLBACK` put all 59 tree prefabs back on their original FBX meshes (status read back:
   usingOriginal=59); the folder `Art/Nature/Renormalized Trees/` (59 generated meshes, 17.4 MB) was then deleted with the MCP `manage_asset` delete after a 0-reference
@@ -162,6 +162,20 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
 - **Next asset to try:** AST-146 MeshFusion Pro (see `Docs/demo-update-lod-sonnet-prompt.txt`). AST-068 Super Level Optimizer 2 is the riskier one: it atlases materials
   (clamp wrap, UVs rescaled, textures decompressed), which threatens the pixelated diffuse look and per-material cutoff / tint, and it combines with `Mesh.CombineMeshes`, which does not keep Mesh LODs.
   Change record C-027.
+
+## Side session - MeshFusion Pro (AST-146) pilot on scene 05 (2026-10-08, night)
+
+- **Asset:** AST-146 MeshFusion Pro 1.3.5 (Core only, git-ignored). At runtime `RuntimeMeshFusion` (controller) takes every `StaticMeshFusionSource` assigned to it, groups them into
+  grid cells (`CellSize`, 80), copies vertices/triangles into combined meshes grouped by material and disables the originals' renderers. No file is created; combined meshes live in memory.
+  Materials and textures are not touched (why it was chosen over AST-068).
+- **Pilot, scene 05 only:** `Tools > MeshFusion Pilot` (`Assets/_Project/Tools/Editor/MeshFusionPilot.cs`, manifest `MeshFusionPilotManifest.json`, ROLLBACK tested by design, not yet run).
+  89 gallery specimens at x <= 260 got a `StaticMeshFusionSource`; Batching Static cleared on their children; Read/Write ticked on 89 FBX importers (required by MeshFusion).
+  Colliders stay on the originals. Scene saved by Carlos after the editor test.
+- **Known trade-offs to measure:** merged copies use LOD0 geometry only (native Mesh LOD, C-027, is lost on merged objects); per-tree culling (AST-145) is replaced by per-cell culling;
+  readable meshes cost a CPU copy; the gallery has one specimen per species so the draw saving is only what shares materials inside a cell.
+- **Build 49:** a first build was made and DELETED on Carlos's word (2026-10-08): the commit had not been made, so it could not be traced to a hash. Build 49 is remade from the commit of change record C-028.
+- **Next (planned for the next session):** apply the same to the island (scene 06 Island_Legion first, then 07) with the trees' native Mesh LOD already in place; see `Docs/demo-update-meshfusion-sonnet-prompt.txt`.
+  Change record C-028.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)
 

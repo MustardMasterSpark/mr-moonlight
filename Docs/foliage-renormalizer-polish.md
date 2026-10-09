@@ -1,4 +1,4 @@
-> **SUPERSEDED 2026-10-09: ROLLED BACK AND THE GENERATED MESHES DELETED on Carlos's word.** All 59 prefabs are back on their original FBX meshes and
+> **SUPERSEDED 2026-10-08: ROLLED BACK AND THE GENERATED MESHES DELETED on Carlos's word.** All 59 prefabs are back on their original FBX meshes and
 > `Art/Nature/Renormalized Trees/` no longer exists. The text below is history; the end-of-demo re-run (checklist step 6) is cancelled. See `Docs/demo-update.md`
 > "Side session - renormalizer rolled back, native Mesh LOD applied". Do not use Re-apply.
 
