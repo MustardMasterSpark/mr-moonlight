@@ -1,3 +1,4 @@
+*** HISTORY AS OF 2026-10-09: the LOD track is done (native Mesh LOD applied, renormalizer rolled back). The live handoff is Docs/demo-update-meshfusion-sonnet-prompt.txt. Do not start from this file. ***
 Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = LODs FOR THE TREES THAT HAVE NONE, TESTED ON SCENE 05 FIRST, THEN BUILDS. Read cold; do not rely on chat scrollback.
 Suggested model: Sonnet for the pilot and the batch (tooling on existing prefabs, like the renormalizer). Opus only if the native Mesh LOD route fails and the card-dropping LOD builder has to be designed from scratch.
 
@@ -5,8 +6,7 @@ WRITTEN: 2026-10-08 (night), end of the optimizer-assets session. Do NOT auto-st
 This REPLACES Docs/demo-update-ast147-sonnet-prompt.txt (that one is stale: AST-147 was assessed, found unfit and removed).
 
 WHERE WE ARE
-- Branch `mrm-88` (do not switch; no new branch unless Carlos asks). Change-record rows C-024, C-025 and C-026 are `pending` until Carlos commits and gives the hash
-  ("I committed" -> `git log -1`, fill them all in). C-026's commit message is Docs/mrm88-commit-message-8.txt.
+- Branch `mrm-88` (do not switch; no new branch unless Carlos asks). Change-record hashes are FILLED IN: C-024 5b0281c3, C-025 87c35860, C-026 4bd146a7 (committed and merged to `main` by Carlos 2026-10-08; keep working on mrm-88).
 - DONE THIS SESSION:
   * AST-147 Asset Optimizer Pro REMOVED from the project on Carlos's word (source read: O(V*E) simplifier, leaf-card quads all count as borders, submeshes flattened,
     LOD objects created inactive). Copy kept in `Asset Collection\02_extracted\AST-147`.
@@ -22,6 +22,16 @@ WHERE WE ARE
     %USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs\ (follow Docs/performance-sessions.md section 1: ask the short question batch, then record
     the entry in section 5 and as a MRM-85 comment). IMPORTANT: scene 05 is a GALLERY with ONE of each prefab (~150 objects), so its fps says nothing about the
     island. It is the visual bench and the triangle/draw baseline. The real forest numbers come from scene 06 (Island_Legion) / 07 builds.
+
+BUILD 47 BASELINE RESULT (Carlos ran it 2026-10-08 night; ledger = Docs/lod-experiment-log.md, READ IT FIRST - it has the per-window table and the standard run)
+- Standard run: F3 infinite stamina, straight line along +x from (8,2,3) to ~(467,2,-4), Combat Knife, fog ON, quit with Alt+F4. Windows are matched between builds by `pos x`.
+- Result (Ryzen 7 9800X3D, RX 9070 XT, 1080p): avg 952 fps, 1% low 689, GPU ~0.9 ms, CPU ~1.2 ms. THIS PC IS SO FAST THAT FPS BARELY SHOWS A LOD WIN: compare triangles, vertices,
+  shadow casters, draws and SetPass first. Census: 155 renderers, 499k tris / 419k verts at highest detail, 14 single-level vendor LODGroups, 155 shadow casters, 112 colliders.
+  Dense part x 0-260: 0.8-1.3 M tris per frame (peak 1,343k at x=63), 420-590 draws, 113-141 SetPass, 114-185 shadow casters. Frame tris are ~2.7x the census (shadow passes).
+- TODO FIRST (small): the `mem mesh/tex/gfx` fields print n/a in a release build. Replace them in SessionLog.WriteCensus with an ESTIMATE (sum over distinct meshes of vertex-buffer + index-buffer bytes,
+  e.g. Mesh.GetVertexBufferStride / vertexCount / GetIndexCount; check it works on non-readable meshes) and log it as `mesh memory est`, since mesh memory is what a LOD or MeshFusion build changes.
+  Add a changelog row v6.1 in Docs/performance-sessions.md section 7 and a MRM-85 comment (CLAUDE.md rule), then rebuild only when the LOD step needs a build anyway.
+- scene 05's gallery has one of each prefab, so each LOD change is visible per species: for every piloted prefab note its census-tri delta, and make the NEXT build with the same run.
 
 THE NUMBERS THAT DECIDE WHAT LODs ARE WORTH (scene 07, computed from the scene file x prefab stats, NOT a build)
 - ~7,900 tree instances, ~25.4 M triangles if all drawn, average ~3,200 tris per tree, 2 submeshes each (bark + leaves), 65 materials on ONE shader (Retro Lit,
