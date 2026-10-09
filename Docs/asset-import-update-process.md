@@ -695,6 +695,11 @@ P3 18 / $1,056.95, P4 6 / $512.97, P5 11 / $660.00. Store data from `WebFetch` (
 - **AST-147 Asset Optimizer Pro, same day:** its Playground copy was already gone, so it was staged straight from `02_extracted\AST-147` the same way into
   `Assets/ThirdParty/AST-147 (Asset Optimizer)/` (16 of 20 entries: 13 editor scripts + the guide PDF; `Example/` scene and material left out; 0 GUID collisions; compiles
   clean). It is editor-only, nothing ships in the build.
+- **Follow-up, 2026-10-08 (later): AST-147 REMOVED from Mr. Moonlight on Carlos's explicit word** (source read, found unfit; 0 external references; copy kept in
+  `02_extracted\AST-147`). **AST-068 Super Level Optimizer 2 (v1.0.5) and AST-146 MeshFusion Pro (v1.3.5) staged straight into Mr. Moonlight** for a feasibility check, same
+  method (guid scan, 0 collisions, stream `asset` + `asset.meta`): `Assets/ThirdParty/AST-068 (Super Level Optimizer)/` keeps `Core/` + `Manual/` + 4 tutorial `Explanation.pdf`
+  (125 entries, 2.5 MB; left out 587 MB `Third-Party/` demo packs, 3 render-pipeline support packages, 4 tutorial scenes); `AST-146 (MeshFusion Pro)/` keeps `Core/` + `PDF/` (148 entries,
+  2.0 MB; left out `Example/` 16 MB and the .docx copies). Both compile clean. Their zips were already named `AST-068.zip` / `AST-146.zip`; the spreadsheet rows were NOT edited.
 - `tar` in the Bash tool is Git's GNU tar and cannot open `C:\` paths; call `C:\Windows\System32\tar.exe` from PowerShell for zips.
 
 ## Which kind of task is this? (process doc vs. interim-task prompt)

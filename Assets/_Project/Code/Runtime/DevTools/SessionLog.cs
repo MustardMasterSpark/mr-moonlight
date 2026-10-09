@@ -30,6 +30,9 @@ namespace MrMoonlight.DevTools
     /// <item><c>[PERF]</c> windowed lines every <see cref="MoonlightTunables.SessionLogPerfSampleSeconds"/>:
     /// fps and frame-time stats, CPU/GPU frame time, draw calls / SetPass / triangles / batches, managed
     /// memory, player position and biome, the equipped weapon, live enemies and corpses.</item>
+    /// <item><c>[SCENE] CENSUS</c> (v6): one line per scene, early in its warm-up, counting renderers, LODGroups,
+    /// triangles at the highest detail, colliders, lights, shadow casters and terrain trees. The <c>[PERF]</c> lines
+    /// also carry vertices, shadow casters, mesh/texture/gfx memory, the camera direction and the LOD quality settings.</item>
     /// <item><c>[ENEMY]</c> SPAWN and KILL lines (kills name the killer and the weapon), <c>[PLAYER]</c>
     /// weapon switches, <c>[APP]</c> focus changes (fps while unfocused is not trustworthy).</item>
     /// </list>
@@ -75,6 +78,16 @@ namespace MrMoonlight.DevTools
         private ProfilerRecorder _triangles;
         private ProfilerRecorder _batches;
         private double _drawSum, _setPassSum, _triSum, _batchSum;
+
+        // v6 (MRM-85): vertices and shadow casters per frame, plus memory counters read when a window is written
+        // (a LOD or merge experiment moves exactly these).
+        private ProfilerRecorder _vertices;
+        private ProfilerRecorder _shadowCasters;
+        private ProfilerRecorder _meshMemory;
+        private ProfilerRecorder _textureMemory;
+        private ProfilerRecorder _gfxMemory;
+        private double _vertSum, _shadowCasterSum;
+        private bool _censusDone;
         private int _renderSamples;
         private double _cpuSum, _gpuSum;
         private float _cpuMax, _gpuMax;
@@ -138,6 +151,11 @@ namespace MrMoonlight.DevTools
             _setPassCalls = ProfilerRecorder.StartNew(ProfilerCategory.Render, "SetPass Calls Count");
             _triangles = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Triangles Count");
             _batches = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Batches Count");
+            _vertices = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Vertices Count");
+            _shadowCasters = ProfilerRecorder.StartNew(ProfilerCategory.Render, "Shadow Casters Count");
+            _meshMemory = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "Mesh Memory");
+            _textureMemory = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "Texture Memory");
+            _gfxMemory = ProfilerRecorder.StartNew(ProfilerCategory.Memory, "Gfx Used Memory");
 
             WriteHeader();
         }
@@ -159,6 +177,11 @@ namespace MrMoonlight.DevTools
             _setPassCalls.Dispose();
             _triangles.Dispose();
             _batches.Dispose();
+            _vertices.Dispose();
+            _shadowCasters.Dispose();
+            _meshMemory.Dispose();
+            _textureMemory.Dispose();
+            _gfxMemory.Dispose();
 
             CloseFile();
             if (_instance == this)
@@ -170,6 +193,14 @@ namespace MrMoonlight.DevTools
             PublishClock();
             CheckDisplayChange();
             CheckWorldState();
+
+            // v6: the census scans the whole scene once, so it runs early inside the warm-up the stats ignore.
+            if (!_censusDone && _activeSceneHandle != -1 && Tunables.I.SessionLogCensusEnabled &&
+                Time.realtimeSinceStartup - _sceneEnteredAt >= Tunables.I.SessionLogPerfWarmupSeconds * Tunables.I.SessionLogCensusWarmupFraction)
+            {
+                _censusDone = true;
+                WriteCensus();
+            }
 
             // Scene-load hitches are real but say nothing about steady-state cost: skip them.
             if (Time.realtimeSinceStartup - _sceneEnteredAt < Tunables.I.SessionLogPerfWarmupSeconds)
@@ -375,7 +406,134 @@ namespace MrMoonlight.DevTools
                 return "pos ? biome ?";
 
             Vector3 p = _wieldables.transform.position;
-            return $"pos ({p.x:0},{p.y:0},{p.z:0}) biome {BiomeAt(p)}";
+            return $"pos ({p.x:0},{p.y:0},{p.z:0}) {LookDirection()} biome {BiomeAt(p)}";
+        }
+
+        // Where the camera points (v6): a still player who looks around changes draws and triangles, and an A/B of
+        // two builds is only fair when the same view is compared.
+        private static string LookDirection()
+        {
+            Camera cam = Camera.main;
+            if (cam == null)
+                return "look ?";
+
+            Vector3 e = cam.transform.eulerAngles;
+            float pitch = e.x > 180f ? e.x - 360f : e.x;
+            return $"look yaw {e.y:0} pitch {pitch:0}";
+        }
+
+        private static string MemoryMb(ProfilerRecorder recorder) =>
+            recorder.Valid ? $"{recorder.LastValue / (1024 * 1024)}MB" : "n/a";
+
+        // LOD quality settings that decide which detail level the camera sees (v6), so a build's LOD test is
+        // labelled with the settings it ran under.
+        private static string LodSettings() =>
+            $"lodBias {QualitySettings.lodBias:0.##} meshLodThreshold {QualitySettings.meshLodThreshold:0.##} maxLOD {QualitySettings.maximumLODLevel}";
+
+        /// <summary>
+        /// One <c>[SCENE] CENSUS</c> line per scene (v6, MRM-85): what the scene contains, counted once. Triangles are
+        /// counted at the highest detail: a renderer that belongs to a LOD level other than LOD0 is left out, because
+        /// a LODGroup keeps every level's renderer enabled.
+        /// </summary>
+        private void WriteCensus()
+        {
+            long start = Stopwatch.GetTimestamp();
+
+            var lowerLod = new HashSet<Renderer>();
+            var levelCounts = new Dictionary<int, int>();
+            LODGroup[] groups = FindObjectsByType<LODGroup>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (LODGroup g in groups)
+            {
+                LOD[] lods = g.GetLODs();
+                levelCounts.TryGetValue(lods.Length, out int n);
+                levelCounts[lods.Length] = n + 1;
+                for (int i = 1; i < lods.Length; i++)
+                {
+                    foreach (Renderer r in lods[i].renderers)
+                    {
+                        if (r != null)
+                            lowerLod.Add(r);
+                    }
+                }
+            }
+
+            int meshRenderers = 0, skinned = 0, shadowCasting = 0, lodLevelRenderers = 0, meshLodMeshes = 0;
+            long tris = 0, verts = 0;
+            var meshes = new HashSet<Mesh>();
+            var materials = new HashSet<Material>();
+            Renderer[] renderers = FindObjectsByType<Renderer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (Renderer r in renderers)
+            {
+                if (!r.enabled)
+                    continue;
+
+                Mesh mesh = null;
+                if (r is MeshRenderer)
+                {
+                    meshRenderers++;
+                    var filter = r.GetComponent<MeshFilter>();
+                    mesh = filter != null ? filter.sharedMesh : null;
+                }
+                else if (r is SkinnedMeshRenderer smr)
+                {
+                    skinned++;
+                    mesh = smr.sharedMesh;
+                }
+
+                foreach (Material m in r.sharedMaterials)
+                {
+                    if (m != null)
+                        materials.Add(m);
+                }
+
+                if (r.shadowCastingMode != UnityEngine.Rendering.ShadowCastingMode.Off)
+                    shadowCasting++;
+
+                if (mesh == null)
+                    continue;
+
+                if (meshes.Add(mesh) && mesh.lodCount > 1)
+                    meshLodMeshes++;
+
+                if (lowerLod.Contains(r))
+                {
+                    lodLevelRenderers++;
+                    continue;
+                }
+
+                for (int s = 0; s < mesh.subMeshCount; s++)
+                    tris += mesh.GetIndexCount(s) / 3;
+                verts += mesh.vertexCount;
+            }
+
+            int colliders = FindObjectsByType<Collider>(FindObjectsInactive.Exclude, FindObjectsSortMode.None).Length;
+            Light[] lights = FindObjectsByType<Light>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            int shadowLights = 0;
+            foreach (Light l in lights)
+            {
+                if (l.enabled && l.shadows != LightShadows.None)
+                    shadowLights++;
+            }
+
+            long treeInstances = 0;
+            foreach (Terrain t in Terrain.activeTerrains)
+            {
+                if (t.terrainData != null)
+                    treeInstances += t.terrainData.treeInstanceCount;
+            }
+
+            var levels = new StringBuilder();
+            foreach (KeyValuePair<int, int> kv in levelCounts)
+                levels.Append(levels.Length > 0 ? ", " : "").Append(kv.Key).Append(" levels x").Append(kv.Value);
+
+            double ms = (Stopwatch.GetTimestamp() - start) * 1000.0 / Stopwatch.Frequency;
+            PublishClock();
+            Debug.Log(
+                $"[SCENE] CENSUS {_sceneTag}: {meshRenderers} mesh renderers, {skinned} skinned, {meshes.Count} distinct meshes, {materials.Count} distinct materials | " +
+                $"triangles at highest detail {tris / 1000.0:0}k, vertices {verts / 1000.0:0}k | " +
+                $"LODGroups {groups.Length}{(levels.Length > 0 ? $" ({levels})" : "")}, lower-level renderers {lodLevelRenderers}, meshes with native Mesh LOD {meshLodMeshes} | " +
+                $"shadow-casting renderers {shadowCasting}, colliders {colliders}, lights {lights.Length} ({shadowLights} with shadows), terrain trees {treeInstances} | " +
+                $"{LodSettings()} | census took {ms:0.0} ms");
         }
 
         // Dominant terrain layer under the player. The biome masks are painted terrain layers, so the
@@ -518,6 +676,7 @@ namespace MrMoonlight.DevTools
             _windowStartIndex = 0;
             _windowElapsed = 0f;
             _sceneEnteredAt = Time.realtimeSinceStartup;
+            _censusDone = false;
             _sceneSumDt = 0.0;
             _sceneWorstDt = 0f;
             ResetWindowAccumulators();
@@ -526,6 +685,7 @@ namespace MrMoonlight.DevTools
         private void ResetWindowAccumulators()
         {
             _drawSum = _setPassSum = _triSum = _batchSum = 0.0;
+            _vertSum = _shadowCasterSum = 0.0;
             _renderSamples = 0;
             _cpuSum = _gpuSum = 0.0;
             _cpuMax = _gpuMax = 0f;
@@ -543,6 +703,8 @@ namespace MrMoonlight.DevTools
             _setPassSum += _setPassCalls.Valid ? _setPassCalls.LastValue : 0;
             _triSum += _triangles.Valid ? _triangles.LastValue : 0;
             _batchSum += _batches.Valid ? _batches.LastValue : 0;
+            _vertSum += _vertices.Valid ? _vertices.LastValue : 0;
+            _shadowCasterSum += _shadowCasters.Valid ? _shadowCasters.LastValue : 0;
             _renderSamples++;
         }
 
@@ -592,7 +754,7 @@ namespace MrMoonlight.DevTools
             long gcMb = GC.GetTotalMemory(false) / (1024 * 1024);
 
             string render = _renderSamples > 0
-                ? $"draws {_drawSum / _renderSamples:0} setpass {_setPassSum / _renderSamples:0} tris {_triSum / _renderSamples / 1000.0:0}k batches {_batchSum / _renderSamples:0}"
+                ? $"draws {_drawSum / _renderSamples:0} setpass {_setPassSum / _renderSamples:0} tris {_triSum / _renderSamples / 1000.0:0}k verts {_vertSum / _renderSamples / 1000.0:0}k batches {_batchSum / _renderSamples:0} shadowcasters {_shadowCasterSum / _renderSamples:0} | mem mesh {MemoryMb(_meshMemory)} tex {MemoryMb(_textureMemory)} gfx {MemoryMb(_gfxMemory)} | {LodSettings()}"
                 : "render stats n/a";
             string timing = _timingSamples > 0
                 ? $"cpu {_cpuSum / _timingSamples:0.0}/{_cpuMax:0.0} ms gpu {_gpuSum / _timingSamples:0.0}/{_gpuMax:0.0} ms (avg/max)"
@@ -676,7 +838,7 @@ namespace MrMoonlight.DevTools
               .Append($"CPU {SystemInfo.processorType} x{SystemInfo.processorCount} | RAM {SystemInfo.systemMemorySize} MB\n");
             sb.Append($"[SESSION] {Screen.currentResolution} | fullscreen {Screen.fullScreenMode} | vSync {QualitySettings.vSyncCount} | ")
               .Append($"targetFrameRate {Application.targetFrameRate} | quality '{QualitySettings.names[QualitySettings.GetQualityLevel()]}' | ")
-              .Append($"frame timing {(FrameTimingManager.IsFeatureEnabled() ? "on" : "OFF")}");
+              .Append($"frame timing {(FrameTimingManager.IsFeatureEnabled() ? "on" : "OFF")} | {LodSettings()}");
             Debug.Log(sb.ToString());
         }
 

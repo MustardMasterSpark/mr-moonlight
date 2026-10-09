@@ -25,6 +25,14 @@ raised it himself**:
 5. Save the scene (Ctrl+S) and note it in this doc and in a change-record row.
 6. **Polish: re-run the Foliage Renormalizer (AST-301) over any tree prefabs added since 2026-10-08**, then verify. Full steps in
    `Docs/foliage-renormalizer-polish.md`. Rollback is one menu click.
+7. **Polish: try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
+   whack").** Flora is installed (`Packages/com.ma.flora`) but OFF: `Flora Scene Settings.EnableRendering = 0` in scenes 02, 06, 07, 08, and no
+   `FloraInstanceRenderer` on any object. It was switched off 2026-08-31 for the **phantom tree shapes floating over the water** bug (confirmed by
+   an on/off A-B test; notes in `Docs/mrm70-resume-2026-08-31.md`). Re-check only when everything else is set up: (a) re-add the renderers with
+   `Tools > MrMoonlight > Vegetation > Add Flora Instance Renderers to Spawned Vegetation` on a COPY of the scene or on Island_Legion first,
+   (b) turn `EnableRendering` on and look for the phantoms, (c) measure draw calls / FPS in a build against the same view with Flora off,
+   (d) check it against AST-145 culling (culling cannot cull Flora-drawn instances) and the renormalized tree meshes, (e) keep it only if it is a
+   clear win, otherwise leave it off and record the verdict here. Doc: `Docs/mrm70-flora-phase-kickoff.md`, `Docs/pc-build-target.md` section 6.
 
 ---
 
@@ -110,6 +118,31 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
 - **Not verified:** painted/instanced trees in scene 07 and Island_Legion render the new meshes (Flora may cache meshes). Check one of each.
 - **Next (Carlos, 2026-10-08):** before returning to staging, try AST-147 Asset Optimizer Pro on the vegetation prefabs to reduce cost
   (handoff: `Docs/demo-update-ast147-sonnet-prompt.txt`). Then continue Stage 3 staging.
+  **Superseded the same day:** AST-147 was assessed by reading its source, found unfit, and removed (see the next section).
+
+## Side session - optimizer assets assessed: AST-147 removed, AST-068 and AST-146 staged (2026-10-08)
+
+- **AST-147 Asset Optimizer Pro: REMOVED on Carlos's word.** Its simplifier rescans every vertex for each collapse, treats open leaf-card quads as
+  borders (collapses almost nothing), flattens submeshes, and creates LOD objects inactive. Checked before deleting: 0 GUID or code references
+  from outside its folder, no output folders or settings asset created, the folder was git-ignored. A full copy remains in
+  `Asset Collection\02_extracted\AST-147` and the zip in `01_DOWNLOAD`.
+- **Flora status established** (not changed): installed, OFF everywhere, 0 renderers; trees are ~7,900 real GameObjects in scene 07, grass is Unity terrain
+  details. Re-check is now ending checklist step 7.
+- **Measured (scene 07, from the scene file + prefab stats, NOT a build):** ~7,900 tree instances = ~25.4 M triangles if all drawn, avg ~3,200 tris per tree,
+  2 submeshes each (bark + leaves), 65 distinct materials on ONE shader (Retro Lit, 512 px / 256 px base maps), 72 prefabs, 0 with LODGroup, all with colliders.
+  This corrects the earlier focus on the 18-28k-triangle giants: the cost is hundreds of mid-size trees.
+- **Staged into Mr. Moonlight, nothing run on any scene:** `Assets/ThirdParty/AST-146 (MeshFusion Pro)/` (Core + API/QuickStart PDFs, 2.0 MB; the 16 MB `Example/`
+  left out) and `Assets/ThirdParty/AST-068 (Super Level Optimizer)/` (Core + manual + 4 tutorial PDFs, 2.5 MB; the 587 MB `Third-Party/` demo packs, the
+  HDRP/URP/BuiltIn support packages and the tutorial scenes left out). 0 GUID collisions, compiles clean. MeshFusion has its own asmdefs (runtime code ships in a build);
+  SLO2 has no asmdef. Both are by New Game Studio, the same author as AST-145 culling. Assessment is in the chat; verdict recorded below when Carlos decides.
+- **Assessment (2026-10-08):** MeshFusion is the better fit IF trees are ever merged (no material changes, colliders untouched, LOD-aware via LODGroups), but merged cells duplicate
+  geometry (~25 M tree vertices in scene 07 = roughly 0.8 GB) and per-tree culling (AST-145) is lost. SLO2's atlasing of 65 leaf-card materials is the riskiest part. Order agreed
+  with Carlos: LODs first (scene 05 bench, then Island_Legion), builds between steps, MeshFusion pilot after. Unity 6.3 has NATIVE Mesh LOD (`ModelImporter.generateMeshLods`,
+  `Mesh.SetLods`, `QualitySettings.meshLodThreshold`); the renormalized tree meshes are `.asset` files so the importer option cannot be used on them directly.
+- **FPS counter + logging + baseline build (Carlos's plan, same session):** `FPS Counter` prefab added to scene 05 and the scene saved with the HAZE fog objects ACTIVE again
+  (diff = the prefab instance only). SessionLog v6 (`Docs/performance-sessions.md` section 7). **Build 47** `E:\Builds\47 - Gallery Baseline - 2026-10-08` = scene 05 only,
+  no LODs, 0 errors, 369.6 MB zipped. Scene 05 holds one of each prefab, so it is a visual/triangle baseline, not an island fps test. Carlos plays it and says so; analysis follows
+  `performance-sessions.md` section 1. Change record C-026. Next session: `Docs/demo-update-lod-sonnet-prompt.txt`.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)
 

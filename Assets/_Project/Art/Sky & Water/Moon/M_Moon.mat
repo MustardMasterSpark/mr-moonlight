@@ -36,6 +36,10 @@ Material:
         m_Texture: {fileID: 2800000, guid: d9b436fb64e44004197d657985376c48, type: 3}
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
+    - _DissolveNoise:
+        m_Texture: {fileID: 0}
+        m_Scale: {x: 1, y: 1}
+        m_Offset: {x: 0, y: 0}
     - _NormalMap:
         m_Texture: {fileID: 0}
         m_Scale: {x: 1, y: 1}
@@ -62,6 +66,16 @@ Material:
     - _CubemapRotation: 0
     - _Cull: 2
     - _Cutoff: 0.5
+    - _DissolveAmount: 0
+    - _DissolveBurnPower: 2
+    - _DissolveBurnWidth: 0.14
+    - _DissolveCharDarkness: 0.12
+    - _DissolveCharWidth: 0.2
+    - _DissolveMaxY: 1
+    - _DissolveMinY: 0
+    - _DissolveNoiseContrast: 2.5
+    - _DissolveNoiseInfluence: 0.55
+    - _DissolveNoiseScale: 1.5
     - _DstBlend: 0
     - _Glossiness: 5
     - _NormalStrength: 1
@@ -72,13 +86,15 @@ Material:
     - _USE_REFLECTION_CUBEMAP: 0
     - _USE_SPECULAR_LIGHT: 0
     - _USE_VERTEX_COLORS: 0
+    - _UseDissolve: 0
     - _WindCategory: 0
     - _WindEnabled: 0
     - _WindFlexibility: 1
     - _WindHeight: 1
     - _ZWrite: 1
     m_Colors:
-    - _BaseColor: {r: 1, g: 0.12699997, b: 0.12699997, a: 1}
+    - _BaseColor: {r: 1, g: 0.6, b: 0.6, a: 1}
     - _CubemapColor: {r: 1, g: 1, b: 1, a: 1}
+    - _DissolveBurnColor: {r: 9.86, g: 2.29, b: 0.52, a: 1}
   m_BuildTextureStacks: []
   m_AllowLocking: 1

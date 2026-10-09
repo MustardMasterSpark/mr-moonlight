@@ -1159,5 +1159,11 @@ namespace MrMoonlight.Data
 
         /// <summary>Seconds after a scene becomes active that SessionLog leaves out of its fps/frame-time stats, so the scene-load hitch does not pollute the first window or the scene summary. Owner: MRM-84</summary>
         public float SessionLogPerfWarmupSeconds = 2f;
+
+        /// <summary>Writes one <c>[SCENE] CENSUS</c> line per scene (renderers, LODGroups, triangles at the highest detail, colliders, lights, shadow casters, terrain trees) a fraction of the way through the warm-up, so a LOD or merge experiment can be read against what the scene actually contained. It scans the whole scene once, inside the warm-up that the stats ignore. Owner: MRM-85</summary>
+        public bool SessionLogCensusEnabled = true;
+
+        /// <summary>Where in the warm-up (<see cref="SessionLogPerfWarmupSeconds"/>) the census runs, 0-1. Early enough that its one-off hitch lands inside the part of the scene time that the stats leave out. Owner: MRM-85</summary>
+        [Range(0.1f, 1f)] public float SessionLogCensusWarmupFraction = 0.5f;
     }
 }
