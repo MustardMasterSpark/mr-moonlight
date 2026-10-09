@@ -177,6 +177,14 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
 - **Next (next session):** apply it to the island, scene 07 (`07 LightingTestScene`, not Legion 06). Mesh LOD is automatic there (importer-level) but MeshFusion is NOT: it needs a controller, a source on each tree, Read/Write on the island's FBX and Batching Static off; see `Docs/demo-update-meshfusion-sonnet-prompt.txt`.
   Change record C-028.
 
+## Side session - MeshFusion Pro (AST-146) applied to the island, scene 07 (2026-10-08, night)
+
+- **Baseline first:** build 50 "Island Baseline" (commit `3d7ea020`, scene 07, no MeshFusion): avg 131 fps, 1% low 105.8, draws 3.9k-11.0k, SetPass 258-320, tris 70-104 M. Details: `Docs/performance-sessions.md` section 5. Carlos saw distant trees pop in (AST-145 culling, H15).
+- **Findings before applying:** scene 07 has 8,786 painted trees under `Gaia Terrains`, each a `Visual` child with MeshRenderer + AST-145 `DC_SourceSettings` + `DC_Collider` + `WoodCollider` children; Batching Static 0; 88 distinct meshes, 79 materials; 965 instances on unreadable meshes (27 FBX). **AST-145 and MeshFusion both switch the original renderer on and off**, so they cannot share a tree (every tree would draw twice).
+- **Applied (Carlos: "apply the asset to the scene right now", design d = fuse every tree, accept the cost):** tool `Assets/_Project/Tools/Editor/MeshFusionIsland.cs` (`Tools > MeshFusion Island`, Apply / ROLLBACK, manifest `MeshFusionIslandManifest.json`). Controller `MeshFusion Island` (CellSize 80, Standard, 65,535 verts, Jobs), 8,786 sources (all compatible), `DC_SourceSettings` disabled on those trees, Read/Write on 27 more FBX. Scene saved. Props and Foliage Pass 2 objects not fused.
+- **What it trades:** draws/SetPass down (79 materials shared by thousands of trees), but Mesh LOD (C-027) and per-tree occlusion culling (AST-145) are both lost on the trees, so tris will rise, plus about +0.8 GB mesh memory estimate. Honest expectation: draws win, triangles/GPU may lose. Build 51 decides.
+- **Rollback:** `Tools > MeshFusion Island > ROLLBACK`, then save scene 07 (restores Read/Write and re-enables AST-145 on the trees). Change record C-029.
+
 ## Side session - folder reorganisation (2026-10-03 to 05)
 
 Not a placement stage: done so placement can find its prefabs. Every placeable prefab moved to `Assets/_Project/Prefabs/<semantic folder>/`

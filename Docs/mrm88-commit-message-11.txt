@@ -10,7 +10,7 @@ Docs only. Build 49 "Mesh Fusion" was made from d2f6fe7f (C-028) and run by Carl
   but draws only fall 3-7% (497 / 504 / 488 over builds 47 / 48 / 49) and SetPass is unchanged (125 / 126 / 126): the gallery has one specimen per species and almost no shared materials.
   Costs as predicted: triangles back to the build 47 level (Mesh LOD lost on merged objects), vertices +9%. fps unchanged (959 average).
 - Docs/performance-sessions.md: section 5 entry for build 49, C-028 hash and build filled in. Docs/lod-experiment-log.md: build 49 result. Docs/demo-update.md: MeshFusion side session.
-- Handoff Docs/demo-update-meshfusion-sonnet-prompt.txt rewritten: what is automatic on scene 07 (Mesh LOD lives on the FBX importers) and what is not (controller + sources on ~8.8k instances, Read/Write on the
+- Handoff Docs/demo-update-meshfusion-sonnet-prompt.txt rewritten: what is automatic on scene 07 (Mesh LOD lives on the FBX importers) and what is not (controller + sources on ~9k instances, Read/Write on the
   island's FBX, Batching Static off, Mesh LOD vs merge decision), first steps (mesh-memory estimate, read-only census of scene 07, design choice with Carlos).
 
 Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

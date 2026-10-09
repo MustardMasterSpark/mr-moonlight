@@ -1,44 +1,33 @@
-Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = MESHFUSION PRO (AST-146) -> THE ISLAND, SCENE 07 (`07 LightingTestScene`, the real map; NOT Legion 06). Read cold; do not rely on chat scrollback.
-Suggested model: Opus (tooling that touches ~8.8k placed trees, memory and load-time analysis). Sonnet is enough to run and measure builds.
-
-WRITTEN: 2026-10-08 night, end of the gallery pilot. Do NOT auto-start: read, report in a few lines, wait for Carlos to say go.
+Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = MESHFUSION PRO (AST-146) ON THE ISLAND, SCENE 07 (`07 LightingTestScene`; NOT Legion 06). Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet to run/measure builds and record; Opus if the design has to change (LOD-aware fusing, partial fusing).
+WRITTEN: 2026-10-08 night. Do NOT auto-start: read, report in a few lines, wait for Carlos to say go.
 
 WHERE WE ARE
-- Branch `mrm-88` (do not switch). Gallery pilot commit C-028 = `d2f6fe7f`. The result docs written after it (build 49 entry, handoff, commit message Docs/mrm88-commit-message-11.txt) are UNCOMMITTED until Carlos commits;
-  when he gives the hash, record it in the performance-sessions.md section 8 note under C-028 ("result docs commit") and in a MRM-85 comment.
-- DONE (details: Docs/demo-update.md "Side session - MeshFusion Pro (AST-146) pilot on scene 05", Docs/performance-sessions.md section 5 build 49 entry, Docs/lod-experiment-log.md):
-  * Pilot tool `Assets/_Project/Tools/Editor/MeshFusionPilot.cs` (Tools > MeshFusion Pilot: Apply / ROLLBACK, manifest MeshFusionPilotManifest.json). Scene 05: 89 specimens at x <= 260 fused (RuntimeMeshFusion cell 80,
-    Standard mesh, 65,535 vertex cap, Jobs move; StaticMeshFusionSource on each specimen's MeshRenderer child; Batching Static cleared; Read/Write ticked on 89 FBX importers). All compatible.
-  * BUILD 49 "Mesh Fusion" (E:\Builds\49 - Mesh Fusion - 2026-10-08, from d2f6fe7f; a first 49 without a commit was deleted on Carlos's word). Carlos ran it; log session-20261008-224122.log.
-    Dense half (x <= 260), builds 47 / 48 / 49: draws 497 / 504 / 488, SetPass 125 / 126 / 126, tris 1,042k / 949k / 1,060k, verts 888k / 916k / 999k, casters 153 / 154 / 145, GPU 0.8 / 0.9 / 0.9 ms, fps 851 / 859 / 854.
-    Census: 166 renderers (155 + 11 combined cells), no combine hitch (first-window worst 2.4 ms vs 40.9 in 47).
-  * VERDICT: MeshFusion works but the gallery cannot show its win (one specimen per species, 116 materials for 155 renderers: nothing shares a material per cell). Costs seen: Mesh LOD triangle win gone on merged
-    objects (tris back to the build 47 level), verts +9%, culling per cell. Not yet checked: look and collisions in a build, memory (mem fields are n/a in release builds).
+- Branch `mrm-88` (do not switch). Change record C-029 = MeshFusion applied to scene 07; commit hash PENDING (message Docs/mrm88-commit-message-12.txt). When Carlos gives the hash, write it into
+  Docs/performance-sessions.md section 8 row C-029 and a MRM-85 comment. Build 51 must be made FROM that commit (commit first, then build; rule of this track).
+- BUILD 50 "Island Baseline" (E:\Builds\50 - Island Baseline - 2026-10-08, commit 3d7ea020, scene 07, no MeshFusion; AST-145 culling ON; native Mesh LOD ON): log session-20261008-230132.log, 62.9 s,
+  avg 131.0 fps, 1% low 105.8, worst 19.5 ms, draws 3.9k-11.0k, SetPass 258-320, tris 70-104 M, verts 72-107 M, shadow casters 716-2,012, CPU and GPU both ~6-9 ms, mem fields n/a. Route: spawn near the church,
+  straight line through the dense forest by the church. Carlos saw distant trees pop in (H15, AST-145). Census at frame 14: only 1,034 mesh renderers (culler had most off), 256 LODGroups.
+- APPLIED IN THE SAVED SCENE 07 (design d, "fuse everything"): tool Assets/_Project/Tools/Editor/MeshFusionIsland.cs (Tools > MeshFusion Island: Apply / ROLLBACK, manifest MeshFusionIslandManifest.json):
+  controller `MeshFusion Island` (CellSize 80, Standard mesh, 65,535 vertex cap, Jobs), StaticMeshFusionSource on the Visual child of all 8,786 painted trees under `Gaia Terrains` (all compatible),
+  **AST-145 DC_SourceSettings DISABLED on those trees** (both assets toggle the original renderer, so they cannot coexist on one tree; DC_Controller / DC_Collider / WoodCollider untouched),
+  Read/Write ticked on 27 more FBX (their .meta files are in the commit). Props (well walls/steps, Foliage Pass 2 objects) NOT fused. NavMesh Surface and Enemies switches in scene 07 were not touched.
+- EXPECTED (not yet measured): draws and SetPass fall a lot (79 materials shared by thousands of trees); tris/verts may RISE (fused cells keep only the full-detail mesh; Mesh LOD and per-tree occlusion culling are both gone
+  for the trees); memory +~0.8 GB estimate; a combine hitch at load (8,786 sources); pop-in should vanish. Unknown: look and collisions in a build.
 
-THE ISLAND STEP (Carlos, corrected 2026-10-08: the target is SCENE 07, not Legion 06) - WHAT IS AUTOMATIC AND WHAT IS NOT
-- AUTOMATIC: native Mesh LOD lives on the FBX IMPORTERS (C-027), so every prefab instance in scene 07 already uses it. Only the 80 meshes of >= 1,000 triangles have it; smaller meshes and the RF_/baked ones do not.
-- NOT AUTOMATIC: "having the asset in the project" does nothing. Scene 07 needs real work, because MeshFusion only fuses objects that carry a source:
-  (1) a `RuntimeMeshFusion` controller object in scene 07 (CellSize to decide: 80 is the default; island trees are spread over 1024 m);
-  (2) a `StaticMeshFusionSource` on the MeshRenderer child of every tree instance to fuse. Scene 07 has about 9,079 PrefabInstances (about 7,900 trees as real GameObjects plus the placed props: church wall loop, wells; 0 FloraInstanceRenderer; one Terrain), 64 MB scene file, last saved by Carlos 2026-10-08 20:23. Legion (scene 06, 8,786 instances) is the fallback / second test, not the target.
-      Two ways: a scene tool like MeshFusionPilot.cs run over the scene (8.8k overrides written into the scene; save carefully) OR a small runtime bootstrap that adds the sources in Start (nothing saved in the scene, easy rollback,
-      but costs load time and cannot be seen in the editor without Play). Adding the component to the tree PREFABS would put it in every scene that uses them (scenes without a controller log FailedToCombine): avoid unless wanted;
-  (3) Read/Write ticked on EVERY tree/rock FBX the island uses (89 are ticked for the gallery; the island uses 109 prefabs, so check the rest; MeshFusion refuses unreadable meshes);
-  (4) Batching Static cleared on the fused instances (MeshFusion refuses statically batched renderers; check the project's Static Batching player setting);
-  (5) the conflict to decide with numbers: a fused cell keeps only the full-detail mesh, so fusing trees throws away the Mesh LOD triangle win and duplicates geometry (about 25 M vertices of trees, roughly 0.8 GB).
-      Candidate designs: (a) fuse only the far band / lowest level, (b) LODGroup-based fusing, (c) fuse only small props and leave trees on Mesh LOD, (d) fuse everything in cells and accept the cost if draws dominate (island measured about 22k draws).
-  Wood colliders are separate objects and stay untouched. Scene 07 is Carlos's LIVE staging scene (props are still being placed; NavMesh Surface and Enemies are switched OFF on purpose, MRM-88 ending reminder): check isDirty and ask before opening or saving it, do not disturb the NavMesh/enemies switches, and prefer a runtime bootstrap or a clearly separated MeshFusion root so the staging work and the fusion work do not tangle. The placed props (wall pieces, wells) are fusion candidates too, but are not LOD'd.
-- FIRST STEPS next session, in order: (i) mesh-memory estimate in SessionLog.WriteCensus (the mem fields print n/a; sum vertex + index buffer bytes over distinct meshes, `mesh memory est`; changelog row v6.1 in performance-sessions.md
-  section 7 + MRM-85 comment), (ii) census scene 07 read-only: trees as MeshRenderers vs terrain trees, FBX readability, materials per species (how many instances share a material), static flags, (iii) ASK Carlos which design,
-  (iv) apply with a rollback-capable tool, (v) build 50 from a COMMIT (commit first, then build: this session's rule), standard-style run on the island (Carlos decides the route), compare draws / SetPass / load time / memory against the island baseline in Docs/performance-sessions.md.
-- Traps/rules carried over: never delete assets without Carlos's word; never commit/push; keep the wood colliders; do not touch Old_* duplicates; do not use FoliageRenormalizer Re-apply; AST-068 only if MeshFusion cannot cut the draws
-  (it atlases materials, threatens the pixelated look); execute_code long jobs time out but keep running (poll a status file); Unity unfocused: delayCall never fires (build via BuildPlayer directly, see memory build_via_execute_code_unfocused_trap);
-  zip with the .ps1 backslash-safe script; cross-issue: touches MRM-70 and MRM-85 as well as MRM-88, say so in Linear comments.
-- Rollback of the gallery pilot: Tools > MeshFusion Pilot > ROLLBACK (removes sources + controller, restores Read/Write and Batching Static); re-save scene 05 only if Carlos wants.
-- Next change-record row is C-029. Next build number is 50.
+NEXT STEPS, in order
+ 1. Carlos commits (docs + scene 07 + tool + 27 FBX .meta; leave out SpecialElite SDF.asset and VP_HazeGlobalFog.asset noise) and gives the hash -> fill C-029, then build 51 FROM that commit
+    (name "Island Fusion", scene 07 only, BuildPipeline.BuildPlayer from execute_code with scenes array; Unity unfocused: delayCall never fires, call directly and poll a status file; zip with the .ps1 backslash-safe script).
+ 2. Carlos runs the SAME route as build 50 (spawn near the church, straight line through the dense forest). Read the newest log; compare against build 50: first-window worst frame / time to first window (combine hitch),
+    draws, SetPass, tris, verts, shadow casters, avg fps, 1% low, CPU vs GPU. Ask Carlos how it looked (popping gone? collisions OK? trees missing?). Record as the build 51 entry in performance-sessions.md section 5,
+    update H15, MRM-85 comment, and the demo-update.md island section.
+ 3. Likely follow-ups depending on the numbers: (a) if tris/GPU got worse, fuse only the far band or keep Mesh LOD trees near (LODGroup-based fusing), (b) mesh-memory estimate in SessionLog.WriteCensus (mem fields n/a; changelog row v6.1),
+    (c) if Carlos wants culling removed for good, do it only on his word (AST-145 stays in the project; never delete assets without his explicit go).
+- Traps/rules carried over: never delete assets without Carlos's word; never commit/push; keep wood colliders; do not touch Old_* duplicates; do not use FoliageRenormalizer Re-apply; AST-068 only if MeshFusion cannot cut the draws
+  (it atlases materials, threatens the pixelated look); execute_code long jobs time out but keep running (poll a status file); scene 07 is Carlos's LIVE staging scene (props still being placed): check isDirty before touching it.
+- Rollback: Tools > MeshFusion Island > ROLLBACK, then save scene 07 (removes sources + controller, re-enables AST-145 on the trees, restores Read/Write from the manifest). Gallery pilot rollback: Tools > MeshFusion Pilot > ROLLBACK (scene 05).
+- Next change-record row is C-030. Next build number is 51.
 
 AFTER THE LOD/MERGE TRACK (resume Stage 3 staging; order Carlos set)
  (1) finish placing props (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells; Carlos names each), (2) embellish prop by prop, (3) ENDING CHECKLIST in
  Docs/demo-update.md (steps 1-5 and 7; step 6 is cancelled), (4) builds + optimisation again. ON HOLD: build with fog + CRT, HAZE vs Volumetric Fog 2, H15, Flora retry (end of demo).
-
-GIT STATE (leave out of the commit): SpecialElite SDF.asset (font atlas noise), VP_HazeGlobalFog.asset (active flip is noise), ASSETS-Index.xlsx and asset-import doc edits from other chats unless Carlos wants them.
-The next commit contains ONLY docs: performance-sessions.md (build 49 entry + C-028 hash/results), lod-experiment-log.md, demo-update.md, this prompt, mrm88-commit-message-11.txt.
