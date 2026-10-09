@@ -1,0 +1,16 @@
+SUMMARY
+
+MRM-88: Build 53 results recorded (culler 4000 rays / 5 s costs ~2.5% fps, pop-in reduced not gone), H15 narrowed, handoff for the Unity default culling experiment
+
+DESCRIPTION
+
+Docs only. No game change since 1af7e78c (C-031).
+
+- Build 53 "Culler Tuned" (from 1af7e78c, log session-20261008-234521.log): avg 127.7 fps (build 50: 131.0), 1% low 104.5 (105.8), draws 4.6k-12.0k (3.9k-11.0k), cpu +0.5 ms; first-window worst frame 42.2 ms (one-off at load).
+  Carlos: pop-in reduced at most, still visible on far trees; build 52 (culler off) has none, so the culler is the cause, not Mesh LOD.
+- Read-only editor check: the AST-145 proxy colliders are the full tree mesh and match the renderer bounds exactly (8,786 of 8,786), so "proxy smaller than the crown" is ruled out. H15 updated.
+- Docs/performance-sessions.md: build 53 entry, C-031 result, H15. Docs/demo-update.md: build 53 result and the decision to try Unity's default culling.
+- New handoff Docs/demo-update-unity-culling-sonnet-prompt.txt: next session switches AST-145 off (disable, not delete; CorpseCullingBridge depends on it) and tries Unity's baked occlusion culling / GPU Resident Drawer,
+  with the build 50/52/53 numbers to compare against. Docs/demo-update-meshfusion-sonnet-prompt.txt carries the build 53 hash.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

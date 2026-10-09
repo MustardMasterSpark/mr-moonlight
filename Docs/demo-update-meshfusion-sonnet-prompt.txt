@@ -12,8 +12,8 @@ WHAT WE LEARNED (all numbers in Docs/performance-sessions.md section 5, builds 5
   rays is never hit and stays off; the other candidate is proxy colliders smaller than the crowns (MRM-84 leaf-card family). Not confirmed.
 
 WHERE WE ARE
-- Branch `mrm-88` (do not switch). C-031 = culler back ON for the 8,786 trees + `DC_Camera._raysCount` 1500 -> 4000 (on PlayerCamera) + `DC_Controller._objectsLifetime` 2 -> 5 s: commit PENDING (message
-  Docs/mrm88-commit-message-14.txt). When Carlos gives the hash, write it into performance-sessions.md section 8 row C-031 and post a MRM-85 comment. Build 53 must be made FROM that commit.
+- Branch `mrm-88` (do not switch). C-031 = culler back ON for the 8,786 trees + `DC_Camera._raysCount` 1500 -> 4000 (on PlayerCamera) + `DC_Controller._objectsLifetime` 2 -> 5 s: commit `1af7e78c` (message
+  Docs/mrm88-commit-message-14.txt); BUILD 53 "Culler Tuned" was made from it (E:/Builds/53 - Culler Tuned - 2026-10-08). When Carlos gives the hash, write it into performance-sessions.md section 8 row C-031 and post a MRM-85 comment. Build 53 must be made FROM that commit.
 - Scene 07 is saved; it differs from the pre-fusion commit 3d7ea020 ONLY by those two values (verified by diff). No MeshFusion controller/sources, Read/Write restored. MeshFusionIsland.cs stays in the project (harmless editor tool).
 - Culler settings left unchanged: _cellSize 10, _fovAddition 5, FullDisable. Other knobs if it still pops: KeepShadows, rays higher (cost: raycasts on CPU), enlarge proxy colliders (DC_Collider children) on trees whose crown is wider.
 

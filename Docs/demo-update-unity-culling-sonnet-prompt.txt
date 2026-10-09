@@ -1,0 +1,50 @@
+Context prompt: DEMO UPDATE (MRM-88), NEXT SESSION = EXPERIMENT: UNITY'S DEFAULT CULLING INSTEAD OF AST-145 ON THE ISLAND, SCENE 07 (`07 LightingTestScene`). Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet to run the experiment and builds; Opus if a GPU Resident Drawer / shader compatibility problem needs real engineering.
+WRITTEN: 2026-10-09 (late night 2026-10-08). Do NOT auto-start: read, report in a few lines, wait for Carlos to say go. (Previous track prompt: Docs/demo-update-meshfusion-sonnet-prompt.txt, MeshFusion tried and dropped.)
+
+WHAT CARLOS WANTS (his words, 2026-10-09)
+"Next session I want to remove asset 145 for a little bit to try Unity's default culling options and see how that performs. This is just an experiment. We will do a build to test that but depending on it we might stick with
+Unity's or with 145. Don't remove it in this session." => in the NEXT session: switch AST-145 OFF in scene 07 (DISABLE, see traps; do NOT delete the asset folder: never delete assets without Carlos's explicit word),
+turn on Unity's own culling options, make a build from a COMMIT, and compare with the numbers below. Then Carlos decides which one stays.
+
+WHY (state of the island culling, all numbers in Docs/performance-sessions.md section 5, builds 50-53; same route every time: spawn near the church, straight line through the dense forest, ~60 s, scene 07 only, release build)
+- build 50 (AST-145 ON, 1500 rays, 2 s, commit 3d7ea020):   131.0 fps avg / 105.8 1% low / worst 19.5 ms, draws 3.9k-11.0k, SetPass 258-320, tris 70-104 M, CPU/GPU 6-9 ms, census 1,034 renderers.
+- build 52 (AST-145 OFF = plain frustum culling + native Mesh LOD, commit 34c7c542): 110.0 / 89.2 / 23.7 ms, draws 10.8k-18.5k, tris 76-118 M, managed 30 MB, census 9,272 renderers. NO pop-in.
+- build 53 (AST-145 ON, 4000 rays, 5 s, commit 1af7e78c): 127.7 / 104.5 / 42.2 ms (first window only), draws 4.6k-12.0k. Pop-in reduced at most, still visible on far trees (fog off).
+- The AST-145 culler is worth ~20 fps (draws -2..3x) but makes distant trees pop in (H15). Proxy colliders ruled out (they match the renderers exactly). Likely cause: rays stop at the first solid proxy collider and are sparse at distance.
+- MeshFusion Pro (AST-146) was tried on all 8,786 trees: worth ~2% fps for +45 MB memory -> dropped (scene 07 has no fusion; MeshFusionIsland.cs stays as a harmless editor tool).
+- Test PC: Ryzen 9800X3D / RX 9070 XT (high-end): keep headroom for typical PCs and for enemies.
+
+WHAT UNITY OFFERS (to verify against the Unity 6.3 docs with the unity_docs tool before building anything; facts below were READ from the project on 2026-10-09)
+- Already on: frustum culling; PlayerCamera.useOcclusionCulling = True, farClip 1000; the trees already carry static flags OccluderStatic + OccludeeStatic; NO baked occlusion data exists (umbraDataSize 0).
+- (A) BAKED OCCLUSION CULLING (Window > Rendering > Occlusion Culling): needs a bake over the 1024 m island with 8,786 trees. Risk: Umbra treats leaf cards as solid occluders, which could reproduce the same
+  "tree seen through canopy gaps gets hidden" artifact; consider clearing Occluder Static on leaf-card trees and keeping Occludee Static (and keep terrain/buildings as occluders). Trees are static-flagged GameObjects, not terrain trees.
+- (B) GPU RESIDENT DRAWER + GPU OCCLUSION CULLING (URP, Unity 6): PC_RPAsset currently has m_GPUResidentDrawerMode = 0 (off), m_GPUResidentDrawerEnableOcclusionCullingInCameras = False, SRP Batcher on.
+  Player Settings graphics API for Windows = Direct3D11 ONLY, auto API off; GRD very likely needs D3D12 or Vulkan (VERIFY), probably Forward+ (VERIFY), and custom shaders (RetroLit, HAZE fog, Crest water) may not support
+  BatchRendererGroup / DOTS instancing -> some materials could render wrong or pink. Run a render audit (RenderAudit.cs) and a screenshot check. This one may need Opus.
+- (C) Do nothing = build 52.
+- Plan: run (A) first (pure editor bake, no shader risk), build, compare; then (B) if (A) is not enough or Carlos wants it.
+
+HOW TO SWITCH AST-145 OFF (non-destructive, reversible)
+- The culler runs through components in scene 07: `DC_SourceSettings` on the Visual child of all 8,786 trees under `Gaia Terrains` (enabled flag), one `DC_Controller`, one `DC_Camera` on PlayerCamera.
+  Disable `DC_SourceSettings.enabled` on the trees (what C-030 did, verified by diff: m_Enabled 1 -> 0 x 8,786) and, if you want it fully inert, disable the DC_Controller and DC_Camera components too.
+  Tool for the tree part: Assets/_Project/Tools/Editor/MeshFusionIsland.cs > "Remove fusion ONLY (keep AST-145 off)" is NOT needed now (no fusion in the scene); just flip the flag with execute_code.
+- TRAP: `Assets/ThirdParty/AST-145 (Culling System)/MrMoonlightBridge/CorpseCullingBridge.cs` (our code, in its own asmdef) hooks corpse culling to AST-145, so deleting the asset folder would break compilation / corpse culling.
+  Another reason to DISABLE, not delete. "Remove" in Carlos's words = switch off for the test; ask him before any file deletion.
+- To restore the culler: set the 8,786 flags back to enabled (and re-enable DC_Controller / DC_Camera if touched). Culler tuning that was left in scene 07 (C-031): `_raysCount` 4000 (DC_Camera), `_objectsLifetime` 5 (DC_Controller).
+
+STEPS, in order
+ 1. Carlos commits this session's docs (Docs/mrm88-commit-message-15.txt) and gives the hash (record in performance-sessions.md; it has no game-change row, see C-031 for the last game change).
+ 2. Check scene 07 isDirty and ask before saving it (it is Carlos's live staging scene). Switch AST-145 off, bake occlusion (A), save the scene + OcclusionCullingData asset, verify by reading state back.
+ 3. Commit (Carlos), then build 54 FROM that commit (name e.g. "Unity Culling", scene 07 only, BuildPipeline.BuildPlayer from execute_code with a scenes array; Unity unfocused: delayCall never fires, call directly and poll a status file;
+    zip with the .ps1 backslash-safe script; confirm no backslash/zero-byte entries; build size check). Add a change-record row C-032 (performance-sessions.md section 8) + MRM-85 comment.
+ 4. Carlos runs the SAME route and looks at far trees (pop-in? trees missing behind canopies?). Compare window by window with builds 50/52/53. Record the build 54 entry, update H15 and H12, MRM-85 comment.
+ 5. Carlos decides: stay on AST-145 (with the distance-exemption script or fog), or Unity's culling.
+- Other options parked: fog + CRT build (hides far pops; on hold), a distance-exemption script for AST-145 (never cull trees beyond X m), AST-145 StaticCulling / DC_Occluder (terrain as occluder), cell size 10 -> smaller.
+- Traps/rules carried over: never delete assets without Carlos's word; never commit/push; keep wood colliders; do not touch Old_* duplicates; execute_code long jobs time out but keep running (poll a status file);
+  scene 07 NavMesh Surface and Enemies are OFF on purpose (MRM-88 ending reminder) - do not touch; tunables for staging numbers stay on the scene while prototyping.
+- Next change-record row is C-032. Next build number is 54.
+
+AFTER THE LOD/MERGE/CULLING TRACK (resume Stage 3 staging; order Carlos set)
+ (1) finish placing props (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells; Carlos names each), (2) embellish prop by prop, (3) ENDING CHECKLIST in
+ Docs/demo-update.md (steps 1-5 and 7; step 6 is cancelled), (4) builds + optimisation again. ON HOLD: build with fog + CRT, HAZE vs Volumetric Fog 2, H15, Flora retry (end of demo).
