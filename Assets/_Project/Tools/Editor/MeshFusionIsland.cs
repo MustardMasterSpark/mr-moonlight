@@ -2,18 +2,16 @@
 // MRM-88 side track: MeshFusion Pro (AST-146) on the island, scene 07 (Carlos, 2026-10-08, build 51).
 //
 // What Apply does, on the ACTIVE scene only (it never saves the scene; the caller saves):
-//   1. finds every painted tree: a MeshRenderer under "Gaia Terrains" that carries an AST-145 DC_SourceSettings (8,786 in scene 07);
+//   1. finds every painted tree: a MeshRenderer under "Gaia Terrains" that has a WoodCollider child (8,786 in scene 07);
 //   2. ticks Read/Write on the FBX importer behind each mesh (MeshFusion refuses an unreadable mesh);
 //   3. clears the Batching Static flag if it was set (none in scene 07, kept for safety);
-//   4. DISABLES the DC_SourceSettings component on the fused tree (AST-145 would otherwise flip the original renderer back on and the tree
-//      would draw twice: MeshFusion switches the original off with renderer.enabled, which is also what the culler writes);
+//   4. (AST-145 was removed on 2026-10-09; this step used to disable its DC_SourceSettings component, now a no-op);
 //   5. adds a StaticMeshFusionSource to the tree's renderer object and one RuntimeMeshFusion controller ("MeshFusion Island") to the scene.
-// WoodCollider and DC_Collider children are not touched. The AST-145 DC_Controller stays in the scene, with nothing left to cull.
-// ROLLBACK removes the sources and the controller, re-enables DC_SourceSettings and restores Read/Write from the manifest.
+// WoodCollider children are not touched. MeshFusion was tried and dropped (builds 51-52, worth ~2%); kept as a harmless editor tool.
+// ROLLBACK removes the sources and the controller and restores Read/Write from the manifest.
 using System;
 using System.Collections.Generic;
 using System.IO;
-using NGS.AdvancedCullingSystem.Dynamic;
 using NGS.MeshFusionPro;
 using UnityEditor;
 using UnityEngine;
@@ -40,7 +38,7 @@ public static class MeshFusionIsland
         {
             var mf = mr.GetComponent<MeshFilter>();
             if (mf == null || mf.sharedMesh == null) continue;
-            if (mr.GetComponent<DC_SourceSettings>() == null && mr.GetComponent<StaticMeshFusionSource>() == null) continue;
+            if (mr.transform.Find("WoodCollider") == null && mr.GetComponent<StaticMeshFusionSource>() == null) continue;
             list.Add(mr);
         }
         return list;
@@ -77,13 +75,11 @@ public static class MeshFusionIsland
         AssetDatabase.Refresh();
         Save(manifest);
 
-        int added = 0, skippedUnreadable = 0, culledOff = 0;
+        int added = 0, skippedUnreadable = 0;
         foreach (var mr in cands)
         {
             var go = mr.gameObject;
             if (!mr.GetComponent<MeshFilter>().sharedMesh.isReadable) { skippedUnreadable++; continue; }
-            var dc = go.GetComponent<DC_SourceSettings>();
-            if (dc != null && dc.enabled) { dc.enabled = false; culledOff++; }
             if (go.GetComponent<StaticMeshFusionSource>() != null) continue;
             var flags = GameObjectUtility.GetStaticEditorFlags(go);
             if ((flags & StaticEditorFlags.BatchingStatic) != 0) GameObjectUtility.SetStaticEditorFlags(go, flags & ~StaticEditorFlags.BatchingStatic);
@@ -105,21 +101,17 @@ public static class MeshFusionIsland
             EditorUtility.SetDirty(ctrlGo);
         }
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(scene);
-        return "MeshFusion island applied: candidates=" + cands.Count + ", sources added=" + added + ", AST-145 sources disabled=" + culledOff +
-               ", FBX set readable=" + fbxChanged + ", non-FBX meshes=" + notFbx + ", unreadable skipped=" + skippedUnreadable + ", cellSize=" + CellSize + ". Scene NOT saved.";
+        return "MeshFusion island applied: candidates=" + cands.Count + ", sources added=" + added + ", FBX" +
+               " set readable=" + fbxChanged + ", non-FBX meshes=" + notFbx + ", unreadable skipped=" + skippedUnreadable + ", cellSize=" + CellSize + ". Scene NOT saved.";
     }
 
-    [MenuItem("Tools/MeshFusion Island/ROLLBACK (remove sources + controller, re-enable AST-145, restore Read/Write)")]
+    [MenuItem("Tools/MeshFusion Island/ROLLBACK (remove sources + controller, restore Read/Write)")]
     public static void Rollback() { Debug.Log(RunRollback()); }
 
-    // Build 52 (Carlos, 2026-10-08): fusion gone, AST-145 stays OFF on the trees, to separate the two effects measured in build 51.
-    [MenuItem("Tools/MeshFusion Island/Remove fusion ONLY (keep AST-145 off on the trees, restore Read/Write)")]
-    public static void RollbackKeepCullingOff() { Debug.Log(RunRollback(false)); }
-
-    public static string RunRollback(bool reenableCulling = true)
+    public static string RunRollback()
     {
         var manifest = Load();
-        int removed = 0, culledOn = 0;
+        int removed = 0;
         var root = GameObject.Find(TreeRootName);
         if (root != null)
         {
@@ -127,8 +119,6 @@ public static class MeshFusionIsland
             {
                 var go = s.gameObject;
                 UnityEngine.Object.DestroyImmediate(s);
-                var dc = go.GetComponent<DC_SourceSettings>();
-                if (reenableCulling && dc != null && !dc.enabled) { dc.enabled = true; culledOn++; }
                 EditorUtility.SetDirty(go);
                 removed++;
             }
@@ -149,7 +139,7 @@ public static class MeshFusionIsland
         AssetDatabase.Refresh();
         UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(UnityEngine.SceneManagement.SceneManager.GetActiveScene());
         Save(new Manifest());
-        return "MeshFusion island rolled back: sources removed=" + removed + ", AST-145 re-enabled=" + culledOn + ", FBX Read/Write restored=" + restored + ".";
+        return "MeshFusion island rolled back: sources removed=" + removed + ", FBX Read/Write restored=" + restored + ".";
     }
 }
 #endif

@@ -1,0 +1,17 @@
+SUMMARY
+
+MRM-88: AST-145 removed (components, proxy colliders and folder), Unity occlusion baked for scenes 06 and 02, build 54 results and optimization decisions documented
+
+DESCRIPTION
+
+Carlos's call after build 54 (Unity culling: 154 fps vs 128-131 with AST-145, no pop-in): remove AST-145 and use Unity's own culling.
+
+- Scenes 02, 06, 07, 08: DC_SourceSettings / DC_Controller / DC_Camera removed and every DC_Collider proxy object (layer 29) deleted (8,786 per scene, 5,990 in scene 02). 0 missing scripts verified.
+- Folder Assets/ThirdParty/AST-145 deleted (git-ignored; CorpseCullingBridge went with it, corpse culling step 7 no longer exists).
+- Occlusion culling baked for scenes 06 (Legion) and 02 (Island): OcclusionCullingData.asset next to each scene (LFS).
+- MeshFusionIsland.cs no longer references the AST-145 types; comments updated in MoonlightTunables.cs and CorpseOptimizer.cs.
+- Docs: new Docs/optimization-decisions-2026-10.md (decisions D1-D6, builds 47-54 timeline, undo, open ideas), build 54 entry + H12/H15 + change record C-033 in performance-sessions.md, culling-ast145.md and corpse-optimization.md marked historical, CLAUDE.md pointer, stage 3 prompt updated with the re-bake rule.
+
+Re-bake occlusion in scene 07 when prop placement is done. A fight in scene 06 with the new culling is untested.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

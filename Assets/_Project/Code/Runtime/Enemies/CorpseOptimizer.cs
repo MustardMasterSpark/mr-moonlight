@@ -8,7 +8,7 @@ using UnityEngine;
 namespace MrMoonlight.Enemies
 {
     /// <summary>
-    /// Raised when a corpse has settled and is worth culling. The AST-145 bridge (a git-ignored
+    /// Raised when a corpse has settled and is worth culling. The AST-145 bridge (removed 2026-10-09; it was a git-ignored
     /// assembly that lives next to the asset in Assets/ThirdParty) subscribes; without it nothing
     /// happens, so a clone that does not have the asset still builds and plays.
     /// </summary>
