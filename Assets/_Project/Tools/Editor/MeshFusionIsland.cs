@@ -112,7 +112,11 @@ public static class MeshFusionIsland
     [MenuItem("Tools/MeshFusion Island/ROLLBACK (remove sources + controller, re-enable AST-145, restore Read/Write)")]
     public static void Rollback() { Debug.Log(RunRollback()); }
 
-    public static string RunRollback()
+    // Build 52 (Carlos, 2026-10-08): fusion gone, AST-145 stays OFF on the trees, to separate the two effects measured in build 51.
+    [MenuItem("Tools/MeshFusion Island/Remove fusion ONLY (keep AST-145 off on the trees, restore Read/Write)")]
+    public static void RollbackKeepCullingOff() { Debug.Log(RunRollback(false)); }
+
+    public static string RunRollback(bool reenableCulling = true)
     {
         var manifest = Load();
         int removed = 0, culledOn = 0;
@@ -124,7 +128,7 @@ public static class MeshFusionIsland
                 var go = s.gameObject;
                 UnityEngine.Object.DestroyImmediate(s);
                 var dc = go.GetComponent<DC_SourceSettings>();
-                if (dc != null && !dc.enabled) { dc.enabled = true; culledOn++; }
+                if (reenableCulling && dc != null && !dc.enabled) { dc.enabled = true; culledOn++; }
                 EditorUtility.SetDirty(go);
                 removed++;
             }
