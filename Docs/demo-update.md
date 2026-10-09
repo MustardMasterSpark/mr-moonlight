@@ -185,6 +185,7 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
 - **What it trades:** draws/SetPass down (79 materials shared by thousands of trees), but Mesh LOD (C-027) and per-tree occlusion culling (AST-145) are both lost on the trees, so tris will rise, plus about +0.8 GB mesh memory estimate. Honest expectation: draws win, triangles/GPU may lose. Build 51 decides.
 - **Result of build 51 (fusion + culler off) vs build 50:** WORSE: avg 131.0 -> 107.9 fps, 1% low 105.8 -> 88.0, draws UP (4-8k -> 11-17k), tris 70-104 M -> 81-117 M, managed memory 35 -> 75-80 MB. The culler had already been hiding most trees and fused cells draw whole with no Mesh LOD. Details: performance-sessions.md section 5.
 - **Carlos's decision (2026-10-08):** fusion REMOVED from the island; the culler stays OFF on the trees so build 52 isolates the effect of culling alone. Change record C-030. Gallery pilot (scene 05) is separate and unchanged.
+- **Build 52 result and next step (2026-10-08, night):** culling OFF without fusion = 110.0 fps vs 131.0 with the culler ON: the culler is the valuable asset, MeshFusion is worth about +2% at +45 MB memory. Carlos's decision: culler back ON, fusion stays out, and the pop-in is attacked by tuning the culler (rays 1500 -> 4000, lifetime 2 -> 5 s). Change record C-031, build 53.
 - **Rollback:** `Tools > MeshFusion Island > ROLLBACK`, then save scene 07 (restores Read/Write and re-enables AST-145 on the trees). Change record C-029.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)

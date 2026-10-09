@@ -1,32 +1,32 @@
-Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = ISLAND CULLING vs MESHFUSION PRO (AST-146), SCENE 07 (`07 LightingTestScene`; NOT Legion 06). Read cold; do not rely on chat scrollback.
-Suggested model: Sonnet to run/measure builds and record; Opus if a new culling/LOD design has to be built.
+Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = ISLAND CULLING (AST-145) TUNING; MESHFUSION PRO (AST-146) TRIED AND DROPPED. SCENE 07 (`07 LightingTestScene`; NOT Legion 06). Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet to run/measure builds and record; Opus only if a new culling design is needed.
 WRITTEN: 2026-10-08 night. Do NOT auto-start: read, report in a few lines, wait for Carlos to say go.
 
+WHAT WE LEARNED (all numbers in Docs/performance-sessions.md section 5, builds 50-52)
+- Same route, ~60 s (spawn near the church, straight line through the dense forest), scene 07 only, release builds:
+  build 50 (culler ON 1500 rays/2 s, no fusion, commit 3d7ea020): 131.0 fps avg, 105.8 1% low, draws 3.9k-11k, tris 70-104 M.
+  build 51 (culler OFF + MeshFusion on 8,786 trees, commit 12cca358): 107.9 / 88.0, draws 8.8k-17k, managed 75-80 MB.
+  build 52 (culler OFF, no fusion, commit 34c7c542): 110.0 / 89.2, draws 10.8k-18.5k, managed 30 MB.
+- CONCLUSION: the AST-145 culler is worth about 20 fps (it cuts draws 2-3x, triangles only ~10%); MeshFusion is worth ~2% fps for +45 MB memory: NOT worth it on the island. Fusion is out (gallery pilot on scene 05 untouched).
+- Carlos saw distant trees pop in with the culler ON (visible especially without fog). Hypothesis H15: 1500 rays are ~2 degrees apart (4 m at 100 m, 12 m at 300 m), so a far tree whose proxy collider falls between
+  rays is never hit and stays off; the other candidate is proxy colliders smaller than the crowns (MRM-84 leaf-card family). Not confirmed.
+
 WHERE WE ARE
-- Branch `mrm-88` (do not switch). C-029 = commit `12cca358` (MeshFusion on the island + culler off). C-030 = fusion REMOVED, culler stays OFF on the 8,786 trees: commit PENDING (message
-  Docs/mrm88-commit-message-13.txt). When Carlos gives the hash, write it into performance-sessions.md section 8 row C-030 and post a MRM-85 comment. Build 52 must be made FROM that commit.
-- BUILD 50 "Island Baseline" (commit 3d7ea020; culler ON, no fusion; log session-20261008-230132.log): avg 131.0 fps, 1% low 105.8, worst 19.5 ms, draws 3.9k-11.0k, SetPass 258-320, tris 70-104 M,
-  shadow casters 716-2,012, CPU/GPU ~6-9 ms, managed 35 MB; census 1,034 renderers. Carlos saw distant trees pop in (H15).
-- BUILD 51 "Island Fusion" (commit 12cca358; fusion on 8,786 trees + culler off; log session-20261008-231600.log): avg 107.9, 1% low 88.0, worst 23.6 ms, draws 8.8k-17.2k, SetPass 312-375, tris 81-117 M,
-  shadow casters 1,564-2,744, CPU/GPU 8-11 ms, managed 75-80 MB; census 9,177 renderers, 1,411 distinct meshes. WORSE. Hypotheses in performance-sessions.md section 5 (culler had been hiding most trees;
-  fused cells draw whole with no Mesh LOD / occlusion; ~1,300 combined meshes x shadow cascades). Carlos felt it too.
-- STATE OF SCENE 07 NOW (saved): no MeshFusion controller or sources; `DC_SourceSettings` disabled on all 8,786 trees (AST-145 DC_Controller and proxy colliders still in the scene, nothing registered);
-  Read/Write restored on the 27 FBX; native Mesh LOD active. Verified: differs from 3d7ea020 only by the 8,786 `m_Enabled: 1 -> 0`. Tool: Assets/_Project/Tools/Editor/MeshFusionIsland.cs
-  (Apply / ROLLBACK / "Remove fusion ONLY" = RunRollback(false)).
-- PURPOSE OF BUILD 52 ("culler off, no fusion"): separate the two effects. build 52 vs 50 = what the culler was worth (and whether the pop-in is gone); build 52 vs 51 = what fusion cost.
+- Branch `mrm-88` (do not switch). C-031 = culler back ON for the 8,786 trees + `DC_Camera._raysCount` 1500 -> 4000 (on PlayerCamera) + `DC_Controller._objectsLifetime` 2 -> 5 s: commit PENDING (message
+  Docs/mrm88-commit-message-14.txt). When Carlos gives the hash, write it into performance-sessions.md section 8 row C-031 and post a MRM-85 comment. Build 53 must be made FROM that commit.
+- Scene 07 is saved; it differs from the pre-fusion commit 3d7ea020 ONLY by those two values (verified by diff). No MeshFusion controller/sources, Read/Write restored. MeshFusionIsland.cs stays in the project (harmless editor tool).
+- Culler settings left unchanged: _cellSize 10, _fovAddition 5, FullDisable. Other knobs if it still pops: KeepShadows, rays higher (cost: raycasts on CPU), enlarge proxy colliders (DC_Collider children) on trees whose crown is wider.
 
 NEXT STEPS, in order
- 1. Carlos commits (scene 07, MeshFusionIsland.cs + manifest, the 27 .fbx.meta (Read/Write back to off, relative to 12cca358), docs; leave out SpecialElite SDF.asset and VP_HazeGlobalFog.asset noise),
-    gives the hash -> fill C-030, then build 52 FROM that commit (name "Culler Off", scene 07 only, BuildPipeline.BuildPlayer from execute_code with a scenes array; Unity unfocused: delayCall never
-    fires, call directly and poll a status file; zip with the .ps1 backslash-safe script, same as builds 50 and 51).
- 2. Carlos runs the SAME route (spawn near the church, straight line through the dense forest, ~60 s). Compare with builds 50 and 51 window by window (fps, 1% low, draws, SetPass, tris, verts,
-    shadow casters, CPU vs GPU, managed memory). Ask Carlos about the look: pop-in gone? Record as the build 52 entry in section 5, update H15, MRM-85 comment.
- 3. Then decide with the numbers: culler back ON for good (if it was worth a lot), or a better culling/LOD design (e.g. distance-based hiding, a culler without pop-in), or revisit fusion only for the far band / small props.
-- Traps/rules carried over: never delete assets without Carlos's word; never commit/push; keep wood colliders; do not touch Old_* duplicates; do not use FoliageRenormalizer Re-apply; AST-068 only if needed
-  (it atlases materials, threatens the pixelated look); execute_code long jobs time out but keep running (poll a status file); scene 07 is Carlos's LIVE staging scene: check isDirty before touching it
-  (it was dirty in memory once this session while the disk file equalled HEAD; the saved result was verified by diff). To put the culler back ON: set DC_SourceSettings enabled again on the trees
-  (Tools > MeshFusion Island > ROLLBACK does it too, harmlessly when no sources exist).
-- Next change-record row is C-031. Next build number is 53.
+ 1. Carlos commits (scene 07, docs; leave out SpecialElite SDF.asset and VP_HazeGlobalFog.asset noise), gives the hash -> fill C-031, then build 53 FROM that commit (name "Culler Tuned", scene 07 only,
+    BuildPipeline.BuildPlayer from execute_code with a scenes array; Unity unfocused: delayCall never fires, call directly and poll a status file; zip with the .ps1 backslash-safe script, as for builds 50-52).
+ 2. Carlos runs the same route and looks at far trees (fog off). Compare with build 50: cpu avg/max, fps avg and 1% low, draws, renderers/shadow casters (lifetime 5 s keeps trees on longer), first-window worst frame.
+    Ask Carlos: is the pop-in gone, reduced, or the same? Record the build 53 entry in section 5, update H15, MRM-85 comment.
+ 3. If the pop-in persists: test rays 6000-8000 or enlarge the proxy colliders; if the CPU cost is too high, accept a smaller pop-in. Fog (on hold, build with fog + CRT) would also hide far pops.
+- Traps/rules carried over: never delete assets without Carlos's word; never commit/push; keep wood colliders; do not touch Old_* duplicates; do not use FoliageRenormalizer Re-apply; execute_code long jobs time out
+  but keep running (poll a status file); scene 07 is Carlos's LIVE staging scene: check isDirty before touching it. Tunables of the culler live on the scene (DC_Controller / DC_Camera), not in MoonlightTunables,
+  while we are still prototyping (Carlos's rule: no tunables for staging numbers until performance is proven).
+- Next change-record row is C-032. Next build number is 54.
 
 AFTER THE LOD/MERGE TRACK (resume Stage 3 staging; order Carlos set)
  (1) finish placing props (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells; Carlos names each), (2) embellish prop by prop, (3) ENDING CHECKLIST in

@@ -1,0 +1,16 @@
+SUMMARY
+
+MRM-88: AST-145 culling back on for the island trees with 4000 rays / 5 s lifetime to reduce pop-in; build 52 results (culler is worth ~20 fps, MeshFusion ~2%)
+
+DESCRIPTION
+
+Scene 07 (C-031) plus docs. Build 53 will be made from this commit.
+
+- Build 52 (culler off, no fusion, from 34c7c542) vs builds 50 and 51, same route: avg fps 131.0 (culler on) / 107.9 (culler off + fusion) / 110.0 (culler off). The culler cuts draws 2-3x and is worth about 20 fps;
+  MeshFusion is worth about +2% fps for +45 MB memory, so it stays out of the island.
+- Scene 07: DC_SourceSettings enabled again on the 8,786 trees; DC_Camera._raysCount 1500 -> 4000 and DC_Controller._objectsLifetime 2 -> 5 s to reduce the distant-tree pop-in (H15: sparse rays miss far trees).
+  The scene differs from the pre-fusion 3d7ea020 only by those two values.
+- Docs: performance-sessions.md (build 52 entry, change record C-031), demo-update.md, handoff Docs/demo-update-meshfusion-sonnet-prompt.txt rewritten for build 53.
+- Expect in build 53: pop-in reduced (to be judged by eye, far trees, fog off), a little more CPU for the extra raycasts, and more trees kept on for longer (renderers / shadow casters slightly up vs build 50).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
