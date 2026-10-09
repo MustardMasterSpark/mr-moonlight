@@ -1,0 +1,65 @@
+Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = LODs FOR THE TREES THAT HAVE NONE, TESTED ON SCENE 05 FIRST, THEN BUILDS. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet for the pilot and the batch (tooling on existing prefabs, like the renormalizer). Opus only if the native Mesh LOD route fails and the card-dropping LOD builder has to be designed from scratch.
+
+WRITTEN: 2026-10-08 (night), end of the optimizer-assets session. Do NOT auto-start work: read, report in a few lines, wait for Carlos to say go.
+This REPLACES Docs/demo-update-ast147-sonnet-prompt.txt (that one is stale: AST-147 was assessed, found unfit and removed).
+
+WHERE WE ARE
+- Branch `mrm-88` (do not switch; no new branch unless Carlos asks). Change-record rows C-024, C-025 and C-026 are `pending` until Carlos commits and gives the hash
+  ("I committed" -> `git log -1`, fill them all in). C-026's commit message is Docs/mrm88-commit-message-8.txt.
+- DONE THIS SESSION:
+  * AST-147 Asset Optimizer Pro REMOVED from the project on Carlos's word (source read: O(V*E) simplifier, leaf-card quads all count as borders, submeshes flattened,
+    LOD objects created inactive). Copy kept in `Asset Collection\02_extracted\AST-147`.
+  * AST-146 MeshFusion Pro (runtime mesh merging, has its own asmdefs, LOD-aware) and AST-068 Super Level Optimizer 2 (editor-time atlas + merge) STAGED in
+    Assets/ThirdParty/ (Core + manuals only). Compile clean. NOT RUN on anything. Assessment: MeshFusion is the better fit IF we merge; the cost is memory
+    (merged cells duplicate geometry: ~25 M vertices of trees in scene 07 = roughly 0.8 GB vertex data) and per-tree culling (AST-145) is lost; best used AFTER LODs.
+  * Flora Renderer status established and a re-check added as ENDING CHECKLIST step 7 in Docs/demo-update.md (installed, EnableRendering OFF, 0 renderers).
+  * SessionLog v6 (Docs/performance-sessions.md section 7): [SCENE] CENSUS line per scene, verts / shadowcasters / mesh+texture+gfx memory / camera look / lodBias +
+    meshLodThreshold + maxLOD on [PERF] lines, same LOD settings in the [SESSION] header. Tunables SessionLogCensusEnabled + SessionLogCensusWarmupFraction.
+  * Scene 05 now has the `FPS Counter` prefab (bottom-left) and was SAVED with the two HAZE fog objects ACTIVE again (they had been off in memory for the
+    renormalizer comparison). F6 toggles fog in a build.
+  * BUILD 47 `E:\Builds\47 - Gallery Baseline - 2026-10-08` = scene 05 ONLY, no LODs, the BASELINE. Carlos plays it and says so; then read the newest log in
+    %USERPROFILE%\AppData\LocalLow\Mustard Master Spark\MrMoonlight\Logs\ (follow Docs/performance-sessions.md section 1: ask the short question batch, then record
+    the entry in section 5 and as a MRM-85 comment). IMPORTANT: scene 05 is a GALLERY with ONE of each prefab (~150 objects), so its fps says nothing about the
+    island. It is the visual bench and the triangle/draw baseline. The real forest numbers come from scene 06 (Island_Legion) / 07 builds.
+
+THE NUMBERS THAT DECIDE WHAT LODs ARE WORTH (scene 07, computed from the scene file x prefab stats, NOT a build)
+- ~7,900 tree instances, ~25.4 M triangles if all drawn, average ~3,200 tris per tree, 2 submeshes each (bark + leaves), 65 materials on ONE shader (Retro Lit,
+  256/512 px base maps), 72 prefabs, 0 with a LODGroup, all with colliders. The cost is HUNDREDS OF MID-SIZE TREES, not the 18-28k giants:
+  AP_Tree_04_GTree01_05_SM 682 x 4,146 tris, GTree01_03 570 x 4,532, GTree01_04 569 x 4,217, M01_02 474 x 4,432, Conifir_A_01_SM_2 669 x 3,082, Conifir_A_02 612 x 3,082.
+  Pilot on the MOST USED ones plus one giant (AP_Tree_Curse_H01_2: 28k tris, two materials), not only on the giants.
+- LOD does NOT cut draw calls (7,900 trees x 2 submeshes is a big part of the draw count); it cuts triangles, shadow-pass cost and leaf overdraw, and the last level can cull.
+- Trees are real GameObjects (Gaia GameObject spawns), 0 terrain trees; Flora is OFF so a normal LODGroup works as in any scene.
+
+HOW TO GET LODs (Carlos asked; answer given, decision still his)
+ A) Unity 6.3 NATIVE Mesh LOD: ModelImporter.generateMeshLods / meshLodGenerationFlags / maximumMeshLod, Mesh.SetLods / lodCount / lodSelectionCurve,
+    QualitySettings.meshLodThreshold, MeshRenderer.forceMeshLod / meshLodSelectionBias (all verified present in the editor). No extra GameObjects.
+    CATCH: the 59 renormalized tree prefabs point at .asset meshes in Art/Nature/Renormalized Trees/ (not FBX imports), so the importer option cannot be used on them;
+    either generate LODs on the originals and RE-RUN the renormalizer (check it keeps LODs), or call Mesh.SetLods from our own script with triangle lists we build.
+    UNKNOWN until piloted: how meshopt copes with loose leaf-card quads, URP / Retro Lit / SRP batcher behaviour, and whether MeshFusion understands Mesh LOD (it is built on LODGroups).
+ B) Classic LODGroup + separate LOD meshes. Unity does not generate the meshes. Build our own small editor tool (pattern: Assets/_Project/Tools/Editor/FoliageRenormalizerBatch.cs,
+    manifest JSON, ROLLBACK + RE-APPLY menu items, pilot 2-3 prefabs, read back, then batch). For leaf-card trees the lower LODs should DROP a share of the cards and enlarge the
+    rest (keep the bark submesh and the submesh/material order), final level = cull. The open-source UnityMeshSimplifier package is the alternative (needs a package install, Carlos's call).
+ Recommended by me: try A on 2-3 trees first (free), fall back to B. Carlos asked to go STEP BY STEP with BUILDS between steps.
+
+RULES / TRAPS ALREADY FOUND
+- Ask Carlos before each piece of Unity work (CLAUDE.md), read the state back, document. NEVER delete assets without his word. Never commit/push.
+- Run LOD generation on the CURRENT (renormalized) meshes, never the originals, or the normals pass is lost. Rollback of the normals = Tools > Foliage Renormalizer > ROLLBACK.
+- Keep the wood colliders as they are (separate meshes); do not LOD them. Do not touch the Old_* duplicates. Keep submesh order = material order.
+- Carlos compares by video / side by side against scene 05. Fog is now ON in the saved scene; if he wants fog OFF for a comparison, use F6 in the build or deactivate in memory and DO NOT save.
+- Scene 07 may still be UNSAVED from the placement sessions (wall loop WellWall_Run_01, 57 pieces; recipe in Docs/demo-update.md Stage 3, session 2026-10-07). Check scene 07 isDirty before any scene work.
+  Do not open/modify scene 07 for this track; scene 05 is the bench, Island_Legion (06) is the heavy test.
+- Build facts: scene 05 is NOT in Build Settings (only 03, 02, 06). Build 47 was made with BuildPipeline.BuildPlayer and a scenes array via execute_code + EditorApplication.delayCall
+  (status file in the scratchpad), NOT by changing Build Settings. delayCall only fires while the editor is focused / updating. Zip with the entry-by-entry script in the build_process memory,
+  write it to a .ps1 first; verify no backslash and no zero-byte entries. Folder name `<N> - <Two Words> - <date>`, BUILD-INFO.txt beside Build.zip.
+- execute_code on a long editor job times out but keeps running: poll a status file, do not retry.
+- Cross-issue: this touches MRM-70 (vegetation) and MRM-85 (performance) as well as MRM-88; flag it in Linear comments.
+
+AFTER THE LOD TRACK (resume Stage 3 staging; order Carlos set)
+ (1) finish placing props (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells; Carlos names each), (2) embellish prop by prop, (3) ENDING CHECKLIST in
+ Docs/demo-update.md (steps 1-7: NavMesh Surface + Enemies back on and re-bake with permission, Foliage Renormalizer re-run, FLORA RE-CHECK), (4) builds + optimisation again.
+ ON HOLD: build with fog + CRT, HAZE vs Volumetric Fog 2, H15, MeshFusion pilot (after LODs), Flora retry (end of demo).
+- Next change-record row after C-026 is C-027.
+
+GIT STATE AT WRITING (leave out of the commit): SpecialElite SDF.asset (font atlas noise), VP_HazeGlobalFog.asset (active 0/1 flip is noise), ASSETS-Index.xlsx and the earlier asset-import doc edits
+from other chats unless Carlos wants them. Scene 07 only if Carlos saved it on purpose. Scene 05 IS part of this commit (FPS Counter added).

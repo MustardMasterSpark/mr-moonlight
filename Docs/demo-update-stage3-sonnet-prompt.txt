@@ -1,0 +1,94 @@
+Context prompt: DEMO UPDATE (MRM-88), STAGE 3 = PROP PLACEMENT. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet (placement on existing systems; each prop goes through the /prop wizard). Switch to Opus only for a new system (new enemy, store).
+
+WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
+
+UPDATE 2026-10-08 (side track, wins over everything below): the NEXT session first tries AST-147 Asset Optimizer Pro on the vegetation prefabs, THEN returns to
+staging. Read Docs/demo-update-ast147-sonnet-prompt.txt first. The Foliage Renormalizer (AST-301) already ran on 59 tree prefabs (change record C-025);
+re-run it at the end of the demo (Docs/foliage-renormalizer-polish.md). Commit message: Docs/mrm88-commit-message-7.txt. Next change-record row: C-026.
+
+UPDATE 2026-10-07, END OF THE SONNET PLACEMENT SESSION (this block wins over everything below where they disagree):
+- Branch `mrm-88`, last commit 7df34c71. Change record: C-024 (pending until Carlos commits and gives the hash). Commit message: Docs/mrm88-commit-message-6.txt.
+- **SCENE 07 IS UNSAVED**: the wall loop (root `WellWall_Run_01`, 57 pieces of Prop_MVillage_WellWall_01 around the church spline) exists only in the open scene.
+  Check `scene.isDirty` first; if Unity was closed without saving, the loop is gone and the recipe in Docs/demo-update.md (Stage 3, session 2026-10-07) re-creates it.
+  The terrain detail clearing inside the loop IS saved (TerrainData asset, 398 cells, 1,595 density).
+- New tool: `PropTerrainSnap` (Ctrl+Shift+T on selected props: base on the terrain, tilted to the slope, yaw kept; window Tools > Moonlight > Prop Terrain Snap
+  for blend / sink). Carlos asked for it and uses it while placing. Ctrl+Shift+G clashes with AMD Adrenalin, do not use it.
+- TRAP: `SplineContainer.Evaluate` already returns WORLD positions; do not TransformPoint them again. Do not use the Spline Instantiate component for terrain walls.
+- Carlos's standing wish for the END of placement (he said "don't do it now"): (a) group every placed prop under folder-style parent objects (e.g. Props_Church,
+  Props_Wells), keep world positions, check nothing finds props by hierarchy path first; (b) clear terrain foliage under each prop's footprint (terrain details by
+  zeroing the 2 m cells, report any terrain trees / Flora / loose objects and wait for go before deleting those). Remind him when he says he is done placing.
+- Carlos is hiding the terrain from scene picking with the Hierarchy hand icon while placing. If he asks, offer a one-click menu item.
+- Playground staging by another chat (not this session): AST-292 Witch Village, 293 Dead Bodies, 294 Barricades, 295 Medieval Furniture, 296 PSX Hospital Church,
+  297 PSX Wooden Fences, 247 Gamer Girl, 298 Horror Sounds are staged in Playground for Carlos's review (Docs/playground-asset-log.md). Their doc edits are
+  uncommitted in the working tree and are NOT part of the C-024 commit.
+- NEXT: Carlos names the next prop or asset to move or place (the demo station). Ask before each Unity-side action, read the state back, never commit.
+
+UPDATE 2026-10-05, END OF THE OPUS SESSION (this block wins over everything below where they disagree):
+- Branch `mrm-88`. Carlos is merging mrm-88 into main as a CHECKPOINT and work CONTINUES on mrm-88 (do not switch branches; do not
+  create one unless he asks). Commits: stage 1 82da1564, stage 2 94754da6, wobble/SmartBuilder 19a9afe7, folder reorg + Medieval
+  Wells e5f3941d, then this session's wrap-up (message Docs/mrm88-commit-message-5.txt).
+- Scene 07 SAVED by Carlos. Stage 3 has started: Prop_MVillage_Well_01 and Prop_MVillage_WellWall_01 placed on the church plateau
+  (numbers in Docs/demo-update.md "Stage 3"). Scene Effects Toggle saved with fog and CRT OFF.
+- Old empty folders are deleted (17, see Docs/folder-map.md "Cleanup"); no empty placeholder folders from now on.
+- ORDER (Carlos): 1. place every prop (the rest of Medieval Wells as he wants, then Shed, Weeper ghosts, Tombstones, Heavy Action music,
+  Pool from Playground, one at a time, Carlos names each; Docs/asset-moves-to-moonlight-sonnet-prompt.txt). 2. embellish prop by prop:
+  lights, lamps, small logic; decide the church interior fog then (a higher-priority local Volume works, but post-process fog also
+  clears the view out of the door). 3. ending checklist (NavMesh Surface + Enemies back on, re-bake after asking, verify Spotters).
+  4. builds + optimisation again.
+- ON HOLD until placement is done (do not raise unless Carlos does): build 47 with fog + CRT, the HAZE vs Volumetric Fog 2 decision, H15.
+- Next change-record row is C-024.
+
+UPDATE 2026-10-04 (folder reorg, change record C-021): the project folders were reorganised. Read Docs/folder-map.md FIRST.
+- Every placeable prefab is in Assets/_Project/Prefabs/<semantic folder>/: Buildings (church, wells), Props, Sets (ready-made groups),
+  Nature/Trees + Nature/Rocks & Logs (exact wood colliders, USE THESE), Nature/Grass & Plants, Sky & Lighting, Characters, VFX, UI.
+  Prefabs/World/ no longer exists; any path below that says Prefabs/World or Art/Environment is translated by the table in folder-map.md.
+- Old_* prefabs in Nature/Old (Rough Colliders) are the older duplicates with one rough capsule/box collider. Do not place new ones;
+  do not delete them (scenes 02, 03, 07 still use them; repointing those scenes is an open question for Carlos).
+- Ten empty old folders may still exist (Art/Environment, Art/Props, Art/HUD Textures, Art/VegetationPrefabs, Prefabs/World, Player,
+  Enemies, MainMenu, DevTools, Legacy) if Carlos has not deleted them yet; they hold no files.
+
+READ FIRST: Docs/demo-update.md (running doc; stages 1 and 2 have every number), Docs/demo-update-opus-prompt.txt (the overall task),
+Docs/asset-moves-to-moonlight-sonnet-prompt.txt (pending Playground moves: Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool; one at a time, Carlos names each).
+
+===========================================================================
+1. STATE
+===========================================================================
+- Branch `mrm-88` (Linear MRM-88). Stages 1 and 2 are committed (82da1564, 94754da6). Never commit or push.
+- Scene `07 LightingTestScene`. Church at (45.03, 50.03, 60.49) in the FlakTower biome, site cleaned of foliage (x 33.2..56.9, z 41.2..80.2).
+- Foliage work is FINISHED by Carlos's decision (scene is a test scene, not final). Do not add more foliage unless he asks.
+- **`NavMesh Surface` and `Enemies` (root objects) are INACTIVE on purpose** until placement ends. REMINDER RULE: when Carlos says he is done placing,
+  or at "run the final instructions" for the placement work, REMIND him of the ending checklist at the top of Docs/demo-update.md (re-enable both,
+  re-bake the NavMesh after asking, verify Spotters path, save).
+- Builds 45 (Pre Foliage) and 46 (More Foliage) exist in E:\Builds. FlakTower/Mountain bumps and the church clean came AFTER build 46.
+
+===========================================================================
+2. WHAT CARLOS WANTS NEXT
+===========================================================================
+- Continue with PROP placement (his words). Ask which prop and where; ask before every Unity-side action (CLAUDE.md hard rules), then read the state back.
+- A build 47 with FOG (F6) and CRT (F7) ENABLED is wanted at some point ("we should make another build with those enabled"). Both are scene toggles in
+  `Scene Effects Toggle`; builds 45 and 46 had them off. Ask when.
+- Open problem H15 (performance-sessions.md): distant trees pop in with fog and CRT off (AST-145 Dynamic Culling, occlusion-based, not distance). Not fixed.
+  Test the culler off (or fog on) before touching it.
+
+===========================================================================
+3. HOW TO DO IT AND TRAPS
+===========================================================================
+- Check `EditorApplication.isPlaying` first. Edits in Play mode are discarded on stop.
+- Terrain: `Terrain_0_0-20260829 - 035828`, TerrainData asset under Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/ (Undo.RegisterCompleteObjectUndo, then
+  AssetDatabase.SaveAssets). Detail layer res 512 (2 m cells), 90 prototypes now. To clear foliage under a new prop, zero all detail layers in the footprint rectangle
+  (+ ~4 m margin) and delete Gaia objects / "Foliage Pass 2 Objects" children inside it. Recipe and numbers: demo-update.md Stage 2 and Stage 1.
+- Level a prop to the mesh's LOWEST VERTEX, not its pivot.
+- Detail foliage is drawn by Unity's native detail renderer (distance 150, density 0.5); Flora EnableRendering is False.
+- UnityMCP: execute_code is CodeDom C# 6 (no tuples, no `using` in-body); a Unity busy building fails queries; a background asset refresh can stall unfocused.
+- Builds: next number after 46, folder `<N> - <Two Words> - <date>` under E:\Builds, zip entry by entry from a .ps1 file (memory build_process), skip
+  *_BurstDebugInformation_DoNotShip, check for backslashes and zero-byte entries. Build only scene 07 via manage_build `scenes`.
+- Gaia: never toggle `Gaia Runtime`; the editor crashes on a Scene-view gizmo overflow (see Docs/demo-update-staging-sonnet-prompt.txt section 4).
+- `VP_LightingTest_Fog.asset` `active: 1 -> 0` diff is harmless noise; leave it out of commits. A new untracked Gaia session asset (GS-<date>.asset) appears on every open: junk.
+- New 3D assets: `/prop` wizard (RetroLit samples ONLY BaseColor + Normal; glowing objects get a real Light).
+
+===========================================================================
+4. WRAP-UP WHEN THIS STAGE ENDS
+===========================================================================
+"Run the final instructions" (CLAUDE.md): commit message file (print it in the final report), docs (demo-update.md new dated section), Linear comment on MRM-88 (+ MRM-85),
+change-record row C-nnn in Docs/performance-sessions.md section 8 (next is C-024), and a new handoff prompt. Suggest a fresh session at natural stopping points.

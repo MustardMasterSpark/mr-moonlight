@@ -224,8 +224,7 @@ Assets/_Project/Art/<Category>/<Prop>/
     M_<Prop>.mat                  created in 3.2
 ```
 
-Categories, per `Docs/unity-conventions.md`: `Characters/`, `Enemies/`, `Weapons/`, `Items/`,
-`Props/`, `Environment/`.
+Categories, per `Docs/folder-map.md` (2026-10-03): `Characters/` `Enemies/` `Weapons/` `Items/` `Buildings & Props/` `Nature/` `Terrain/` `Sky & Water/` `UI/` `VFX/` (see `Docs/folder-map.md`).
 
 **One folder per subject — everything for it in one place.** Model, material and textures live
 together, never split into parallel `Materials/` or `Textures/` trees. Name the folder for **what
@@ -251,7 +250,7 @@ Read/Write off, Optimize Mesh on.** Never let the importer generate materials.
 | `_FilterMode` | `1` — **Point** | |
 | `_SnapMode` | `2` — **View** | vertex snapping, the one PSX effect post-processing can't do. **Exception: small/handheld props (weapons, items) — see the callout below** |
 | `_SnapsPerUnit` | `64` | snap grid density, in **world-space metres**, not relative to the object |
-| `_AffineTextureStrength` | `1.0` | Carlos tuned this up from 0 on 2026-08-25 |
+| `_AffineTextureStrength` | `1.0` | Carlos tuned this up from 0 on 2026-08-25. **Since 2026-10-02 the effect is scaled by the global `_RetroWobbleScale`, default 0 = OFF everywhere**, so this per-material value only matters if the global is raised (`Docs/retro-wobble-global.md`) |
 | `_ResolutionLimit` | `8192` — practically "off" | ⚠ this is a real value, not literally 0 — see below |
 | `_ColorBitDepth` | `256` — practically "off" | ⚠ this is a real value, not literally 0 — see below |
 | `_DitherMode` | `0` — Screen | |
@@ -291,8 +290,11 @@ Read/Write off, Optimize Mesh on.** Never let the importer generate materials.
 Create it in Unity, with the material already assigned:
 
 ```
-Assets/_Project/Prefabs/World/Prop_<Name>.prefab
+Assets/_Project/Prefabs/<Folder>/Prop_<Name>.prefab
 ```
+
+`<Folder>` = the level-design category in `Docs/folder-map.md`: `Buildings/`, `Props/`, `Nature/Trees`,
+`Nature/Rocks & Logs`, `Nature/Grass & Plants`, `Sky & Lighting/`, `Characters/`, `Weapons/<Category>/`, `VFX/`, `UI/`.
 
 | Step | Rule |
 |---|---|
@@ -886,7 +888,12 @@ come out **non-power-of-two and not a multiple of 4**. Checked in the project: `
 "To Nearest" rescales them (434x512 -> 512x512, 512x344 -> 512x256, 308x512 -> 256x512), so they still compress as DXT1; harmless,
 the UVs map 0-1. Normals import as 256x256 normal maps.
 
-### G3 — Prefab destination is a guess for anything that isn't a prop
+### G3 — Prefab destination is a guess for anything that isn't a prop (RESOLVED 2026-10-03)
+
+**Resolved by the folder reorganisation:** every drag-and-drop prefab lives in one semantic folder under
+`Assets/_Project/Prefabs/`, see `Docs/folder-map.md` (characters and enemies in `Characters/`, items in
+`Weapons/Item/`). The text below is the original note.
+
 
 The hot path writes `Assets/_Project/Prefabs/World/Prop_<Name>.prefab`. But `Prefabs/World/`
 currently holds **world systems** — `SUN`, `SkyboxSwitcher`, `TimeManager`, `Vegetation` — not
@@ -1041,6 +1048,32 @@ the result is a **Variant** of the model, which is what we want. Door colliders 
 pose (doors ajar) is reproduced by trying both rotation signs and keeping the one whose world bounds match the vendor's (error 0.001),
 not by copying Euler angles across a changed axis convention. `execute_code` blocks `AssetDatabase.DeleteAsset` by design: delete your own
 untracked files from the filesystem (plus the `.meta`) instead of disabling the safety check.
+
+### G21 — A whole pack in one run: shared atlas, LOD FBX, vendor prefabs rebuilt from data (AST-270 Medieval Wells, 2026-10-03)
+
+42 FBX + 42 single prefabs + 23 "set" prefabs, one shared 4096 atlas (Albedo + AO + Normal). What it taught:
+1. **One atlas = one texture pass, one material.** Rename to `_BaseColor`/`_AO`/`_Normal`, `texture_pass.py --size 1024 --map-size 512` (AO is
+   multiplied in), one `M_<Pack>.mat` cloned from `M_Spotter` (G19). Ask the size once for the whole pack.
+2. **A model whose nodes are named `<name>_LOD0/1/2` already gets a `LODGroup` from the FBX importer.** `AddComponent<LODGroup>()` returns **null**
+   (then the next line throws a bare NullReferenceException). Use `GetComponent<LODGroup>()`, `GetLODs()`, set `screenRelativeTransitionHeight`,
+   `SetLODs()`. Vendor values here: 0.25 / 0.125 / 0.01, fade None.
+3. **Fix FBX with a non-1 root scale in Blender with ONE batch function, then check against the vendor's world bounds.** Per file: import, for each
+   mesh `data.transform(matrix_world)`, unparent, set the root empty to identity, reparent with identity inverse, drop unused material slots, export
+   over the same path (`bake_space_transform=True`, `-Z`/`Y`, `FBX_SCALE_ALL`, `path_mode='STRIP'`). 15 of 42 needed it.
+   **Verify all 42 (not just the fixed ones) by LOD0 world min/max in both projects:** 3 of the 15 came out wrong (one turned 90 degrees, two
+   shifted by the 3ds Max group offset) although sizes and tri counts matched. Sizes alone prove nothing. Calibrate the Blender->Unity axis map on a
+   file that came out right (here Unity = (-Bx, Bz, -By)), then correct the odd ones (rotation about X, or translate LOD0's min to the vendor's).
+4. **Never `read_factory_settings` over the Blender MCP**: it kills the add-on's server (needs the add-on re-enabled and Start MCP Server). Clear
+   objects with `bpy.data.objects.remove` instead. Blender state does not persist between `execute_blender_code` calls (functions must be redefined).
+5. **Rebuild vendor prefabs from data, not by hand:** dump the vendor singles/sets from Playground to a text file (LOD heights, static flags,
+   per-box local TRS + center/size; for sets, every node with its source prefab name and local TRS), then build in Mr. Moonlight in a **preview scene**
+   (`EditorSceneManager.NewPreviewScene()`, close in `finally`). Building into the open scene leaks a stray instance whenever the script throws.
+   Sets that reference other sets need a dependency-ordered pass. Instances whose source is a module you did not move (here legacy foliage) are skipped
+   and reported.
+6. **Pack colliders were boxes in scaled child transforms** (`Col_01..`, 154 across the 42 singles) and looked like a loose cloud around the
+   well (Carlos's screenshot, 2026-10-03). **Replaced by Carlos's ruling with one non-convex `MeshCollider` per prop** on a `<Name>_Collision` child
+   (LOD0 mesh; static props, so the cost is only the NavMesh bake and static physics: 26,078 tris over 42 props, Well_01 is the largest at 5,384).
+   Edit with `PrefabUtility.LoadPrefabContents` / `SaveAsPrefabAsset` / `UnloadPrefabContents`; the 23 sets pick it up as nested instances.
 
 ### Closed gaps
 

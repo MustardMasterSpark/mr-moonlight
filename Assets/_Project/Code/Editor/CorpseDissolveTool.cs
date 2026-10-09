@@ -15,7 +15,7 @@ namespace MrMoonlight.EditorTools
     /// </summary>
     public static class CorpseDissolveTool
     {
-        private const string EnemyPrefab = "Assets/_Project/Prefabs/Enemies/Enemy_Spotter.prefab";
+        private const string EnemyPrefab = "Assets/_Project/Prefabs/Characters/Enemy_Spotter.prefab";
         private const string NoisePath = "Assets/_Project/Art/VFX/Dissolve/Dissolve_Noise.png";
 
         [MenuItem("Mr. Moonlight/Corpse Dissolve/Rebuild Material Variants")]

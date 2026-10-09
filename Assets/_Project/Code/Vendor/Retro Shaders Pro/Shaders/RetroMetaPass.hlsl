@@ -52,7 +52,7 @@ v2f metaVert(appdata v)
 	//o.positionCS = TransformObjectToHClip(vertex);
 #endif
 
-	positionVS = floor(positionVS * _SnapsPerUnit) / _SnapsPerUnit;
+	positionVS = RetroWobbleSnap(positionVS);
 	o.positionCS = mul(UNITY_MATRIX_P, positionVS);
 
 	o.uv = TRANSFORM_TEX(v.uv0, _BaseMap);
@@ -74,7 +74,7 @@ float4 metaFrag(v2f i) : SV_TARGET
 	int actualResolution = (int)log2(_BaseMap_TexelSize.zw);
 	int lod = actualResolution - targetResolution;
 	
-    float2 uv = lerp(i.uv, i.affineUV.xy / i.affineUV.z, _AffineTextureStrength);
+    float2 uv = lerp(i.uv, i.affineUV.xy / i.affineUV.z, _AffineTextureStrength * _RetroWobbleScale);
 
 #if defined(_FILTERMODE_POINT)
 	float4 baseColor = _BaseColor * SAMPLE_TEXTURE2D_LOD(_BaseMap, sampler_PointRepeat, uv, lod) * i.color;

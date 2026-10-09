@@ -1,0 +1,25 @@
+SUMMARY
+
+MRM-88: Wooden church placed in scene 07 on flattened terrain, NavMesh + Enemies switched off until the demo update ends
+
+DESCRIPTION
+
+Stage 1 of the new demo update (Docs/demo-update.md). Scene 07 LightingTestScene only.
+
+- Prop_WoodenChurch (AST-070) placed at (45.03, 50.03, 60.49).
+- Terrain flattened under it: plateau at Y 49.67273 (the lowest vertex of the church mesh, so no part of the base is
+  buried), footprint + 1.5 m margin, 14 m smoothstep blend back to the original terrain, max change 2.58 m. Heights only;
+  textures, grass and the TerrainCollider are untouched. Edits are in the Gaia session TerrainData asset (about 8 MB diff).
+- Player_Tracey spawn moved next to the church: (68.44, 47.80, 74.01), 1 m above the ground so it falls onto it on Play.
+  Weather Circuit moved 3 m in front of the spawn: (70.02, 46.59, 71.45).
+- NavMesh Surface and Enemies root GameObjects set INACTIVE on purpose, to avoid re-baking after every prop. They MUST be
+  re-enabled and the NavMesh re-baked when placement ends (checklist at the top of Docs/demo-update.md).
+- Docs: new Docs/demo-update.md (running doc, ending checklist), Docs/demo-update-stage2-sonnet-prompt.txt (handoff),
+  change record C-018 in Docs/performance-sessions.md section 8.
+
+Files to include: the scene (07 LightingTestScene.unity), the TerrainData asset
+(Assets/Gaia User Data/Sessions/GS-20260829 - 011148/Terrain Data/Terrain_0_0-20260829 - 035828.asset), and the four Docs
+files above plus this message. Leave out: Assets/_Project/Scenes/LightingTestScene/VP_LightingTest_Fog.asset (HAZE
+`active` 1 -> 0 re-save noise).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

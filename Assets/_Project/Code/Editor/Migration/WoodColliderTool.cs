@@ -29,8 +29,10 @@ namespace MrMoonlight.EditorTools.Migration
 	// Full process: Docs/technie-vegetation-collider-process.md
 	public static class WoodColliderTool
 	{
-		public const string PrefabFolder = "Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest/";
-		public const string MeshFolder = PrefabFolder + "WoodColliders/";
+		// Folder reorg 2026-10-03: prefabs live under Prefabs/Nature/ (Trees, Rocks & Logs, ...), searched recursively by
+		// exact name, so the Old_ rough-collider duplicates never match. Wood meshes moved to Art/Nature/Tree Colliders/.
+		public const string PrefabFolder = "Assets/_Project/Prefabs/Nature/";
+		public const string MeshFolder = "Assets/_Project/Art/Nature/Tree Colliders/Wood Meshes/";
 		public const string ChildName = "WoodCollider";
 		private const int PreviewLayer = 31;
 
@@ -58,7 +60,9 @@ namespace MrMoonlight.EditorTools.Migration
 			return names.ToArray();
 		}
 
-		// Prefabs sit in the test folder or a subfolder (RetroRealism/, GRASS PREFABS/); names are unique.
+		// Prefabs sit in a subfolder of Prefabs/Nature/ (Trees/, Rocks & Logs/, ...); names are unique.
+		public static string FindPrefabPath(string prefabName) { return PrefabPath(prefabName); }
+
 		private static string PrefabPath(string prefabName)
 		{
 			string top = PrefabFolder + prefabName + ".prefab";
@@ -141,7 +145,7 @@ namespace MrMoonlight.EditorTools.Migration
 
 				// Mesh asset: overwrite in place so the GUID (and the collider's reference) survives re-runs.
 				if (!AssetDatabase.IsValidFolder(MeshFolder.TrimEnd('/')))
-					AssetDatabase.CreateFolder(PrefabFolder.TrimEnd('/'), "WoodColliders");
+					AssetDatabase.CreateFolder("Assets/_Project/Art/Nature/Tree Colliders", "Wood Meshes");
 				string meshPath = MeshFolder + prefabName + "_Wood.asset";
 				Mesh existing = AssetDatabase.LoadAssetAtPath<Mesh>(meshPath);
 				if (existing != null)

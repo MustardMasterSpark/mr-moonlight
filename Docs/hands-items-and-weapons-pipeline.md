@@ -65,7 +65,7 @@ Handlers on the character (not on the item) do special routing: `WieldableHealin
 **Scripts:** `Wieldable` (base), `WieldableTool` (hold + use + equip/holster `UnityEvent`s, no code needed for simple
 cases), `HealingWieldable`, `MeleeWeapon`, `Firearm`, `WieldableThrowableHandler`.
 
-**Animator controller templates** (`Assets/ThirdParty/AST-046/FPSCore/Art/Animations/Wieldables/Controllers/`):
+**Animator controller templates** (`Assets/ThirdParty/AST-046 (HQ FPS)/FPSCore/Art/Animations/Wieldables/Controllers/`):
 `Template_Wieldable` (Equip → Idle → Holster; **the one for a passive item like a map**), `Template_Tool` (adds Use),
 `Template_Unarmed`, `Template_Throwable`, `Template_MeleeBasic`, `Template_MeleePolearm`, `Template_FirearmDefault`,
 `Template_FirearmCharge`, `Template_FirearmProgressive`. `Templates/` holds generic placeholder clips

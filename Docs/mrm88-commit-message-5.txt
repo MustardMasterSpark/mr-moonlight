@@ -1,0 +1,23 @@
+SUMMARY
+
+MRM-88: Prop placement started (two Medieval Wells pieces by the church), 17 empty folders removed, change-record hashes filled in
+
+DESCRIPTION
+
+Checkpoint before merging mrm-88 into main; work continues on mrm-88.
+
+- Scene 07 (saved by Carlos): Prop_MVillage_Well_01 and Prop_MVillage_WellWall_01 placed on the church plateau (Y 49.659), from
+  Prefabs/Buildings. AST-145 Dynamic Culling registered their renderers. Scene Effects Toggle saved with fog and CRT off.
+  NavMesh Surface and Enemies stay off until placement ends (ending checklist in Docs/demo-update.md).
+- Folder cleanup: the 10 folders emptied by the reorg (Art/Environment, Art/Props, Art/HUD Textures, Art/VegetationPrefabs,
+  Prefabs/World, Player, Enemies, MainMenu, DevTools, Legacy) and 7 empty August placeholders (Art/Enemies/Furman, Wolf, Zealot,
+  Art/Items, Art/Weapons/Pickaxe, Pistol, Turret) deleted, each re-checked for files first. Audio/VO kept.
+- Docs: demo-update.md (Stage 3 section: placements and the agreed order: place every prop, then embellish with lights/logic and
+  decide church interior fog, then enemies + NavMesh, then builds; build 47 and the HAZE vs VF2 choice on hold), folder-map.md
+  (cleanup, no empty placeholders), demo-update-stage3-sonnet-prompt.txt (end-of-session state for the next session),
+  performance-sessions.md (commit hashes for C-018 to C-022, new change record C-023).
+
+Files to include: Assets/_Project/Scenes/07 LightingTestScene.unity, the 17 deleted folder .meta files, the four Docs files above and
+this message file. Nothing to leave out.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

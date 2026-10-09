@@ -16,7 +16,9 @@ namespace MrMoonlight.EditorTools.Migration
 	//   TreeColliderReset.Run(keep, dryRun: false)  do it, then re-read every prefab to verify
 	public static class TreeColliderReset
 	{
-		private const string Folder = "Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest";
+		// Folder reorg 2026-10-03: the wood-collider set now lives in these two folders (was AST116_ColliderTest).
+		private const string Folder = "Assets/_Project/Prefabs/Nature/Trees";
+		private const string Folder2 = "Assets/_Project/Prefabs/Nature/Rocks & Logs";
 
 		public static string Run(string[] keepPrefabNames, bool dryRun)
 		{
@@ -35,7 +37,7 @@ namespace MrMoonlight.EditorTools.Migration
 			// somehow points at the same asset.
 			HashSet<Object> keptData = new HashSet<Object>();
 			List<string> paths = new List<string>();
-			foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { Folder }))
+			foreach (string guid in AssetDatabase.FindAssets("t:Prefab", new[] { Folder, Folder2 }))
 				paths.Add(AssetDatabase.GUIDToAssetPath(guid));
 			paths.Sort();
 			foreach (string path in paths)

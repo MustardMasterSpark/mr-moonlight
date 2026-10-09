@@ -1,0 +1,20 @@
+SUMMARY
+
+MRM-88: Foliage Renormalizer (AST-301) smooths leaf-card normals on 59 tree prefabs, batch tool with rollback
+
+DESCRIPTION
+
+Vegetation look pass on mrm-88, run from the scene 05 vegetation gallery against the prefabs.
+
+- New editor tool Assets/_Project/Tools/Editor/FoliageRenormalizerBatch.cs (menu Tools > Foliage Renormalizer: Apply to trees in open
+  scene, Apply to ALL prefabs in the Trees folder, ROLLBACK, Re-apply). Kept outside Code/ because the vendor scripts have no asmdef.
+- 59 tree prefabs in Prefabs/Nature/Trees now point at renormalized meshes in Art/Nature/Renormalized Trees/ (59 assets, 17.4 MB).
+  Only alpha-clipped (leaf) submeshes changed; same vertex count, UVs and tangents; vertex colors untouched; no component added.
+  24 solid-material trees (GraveKeepers, Heretic, Curse, Dry, Burnt, ...) skipped, 0 failed.
+- Every swap is recorded in Tools/Editor/FoliageRenormalizerManifest.json; rollback and re-apply tested 59/59.
+- Carlos's call: keep (not sure it improved, at least a placebo). Re-run at the end of the demo to cover new vegetation.
+- Docs: Docs/foliage-renormalizer-polish.md (new, includes the end-of-demo re-run), Docs/demo-update.md (session section, ending checklist
+  step 6), change record C-025 in Docs/performance-sessions.md, history row in Docs/lighting.md, handoff
+  Docs/demo-update-ast147-sonnet-prompt.txt.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

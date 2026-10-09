@@ -72,8 +72,8 @@ guessing.
 ## Step 3 — decide the target project, then sync by GUID
 
 **First: is this asset already installed anywhere, and where?** Check both:
-- Mr. Moonlight: `Assets/ThirdParty/AST-###/` and `Assets/_Project/Code/Vendor/<PackageName>/`
-- Playground: `Assets/PLAYGROUND/AST-###/`
+- Mr. Moonlight: `Assets/ThirdParty/AST-### (Short Name)/` (named this way since 2026-10-03, see `Docs/folder-map.md`; a new import gets the code plus one or two words in parentheses) and `Assets/_Project/Code/Vendor/<PackageName>/`
+- Playground: `Assets/PLAYGROUND/AST-### (Short Name)/` (same naming rule since 2026-10-05; Playground is a short-lived bench, removal only on Carlos's word, history in `Docs/playground-asset-log.md`)
 
 Only one of these will usually be true (see `Docs/dual-project-workflow.md` — new/unproven assets
 get evaluated in Playground first; only things Carlos has actually adopted into the game live in
@@ -621,6 +621,86 @@ the session scratchpad: it is 40 lines, rewrite it from this paragraph). File co
 
 **Moving one into Mr. Moonlight** is the prop wizard (`/prop`), see `Docs/3d-prop-pipeline-wizard.md` G17 to G20. AST-070 is the first one through it.
 Row bookkeeping done 2026-10-02: notes on the 7 rows, AST-070 marked `in Mr Moonlight? = Yes`, AST-108 moved to owned.
+
+## Worked example 11 (2026-10-05) - 10 files, all genuinely new, 6 staged in Playground
+
+Files without an `AST-` prefix (minus `Assets.zip`): 10, **none on any list** (name match and collection-URL slug both checked), so new IDs from
+287 + 1: **AST-288** Modular 3D Text, **289** Crawling Ghoul Animations, **290** Tail Animator, **291** Legs Animator, **292** Witch Village
+Environment, **293** P3D Dead Bodies, **294** Barricades Pack, **295** Medieval Furniture Props, **296** PSX Abandoned Church Hospital (itch.io),
+**297** PSX Modular Wooden Fence and Debris (itch.io, `.7z`). Renamed in place, logged in `_rename-log 2026-10-05.csv`. Sheet: 294 IDs, new
+rows appended to the end of "OWNED (FROM WISHLIST)" (the same in-place rewrite, rows below shifted down by 10, hyperlinks 583 -> 601), Legend
+category counts and change line updated. Store data by `WebFetch`; only AST-288 is behind the store (file 4.9.2, store 4.9.3); the two itch.io
+packs have no version (`Unknown`, price as text or the listed price, no collection URL so the store link sits in the source column).
+Carlos marked AST-292 to 297 with asterisks: those six were staged in Playground (`AST-### (Short Name)` from the start). Details and the
+per-asset result are in `Docs/playground-asset-log.md`. What is new compared with the earlier staging examples:
+
+- **A `.7z` opens with Windows' own `tar.exe` (bsdtar)**, as do the zips. Each archive goes into its own new, empty `02_extracted\AST-###`.
+- **Not every download is a `.unitypackage`.** AST-294, 296, 297 are raw FBX + PNG folders: copy only what Unity needs (the FBX and the
+  textures; leave `.blend`, `.obj`/`.mtl`, `.glb` duplicates in `02_extracted`) and let Unity import them. AST-296's nested `Hospital_horror.zip`
+  is an **Unreal project** (160 `.uasset`): never stage it.
+- **An HDRP-only pack looks fine in a listing and is wholly pink in URP.** AST-292 and AST-295 ship only an `HDRP` folder: their materials are
+  `HDRP/Lit` (error shader), Built-in `Standard`, and **HDRP Shader Graphs that report `Shader.isSupported = True` yet draw as the error
+  colour in URP**. The listing/`isSupported` check passed all of them; only rendering showed it. So the check for a new pack is a **real render
+  audit**: `_Local/Editor/RenderAudit.cs` (`Run(folder, outDir, tag, models)`, `RunChildren(fbx, ...)`) renders every prefab/model through
+  `PreviewRenderUtility` in the active pipeline, counts magenta pixels, and writes 8 x 6 contact-sheet PNGs to read by eye. Counting alone is not
+  enough either: the first conversion pass had 0 pink but rocks, bowls and moss were **invisible** (see next point), found only by the `BLANK` flag and
+  the sheet.
+- **Converting in place** (same GUIDs, original properties stay in the saved material): `HdrpToUrpMaterialConvert.Convert(folder)` (HDRP/Lit, now
+  takes any folder), `StandardToUrpConvert.Convert(folder)`, `LegacyParticlesToUrp.Convert(folder)`, and the new `ShaderGraphToUrp.Convert(folder)` for the
+  vendors' Shader Graphs (maps base colour, normal, tint, alpha clip, flat metallic/smoothness; flames/fire/dust go to URP Particles/Unlit). Traps hit:
+  a Shader Graph's tint **alpha** is not opacity (alpha 0.38 or 0 plus an alpha-clip made rocks vanish), and render queue 2475 is the S_Standard default
+  and **not** a cutout flag: only `_OpacityMap`, `_UseOpacity` or the TallGrass shader mean clip. `ShaderGraphToUrpFix.cs` re-derived the flags from the saved
+  data of the 66 materials already converted.
+- **Sketchfab rips (AST-294):** the FBX carries one material slot per mesh named by index (`000-0-0`...) with **no textures**, and a `materialInfo.txt`
+  that lists the meshes in node order with their material name. The slot-name index picks the entry, so build one URP/Lit material per name and remap all
+  slots through `ModelImporter.AddRemap(new SourceAssetIdentifier(typeof(Material), slotName), mat)` + `SaveAndReimport()`. The 339 meshes are **skinned**
+  (bone root `szkielet-0` in the same node tree): to render or inspect one, **hide the other renderers, never delete their nodes**. Normal PNGs must be set to
+  the Normal type by script (a plain PNG import renders them as albedo); Roughness/Metallic/AO PNGs to linear.
+- **Textures that sit next to an FBX but are not linked (AST-296):** the four PNGs carry the material names; build/assign by name.
+- **Refresh hung on "Reloading Domain" for 21 minutes with ~0 CPU** after a multi-GB import (Unity did not come back when clicked): force-close and reopen
+  cured it, and nothing was lost because the import workers had finished. Poll the process by **PID**: the Playground window title does not contain the word
+  "Playground" (`Importing ...`), so a title filter by project name returns nothing and looks like "idle".
+- Input System standing check: none of the four demo scenes has a script or a legacy `StandaloneInputModule`; console 0 errors.
+
+## Worked example 12 (2026-10-07) - 11 files: 10 wishlist, 1 new, 1 row removed, 2 staged in Playground
+
+Non-`AST-` files (minus `Assets.zip`): 10 matched wishlist rows (AST-152 Guns Sound Essentials P2; AST-224 Toon Soldiers, AST-225 Toon Soldiers - Militia P4;
+AST-243 Dryad Girl Fawnia, 244 Cosmo Dragon Girl, 245 Cyberpunk Ninja Girl Vex, 246 K-POP SERIES Mina, 247 Gamer Girl, 251 SuccubusV, 252 Succubus Sisters
+Complete Edition P5) and moved to "OWNED (FROM WISHLIST)" inside the ID-sorted group (the "new, not on original list" rows stay at the end). **AST-298**
+Horror Bundle - Sound Effects (AD Sounds, $49.99, store 10.0, file 8.0) was on no list. Log: `_rename-log 2026-10-07.csv`. Behind the store: 224, 225, 244, 246, 298;
+AST-152 has no store version (`Unknown`; it is a `.rar`). **AST-239 Alice Style Character removed** at Carlos's request (wishlist P5, no file, no longer available; the ID is not
+reused). Sheet: 294 IDs in and out, 602 hyperlinks; new tiers P1 13 / $133.41, P2 5 / $138.95, P3 19 / $1,136.94, P4 12 / $732.96, P5 12 / $695.00. The dry-run
+(tier formula reproduced all five Legend lines; owned group sorted) passed before writing, and the rewrite ran in place as in example 3. Only the fill of a moved row needs swapping to the owned
+fill (every other cell style is kept). AST-247 and AST-298 staged in Playground (`AST-247 (Gamer Girl)`, `AST-298 (Horror Sounds)`): see `Docs/playground-asset-log.md`.
+- **A pack with a pipeline-set folder structure (AST-247):** `Render pipeline/Built-in|HDRP|URP`. Use the URP folder and leave the others alone; they are pink by design, not a staging error.
+- **The render-audit tool's first slot reads blank** unless one render is thrown away first (fixed 2026-10-07). Two items reported blank in example 11 were this artifact.
+
+## Worked example 13 (2026-10-08) - 11 files: 7 wishlist, 4 new, 1 row removed, 1 installed in Mr. Moonlight
+
+Non-`AST-` files (minus `Assets.zip`): 7 matched wishlist rows (AST-204 Feudal Japanese Castle P3; AST-213 Hellish Battle, 215 MFPS 2.0, 216 MFPS Mobile,
+218 Car Controller with Combat System, 226 Toon Soldiers WW2, 227 Toon Soldiers Armies P4). 4 were on no list (Carlos supplied the collection and store links):
+**AST-299** Animation Designer (FImpossible Creations, $59.99, 1.3.1), **300** Mobile Traffic System v3 (Gley, $129, store 3.6.5, file 3.6.1), **301** Ultimate
+Foliage Renormalizer (Milk_Drinker01, $39.99, store 1.5.6, file 1.3.4), **302** 550 Cyberpunk Material Collection Vol 2 (Fit Fun Apps, $29.99, 1.0).
+Log: `_rename-log 2026-10-08.csv`. **AST-236 Satomi Character Pack removed** (P5 wishlist, no longer in the collection; ID not reused). Behind the store: 215, 216,
+218, 226, 227, 300, 301. Sheet: 297 IDs, same in-place rewrite as example 3 (dry-run reproduced the Legend with 0 mismatches before writing; owned-from-wishlist
+group still sorted; backup `ASSETS - Index 2026-09-16 (backup before 2026-10-08).xlsx` beside the master). Tiers now P1 13 / $133.41, P2 5 / $138.95,
+P3 18 / $1,056.95, P4 6 / $512.97, P5 11 / $660.00. Store data from `WebFetch` (these pages have empty descriptions; the row says so).
+- **AST-301 went straight into Mr. Moonlight, as is, minus the demo** (Carlos's call, to renormalize the island trees' normals). Method as in the Playground
+  staging: scan the `.unitypackage` for `guid -> pathname`, check GUIDs against every `.meta` in `Assets/` (0 collisions), stream `asset` + `asset.meta` into
+  `Assets/ThirdParty/AST-301 (Foliage Renormalizer)/`, the vendor root `Assets/Foliage Renormalizer/` collapsed into it. Kept 23 of 113 entries: `Scripts/` (3 runtime
+  + 6 editor), `Editor/Resources/` (5 debug-view materials), `Shaders/` (2 shader graphs), the `Generated Meshes` folder and the quick-start `.url`. Left out: all of
+  `Demo/` (2 scenes, EZ-tree FBXs, terrain, its HDRP package), `Packages/manifest.json`, and the 24 MB `Offline Guide.pdf` (still in `02_extracted\AST-301`).
+  Refresh compiled clean (one vendor CS0219 warning in `FoliageNormalTransfer.cs`). No script hard-codes `Assets/Foliage Renormalizer`, so the folder rename is safe.
+  Not yet run on any tree. File is v1.3.4, store is 1.5.6: re-download before relying on it.
+- **AST-147 Asset Optimizer Pro, same day:** its Playground copy was already gone, so it was staged straight from `02_extracted\AST-147` the same way into
+  `Assets/ThirdParty/AST-147 (Asset Optimizer)/` (16 of 20 entries: 13 editor scripts + the guide PDF; `Example/` scene and material left out; 0 GUID collisions; compiles
+  clean). It is editor-only, nothing ships in the build.
+- **Follow-up, 2026-10-08 (later): AST-147 REMOVED from Mr. Moonlight on Carlos's explicit word** (source read, found unfit; 0 external references; copy kept in
+  `02_extracted\AST-147`). **AST-068 Super Level Optimizer 2 (v1.0.5) and AST-146 MeshFusion Pro (v1.3.5) staged straight into Mr. Moonlight** for a feasibility check, same
+  method (guid scan, 0 collisions, stream `asset` + `asset.meta`): `Assets/ThirdParty/AST-068 (Super Level Optimizer)/` keeps `Core/` + `Manual/` + 4 tutorial `Explanation.pdf`
+  (125 entries, 2.5 MB; left out 587 MB `Third-Party/` demo packs, 3 render-pipeline support packages, 4 tutorial scenes); `AST-146 (MeshFusion Pro)/` keeps `Core/` + `PDF/` (148 entries,
+  2.0 MB; left out `Example/` 16 MB and the .docx copies). Both compile clean. Their zips were already named `AST-068.zip` / `AST-146.zip`; the spreadsheet rows were NOT edited.
+- `tar` in the Bash tool is Git's GNU tar and cannot open `C:\` paths; call `C:\Windows\System32\tar.exe` from PowerShell for zips.
 
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 

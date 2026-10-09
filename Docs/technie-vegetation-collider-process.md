@@ -7,6 +7,11 @@ kept for the record, and for a possible future knock-down/burn mechanic. The fir
 (ring-seam splitter) is under **History** at the bottom. Performance numbers and the original VHACD
 evaluation live in `Docs/performance-log.md`.
 
+> **Folder reorg 2026-10-03:** `AST116_ColliderTest` no longer exists. The wood-collider prefabs are in
+> `Prefabs/Nature/Trees/` and `Prefabs/Nature/Rocks & Logs/`, wood meshes in `Art/Nature/Tree Colliders/Wood Meshes/`, Technie paint in
+> `Art/Nature/Tree Colliders/Technie Paint/`. The original rough-collider prefabs were renamed `Old_*`. `WoodColliderTool.PrefabFolder` is
+> now `Prefabs/Nature/` (recursive, exact-name match), which also resolves the "Known limit" below. Map: `Docs/folder-map.md`.
+
 ## Current process (2026-09-18): one wood MeshCollider per tree
 
 **What it is.** Each tree gets ONE non-convex `MeshCollider` whose mesh is exactly the triangles

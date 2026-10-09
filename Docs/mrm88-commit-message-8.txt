@@ -1,0 +1,22 @@
+SUMMARY
+
+MRM-88: SessionLog v6 (scene census, vertex/shadow/memory/look/LOD fields), FPS counter in scene 05, optimizer assets assessed (AST-147 out, AST-068/146 staged)
+
+DESCRIPTION
+
+Preparation for the vegetation LOD experiments on mrm-88; build 47 (scene 05 only, no LODs) is the baseline.
+
+- SessionLog v6 (Assets/_Project/Code/Runtime/DevTools/SessionLog.cs): new "[SCENE] CENSUS" line per scene, taken inside the warm-up the stats ignore
+  (renderers, distinct meshes/materials, triangles and vertices at the highest LOD, LODGroups by level count, native Mesh LOD meshes, shadow casters,
+  colliders, lights, terrain trees). "[PERF]" windows gain verts, shadowcasters, mesh/texture/gfx memory, camera look yaw/pitch and lodBias /
+  meshLodThreshold / maxLOD (also in the "[SESSION]" header). Two tunables in MoonlightTunables: SessionLogCensusEnabled, SessionLogCensusWarmupFraction.
+- Scene 05 (VegetationGallery_TechnieColliderTest): FPS Counter prefab added (bottom-left). Saved with HAZE Global Fog and Explorable Area Fog ACTIVE
+  again (they had only been off in memory for the renormalizer comparison). The scene diff is the FPS Counter prefab instance only.
+- Optimizer assets, all under git-ignored Assets/ThirdParty: AST-147 Asset Optimizer Pro removed (source reviewed and found unfit), AST-146 MeshFusion Pro
+  and AST-068 Super Level Optimizer 2 staged (Core + manuals only), nothing run on any scene. Flora Renderer left OFF; a re-check is now step 7 of the
+  demo ending checklist.
+- Measured from scene 07 + prefab stats: ~7,900 trees, ~25.4 M triangles, avg 3,200 tris/tree, 65 materials on one shader, no LODGroups.
+- Docs: Docs/demo-update.md (ending checklist step 7, optimizer session), Docs/performance-sessions.md (section 2 and 7 v6, change record C-026),
+  Docs/asset-import-update-process.md (example 13 follow-up), handoff Docs/demo-update-lod-sonnet-prompt.txt (replaces the AST-147 prompt, now marked stale).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

@@ -15,8 +15,9 @@ namespace MrMoonlight.EditorTools.Migration
 	// live vegetation prefabs. Branchy trees use TreeColliderTool instead.
 	public static class AST116TechnieBatchCollider
 	{
-		private const string TargetFolder = "Assets/_Project/Art/VegetationPrefabs/AST116_ColliderTest";
-		private const string HullDataFolder = TargetFolder + "/Physics Hulls";
+		// Folder reorg 2026-10-03: Technie hull/paint data moved to Art/Nature/Tree Colliders/Technie Paint.
+		private const string HullParent = "Assets/_Project/Art/Nature/Tree Colliders";
+		private const string HullDataFolder = HullParent + "/Technie Paint";
 
 		public static bool IsRunning = false;
 		public static bool CancelRequested = false;
@@ -119,7 +120,7 @@ namespace MrMoonlight.EditorTools.Migration
 			EditorCoroutines.Execute(RemoveOnlyRoutine(targets.ToArray()));
 		}
 
-		private const string RequiredScenePath = "Assets/_Project/Scenes/VegetationGallery_TechnieColliderTest.unity";
+		private const string RequiredScenePath = "Assets/_Project/Scenes/05 VegetationGallery_TechnieColliderTest.unity";
 
 		private static List<GameObject> FindTargets(string[] names)
 		{
@@ -148,7 +149,7 @@ namespace MrMoonlight.EditorTools.Migration
 		{
 			if (!AssetDatabase.IsValidFolder(HullDataFolder))
 			{
-				AssetDatabase.CreateFolder(TargetFolder, "Physics Hulls");
+				AssetDatabase.CreateFolder(HullParent, "Technie Paint");
 			}
 
 			string[] existing = AssetDatabase.FindAssets("t:PhysicsCreatorHullFolder");

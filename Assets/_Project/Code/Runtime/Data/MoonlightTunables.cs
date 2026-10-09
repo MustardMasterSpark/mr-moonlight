@@ -1146,6 +1146,10 @@ namespace MrMoonlight.Data
         /// <summary>Seconds between recomputing the skybox-driven ambient light while a weather blend is running (<see cref="World.Weather.WeatherSystem"/>). Each recompute costs a few milliseconds, so it is throttled; it always runs once when a weather locks in. Owner: MRM-86</summary>
         public float WeatherAmbientRefreshSeconds = 0.25f;
 
+        [Header("PS1 wobble (2026-10-02)")]
+        /// <summary>Master scale for the PS1 look's vertex snapping and affine texture swim on every RetroLit material (<c>_RetroWobbleScale</c> global). 0 = off (the default, since the church's wood looked terrible up close), 1 = the full per-material effect, in between = a blend. Applied at boot by <see cref="VFX.RetroWobble"/>; call <c>RetroWobble.Set()</c> to change it live (drug effects). Owner: MRM-88</summary>
+        [Range(0f, 1f)] public float RetroWobbleScale = 0f;
+
         [Header("Session log — perf test tagging by scene (MRM-84, 2026-09-18)")]
         /// <summary>Master switch for SessionLog (the build's timestamped, scene-tagged session log). On during development; switch off for the final release build. Read once at startup, so it needs a restart. Owner: MRM-84</summary>
         public bool SessionLogEnabled = true;
@@ -1155,5 +1159,11 @@ namespace MrMoonlight.Data
 
         /// <summary>Seconds after a scene becomes active that SessionLog leaves out of its fps/frame-time stats, so the scene-load hitch does not pollute the first window or the scene summary. Owner: MRM-84</summary>
         public float SessionLogPerfWarmupSeconds = 2f;
+
+        /// <summary>Writes one <c>[SCENE] CENSUS</c> line per scene (renderers, LODGroups, triangles at the highest detail, colliders, lights, shadow casters, terrain trees) a fraction of the way through the warm-up, so a LOD or merge experiment can be read against what the scene actually contained. It scans the whole scene once, inside the warm-up that the stats ignore. Owner: MRM-85</summary>
+        public bool SessionLogCensusEnabled = true;
+
+        /// <summary>Where in the warm-up (<see cref="SessionLogPerfWarmupSeconds"/>) the census runs, 0-1. Early enough that its one-off hitch lands inside the part of the scene time that the stats leave out. Owner: MRM-85</summary>
+        [Range(0.1f, 1f)] public float SessionLogCensusWarmupFraction = 0.5f;
     }
 }

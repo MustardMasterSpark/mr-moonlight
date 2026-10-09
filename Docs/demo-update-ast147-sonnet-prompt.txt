@@ -1,0 +1,76 @@
+*** STALE AS OF 2026-10-08 (later): AST-147 was assessed, found unfit and REMOVED. AST-068 + AST-146 are staged instead; see Docs/demo-update.md "optimizer assets assessed". Flora re-check is ending checklist step 7. Nothing below should be run. ***
+Context prompt: DEMO UPDATE (MRM-88), SIDE TRACK = TRY AST-147 ASSET OPTIMIZER PRO ON THE VEGETATION PREFABS, THEN BACK TO STAGE 3 STAGING. Read cold; do not rely on chat scrollback.
+Suggested model: Sonnet (tooling trial on existing prefabs; batch + verify). Use Opus only if the trial turns into building a new system.
+
+WRITTEN: 2026-10-08, end of the Foliage Renormalizer session. Do NOT auto-start work: read, report in a few lines, wait for Carlos to say go.
+
+WHERE WE ARE
+- Branch `mrm-88` (do not switch; do not create another unless Carlos asks). Last commit 5b0281c3. Change record: C-025 pending (commit message
+  Docs/mrm88-commit-message-7.txt). C-024 is also still `pending` until Carlos commits and gives the hash; fill both in when he says "I committed".
+- DONE THIS SESSION: AST-301 Foliage Renormalizer ran over the tree prefabs. 59 prefabs under Prefabs/Nature/Trees now use renormalized leaf-card
+  meshes (Art/Nature/Renormalized Trees/), 24 solid trees skipped. Carlos's verdict: keep (maybe a placebo). Read Docs/foliage-renormalizer-polish.md
+  for the tool, the rollback and the END-OF-DEMO RE-RUN (also ending checklist step 6 in Docs/demo-update.md).
+- Scene 05 (VegetationGallery_TechnieColliderTest) is open in Unity with HAZE Global Fog + HAZE Explorable Area Fog DEACTIVATED in memory, for Carlos's
+  comparison. Scene 05 was NOT saved. Do not save it with the fog off unless Carlos says so (re-tick both objects or reload and discard).
+- SCENE 07 IS STILL UNSAVED from the previous placement session (wall loop WellWall_Run_01, 57 pieces). Check `scene.isDirty` on scene 07 first; the
+  recipe to re-create it is in Docs/demo-update.md (Stage 3, session 2026-10-07). Read Docs/demo-update-stage3-sonnet-prompt.txt for the full staging state.
+
+THE TASK (Carlos, 2026-10-08): "run another optimization asset on the vegetation prefabs ... AST-147 ... in hopes of optimizing the project even more.
+Once we are done trying out that, we continue with the demo staging."
+
+AST-147 FACTS (already imported, nothing to move)
+- Location: Assets/ThirdParty/AST-147 (Asset Optimizer)/ (git-ignored like all ThirdParty). 13 editor scripts in namespace OptimizationTools + the guide PDF
+  Advanced_Asset_Optimization_Toolkit.pdf. Editor-only, nothing ships in the build. Compiles clean. Open it from `Tools > Asset Optimizer Pro`.
+- Modules (from the PDF and file names): Models (MeshCombiner, MeshSimplifier, LODGenerator.GenerateLODs(GameObject, float[] lodLevels), ModelOptimizer),
+  Textures (TextureOptimizer / Compressor / Resizer / AtlasGenerator), MaterialCombiner, Batch (BatchProcessor over folders), Reports (before/after
+  draw calls and texture sizes), RenderPipeline (auto-detects URP). Default output folders are Assets/OptimizedTextures, OptimizedMaterials,
+  OptimizedAtlases, OptimizedModels. Change them to a folder under Assets/_Project/Art/Nature/ BEFORE the first run (ThirdParty is git-ignored).
+- The PDF's own warnings: back up before batch-processing; "Mesh has no UVs" blocks atlasing; textures need Read/Write for compression; atlases need
+  one shader type and consistent texture slots.
+
+THINGS TO DECIDE / CHECK BEFORE TOUCHING ANYTHING (Carlos's rules)
+1. Ask Carlos before each piece of Unity work (CLAUDE.md hard rule), then read the state back. Never commit or push.
+2. NEVER delete assets without his explicit word (standing rule). Rollback of anything = swap references back, not delete.
+3. Pick the right target. The prefabs in Prefabs/Nature/Trees are what the island uses (also Nature/Rocks & Logs, Grass & Plants). Do NOT touch the Old_*
+   rough-collider duplicates (kept on purpose) or the Technie grass copies in Dev & Tests unless he asks.
+4. KNOWN CONFLICT RISKS, think before running:
+   - The 59 tree prefabs now point at Renormalized meshes. LOD generation or mesh simplification would re-write vertex normals / vertices. Run it on the
+     CURRENT meshes (renormalize first, simplify after), never on the originals, or the normals pass is lost. If something must go back to the originals,
+     use Tools > Foliage Renormalizer > ROLLBACK first.
+   - Wood colliders (MRM-84 WoodColliderTool) are separate meshes; leaf-card meshes are what we would simplify. Verify a tree's collider still matches.
+   - Terrain trees / Flora instanced renderers may cache meshes; confirm they pick up changes (this was never verified for the normals pass either).
+   - RetroLit samples ONLY BaseColor + Normal; MaterialCombiner / atlases must keep those two slots and respect the PS1-wobble shader global.
+     "Never pixelate a normal map" (Carlos's standing rule). Texture resize limits must not break the church 256 cap or the per-category ceilings
+     in Docs/3d-prop-pipeline-wizard.md.
+   - AST-145 Dynamic Culling registers renderers; if renderers are merged by MeshCombiner, culling granularity changes (big merged meshes cull worse).
+     Combining static meshes is almost always WRONG for terrain-painted or instanced vegetation. Evaluate first and report per module whether it can help at all.
+5. FIRST STEP = ASSESSMENT, like the renormalizer session: tell Carlos which of the modules can actually help THIS project (vegetation prefabs,
+   leaf cards, RetroLit, Flora instancing, Windows build, 1 GB cap) before running any of them. Most likely candidates: LOD generation for the large
+   leaf-card trees (GraveKeepers 11-18k verts, Curse_H01 21k, Oak 6k, Argass 5-8k), texture size/compression review. Combine/atlas are likely not useful.
+   Say so honestly if the asset is not worth it.
+6. Make every pass automated AND reversible, as before: a small editor script in Assets/_Project/Tools/Editor/ (outside the Code/ asmdef; the vendor
+   scripts have no asmdef), a manifest of every prefab/mesh/material it changed (original GUIDs), and ROLLBACK / RE-APPLY menu items. Pilot on 2-3 prefabs,
+   read the result back, then batch. Unity does not answer MCP calls while a long editor batch runs; poll a manifest file, do not retry the call.
+7. Carlos compares by video/side-by-side against his recording of scene 05 (taken before the renormalizer; fog was OFF for the comparison). Keep scene 05
+   as the visual test bench. Take care that fog state matches when he compares.
+8. Measure, do not guess: record draw calls, tris and FPS before/after (Stats / SessionLog / profiler) for the scene 05 view or the island. The
+   verification rule from memory applies: editor screenshots and UnityStats lie when the editor is unfocused; a build is the real check.
+
+TRAPS ALREADY FOUND (renormalizer session)
+- Use `PrefabUtility.LoadPrefabContents` + `SaveAsPrefabAsset` to edit prefab meshes without adding components; read the mesh back from the saved prefab.
+- The batch reads non-readable FBX meshes fine in the editor; copies stay non-readable (good for memory).
+- execute_code on a long batch returns success:false after the MCP timeout even though Unity keeps running it; wait, then read Status/manifest.
+- Cross-issue: this vegetation work touches MRM-70 (vegetation) and MRM-85 (performance) as well as MRM-88; flag it in Linear comments.
+
+AFTER AST-147 (resume Stage 3)
+- Back to the order Carlos set: (1) finish placing props (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells; Carlos names each),
+  (2) embellish prop by prop (lights, lamps, small logic; church interior fog decided here), (3) ENDING CHECKLIST in Docs/demo-update.md: group props under
+  folder parents + clear foliage under footprints, NavMesh Surface + Enemies back on, ask, re-bake, verify Spotters, save, (4) the Foliage Renormalizer
+  RE-RUN (Docs/foliage-renormalizer-polish.md) for any vegetation added since, (5) builds + optimisation again. Remind Carlos of the ending checklist
+  when he says placement is done.
+- ON HOLD until placement is done unless Carlos raises it: build 47 with fog + CRT, HAZE vs Volumetric Fog 2 decision, H15.
+- Next change-record row after C-025 is C-026.
+
+GIT STATE AT WRITING (leave out of the commit): SpecialElite SDF.asset (font atlas noise), VP_HazeGlobalFog.asset (the active 0/1 flip is noise),
+and the earlier asset-import doc edits from other chats (asset-import-update-process.md, ASSETS-Index.xlsx) unless Carlos wants them.
+Scene 07 is modified from the previous session; commit only if Carlos has saved it on purpose.

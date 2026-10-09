@@ -25,8 +25,8 @@ namespace MrMoonlight.EditorTools.Migration
     /// </summary>
     public static class PolymindPlayerBuild
     {
-        private const string Source = "Assets/ThirdParty/AST-046/FPSCore/Prefabs/Core/FPS_Player.prefab";
-        private const string Target = "Assets/_Project/Prefabs/Player/Player_Tracey.prefab";
+        private const string Source = "Assets/ThirdParty/AST-046 (HQ FPS)/FPSCore/Prefabs/Core/FPS_Player.prefab";
+        private const string Target = "Assets/_Project/Prefabs/Characters/Player_Tracey.prefab";
         private const string OurActions = "Assets/InputSystem_Actions.inputactions";
 
         /// <summary>The wieldables Tracey actually carries. Everything else in the vendor demo
@@ -131,10 +131,10 @@ namespace MrMoonlight.EditorTools.Migration
                 return;
             }
 
-            const string folder = "Assets/_Project/Prefabs/Player";
+            const string folder = "Assets/_Project/Prefabs/Characters";
             if (!AssetDatabase.IsValidFolder(folder))
             {
-                AssetDatabase.CreateFolder("Assets/_Project/Prefabs", "Player");
+                AssetDatabase.CreateFolder("Assets/_Project/Prefabs", "Characters");
             }
 
             if (AssetDatabase.LoadAssetAtPath<GameObject>(Target) != null)

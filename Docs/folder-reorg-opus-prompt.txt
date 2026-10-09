@@ -1,0 +1,105 @@
+STATUS: DONE 2026-10-04 on branch mrm-88 (change record C-021). Result and decisions: Docs/folder-map.md. Kept for the record; do not re-run.
+
+Context prompt: PROJECT FOLDER REORGANISATION (semantic folders for level design). Read cold; do not rely on chat scrollback.
+Suggested model: OPUS for the plan, taxonomy and path-reference audit. The mechanical move batches afterwards can be Sonnet.
+
+WRITTEN: 2026-10-03, end of the church / wobble / SmartBuilder session. Do NOT auto-start moving anything: read, then report a short
+plan (taxonomy + how many assets each folder gets + the hidden-path list) and WAIT for Carlos's approval.
+After this task Carlos goes back to Sonnet and continues level staging (Docs/demo-update-stage3-sonnet-prompt.txt, MRM-88).
+
+READ FIRST: CLAUDE.md, Docs/unity-conventions.md (Folder structure + Art folder breakdown: the current rules, which this task replaces),
+Docs/asset-import-update-process.md, Docs/3d-prop-pipeline-wizard.md (writes into folders), Docs/collider-policy.md, Docs/smartbuilder.md.
+
+===========================================================================
+1. WHAT CARLOS ASKED FOR (his words, 2026-10-03)
+===========================================================================
+- "It's beginning to be extremely difficult to navigate the files, assets, and prefabs of MrMoonlight."
+- Keep the strategy: third party stays OUTSIDE the repo (Assets/ThirdParty git-ignored); what we use constantly or that is isolated stays in
+  MrMoonlight (git-tracked, under Assets/_Project).
+- "Particularly with the art folder, the prefabs, and the environment, it's way too spread out."
+- Keep everything related to art in its own folder, "including prefabs that are ready to be dragged and dropped. They should be living in
+  their own folder just called prefabs."
+- Ideally ONE folder for level design where he can see the prefabs he has, with SEMANTIC folder names ("weapons", not "polymite"), not names
+  of renderers or vendors.
+- Asset names keep the AST code but "put it in parentheses, in one or two words, the shortest description possible, so I don't have to look
+  in the Excel spreadsheet" (e.g. `AST-277 (SmartBuilder)`; applies to the AST-### folders, ThirdParty included where renaming is safe).
+- "I don't want a million folders. That's confusing. I want semantic division." FEW folders, clear names.
+- "Update every piece of documentation related to this so nothing is broken, everything is updated, and you know where stuff is. Document the
+  decisions we made." This should have been part of the big refactor (cleanup architecture) that has not been done; do what is feasible now.
+
+===========================================================================
+2. CURRENT STATE (measured 2026-10-03, re-measure before planning)
+===========================================================================
+Assets root (messy): Gaia User Data, Plugins, Procedural Worlds, Resources, Screenshots, Technie, TextMesh Pro, ThirdParty (36 AST folders,
+3.1 GB, ignored), _Project (1.5 GB), _Recovery, InputSystem_Actions.inputactions, Readme.asset.
+_Project: Art, Audio, Code, Data, Prefabs, Scenes, Settings, Default Gaia World Designer Settings.asset.
+_Project/Art file counts (excluding .meta): Environment 941, VegetationPrefabs 659, UI 88, Enemies 12, Props 13, Weapons 10, VFX 6, Materials 4,
+Characters 1, HUD Textures 1, Items 0.
+_Project/Prefabs: World 124 (the dumping ground), Weapons 16, MainMenu 2, VFX 2, plus single files in DevTools, Enemies, Legacy, Player, UI.
+So a level designer today hunts across Art/Environment (941 files, mixed FBX/PNG/mats/prefabs), Art/VegetationPrefabs, Art/Props, Prefabs/World,
+Prefabs/Weapons, and ThirdParty. Prop-wizard output: Art/Environment/<Prop>/ (+ Prefabs/World/Prop_<Name>.prefab).
+
+===========================================================================
+3. SUGGESTED SHAPE (a starting point, Carlos approves the final taxonomy BEFORE any move)
+===========================================================================
+Few top-level folders under Assets/_Project, e.g. Art/ (models, textures, materials, grouped by what it is) and a SINGLE Prefabs/ with
+semantic subfolders for level design (Buildings, Nature, Rocks and Foliage, Props, Weapons, Enemies, Items, Lighting and FX, UI, Player, ...),
+every drag-and-drop prefab in there. Prefab variants of an FBX can live in Prefabs/ while the FBX/mats/textures stay with their art.
+Limit depth (about 2 levels) and total folder count; fold small categories together. Name by meaning, never by vendor or renderer.
+Propose 2 or 3 alternatives with a count of what lands in each, recommend one, wait for his pick.
+
+===========================================================================
+4. SAFE WAY TO MOVE, AND THE TRAPS
+===========================================================================
+- MOVE ONLY THROUGH UNITY (`AssetDatabase.MoveAsset` via UnityMCP execute_code, or manage_asset): GUIDs survive, so scenes, prefabs, materials
+  and variants keep working. Never move with the file system unless Unity is closed and the .meta moves with it.
+- Unity must be OPEN, FOCUSED, NOT in Play Mode. Batch the moves (hundreds per call at most); do not Thread.Sleep in execute_code.
+- ASK CARLOS before scene-affecting or Unity-side actions (CLAUDE.md hard rules). Nothing is committed or pushed by you.
+- New branch for this issue, ONE issue one branch: `git switch -c <name> --no-track origin/main` and check `git config --get branch.<name>.merge`.
+  The current branch `mrm-88` holds uncommitted wobble/church/SmartBuilder work; Carlos should commit that first so this refactor is its own
+  clean commit of renames. Ask him before switching.
+- HIDDEN PATH REFERENCES (audit all before moving; grep every "Assets/ and _Project/ string):
+  * C# with hardcoded paths: Editor tools (WoodColliderTool, WoodColliderLeafAudit, PSXMaterialMigration, MoonlightTextureImporter, bakers),
+    anything using AssetDatabase.LoadAssetAtPath / FindAssets with a folder / Resources.Load. Note Assets/Resources, Assets/Plugins,
+    Assets/Gaia User Data and Assets/Procedural Worlds have MEANINGS to Unity or Gaia (Resources is runtime-loaded by name; Gaia session paths are
+    recorded in scenes): do NOT move those without checking.
+  * Tools/pipeline/*.py (texture_pass.py, build_asset_browse_sheet.py, prop wizard scripts) and .claude/skills/prop-wizard/SKILL.md: output folders.
+  * ProjectSettings and Settings assets that name folders (check Gaia, Crest, HAZE, Flora com.ma.flora settings, AST-145 Dynamic Culling,
+    AST-079 Retro shader GUI, SessionLog, any Gizmos folder lookups).
+  * Docs: unity-conventions.md (folder tree + Art breakdown), 3d-prop-pipeline-wizard.md, hands-items-and-weapons-pipeline.md, prop-log.md,
+    asset-import-update-process.md, asset-moves-to-moonlight-sonnet-prompt.txt, demo-update*.md/txt, collider-policy.md, lighting.md,
+    corpse-optimization.md, performance-sessions.md (change record), CLAUDE.md, and every *-prompt.txt that names a path. Memory notes under
+    C:\Users\calva\.claude\projects\E--MrMoonlight\memory\ that name paths (MEMORY.md index points to them): update, do not leave stale.
+  * Linear issues quote paths: add a comment, do not rewrite history.
+- Do NOT touch: Assets.zip in the Asset Collection (never rename/extract), Assets/ThirdParty/** CONTENT (only the AST folder names, and only if
+  all references are GUID-based; otherwise leave and say so), Gaia session TerrainData, scene object hierarchy.
+- AST naming: `AST-277 (SmartBuilder)` style: keep the code first, 1 to 2 words in parentheses. The AST-### code is how the spreadsheet,
+  Docs/asset-index/ASSETS-Index.xlsx and the import process find things, so do not drop it. Embedded packages under Packages/ (SmartBuilder,
+  com.ma.flora, Crest, Febucci) CANNOT be renamed: their paths are hardcoded or UPM-resolved.
+- Renaming a folder that has a Resources ancestor, an asmdef with relative refs, or a shader #include "relative path" can break builds
+  silently. After the moves: force refresh + compile, console clean, open scenes 02/06/07/08 and the main menu, look for pink materials
+  (scan renderers, not just the error shader), missing prefab/script warnings, and make a test build if Carlos wants one.
+- Do not leave empty folders; do not leave _Recovery/stray files without asking.
+
+===========================================================================
+5. DELIVERABLES
+===========================================================================
+1. The agreed taxonomy, written to Docs (replace the Folder structure + Art breakdown in Docs/unity-conventions.md; add a one-page
+   Docs/folder-map.md: what lives where, where a new prop/weapon/enemy goes, and the AST naming rule).
+2. The moves, done in batches, each verified (count in = count out, scenes load, no missing references).
+3. Every doc, prompt, script and memory note that named an old path updated; the /prop wizard writes to the NEW paths.
+4. The "final instructions" (commit message, docs, next-session prompt, change-trace row C-021 in performance-sessions.md section 8 + Linear MRM-85).
+   Mention that file moves appear as renames; list what to include in the commit.
+
+===========================================================================
+6. OTHER OPEN STATE (do not lose)
+===========================================================================
+- Uncommitted from this session (branch mrm-88): PS1 wobble global (RetroLit shader + RetroWobble.cs + MoonlightTunables.RetroWobbleScale, default 0),
+  church 9 materials _ResolutionLimit 256 (Carlos liked it; a re-bake of the PNGs smaller is a possible follow-up), SmartBuilder (AST-277) in
+  Packages/. Message: Docs/mrm88-commit-message-3.txt. Docs: retro-wobble-global.md, smartbuilder.md, C-020.
+- Not mine, also in the working tree from other chats: collider-policy.md + CLAUDE.md collider rule, MedievalWells assets, wizard/SKILL.md edits,
+  asset-index xlsx, ProjectSettings and fog asset noise. Do not revert them.
+- Interior fog question (answered, NOT built): a higher-priority local Volume with fog 0 inside the church works, with the catch that
+  post-process fog also clears the view out the door. Ask before prototyping.
+- Scene 07: `NavMesh Surface` and `Enemies` are INACTIVE on purpose (see Docs/demo-update.md ending checklist). Remind Carlos at the end of placement.
+- Back to Sonnet afterwards for level staging.

@@ -318,15 +318,15 @@ Shader "Retro Shaders Pro/Retro Lit"
 				ApplyMoonlightWind(v.positionOS.xyz, float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23));
 
 #if defined(_SNAPMODE_OBJECT)
-				float4 positionOS = floor(v.positionOS * _SnapsPerUnit) / _SnapsPerUnit;
+				float4 positionOS = RetroWobbleSnap(v.positionOS);
 				o.positionCS = TransformObjectToHClip(positionOS.xyz);
 #elif defined(_SNAPMODE_WORLD)
 				float3 positionWS = TransformObjectToWorld(v.positionOS.xyz);
-				positionWS = floor(positionWS * _SnapsPerUnit) / _SnapsPerUnit;
+				positionWS = RetroWobbleSnap(positionWS);
 				o.positionCS = TransformWorldToHClip(positionWS);
 #elif defined(_SNAPMODE_VIEW)
 				float4 positionVS = mul(UNITY_MATRIX_MV, v.positionOS);
-				positionVS = floor(positionVS * _SnapsPerUnit) / _SnapsPerUnit;
+				positionVS = RetroWobbleSnap(positionVS);
 				o.positionCS = mul(UNITY_MATRIX_P, positionVS);
 #else
 				o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
@@ -428,7 +428,7 @@ Shader "Retro Shaders Pro/Retro Lit"
 				int lod = clamp(actualResolution - targetResolution, 0, 10);
 
 				// Apply affine texture mapping.
-				float2 uv = lerp(i.uv, i.affineUVAndFog.xy / i.affineUVAndFog.z, _AffineTextureStrength);
+				float2 uv = lerp(i.uv, i.affineUVAndFog.xy / i.affineUVAndFog.z, _AffineTextureStrength * _RetroWobbleScale);
 				
 #if defined(_FILTERMODE_BILINEAR)
 	#if defined(_WRAPMODE_CLAMP)
