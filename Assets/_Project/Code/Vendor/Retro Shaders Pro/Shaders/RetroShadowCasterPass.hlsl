@@ -24,7 +24,7 @@ struct v2f
 
 float4 GetShadowPositionHClip(appdata i)
 {
-	ApplyMoonlightWind(i.positionOS.xyz, float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23));
+	ApplyMoonlightWind(i.positionOS.xyz, GetObjectToWorldMatrix()._m03_m13_m23);
 
 	float3 normalWS = TransformObjectToWorldNormal(i.normalOS);
     float3 positionWS = TransformObjectToWorld(i.positionOS.xyz);

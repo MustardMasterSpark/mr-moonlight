@@ -37,6 +37,23 @@ raised it himself**:
 
 ---
 
+## Side session - Flora retry on the island, scene 07 (2026-10-09, night)
+
+Carlos brought ending-checklist step 7 forward ("Remember Flora? ... Let's try it again"). Done on scene 07 only; change record C-034.
+
+- **Applied:** `FloraInstanceRendererPass` (menu `Tools/MrMoonlight/Vegetation/Add Flora Instance Renderers to Spawned Vegetation`) added `FloraInstanceRenderer` to the 8,786
+  painted trees (the same count as the tree census); `Flora Scene Settings.EnableRendering` 0 -> 1. Flora package: `com.ma.flora` 6.3.35, EMBEDDED in `Packages/` (not a registry package, nothing to install).
+  Terrain grass details, props and the `Foliage Pass 2 Objects` are NOT drawn by Flora (grass stays Unity's detail renderer).
+- **Trap, solved: everything turned pink.** Flora draws through BatchRendererGroup, so Unity asks for the `DOTS_INSTANCING_ON` variant of every shader on a Flora object. Retro Lit
+  already declares its material properties for DOTS, but our own wind code (`ApplyMoonlightWind`, added to the vendor shader) read `unity_ObjectToWorld`, which does not exist under DOTS:
+  console error `undeclared identifier 'unity_ObjectToWorld'` x3, variant fails, Unity shows the error shader on everything that uses Retro Lit.
+  **Fix:** the four call sites (`RetroLit.shader:318`, `RetroDepthNormalsPass.hlsl:28`, `RetroShadowCasterPass.hlsl:27`, `RetroDepthOnlyPass.hlsl:26`) now pass
+  `GetObjectToWorldMatrix()._m03_m13_m23`. Same value in the normal path. **Any NEW code added to Retro Lit must not read `unity_ObjectToWorld` / `unity_WorldToObject` directly: use `GetObjectToWorldMatrix()`.**
+- **Carlos's editor check:** no pink, no phantom trees, nothing floating over the water, editor fps looks good. Wind, shadows and occlusion interaction not specifically checked.
+- **Open (build 55 decides):** fps vs build 54 (154.0 avg, 1% low 132.2); whether Flora respects the baked Umbra occlusion (otherwise it behaves like the 110 fps no-culling case); mesh LOD under Flora; the phantom bug in a real build.
+- **Rollback:** `git checkout` the scene 07 file (all Flora state is in it) or the scripted removal; shader patch can stay.
+- **Ending checklist step 7:** Flora is now ON in scene 07; the verdict (keep or revert) comes after build 55. Scenes 02, 06, 08 are still off with no renderers.
+
 ## Stage 1 — Wooden church placed on flattened terrain (2026-10-02)
 
 **State at the end of the session (all saved to disk, scene 07):**

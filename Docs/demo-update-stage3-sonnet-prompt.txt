@@ -3,6 +3,13 @@ Suggested model: Sonnet (placement on existing systems; each prop goes through t
 
 WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
 
+UPDATE 2026-10-09 NIGHT (FLORA RETRY; this block wins over the one below where they disagree):
+- Carlos pulled the Flora retry forward. Scene 07 now has `FloraInstanceRenderer` on all 8,786 painted trees and `Flora Scene Settings.EnableRendering` = 1 (saved in the scene file). Scenes 02, 06, 08: Flora still OFF.
+- First enable made everything pink: our `ApplyMoonlightWind` read `unity_ObjectToWorld`, undefined in Flora's DOTS_INSTANCING variants. Patched in 4 Retro Shaders Pro files to `GetObjectToWorldMatrix()._m03_m13_m23`. Never read `unity_ObjectToWorld` directly in Retro Lit again. Detail: Docs/demo-update.md "Side session - Flora retry".
+- Editor check by Carlos: no pink, no phantom trees, editor fps looks good. NEXT STEP IS BUILD 55 (scene 07 only, from the C-034 commit, message Docs/mrm88-commit-message-19.txt): same route as build 54 (154.0 fps avg, 1% low 132.2, no pop-in). Then analyse per Docs/performance-sessions.md section 1; fill the C-034 RESULT.
+- Things to look at in build 55: fps/draws/SetPass vs 54; trees through hills (Flora vs baked occlusion); wind and shadows on trees; phantom shapes over water; mesh LOD. If worse or phantoms appear: roll back (git checkout the scene 07 file; shader patch can stay), record the verdict in demo-update.md.
+- Change record: C-034 (hash pending until Carlos commits). NEXT row C-035, next build 56, next commit message 20. Then return to staging (Carlos names the next prop). Never commit or push.
+
 UPDATE 2026-10-09 (END OF THE OPTIMIZATION TRACK; this block wins over everything below where they disagree). THE OPTIMIZATION SIDE TRACK IS CLOSED: RETURN TO STAGING.
 - Read first: Docs/optimization-decisions-2026-10.md (every decision D1-D6, the timeline of builds 47-54, the re-bake rule, how to undo). Numbers: Docs/performance-sessions.md section 5.
 - What was decided: native Mesh LOD stays; MeshFusion dropped; AST-145 culling REMOVED (folder deleted on Carlos's word, proxy colliders and DC_ components stripped from scenes 02, 06, 07, 08);
