@@ -675,6 +675,28 @@ fill (every other cell style is kept). AST-247 and AST-298 staged in Playground 
 - **A pack with a pipeline-set folder structure (AST-247):** `Render pipeline/Built-in|HDRP|URP`. Use the URP folder and leave the others alone; they are pink by design, not a staging error.
 - **The render-audit tool's first slot reads blank** unless one render is thrown away first (fixed 2026-10-07). Two items reported blank in example 11 were this artifact.
 
+## Worked example 13 (2026-10-08) - 11 files: 7 wishlist, 4 new, 1 row removed, 1 installed in Mr. Moonlight
+
+Non-`AST-` files (minus `Assets.zip`): 7 matched wishlist rows (AST-204 Feudal Japanese Castle P3; AST-213 Hellish Battle, 215 MFPS 2.0, 216 MFPS Mobile,
+218 Car Controller with Combat System, 226 Toon Soldiers WW2, 227 Toon Soldiers Armies P4). 4 were on no list (Carlos supplied the collection and store links):
+**AST-299** Animation Designer (FImpossible Creations, $59.99, 1.3.1), **300** Mobile Traffic System v3 (Gley, $129, store 3.6.5, file 3.6.1), **301** Ultimate
+Foliage Renormalizer (Milk_Drinker01, $39.99, store 1.5.6, file 1.3.4), **302** 550 Cyberpunk Material Collection Vol 2 (Fit Fun Apps, $29.99, 1.0).
+Log: `_rename-log 2026-10-08.csv`. **AST-236 Satomi Character Pack removed** (P5 wishlist, no longer in the collection; ID not reused). Behind the store: 215, 216,
+218, 226, 227, 300, 301. Sheet: 297 IDs, same in-place rewrite as example 3 (dry-run reproduced the Legend with 0 mismatches before writing; owned-from-wishlist
+group still sorted; backup `ASSETS - Index 2026-09-16 (backup before 2026-10-08).xlsx` beside the master). Tiers now P1 13 / $133.41, P2 5 / $138.95,
+P3 18 / $1,056.95, P4 6 / $512.97, P5 11 / $660.00. Store data from `WebFetch` (these pages have empty descriptions; the row says so).
+- **AST-301 went straight into Mr. Moonlight, as is, minus the demo** (Carlos's call, to renormalize the island trees' normals). Method as in the Playground
+  staging: scan the `.unitypackage` for `guid -> pathname`, check GUIDs against every `.meta` in `Assets/` (0 collisions), stream `asset` + `asset.meta` into
+  `Assets/ThirdParty/AST-301 (Foliage Renormalizer)/`, the vendor root `Assets/Foliage Renormalizer/` collapsed into it. Kept 23 of 113 entries: `Scripts/` (3 runtime
+  + 6 editor), `Editor/Resources/` (5 debug-view materials), `Shaders/` (2 shader graphs), the `Generated Meshes` folder and the quick-start `.url`. Left out: all of
+  `Demo/` (2 scenes, EZ-tree FBXs, terrain, its HDRP package), `Packages/manifest.json`, and the 24 MB `Offline Guide.pdf` (still in `02_extracted\AST-301`).
+  Refresh compiled clean (one vendor CS0219 warning in `FoliageNormalTransfer.cs`). No script hard-codes `Assets/Foliage Renormalizer`, so the folder rename is safe.
+  Not yet run on any tree. File is v1.3.4, store is 1.5.6: re-download before relying on it.
+- **AST-147 Asset Optimizer Pro, same day:** its Playground copy was already gone, so it was staged straight from `02_extracted\AST-147` the same way into
+  `Assets/ThirdParty/AST-147 (Asset Optimizer)/` (16 of 20 entries: 13 editor scripts + the guide PDF; `Example/` scene and material left out; 0 GUID collisions; compiles
+  clean). It is editor-only, nothing ships in the build.
+- `tar` in the Bash tool is Git's GNU tar and cannot open `C:\` paths; call `C:\Windows\System32\tar.exe` from PowerShell for zips.
+
 ## Which kind of task is this? (process doc vs. interim-task prompt)
 
 This doc covers the *mechanics* of moving asset bytes around and keeping the spreadsheet honest —

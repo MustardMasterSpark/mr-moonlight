@@ -23,6 +23,8 @@ raised it himself**:
 3. **Re-bake the NavMesh** (ask Carlos first; he asked to run the bake himself or authorise it at the very end).
 4. Verify: NavMesh data asset updated, Spotters still path, no errors in the console, `Event Director` behaves.
 5. Save the scene (Ctrl+S) and note it in this doc and in a change-record row.
+6. **Polish: re-run the Foliage Renormalizer (AST-301) over any tree prefabs added since 2026-10-08**, then verify. Full steps in
+   `Docs/foliage-renormalizer-polish.md`. Rollback is one menu click.
 
 ---
 
@@ -94,6 +96,20 @@ Scene 07, saved by Carlos on 2026-10-05.
 - **Scene 07 was NOT saved by Claude** at the end of this session (57 pieces + `WellWall_Run_01` exist in the open scene only). Carlos must save.
 - Still to do at the very end of placement (Carlos, 2026-10-07): group every placed prop under folder-style parent objects; clear foliage under
   each prop's footprint (Carlos approved doing it with the steps as the first test: the church loop was done instead).
+
+## Side session - Foliage Renormalizer (AST-301) on the tree prefabs (2026-10-08)
+
+Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are what changed, so scene 07 and Legion inherit it.
+
+- **Done:** 59 tree prefabs under `Prefabs/Nature/Trees/` now use renormalized leaf-card meshes (`Art/Nature/Renormalized Trees/`, 17.4 MB);
+  24 solid-material trees skipped; 0 failed. Batch script `Assets/_Project/Tools/Editor/FoliageRenormalizerBatch.cs`, manifest beside it.
+  Rollback / Re-apply / Apply-all menu items under `Tools > Foliage Renormalizer`. Full detail and the **end-of-demo re-run** steps:
+  `Docs/foliage-renormalizer-polish.md` (also ending checklist step 6 above). Change record C-025.
+- **Carlos's verdict:** keep it ("not sure it improved, at least a placebo"). Compared against his recorded walk-through of scene 05.
+- **Fog:** HAZE Global Fog and HAZE Explorable Area Fog were deactivated in the OPEN scene 05 for the comparison only. Scene 05 was not saved.
+- **Not verified:** painted/instanced trees in scene 07 and Island_Legion render the new meshes (Flora may cache meshes). Check one of each.
+- **Next (Carlos, 2026-10-08):** before returning to staging, try AST-147 Asset Optimizer Pro on the vegetation prefabs to reduce cost
+  (handoff: `Docs/demo-update-ast147-sonnet-prompt.txt`). Then continue Stage 3 staging.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)
 
