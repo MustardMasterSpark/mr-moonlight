@@ -1,0 +1,14 @@
+SUMMARY
+MRM-88: BatchRendererGroup Variants set to Keep All so Flora trees render in builds, Flora applied to scenes 02, 06 and 08, results of build 56 (162 fps, GPU -31%) documented, 1 GB limit ignored until the end of the demo
+
+DESCRIPTION
+Follow-up to 0fb09994 (Flora on in scene 07). Build 55 from that commit showed NO trees in the build (colliders and terrain present, ~300 draws) although the editor looked perfect.
+
+- ProjectSettings/GraphicsSettings.asset: m_BrgStripping 0 (KeepIfEntitiesGraphics) -> 2 (KeepAll). Unity strips the DOTS/BRG shader variants from builds when there is no Entities Graphics package; Flora then has nothing to draw with. Flora's own inspector warns about it.
+- Build 56 (scene 07, Flora + Keep All): 162.1 fps avg vs build 54's 154.0, GPU 6.59 -> 4.56 ms, CPU 6.79 -> 6.17 ms, no phantom trees, no pop-in, wind and shadows normal. The draws / setpass / tris counters undercount Flora's draws and are not real savings.
+- Flora applied to scenes 02 (5,990 trees), 06 Legion (8,786) and 08 Fog Experiment (8,786): FloraInstanceRenderer on every painted tree, Flora Scene Settings.EnableRendering on. Scene 08 occlusion baked (OcclusionCullingData.asset, 114 MB, Git LFS), so scenes 07, 06, 02, 08 are all baked.
+- CLAUDE.md + pc-build-target.md: the 1 GB limit is ignored until the end of the demo (Carlos); Flora requirements noted.
+- Docs: change records C-034 (hash 0fb09994, result: broken in builds) and C-035 in performance-sessions.md, optimization-decisions-2026-10.md D7 and timeline, demo-update.md Flora session + ending checklist step 7 done, stage 3 handoff prompt.
+- Rollback: per scene git checkout of the scene file (Flora state lives there); set m_BrgStripping back to 0 only if Flora is off everywhere.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

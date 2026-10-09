@@ -1,0 +1,18 @@
+SUMMARY
+
+MRM-88: MeshFusion Pro (AST-146) applied to the island, scene 07 (8,786 trees fused, AST-145 culling off on them), build 50 island baseline recorded
+
+DESCRIPTION
+
+Scene 07 (C-029) plus docs. Build 50 "Island Baseline" (from 3d7ea020, no MeshFusion) was run by Carlos; build 51 will be made from this commit.
+
+- Build 50 baseline (log session-20261008-230132.log, 62.9 s, spawn near the church and straight through the dense forest): avg 131.0 fps, 1% low 105.8, draws 3.9k-11.0k, SetPass 258-320,
+  tris 70-104 M, CPU and GPU both ~6-9 ms. Carlos saw distant trees pop in (AST-145 culling, H15).
+- New editor tool Assets/_Project/Tools/Editor/MeshFusionIsland.cs (Tools > MeshFusion Island: Apply / ROLLBACK, manifest MeshFusionIslandManifest.json).
+- Scene 07 saved with a RuntimeMeshFusion controller "MeshFusion Island" (CellSize 80, Standard mesh, 65,535 vertex cap, Jobs) and a StaticMeshFusionSource on all 8,786 painted trees (all compatible).
+  AST-145 DC_SourceSettings disabled on those trees (both assets toggle the original renderer, so they cannot share a tree). Wood colliders, DC_Controller and props untouched.
+- Read/Write ticked on 27 more FBX importers (.meta changes), required by MeshFusion.
+- Docs: performance-sessions.md (build 50 entry, change record C-029), demo-update.md (island section), handoff Docs/demo-update-meshfusion-sonnet-prompt.txt rewritten for build 51.
+- Expected trade (to be measured in build 51): fewer draws/SetPass, but the Mesh LOD saving and per-tree culling are gone on the trees, so triangles and memory may rise.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

@@ -13,7 +13,10 @@ resolution, HUD layout, menus — targets **1920×1080**.
 > mirror-finish ground, an editor-only asmdef breaking the build). A Windows build removes all of
 > them at once and buys ~10x the draw-call headroom.
 >
-> **The 1 GB ceiling still applies** — it is itch.io's upload limit — but it is now only *download
+> **UPDATE 2026-10-09 (Carlos): IGNORE THE 1 GB LIMIT during the demo.** Do not check it, cite it or let it block a choice (e.g. Flora needs
+> BatchRendererGroup Variants = Keep All, which grows builds). Size is reduced in one pass at the very end, once the demo is finished.
+>
+> ~~**The 1 GB ceiling still applies**~~ (historical) — it is itch.io's upload limit — but it is now only *download
 > size*, not runtime memory plus load time plus a graded time-to-play gate. Textures compress
 > (BC/DXT), assets stream from disk, and there is no wasm/JS overhead.
 >
@@ -30,7 +33,7 @@ resolution, HUD layout, menus — targets **1920×1080**.
 5. `Docs/lighting.md` — **anything that is a light or decides how light looks**: sun / day-night,
    fog, sky, the flashlight, the hands' lighting, enemy lamps, flares, Light Layers, every lighting
    tunable. The single place for lighting; update it whenever you touch a light (added 2026-09-19)
-6. `Docs/corpse-optimization.md` — **dead enemies**: the settle pass, the burn dissolve and removal, culling of corpses, the tunables, what story mode must turn off, and the build 43/44 results (MRM-85, added 2026-09-30). Performance work in general: `Docs/performance-sessions.md`
+6. `Docs/corpse-optimization.md` — **dead enemies**: the settle pass, the burn dissolve and removal, culling of corpses, the tunables, what story mode must turn off, and the build 43/44 results (MRM-85, added 2026-09-30). Performance work in general: `Docs/performance-sessions.md`; **the island optimization decisions (LOD, MeshFusion dropped, AST-145 removed, Unity occlusion baked per scene, re-bake rule) are in `Docs/optimization-decisions-2026-10.md`** (2026-10-09)
 
 ## Where things live
 **`Docs/folder-map.md`** (2026-10-03): every drag-and-drop prefab is in `Assets/_Project/Prefabs/<semantic folder>/`

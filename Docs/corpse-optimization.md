@@ -42,7 +42,7 @@ Until then the list above is the locked Legion behaviour. Corpses are never remo
   `..._LOD0` (about 5 renderers), `_LOD1`, `_LOD2`, **no LODGroup**: only LOD0 is active. `KeepOnlyLod` switches it to LOD1
   (the LOD1/LOD2 children start INACTIVE, so the chosen one must be activated, not just the others hidden; the first version
   left the shotgun invisible, found in the live test).
-- **Step 7, culling.** `CorpseOptimizer` raises `CorpseCullingHooks.CorpseSettled`. The subscriber,
+- **Step 7, culling. (2026-10-09: AST-145 and `CorpseCullingBridge.cs` were REMOVED; this step now does nothing. Corpses are still settled and dissolved; see `Docs/optimization-decisions-2026-10.md`.)** `CorpseOptimizer` raises `CorpseCullingHooks.CorpseSettled`. The subscriber,
   `Assets/ThirdParty/AST-145/MrMoonlightBridge/CorpseCullingBridge.cs` (own asmdef; **git-ignored like the asset**), adds a hidden
   `BoxCollider` (layer `ACSCulling`, sized to the body bounds) and a custom `DC_CustomTarget` whose visible/invisible events switch
   the body renderers on and off. Corpses use **their own controller** ("Dynamic Culling (Corpses)", ID 1, `MergeInGroups` off,

@@ -3,6 +3,34 @@ Suggested model: Sonnet (placement on existing systems; each prop goes through t
 
 WRITTEN: 2026-10-02, end of the foliage session (stage 2). Do NOT auto-start work: read, report in a few lines, wait for Carlos.
 
+UPDATE 2026-10-09 NIGHT, END OF THE OPTIMIZATION SESSION: BACK TO THE STATION = PROP STAGING (this block wins over everything below where they disagree).
+- **THE OPTIMIZATION TRACK IS PAUSED AGAIN. NEXT: Carlos names the next prop/asset to place (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells), one at a time via /prop and Docs/asset-moves-to-moonlight-sonnet-prompt.txt.** Do not start on your own: read, report in a few lines, wait. Ask before each Unity-side action, read the state back.
+- **FLORA IS ON AND KEPT** in scenes 07, 02, 06, 08 (8,786 / 5,990 / 8,786 / 8,786 `FloraInstanceRenderer`s, `EnableRendering` on, all saved). Build 56 (scene 07): 162.1 fps vs 154.0 (build 54), GPU -31%, no phantom trees, no pop-in. Read Docs/optimization-decisions-2026-10.md D7. Change records C-034 (Flora on) and C-035 (Keep All + other scenes); next row C-036, next build 57, next commit message 21.
+- **TWO RULES THAT COST A DAY (do not break them):** (1) Project Settings > Graphics > BatchRendererGroup Variants must stay **Keep All** (`m_BrgStripping: 2`), else a build has NO trees while the editor looks fine. (2) Retro Lit code must never read `unity_ObjectToWorld` directly (use `GetObjectToWorldMatrix()`), else every Retro Lit material turns pink under Flora. Also: never load a ProjectSettings file as an object from execute_code (it left a second GraphicsSettings manager); change graphics settings via `Resources.FindObjectsOfTypeAll<GraphicsSettings>()` + SerializedObject.
+- **NEW TREES painted or moved into a scene need `FloraInstanceRendererPass` re-run** (menu Tools/MrMoonlight/Vegetation/Add Flora Instance Renderers to Spawned Vegetation) or they use Unity's normal, slower path. Props staged in scene 07 are not Flora objects (normal rendering, fine).
+- **STANDING RULE (Carlos, 2026-10-09): IGNORE THE 1 GB LIMIT.** Do not check, cite or let it block anything until the end-of-demo size pass (memory feedback_ignore_1gb_limit_until_end, CLAUDE.md).
+- The `[PERF]` counters `draws`, `setpass`, `tris` UNDERCOUNT Flora's draws (build 56 read 0.37M tris on a 29.5M-triangle scene). Trust fps and GPU/CPU ms. The CPU sits at ~6 ms now and is not the trees.
+- Scenes 02, 06, 08 with Flora are NOT measured in a build. Scene 08's occlusion bake is DONE and saved (56.9 MB, LFS): all four island scenes (07, 06, 02, 08) are baked.
+- STILL ON THE ENDING CHECKLIST (remind Carlos when he says he is done placing): re-bake Umbra occlusion in scene 07 (Unity FOCUSED), NavMesh Surface + Enemies back on and NavMesh re-bake, group props under folder-style parents, clear foliage under prop footprints, then a build and the same route to compare with build 56 (162.1 fps). Never commit or push.
+
+UPDATE 2026-10-09 (END OF THE OPTIMIZATION TRACK; this block wins over everything below where they disagree). THE OPTIMIZATION SIDE TRACK IS CLOSED: RETURN TO STAGING.
+- Read first: Docs/optimization-decisions-2026-10.md (every decision D1-D6, the timeline of builds 47-54, the re-bake rule, how to undo). Numbers: Docs/performance-sessions.md section 5.
+- What was decided: native Mesh LOD stays; MeshFusion dropped; AST-145 culling REMOVED (folder deleted on Carlos's word, proxy colliders and DC_ components stripped from scenes 02, 06, 07, 08);
+  UNITY's OWN CULLING is the default: baked Umbra occlusion per scene. Build 54 (scene 07, commit fa7086fc): 154.0 fps avg, 1% low 132.2, worst frame 9.7 ms, NO pop-in (AST-145 builds: 128-131 fps).
+- Branch `mrm-88`. Commits: fa7086fc (AST-145 off + bake 07 + LFS rule), then docs commits (messages Docs/mrm88-commit-message-17.txt and -18.txt). Change records C-032 and C-033. NEXT change-record row C-034, NEXT build number 55.
+- SCENE 07 occlusion data is `Assets/_Project/Scenes/07 LightingTestScene/OcclusionCullingData.asset` (114 MB, LFS). Scenes 06 (Legion) and 02 (Island) ARE baked and saved (scene 08 is not); neither has been measured in a build yet.
+- **RE-BAKE RULE (do not forget): every staged prop is static geometry. When Carlos says he is DONE PLACING, re-bake occlusion in scene 07** (big solid buildings = Occluder Static, small props Occludee Static only;
+  Window > Rendering > Occlusion Culling, or StaticOcclusionCulling.GenerateInBackground() via execute_code). **Unity must be FOCUSED or the background bake sits at 0%.** Then a build and the same route to compare with build 54.
+  Add it to the ENDING CHECKLIST reminder together with the NavMesh Surface / Enemies reminder.
+- Traps: NavMesh Surface and Enemies in scene 07 are still OFF on purpose. Never commit/push. Corpse culling (step 7) no longer exists; corpses still settle and dissolve. Do NOT re-add AST-145 without Carlos.
+  A fight in scene 06 with the new culling is UNTESTED (no enemies in build 54): if Carlos plays 06, watch fps with corpses.
+- OPEN OPTIMIZATION IDEAS (only if Carlos raises them; list with reasons in optimization-decisions-2026-10.md section 5): GPU Resident Drawer (Opus, needs D3D12/Vulkan + shader audit), shadow tuning,
+  a weaker-PC build, fog + CRT build (on hold), Flora retry (end of demo).
+- NEXT: Carlos names the next prop or asset to place (Shed, Weeper ghosts, Tombstones, Heavy Action music, Pool, more Medieval Wells), one at a time via the /prop wizard and Docs/asset-moves-to-moonlight-sonnet-prompt.txt.
+  Ask before each Unity-side action, read the state back. Docs/demo-update-unity-culling-sonnet-prompt.txt is DONE (kept for history).
+- Session-hygiene note: this prompt was written at the end of a long optimization session; the next session starts from here, cold.
+
+
 UPDATE 2026-10-08 (side track, wins over everything below): the NEXT session first tries AST-147 Asset Optimizer Pro on the vegetation prefabs, THEN returns to
 staging. Read Docs/demo-update-ast147-sonnet-prompt.txt first. The Foliage Renormalizer (AST-301) already ran on 59 tree prefabs (change record C-025);
 re-run it at the end of the demo (Docs/foliage-renormalizer-polish.md). Commit message: Docs/mrm88-commit-message-7.txt. Next change-record row: C-026.

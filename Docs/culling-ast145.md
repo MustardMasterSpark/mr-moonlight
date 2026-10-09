@@ -1,3 +1,5 @@
+> **HISTORICAL (2026-10-09): AST-145 was REMOVED from the project on Carlos's word. Unity's baked occlusion culling replaced it (build 54: 154 fps vs 128-131, no pop-in). See `Docs/optimization-decisions-2026-10.md`. Everything below describes the old state.**
+
 # AST-145 Advanced Culling System 2 (New Game Studio, v1.5.8): install, baseline and results
 
 Linear: **MRM-85** (Performance reports), by Carlos's ruling 2026-09-30. Branch `mrm-86` (uncommitted work).

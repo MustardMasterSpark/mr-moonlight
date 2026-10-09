@@ -597,7 +597,7 @@ namespace MrMoonlight.Data
         /// <summary>Step 6: a dropped prop made of several LOD meshes (the shotgun draws LOD0, LOD1 and LOD2 at once, about 14 renderers) keeps only this LOD index and shadows-off renderers. -1 = leave drops alone. Owner: MRM-85</summary>
         public int CorpseDropKeepLodIndex = 1;
 
-        /// <summary>Step 7: corpses are handed to AST-145 Dynamic Culling (when the scene has a Dynamic Culling controller and the bridge is present): the body renderer is switched off while no ray from the camera hits its proxy box. The body stays in the world. Owner: MRM-85</summary>
+        /// <summary>Step 7 (AST-145 was REMOVED 2026-10-09, so this does nothing until another culler subscribes to CorpseCullingHooks): corpses were handed to AST-145 Dynamic Culling (when the scene has a Dynamic Culling controller and the bridge is present): the body renderer is switched off while no ray from the camera hits its proxy box. The body stays in the world. Owner: MRM-85</summary>
         public bool CorpseCullingEnabled = true;
 
         /// <summary>Dissolve and remove corpses (Legion mode; MRM-85, 2026-09-30). The body burns away, then the lamp and dropped props dissolve while the lamp light dims out, and then the whole enemy (body, drops, culling proxy, registrations) is destroyed and freed. STORY MODE WANTS THIS OFF: corpses stay and can be shot and dismembered. Owner: MRM-85</summary>

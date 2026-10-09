@@ -1,3 +1,7 @@
+> **SUPERSEDED 2026-10-08: ROLLED BACK AND THE GENERATED MESHES DELETED on Carlos's word.** All 59 prefabs are back on their original FBX meshes and
+> `Art/Nature/Renormalized Trees/` no longer exists. The text below is history; the end-of-demo re-run (checklist step 6) is cancelled. See `Docs/demo-update.md`
+> "Side session - renormalizer rolled back, native Mesh LOD applied". Do not use Re-apply.
+
 # Foliage Renormalizer (AST-301), tree normals pass + end-of-demo POLISH re-run
 
 Added 2026-10-08, branch `mrm-88`. **This is a polish item: re-run it at the end of the demo (verification step) so every

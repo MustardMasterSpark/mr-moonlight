@@ -23,7 +23,7 @@ v2f depthOnlyVert(appdata v)
 	UNITY_SETUP_INSTANCE_ID(v);
 	UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-	ApplyMoonlightWind(v.positionOS.xyz, float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23));
+	ApplyMoonlightWind(v.positionOS.xyz, GetObjectToWorldMatrix()._m03_m13_m23);
 
 	float4 positionVS = mul(UNITY_MATRIX_MV, v.positionOS);
 	positionVS = RetroWobbleSnap(positionVS);

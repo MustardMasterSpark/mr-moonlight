@@ -1,0 +1,16 @@
+SUMMARY
+
+MRM-88: AST-145 culling switched off on the island, Unity occlusion culling baked (scene 07) for build 54, OcclusionCullingData tracked in LFS
+
+DESCRIPTION
+
+Experiment requested by Carlos: compare Unity's own culling against AST-145 (builds 50-53).
+
+- Scene 07: enabled=false on all 8,788 AST-145 components (DC_SourceSettings x 8,786 trees, DC_Controller, DC_Camera). Nothing deleted (CorpseCullingBridge depends on the folder); re-enable to restore.
+- Occlusion culling baked with default settings: "07 LightingTestScene/OcclusionCullingData.asset" (Umbra data 56.9 MB). PlayerCamera already had useOcclusionCulling on.
+- .gitattributes: OcclusionCullingData.asset goes to LFS (file is 114 MB, over GitHub's 100 MB limit).
+- Docs/performance-sessions.md: change record C-032.
+
+Build 54 is made from this commit. Watch for trees disappearing behind canopy gaps (leaf cards as occluders).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

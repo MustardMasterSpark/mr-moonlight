@@ -315,7 +315,7 @@ Shader "Retro Shaders Pro/Retro Lit"
 				UNITY_TRANSFER_INSTANCE_ID(v, o);
 				UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
-				ApplyMoonlightWind(v.positionOS.xyz, float3(unity_ObjectToWorld._m03, unity_ObjectToWorld._m13, unity_ObjectToWorld._m23));
+				ApplyMoonlightWind(v.positionOS.xyz, GetObjectToWorldMatrix()._m03_m13_m23);
 
 #if defined(_SNAPMODE_OBJECT)
 				float4 positionOS = RetroWobbleSnap(v.positionOS);

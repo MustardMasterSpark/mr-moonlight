@@ -23,9 +23,11 @@ raised it himself**:
 3. **Re-bake the NavMesh** (ask Carlos first; he asked to run the bake himself or authorise it at the very end).
 4. Verify: NavMesh data asset updated, Spotters still path, no errors in the console, `Event Director` behaves.
 5. Save the scene (Ctrl+S) and note it in this doc and in a change-record row.
-6. **Polish: re-run the Foliage Renormalizer (AST-301) over any tree prefabs added since 2026-10-08**, then verify. Full steps in
-   `Docs/foliage-renormalizer-polish.md`. Rollback is one menu click.
-7. **Polish: try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
+6. ~~Polish: re-run the Foliage Renormalizer (AST-301)~~ **CANCELLED 2026-10-08: Carlos rolled the renormalizer back and the 59 generated meshes were deleted
+   (see "Side session - native Mesh LOD" below).** Do not re-run it unless Carlos asks again; if he does, run it BEFORE the Mesh LOD import settings matter (it
+   regenerates meshes from the FBX and would need its own LOD handling).
+7. ~~**Polish: try to get Flora Renderer working again**~~ **DONE 2026-10-09: Flora is ON in scenes 07, 02, 06, 08 and kept (build 56 = best run, see "Side session - Flora retry" and D7). Re-run `FloraInstanceRendererPass` after painting new trees.** Original text:
+   **try to get Flora Renderer working again (Carlos, 2026-10-08: "Flora was really giving us an edge but the phantom thing was kind of
    whack").** Flora is installed (`Packages/com.ma.flora`) but OFF: `Flora Scene Settings.EnableRendering = 0` in scenes 02, 06, 07, 08, and no
    `FloraInstanceRenderer` on any object. It was switched off 2026-08-31 for the **phantom tree shapes floating over the water** bug (confirmed by
    an on/off A-B test; notes in `Docs/mrm70-resume-2026-08-31.md`). Re-check only when everything else is set up: (a) re-add the renderers with
@@ -35,6 +37,26 @@ raised it himself**:
    clear win, otherwise leave it off and record the verdict here. Doc: `Docs/mrm70-flora-phase-kickoff.md`, `Docs/pc-build-target.md` section 6.
 
 ---
+
+## Side session - Flora retry on the island, scene 07 (2026-10-09, night)
+
+Carlos brought ending-checklist step 7 forward ("Remember Flora? ... Let's try it again"). Done on scene 07 only; change record C-034.
+
+- **Applied:** `FloraInstanceRendererPass` (menu `Tools/MrMoonlight/Vegetation/Add Flora Instance Renderers to Spawned Vegetation`) added `FloraInstanceRenderer` to the 8,786
+  painted trees (the same count as the tree census); `Flora Scene Settings.EnableRendering` 0 -> 1. Flora package: `com.ma.flora` 6.3.35, EMBEDDED in `Packages/` (not a registry package, nothing to install).
+  Terrain grass details, props and the `Foliage Pass 2 Objects` are NOT drawn by Flora (grass stays Unity's detail renderer).
+- **Trap, solved: everything turned pink.** Flora draws through BatchRendererGroup, so Unity asks for the `DOTS_INSTANCING_ON` variant of every shader on a Flora object. Retro Lit
+  already declares its material properties for DOTS, but our own wind code (`ApplyMoonlightWind`, added to the vendor shader) read `unity_ObjectToWorld`, which does not exist under DOTS:
+  console error `undeclared identifier 'unity_ObjectToWorld'` x3, variant fails, Unity shows the error shader on everything that uses Retro Lit.
+  **Fix:** the four call sites (`RetroLit.shader:318`, `RetroDepthNormalsPass.hlsl:28`, `RetroShadowCasterPass.hlsl:27`, `RetroDepthOnlyPass.hlsl:26`) now pass
+  `GetObjectToWorldMatrix()._m03_m13_m23`. Same value in the normal path. **Any NEW code added to Retro Lit must not read `unity_ObjectToWorld` / `unity_WorldToObject` directly: use `GetObjectToWorldMatrix()`.**
+- **Carlos's editor check:** no pink, no phantom trees, nothing floating over the water, editor fps looks good. Wind, shadows and occlusion interaction not specifically checked.
+- **Build 55 (from commit `0fb09994`): ALL TREES MISSING in the build**, editor fine. Terrain visible, colliders present, ~300 draws, Player.log clean. Cause: Project Settings > Graphics > **BatchRendererGroup Variants** was `KeepIfEntitiesGraphics`, which strips the DOTS/BRG shader variants from builds when there is no Entities Graphics package (the editor never strips). Flora's own inspector warns about it; I had not looked at the Flora Scene Settings inspector. **Fix: `Keep All` (`m_BrgStripping: 2`).**
+- **Trap while fixing it (mine):** a `LoadSerializedFileAndForget("ProjectSettings/GraphicsSettings.asset")` call in `execute_code` left a second `GraphicsSettings` manager loaded (`Multiple managers are loaded of type: GraphicsSettings`, `errors=2` in the build report) and the first build 56 did not carry the setting. Restarting Unity cleared it. The setting itself is changed with `Resources.FindObjectsOfTypeAll<GraphicsSettings>()` + `SerializedObject("m_BrgStripping")` (the `EditorGraphicsSettings` property is read-only). Never load a ProjectSettings file as an object again.
+- **Build 56 "Flora Keepall" (rebuilt after the restart, scene 07 only, 508.2 MB zipped): WORKS.** 162.1 fps avg vs build 54's 154.0, GPU -31% (6.59 -> 4.56 ms), CPU 6.79 -> 6.17 ms; trees visible, no pop-in, no phantom trees over the water, wind and shadows normal, no flicker. Carlos saw ~170 fps in the dense forest. Details and the counter caveat: `Docs/performance-sessions.md` section 5 and `Docs/optimization-decisions-2026-10.md` D7.
+- **Applied to the other island scenes (Carlos, same night):** scenes 02 (5,990 renderers), 06 (8,786) and 08 (8,786) got `FloraInstanceRendererPass` + `EnableRendering` and were saved; scene 08's occlusion bake was started (scenes 02 and 06 were baked earlier, AST-145 was removed from all four). Not measured in a build. Change record C-035.
+- **Rollback:** per scene `git checkout` the scene file (all Flora state is in it) or the scripted removal; the shader patch and Keep All can stay.
+- **Ending checklist step 7: DONE for the island scenes** (Flora ON, kept; 2026-10-09). The old "(c)/(d)" checks are answered in D7. **New trees painted later need `FloraInstanceRendererPass` re-run.** The occlusion re-bake at the end of placement (scene 07) still stands, and so does the NavMesh / Enemies reminder.
 
 ## Stage 1 — Wooden church placed on flattened terrain (2026-10-02)
 
@@ -143,6 +165,50 @@ Scene 05 `VegetationGallery_TechnieColliderTest` was the target; the prefabs are
   (diff = the prefab instance only). SessionLog v6 (`Docs/performance-sessions.md` section 7). **Build 47** `E:\Builds\47 - Gallery Baseline - 2026-10-08` = scene 05 only,
   no LODs, 0 errors, 369.6 MB zipped. Scene 05 holds one of each prefab, so it is a visual/triangle baseline, not an island fps test. Carlos plays it and says so; analysis follows
   `performance-sessions.md` section 1. Change record C-026. Next session: `Docs/demo-update-lod-sonnet-prompt.txt`.
+
+## Side session - renormalizer rolled back, native Mesh LOD applied to scene 05's vegetation (2026-10-08)
+
+- **Renormalizer undone on Carlos's word:** `Tools > Foliage Renormalizer > ROLLBACK` put all 59 tree prefabs back on their original FBX meshes (status read back:
+  usingOriginal=59); the folder `Art/Nature/Renormalized Trees/` (59 generated meshes, 17.4 MB) was then deleted with the MCP `manage_asset` delete after a 0-reference
+  check (the first attempt via `execute_code` with safety checks off was refused by the permission layer and not retried that way). The batch tool
+  `FoliageRenormalizerBatch.cs` and its manifest stay in `Tools/Editor` (the manifest now points at deleted meshes: do not use Re-apply). Why: not obviously better looking,
+  and it would have blocked native LODs and complicated AST-068 / AST-146 (renormalized meshes were `.asset` files, not FBX imports).
+- **Native Mesh LOD (Unity 6.3), importer route:** `Generate Mesh LODs` ticked on the FBX importer of every nature prefab with >= 1,000 triangles and no LODGroup.
+  80 FBX meshes (`Prefabs/Nature/Trees` + `Rocks & Logs`), 5 to 11 levels each, valid `lodSelectionCurve` written by Unity (e.g. GTree01_05: 4146 -> 2109 -> 1088 -> 577 ... -> 64 tris;
+  Curse_H01_2: 27,975 -> 64). Tool: `Assets/_Project/Tools/Editor/TreeMeshLodBatch.cs` (menu `Tools > Tree Mesh LOD`: apply, ROLLBACK), manifest `TreeMeshLodManifest.json`.
+  A first attempt that built the lower levels itself (dropping leaf cards on the `.asset` meshes) was replaced; its two test meshes were rolled back and then deleted with the folder.
+- **Colliders are unaffected:** every wood collider is a separate mesh in `Art/Nature/Tree Colliders/Wood Meshes/`; 110 mesh colliders in scene 05 read back with their meshes.
+- **Not yet measured:** the visual quality of the lower levels and the numbers. Next: a scene 05 build with the standard run (`Docs/lod-experiment-log.md`), compared against build 47.
+  Scene 05 reads as unsaved (dirty) in the editor after this session; it was NOT saved by Claude.
+- **Next asset to try:** AST-146 MeshFusion Pro (see `Docs/demo-update-lod-sonnet-prompt.txt`). AST-068 Super Level Optimizer 2 is the riskier one: it atlases materials
+  (clamp wrap, UVs rescaled, textures decompressed), which threatens the pixelated diffuse look and per-material cutoff / tint, and it combines with `Mesh.CombineMeshes`, which does not keep Mesh LODs.
+  Change record C-027.
+
+## Side session - MeshFusion Pro (AST-146) pilot on scene 05 (2026-10-08, night)
+
+- **Asset:** AST-146 MeshFusion Pro 1.3.5 (Core only, git-ignored). At runtime `RuntimeMeshFusion` (controller) takes every `StaticMeshFusionSource` assigned to it, groups them into
+  grid cells (`CellSize`, 80), copies vertices/triangles into combined meshes grouped by material and disables the originals' renderers. No file is created; combined meshes live in memory.
+  Materials and textures are not touched (why it was chosen over AST-068).
+- **Pilot, scene 05 only:** `Tools > MeshFusion Pilot` (`Assets/_Project/Tools/Editor/MeshFusionPilot.cs`, manifest `MeshFusionPilotManifest.json`, ROLLBACK tested by design, not yet run).
+  89 gallery specimens at x <= 260 got a `StaticMeshFusionSource`; Batching Static cleared on their children; Read/Write ticked on 89 FBX importers (required by MeshFusion).
+  Colliders stay on the originals. Scene saved by Carlos after the editor test.
+- **Known trade-offs to measure:** merged copies use LOD0 geometry only (native Mesh LOD, C-027, is lost on merged objects); per-tree culling (AST-145) is replaced by per-cell culling;
+  readable meshes cost a CPU copy; the gallery has one specimen per species so the draw saving is only what shares materials inside a cell.
+- **Build 49:** a first build was made and DELETED on Carlos's word (2026-10-08): the commit had not been made, so it could not be traced to a hash. Build 49 was remade from `d2f6fe7f` (C-028) and run: draws -3..-7%, SetPass unchanged, tris back to the build 47 level, verts +9%, no hitch; the gallery cannot show the draw win (`Docs/performance-sessions.md` section 5).
+- **Next (next session):** apply it to the island, scene 07 (`07 LightingTestScene`, not Legion 06). Mesh LOD is automatic there (importer-level) but MeshFusion is NOT: it needs a controller, a source on each tree, Read/Write on the island's FBX and Batching Static off; see `Docs/demo-update-meshfusion-sonnet-prompt.txt`.
+  Change record C-028.
+
+## Side session - MeshFusion Pro (AST-146) applied to the island, scene 07 (2026-10-08, night)
+
+- **Baseline first:** build 50 "Island Baseline" (commit `3d7ea020`, scene 07, no MeshFusion): avg 131 fps, 1% low 105.8, draws 3.9k-11.0k, SetPass 258-320, tris 70-104 M. Details: `Docs/performance-sessions.md` section 5. Carlos saw distant trees pop in (AST-145 culling, H15).
+- **Findings before applying:** scene 07 has 8,786 painted trees under `Gaia Terrains`, each a `Visual` child with MeshRenderer + AST-145 `DC_SourceSettings` + `DC_Collider` + `WoodCollider` children; Batching Static 0; 88 distinct meshes, 79 materials; 965 instances on unreadable meshes (27 FBX). **AST-145 and MeshFusion both switch the original renderer on and off**, so they cannot share a tree (every tree would draw twice).
+- **Applied (Carlos: "apply the asset to the scene right now", design d = fuse every tree, accept the cost):** tool `Assets/_Project/Tools/Editor/MeshFusionIsland.cs` (`Tools > MeshFusion Island`, Apply / ROLLBACK, manifest `MeshFusionIslandManifest.json`). Controller `MeshFusion Island` (CellSize 80, Standard, 65,535 verts, Jobs), 8,786 sources (all compatible), `DC_SourceSettings` disabled on those trees, Read/Write on 27 more FBX. Scene saved. Props and Foliage Pass 2 objects not fused.
+- **What it trades:** draws/SetPass down (79 materials shared by thousands of trees), but Mesh LOD (C-027) and per-tree occlusion culling (AST-145) are both lost on the trees, so tris will rise, plus about +0.8 GB mesh memory estimate. Honest expectation: draws win, triangles/GPU may lose. Build 51 decides.
+- **Result of build 51 (fusion + culler off) vs build 50:** WORSE: avg 131.0 -> 107.9 fps, 1% low 105.8 -> 88.0, draws UP (4-8k -> 11-17k), tris 70-104 M -> 81-117 M, managed memory 35 -> 75-80 MB. The culler had already been hiding most trees and fused cells draw whole with no Mesh LOD. Details: performance-sessions.md section 5.
+- **Carlos's decision (2026-10-08):** fusion REMOVED from the island; the culler stays OFF on the trees so build 52 isolates the effect of culling alone. Change record C-030. Gallery pilot (scene 05) is separate and unchanged.
+- **Build 52 result and next step (2026-10-08, night):** culling OFF without fusion = 110.0 fps vs 131.0 with the culler ON: the culler is the valuable asset, MeshFusion is worth about +2% at +45 MB memory. Carlos's decision: culler back ON, fusion stays out, and the pop-in is attacked by tuning the culler (rays 1500 -> 4000, lifetime 2 -> 5 s). Change record C-031, build 53.
+- **Build 53 result (2026-10-09):** culler 4000 rays / 5 s = 127.7 fps avg, 104.5 1% low (build 50: 131.0 / 105.8): cheap, pop-in reduced at most. Build 52 (culler off) has no pop-in, so the culler is the cause; proxy colliders ruled out. Carlos wants to try Unity's default culling in place of AST-145 as an experiment (next session, build 54): see the handoff prompt.
+- **Rollback:** `Tools > MeshFusion Island > ROLLBACK`, then save scene 07 (restores Read/Write and re-enables AST-145 on the trees). Change record C-029.
 
 ## Side session - folder reorganisation (2026-10-03 to 05)
 

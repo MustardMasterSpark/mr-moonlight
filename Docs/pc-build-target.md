@@ -126,6 +126,8 @@ project's.
 
 ### Flora
 
+> **UPDATE 2026-10-09: Flora is ON on the island (scenes 07, 02, 06, 08) and works in builds, but only with two things:** (1) Project Settings > Graphics > BatchRendererGroup Variants = **Keep All** (`m_BrgStripping: 2`), otherwise a build shows NO trees while the editor looks fine; (2) our Retro Lit code must not read `unity_ObjectToWorld` directly (use `GetObjectToWorldMatrix()`), or every Retro Lit material turns pink. Build 56: +5% fps, GPU -31%. Details: `Docs/optimization-decisions-2026-10.md` D7. Re-run `FloraInstanceRendererPass` for newly painted trees. The 1 GB limit is ignored until the end of the demo (Carlos, 2026-10-09).
+
 `Flora Scene Settings` in the Island scene auto-registers a `FloraTerrainProvider` on the Terrain
 and sets `drawTreesAndFoliage = false` so Unity does not double-draw underneath. Reads existing
 terrain data, so **no respawn is needed**.

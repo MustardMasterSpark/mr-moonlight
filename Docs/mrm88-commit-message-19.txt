@@ -1,0 +1,13 @@
+SUMMARY
+MRM-88: Flora Renderer re-enabled on the island (scene 07), Retro Lit wind made DOTS-safe so Flora does not turn everything pink
+
+DESCRIPTION
+Ending-checklist step 7 brought forward by Carlos: try Flora again on scene 07.
+
+- Scene 07: FloraInstanceRenderer added to all 8,786 painted trees (FloraInstanceRendererPass), Flora Scene Settings.EnableRendering 0 -> 1. Scenes 02, 06, 08 unchanged (Flora off).
+- Retro Shaders Pro: ApplyMoonlightWind read unity_ObjectToWorld directly, which does not exist in the DOTS_INSTANCING_ON variants Flora needs, so every Retro Lit material went pink. The four call sites (RetroLit.shader, RetroDepthNormalsPass.hlsl, RetroShadowCasterPass.hlsl, RetroDepthOnlyPass.hlsl) now pass GetObjectToWorldMatrix()._m03_m13_m23. Same value in the normal render path.
+- Editor check by Carlos: no pink, no phantom trees over the water, editor fps looks good. Build 55 decides (compare with build 54: 154.0 fps avg).
+- Docs: change record C-034 (performance-sessions.md section 8; C-033 hash filled in), demo-update.md session section, stage 3 handoff prompt.
+- Rollback: git checkout the scene 07 file (all Flora state is in it); the shader patch is harmless without Flora.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

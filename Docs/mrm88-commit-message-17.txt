@@ -1,0 +1,11 @@
+SUMMARY
+
+MRM-88: Build 54 results recorded (Unity occlusion culling 154 fps vs 128-131 with AST-145, no pop-in), H12 and H15 updated, C-032 hash filled
+
+DESCRIPTION
+
+- Docs/performance-sessions.md: build 54 entry (section 5), C-032 commit hash fa7086fc, build size and result, H12/H15 updated.
+- Build 54 (Unity Culling): avg 154.0 fps, 1% low 132.2, worst frame 9.7 ms, avg draws 8.6k; builds 50/53 with AST-145 were 128-131 fps. Carlos saw no pop-in.
+- Not covered: no enemies in the run; CorpseCullingBridge hooks AST-145 (off), so corpse culling in fights is probably inactive.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

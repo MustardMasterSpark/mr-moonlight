@@ -1,0 +1,17 @@
+SUMMARY
+
+MRM-88: MeshFusion removed from the island (build 51 was worse), AST-145 culling stays off on the trees to isolate its effect, build 51 results recorded
+
+DESCRIPTION
+
+Scene 07 (C-030) plus docs. Build 52 will be made from this commit.
+
+- Build 51 (fusion on 8,786 trees + culler off, from 12cca358) vs build 50 baseline, same route: avg fps 131.0 -> 107.9, 1% low 105.8 -> 88.0, worst frame 19.5 -> 23.6 ms, draws 3.9k-11k -> 8.8k-17.2k,
+  tris 70-104 M -> 81-117 M, managed memory 35 -> 75-80 MB. Fusion did not cut draws: the culler had already been hiding most trees, fused cells draw whole with no Mesh LOD or occlusion.
+- Scene 07 saved without the MeshFusion Island controller and the 8,786 StaticMeshFusionSource components. DC_SourceSettings stays disabled on the 8,786 trees
+  (scene 07 differs from the pre-fusion 3d7ea020 only by those m_Enabled 1 -> 0 flags). Read/Write restored on the 27 FBX importers.
+- MeshFusionIsland.cs: new "Remove fusion ONLY (keep AST-145 off)" entry (RunRollback(false)).
+- Docs: performance-sessions.md (build 51 entry, change record C-030), demo-update.md, handoff Docs/demo-update-meshfusion-sonnet-prompt.txt rewritten for build 52.
+- Purpose: build 52 = culler off, no fusion. Against build 50 it shows what the culler was worth; against build 51 what fusion cost.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

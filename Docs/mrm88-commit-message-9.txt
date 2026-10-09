@@ -1,0 +1,21 @@
+SUMMARY
+
+MRM-88: Foliage Renormalizer rolled back (59 generated meshes deleted), native Mesh LOD on 80 vegetation FBX meshes, MeshFusion (AST-146) chosen as the next pilot
+
+DESCRIPTION
+
+Tree LOD experiment on the scene 05 vegetation gallery. Build 47 (no LODs) is the baseline; build 48 will be made from this commit.
+
+- Foliage Renormalizer (AST-301) rolled back on Carlos's word: the 59 tree prefabs point at their original FBX meshes again and the folder
+  Art/Nature/Renormalized Trees (59 generated meshes, 0 references) is deleted. Ending checklist step 6 (re-run) is cancelled; the batch tool stays in Tools/Editor
+  but its manifest points at deleted meshes (do not use Re-apply).
+- Native Unity 6 Mesh LOD: "Generate Mesh LODs" ticked on 80 FBX importers behind Nature/Trees and Nature/Rocks & Logs prefabs (>= 1,000 triangles, no LODGroup),
+  5 to 11 levels each with Unity's own lodSelectionCurve (e.g. 4146 -> 2109 -> 1088 -> 577 ... 64 triangles). New editor tool
+  Assets/_Project/Tools/Editor/TreeMeshLodBatch.cs (menu Tools > Tree Mesh LOD: apply / ROLLBACK) with TreeMeshLodManifest.json. Wood colliders are separate
+  meshes (Art/Nature/Tree Colliders/Wood Meshes) and are unchanged.
+- Asset decision for the next step: AST-146 MeshFusion Pro (merges without touching materials), not AST-068 Super Level Optimizer 2 (material atlasing threatens the
+  pixelated look; Mesh.CombineMeshes drops Mesh LODs).
+- Docs: Docs/demo-update.md (side session, checklist step 6 cancelled), Docs/performance-sessions.md (change record C-027), Docs/lod-experiment-log.md (build 48 row),
+  Docs/foliage-renormalizer-polish.md (marked superseded), handoff Docs/demo-update-meshfusion-sonnet-prompt.txt.
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>
