@@ -1,0 +1,28 @@
+SUMMARY:
+Asset moves: Graveyard Tombstones, The Shed and the Abandoned Swimming Pool (with its assembled prefab) into Mr. Moonlight, import crash countermeasures
+
+DESCRIPTION:
+Playground -> Mr. Moonlight asset moves (MRM-88 quick demo update, change trace C-036 on MRM-85). Nothing is placed in a scene.
+
+AST-074 Graveyard Tombstones: all 63 prefabs, 54 FBX, 9 RetroLit materials (BaseColor pixelated at 512, normals 256), vendor GUIDs kept.
+AST-108 The Shed (only that prefab): 6 FBX + door controller, 5 RetroLit materials, BaseColor pixelated at 2048 (building, tools atlas) and 1024 (objects) after
+the first 1024/512 pass imported clamped at 512 and looked too pixelated; the 11 flat decal quads are deactivated; colliders added (shell and objects LOD0 mesh
+colliders, 5 boxes on the tool pieces; door and ivy none; collider policy applied and verified with rays and a capsule through the doorway).
+AST-162 Abandoned Swimming Pool (URP version): 148 prefabs, 144 FBX (Read/Write off), 93 RetroLit/URP materials rebuilt from the vendor shader graphs, 89 textures
+chosen per material by object size (2048 large structures, 1024 props, 512 only where the source is 512). The scene's whole Meshes object is stored as ONE
+prefab, Assembled/AbandonedPool_Assembled.prefab (3,190 nested pieces, 13,380 renderers, 3,148 mesh colliders), built in Playground with PrefabUtility.
+Vendor colliders left untouched (collider policy not run on 074 and 162). 3 prefabs with dangling vendor GUIDs were repaired.
+
+Code and tools:
+- MoonlightTextureImporter: FolderCeilings (shed and pool folders import BaseColor up to 2048; the default stays 512).
+- Tools/pipeline: move_pack_to_moonlight_{witch_village,graveyard_tombstones,shed,swimming_pool}.py, preflight_import.py (checks assets BEFORE Unity refreshes),
+  assemble_pool_prefab.py (kept as a record; its output froze the editor, do not use it).
+
+Crash countermeasures: the editor froze three times while moving AST-162 (a preview-scene physics test, a script-extracted 3,190-instance prefab, and a
+25-instance copy of it). Rules written in Docs/asset-import-update-process.md ("Crash countermeasures"): preflight before refresh, script-written YAML is
+canary-tested in Playground first, no preview-scene physics through the bridge, quarantine before restart, verify imported texture sizes.
+
+Docs: playground-asset-log, folder-map, asset-import-update-process, 3d-prop-pipeline-wizard (G22), performance-sessions (C-036), the asset-moves handoff
+prompt (block 1e), asset index spreadsheet mirror (AST-074/108/162 set to in Mr Moonlight = Yes).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

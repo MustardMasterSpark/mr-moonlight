@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -47,6 +48,26 @@ namespace MrMoonlight.EditorTools
         private static readonly string[] HeroEnvironmentFolders =
         {
             ArtRoot + "Environment/Moon/",
+            // 1.5 x 2.6 m rug seen close up at the church entrance (Carlos, 2026-10-09: 1024).
+            ArtRoot + "Custom Assets/PersianRug/",
+        };
+
+        // Folder-specific BaseColor ceilings for one-off big props, where 512/1024 is too pixelated.
+        // A ceiling, not a target: the file's own size still wins when it is smaller.
+        private static readonly KeyValuePair<string, int>[] FolderCeilings =
+        {
+            // The Shed (AST-108): hero building + tool atlas, files are 2048 / 2048 / 1024 (Carlos, 2026-10-09: "too pixelated").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-108 (The Shed)/", 2048),
+            // Swimming Pool (AST-162): large structures at 2048, props at 1024, chosen per material (Carlos, 2026-10-10: "don't give it the minimum").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-162 (Swimming Pool)/", 2048),
+            // Dead Bodies (AST-293): body-sized props at 1024, small parts 512 / 256, chosen per material (Carlos, 2026-10-10: "whatever you see fit").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-293 (Dead Bodies)/", 1024),
+            // Barricades (AST-294): big structures and ground patches at 2048, smaller materials 1024 (Carlos, 2026-10-10: "as you see fit").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-294 (Barricades)/", 2048),
+            // Medieval Furniture (AST-295): church interior props, 1024 for large pieces (cabinets, benches, flags), 512 for small ones, chosen per material (Carlos, 2026-10-10: "keep it optimal").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-295 (Medieval Furniture)/", 1024),
+            // PSX Hospital Church (AST-296): the architecture atlas keeps 1024, props atlases 512 (Carlos, 2026-10-10: low-res PSX props).
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-296 (PSX Hospital Church)/", 1024),
         };
 
         // Below this, uncompressed beats DXT: a 128 RGBA32 is 64 KB where a
@@ -137,6 +158,12 @@ namespace MrMoonlight.EditorTools
 
             if (path.StartsWith(ArtRoot + "Weapons/", System.StringComparison.OrdinalIgnoreCase))
                 return WeaponBaseColorSize;
+
+            foreach (KeyValuePair<string, int> entry in FolderCeilings)
+            {
+                if (path.StartsWith(entry.Key, System.StringComparison.OrdinalIgnoreCase))
+                    return entry.Value;
+            }
 
             foreach (string folder in HeroEnvironmentFolders)
             {

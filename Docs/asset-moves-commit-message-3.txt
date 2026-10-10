@@ -1,0 +1,30 @@
+SUMMARY:
+Asset moves: Dead Bodies, Barricades (split into pieces and structures), Medieval Furniture and the two PSX packs into Mr. Moonlight, plus a catalog of everything moved
+
+DESCRIPTION:
+Playground -> Mr. Moonlight asset moves, second half of 2026-10-10 (MRM-88 quick demo update, change trace C-037 on MRM-85). Reviewed superficially by Carlos (a couple of
+assets of each pack test-placed in the editor); colliders are left to a separate chat during staging.
+
+AST-293 Dead Bodies: the 156 prefabs of the Prefabs folder, 82 FBX, 56 RetroLit materials, BaseColor pixelated per material (1024 body-sized and bone
+atlases, 512 limbs and skulls, 256 hands and feet). Vendor defects fixed: Body_Bag_2 base map pointed at its AO texture, every normal map was DirectX
+(green channel flipped for Unity), hair has no texture (flat). Mega_Blood_Pack not moved.
+AST-294 Barricades: the pack is ONE skinned FBX of 339 meshes in a lineup. Each mesh was baked to a static mesh in Unity and grouped into 124 individual
+pieces (touching meshes) and 26 pre-built structures (islands separated by more than 0.4 m), numbered in lineup order, pivoted on the ground. 14 materials,
+BaseColor 2048 / 1024 / 512 per material, AO baked in for blocks, bricks and sandbags. Totals match the source (339 meshes, 488,212 tris).
+AST-295 Medieval Furniture (URP re-import, reorganised in Playground first): 89 prefabs, 71 FBX, the two Shader Graphs rebuilt as RetroLit (1024 / 512).
+The 4 PS_* particle prefabs and their materials and textures were moved unchanged. The prefabs carry 6 realtime point lights (3 with shadows, logged in
+Docs/lighting.md) and 133 vendor colliders.
+AST-296 PSX Hospital Church (67 prefabs) and AST-297 PSX Wooden Fences (71 prefabs): the textures are detailed, so they went through the pixelation pass,
+sized by object and capped at each texture's effective resolution. AST-297's 31 materials only existed inside the FBX and were extracted to .mat files first.
+All five packs: verified in Unity (prefabs load, no null or placeholder materials, console clean, every prefab rendered, 0 pink). Vendor colliders left untouched.
+
+Code and tools:
+- MoonlightTextureImporter: FolderCeilings entries for AST-293 (1024), AST-294 (2048), AST-295 (1024), AST-296 (1024).
+- Tools/pipeline: move_pack_to_moonlight_{dead_bodies,barricades,medieval_furniture,psx}.py (staging build, then preflight, then move).
+- Four existing glass/smoke materials were re-saved by Unity on import (texture slots filled from _MainTex), harmless.
+
+Docs: new Docs/assets-in-moonlight.md (catalog of every pack moved: where the prefabs are, counts, texture sizes, colliders, caveats), pointed to from CLAUDE.md;
+playground-asset-log, folder-map, lighting (AST-295 lights), performance-sessions (C-037), the asset-moves handoff file (closed: prop moves are finished),
+asset index spreadsheet mirror (AST-293 to 297 set to in Mr Moonlight = Yes), collider-policy history. The temporary pending-Linear-comments file is removed (the comments were posted).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

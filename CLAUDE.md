@@ -39,6 +39,8 @@ resolution, HUD layout, menus — targets **1920×1080**.
 **`Docs/folder-map.md`** (2026-10-03): every drag-and-drop prefab is in `Assets/_Project/Prefabs/<semantic folder>/`
 (Buildings, Props, Sets, Nature, Weapons, Characters, Sky & Lighting, VFX, UI, Dev & Tests); art by subject in `Art/`;
 vendor folders named `AST-### (Short Name)`. `Old_*` vegetation = rough-collider duplicates, prefer `Nature/Trees`.
+**`Docs/assets-in-moonlight.md`** (2026-10-10): catalog of every asset pack already moved into Mr. Moonlight (AST-070, 270, 292, 074, 108, 162, 293-297 + custom
+assets): where its prefabs are, counts, texture sizes, colliders, caveats. Check it before importing or hunting for a prop.
 
 ## Making a 3D asset — fire the wizard
 Any prop, character, or weapon work: **`/prop`**, or read

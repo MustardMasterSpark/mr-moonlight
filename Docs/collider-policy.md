@@ -40,3 +40,6 @@ mesh-collider work on many props, so this applies to every prop and every future
 - 2026-10-03, AST-270 Medieval Wells: vendor boxes (154) looked like a loose cloud around the well, Carlos asked for accurate mesh colliders;
   applied LOD0 mesh colliders to all 42 props (26,078 tris, `Well_01` largest at 5,384). Open question at the time: clutter (coins, cups,
   ropes, small jars, driftwood, soil borders) probably should have a cheaper collider or none. This policy was created right after.
+- 2026-10-10, packs moved today (AST-074, 162, 292, 293 to 297): vendor colliders were copied untouched (AST-293, 294, 296, 297 have none; AST-295 has 133, AST-162 about 3,150 mesh colliders in
+  its assembled prefab, AST-292 and AST-074 vendor boxes/meshes). Only the AST-108 shed was evaluated (shell + objects LOD0 mesh colliders, 5 boxes on the tools). Carlos will run the per-prop
+  evaluation for the rest in a separate chat while staging scenes; catalog with per-pack collider status: `Docs/assets-in-moonlight.md`.

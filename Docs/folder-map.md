@@ -70,6 +70,15 @@ Art/
 | Light, sky, time system | `Prefabs/Sky & Lighting/` | `Art/Sky & Water/` |
 | Particle / effect | `Prefabs/VFX/` | `Art/VFX/` |
 | Test or debug prefab | `Prefabs/Dev & Tests/` | n/a |
+| **Witch Village (AST-292) kit, 2026-10-09** | inside the same folder: `Art/Buildings & Props/AST-292 (Witch Village)/Prefabs/` (257 SM_ props) and `/Particles/` (5 P_ prefabs), NOT `Prefabs/` (Carlos asked for one folder) | `Art/Buildings & Props/AST-292 (Witch Village)/{Meshes,Materials,Textures}` |
+| **Graveyard Tombstones (AST-074) kit, 2026-10-09** | inside the same folder: `Art/Buildings & Props/AST-074 (Graveyard Tombstones)/Prefabs/` (63: Bricks, Crosses, Headstones, Pillars, Sarcophagy) | `Art/Buildings & Props/AST-074 (Graveyard Tombstones)/{Meshes,Materials,Textures}` |
+| **The Shed (AST-108), 2026-10-09** | `Art/Buildings & Props/AST-108 (The Shed)/Prefabs/The Shed.prefab` | `Art/Buildings & Props/AST-108 (The Shed)/{Meshes,Materials,Textures}` |
+| **Abandoned Swimming Pool (AST-162), 2026-10-10** | `Art/Buildings & Props/AST-162 (Swimming Pool)/Prefabs/` (148 vendor prefabs + `AbandonedPool_Assembled.prefab`, the whole scene's meshes as one drag-and-drop prefab) | `Art/Buildings & Props/AST-162 (Swimming Pool)/{Meshes,Materials,Textures}` |
+| **Dead Bodies (AST-293), 2026-10-10** | `Art/Buildings & Props/AST-293 (Dead Bodies)/Prefabs/` (156: skeletons, bodies, body bags, mummies, cages, cells, severed parts, morgue table) | `Art/Buildings & Props/AST-293 (Dead Bodies)/{Meshes,Materials,Textures}` |
+| **Barricades (AST-294), 2026-10-10** | `Art/Buildings & Props/AST-294 (Barricades)/Prefabs/Pieces/` (124 individual pieces) and `.../Prefabs/Structures/` (26 pre-built structures) | `Art/Buildings & Props/AST-294 (Barricades)/{Meshes,Materials,Textures}` (meshes are baked static assets, the source skinned FBX is not included) |
+| **Medieval Furniture (AST-295), 2026-10-10** | `Art/Buildings & Props/AST-295 (Medieval Furniture)/Prefabs/` (89: church furniture, books, candle stands, chandeliers, paintings, flags, plus 4 `PS_*` particle prefabs) | `Art/Buildings & Props/AST-295 (Medieval Furniture)/{Meshes,Materials,Textures}` |
+| **PSX Hospital Church (AST-296) and PSX Wooden Fences (AST-297), 2026-10-10** | `Art/Buildings & Props/AST-296 (PSX Hospital Church)/Prefabs/` (67 hospital/church props) and `Art/Buildings & Props/AST-297 (PSX Wooden Fences)/Prefabs/` (71 fences, planks, debris, lamps, bird houses) | each in its own folder: `{Meshes,Materials,Textures}` beside `Prefabs/` |
+| **Custom asset: made from a loose file, not part of any asset pack** (Carlos, 2026-10-09) | `Prefabs/Custom Assets/Prop_<Name>.prefab` | `Art/Custom Assets/<Name>/` (FBX, `M_`, `T_`). First three: `PersianRug` (1024 BaseColor, folder is in `MoonlightTextureImporter.HeroEnvironmentFolders`), `Broom`, `Dustpan` |
 
 Don't create a new top-level folder for one asset. Fold it into the nearest category; add a folder only once a category clearly
 holds a different kind of thing.
