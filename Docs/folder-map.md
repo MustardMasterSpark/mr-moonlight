@@ -70,6 +70,11 @@ Art/
 | Light, sky, time system | `Prefabs/Sky & Lighting/` | `Art/Sky & Water/` |
 | Particle / effect | `Prefabs/VFX/` | `Art/VFX/` |
 | Test or debug prefab | `Prefabs/Dev & Tests/` | n/a |
+| **Witch Village (AST-292) kit, 2026-10-09** | inside the same folder: `Art/Buildings & Props/AST-292 (Witch Village)/Prefabs/` (257 SM_ props) and `/Particles/` (5 P_ prefabs), NOT `Prefabs/` (Carlos asked for one folder) | `Art/Buildings & Props/AST-292 (Witch Village)/{Meshes,Materials,Textures}` |
+| **Graveyard Tombstones (AST-074) kit, 2026-10-09** | inside the same folder: `Art/Buildings & Props/AST-074 (Graveyard Tombstones)/Prefabs/` (63: Bricks, Crosses, Headstones, Pillars, Sarcophagy) | `Art/Buildings & Props/AST-074 (Graveyard Tombstones)/{Meshes,Materials,Textures}` |
+| **The Shed (AST-108), 2026-10-09** | `Art/Buildings & Props/AST-108 (The Shed)/Prefabs/The Shed.prefab` | `Art/Buildings & Props/AST-108 (The Shed)/{Meshes,Materials,Textures}` |
+| **Abandoned Swimming Pool (AST-162), 2026-10-10** | `Art/Buildings & Props/AST-162 (Swimming Pool)/Prefabs/` (148 vendor prefabs + `AbandonedPool_Assembled.prefab`, the whole scene's meshes as one drag-and-drop prefab) | `Art/Buildings & Props/AST-162 (Swimming Pool)/{Meshes,Materials,Textures}` |
+| **Custom asset: made from a loose file, not part of any asset pack** (Carlos, 2026-10-09) | `Prefabs/Custom Assets/Prop_<Name>.prefab` | `Art/Custom Assets/<Name>/` (FBX, `M_`, `T_`). First three: `PersianRug` (1024 BaseColor, folder is in `MoonlightTextureImporter.HeroEnvironmentFolders`), `Broom`, `Dustpan` |
 
 Don't create a new top-level folder for one asset. Fold it into the nearest category; add a folder only once a category clearly
 holds a different kind of thing.

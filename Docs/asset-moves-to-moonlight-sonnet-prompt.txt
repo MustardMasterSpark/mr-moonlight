@@ -1,6 +1,6 @@
 Context prompt: MOVING PLAYGROUND ASSETS INTO MR. MOONLIGHT, ONE AT A TIME (reusable until the six below are done)
 
-WRITTEN: 2026-10-02. Suggested model: SONNET (the pipeline exists and this is verification-heavy work). Exceptions flagged per asset below.
+WRITTEN: 2026-10-02 (block 1d added 2026-10-09). Suggested model: SONNET (the pipeline exists and this is verification-heavy work). Exceptions flagged per asset below.
 Do not auto-start on this file: read it, say what you understood in a few lines, and wait for Carlos to name the first asset.
 
 ===========================================================================
@@ -12,6 +12,87 @@ Every move is the prop wizard: invoke `/prop` (skill `prop-wizard`), or read `Do
 in SHAKEDOWN: narrate each step, stop at each step boundary, ask rather than assume, fix the wizard doc the moment a gap appears.
 Rule on 3D models (Carlos, 2026-10-01): **every model's BaseColor goes through the pixelation filter** (`Tools/pipeline/texture_pass.py`, normals are
 never pixelated). Ask the texture size every time (512 props / 1024 weapons / 1024-2048 characters / 256-512 small items).
+
+===========================================================================
+1e. UPDATE 2026-10-10 (READ THIS BLOCK FIRST; it supersedes 1d and below where they differ)
+===========================================================================
+Do not auto-start. Read: CLAUDE.md, this block, Docs/asset-import-update-process.md ("Crash countermeasures" at the END), Docs/3d-prop-pipeline-wizard.md G22,
+Docs/playground-asset-log.md (rows 2026-10-09/10), Docs/collider-policy.md. Say in a few lines what you understood, then WAIT for Carlos to name the next asset.
+Suggested model: SONNET for more prop packs (the builders exist). OPUS if the next asset is the AST-131 Weeper characters.
+
+FIRST THINGS: (1) confirm the Mr. Moonlight bridge (execute_code returning Application.dataPath = E:/MrMoonlight/Assets, isPlaying false). If it says no_unity_session ask Carlos
+to start the bridge (Window > MCP for Unity, port 8080). (2) NEVER start a heavy import without telling Carlos to save the scene first.
+
+DONE (all uncommitted in the mrm-88 working tree; Carlos commits; message in Docs/asset-moves-commit-message-2.txt)
+ - AST-074 Graveyard Tombstones: 63 prefabs, 54 FBX, 9 RetroLit mats, BaseColor 512 / normal 256. `Art/Buildings & Props/AST-074 (Graveyard Tombstones)/`.
+ - AST-108 The Shed (only the one prefab): `.../AST-108 (The Shed)/`, BaseColor 2048 (building, tools atlas) / 1024 (objects), normals 512/512/256, 11 flat grey decal quads
+   deactivated, colliders (shell + objects LOD0 MeshCollider, 5 boxes on tool pieces). Carlos reviewed it placed in scene 07 and found the first pass too pixelated (fixed).
+ - AST-162 Swimming Pool (URP version): `.../AST-162 (Swimming Pool)/{Prefabs 148, Meshes 144, Materials 93, Textures 89}` + `Assembled/AbandonedPool_Assembled.prefab` = the scene's whole
+   Meshes object as ONE prefab (3,190 pieces, 13,380 renderers, 3,148 mesh colliders). Built in Playground with PrefabUtility, one file copied across. Terrain, lights, probes,
+   sky/fog volume, camera NOT included. Textures 2048 for big structures, 1024 props, 512 only where the source is 512 (tree/leaf cards). Vendor colliders UNTOUCHED.
+ - Tool change: `MoonlightTextureImporter.FolderCeilings` (shed + pool folders at 2048). New tools: `Tools/pipeline/move_pack_to_moonlight_{graveyard_tombstones,shed,swimming_pool}.py`,
+   `preflight_import.py`, `assemble_pool_prefab.py` (DO NOT use it: its output froze the editor).
+ - Spreadsheet rows AST-074 / 108 / 162 set to `in Mr Moonlight? = Yes` (backup of the old xlsx in the old session scratchpad, gone). Mirror regenerated.
+
+WHAT WENT WRONG (so you do not repeat it): the Mr. Moonlight editor froze 3 times, all caused by Claude: a preview-scene PHYSICS test via execute_code; a script-extracted prefab with 3,190
+nested instances lifted out of a vendor scene (20+ min, no Library writes); a 25-instance copy of it. Cause unproven (hypothesis: out-of-range m_RootOrder in the scene's modifications).
+Rules now: preflight before refresh, script-written YAML is canary-tested in Playground first (1 / 25 / all), no preview scenes or PhysicsScene through the bridge, watch the import, quarantine
+generated files BEFORE a restart, verify the IMPORTED texture width (the importer clamps to 512 outside listed folders). Memory: import-crash-countermeasures.
+
+OPEN / NEXT (wait for Carlos; he said "we might go back to fix sizes, colliders, whatever")
+ - Collider policy NOT run on AST-074 (63 props, vendor 9 mesh + 71 box), AST-162 (148 prefabs, vendor 141 mesh + 28 box; the assembled prefab has 3,148 MeshColliders: heavy for the
+   island NavMesh bake), AST-292. Nothing is placed in a scene except Carlos's test of the shed in scene 07 (probably lost in a crash; Assets/_Recovery/0 (6).unity and 0 (7).unity are crash
+   backups, untracked, ask before touching).
+ - Pool gaps: `Cables` prefab renders blank (not investigated); `M_Emissive` is flat colour (RetroLit has no emission; a real Light would be the answer); world-aligned concrete tiling and the
+   dirt/blend layers are lost; `M_EdgeDecal` and glass are URP/Lit transparent, not RetroLit. Nothing reviewed rendered as a whole by Carlos.
+ - Playground: the AST-074, 108, 162 copies are still staged (removal only on Carlos's word); Playground now also has `Assets/PLAYGROUND/_AssembledTest/` (my canary prefabs, removable on his go)
+   and a loose `AbandonedPoolURP.unity` at the PLAYGROUND root (restored from the Recycle Bin). AST-162 was deleted by accident and restored from the Recycle Bin on 2026-10-10.
+ - Still to move when he names them: AST-076 Heavy Action Music (audio workflow), AST-131 Weeper Ghosts (character path, ask what he wants), AST-293 Dead Bodies, 294 Barricades,
+   295 Medieval Furniture, 296 PSX Hospital Church, 297 PSX Wooden Fences, 298 Horror Sounds, plus the AST-270 clutter collider verdicts (still unanswered).
+ - Docs/prop-log.md entries are NOT written for any of the three (the wizard says only after Carlos signs off).
+
+===========================================================================
+1d. UPDATE 2026-10-09 (READ THIS BLOCK FIRST; it supersedes 1c and below where they differ)
+===========================================================================
+Do not auto-start: read CLAUDE.md, this file, Docs/asset-import-update-process.md (worked example 13 is the newest), Docs/playground-asset-log.md (AST-292 rows),
+Docs/collider-policy.md. Say in a few lines what you understood, then WAIT for Carlos to name the next asset.
+
+FIRST THING: CHECK THE MCP BRIDGES. Carlos was fighting Windows Smart App Control (it blocked unsigned compiled Python files of the new MCP server, mcpforunityserver 10.3.0
+on Python 3.14, event log CodeIntegrity 3077) and was going to turn it off in Windows Security > App & browser control, then restart the bridge in Unity
+(Window > MCP for Unity) and run /mcp. Ports: Mr. Moonlight 8080, Playground 8081. Before ANY write, run execute_code returning Application.dataPath and
+EditorApplication.isPlaying and confirm it is the project you think (E:/MrMoonlight/Assets or E:/playground/Playground/Assets). If tools are missing, say so and wait.
+
+NEW RULES / DECISIONS (2026-10-08/09)
+ - CLAUDE.md: IGNORE the 1 GB limit during the demo (do not check or cite it). Size is cut in one pass at the very end.
+ - Moving an asset = prop wizard intake with Carlos: ASK (a) BaseColor texture size (512 default, normals half), (b) materials: RetroLit (recommended) or keep vendor URP,
+   (c) destination. He answered for AST-292: 512 / RetroLit / `Assets/_Project/Art/Buildings & Props/AST-292 (Witch Village)/` with prefabs inside that folder.
+ - The auto-mode permission classifier BLOCKED a recursive folder delete and a Unity refresh queued behind it ("Irreversible Local Destruction"). Do not work around it:
+   say what you wanted to delete and let Carlos delete it in Unity/Explorer or add a permission rule. Carlos's explicit "delete this file" for one scratch file did go through.
+ - execute_code is C# 6 and blocks the text `AssetDatabase.DeleteAsset`. To write a material to a path outside Assets use
+   `UnityEditorInternal.InternalEditorUtility.SaveToSerializedFileAndForget(new Object[]{m}, path, true)` (then fix `--- !u!21 &1` to `&2100000`).
+
+DONE THIS SESSION (all uncommitted in the mrm-88 working tree; Carlos commits)
+ 1. Asset index (master xlsx + Docs/asset-index mirror, 297 IDs): wishlist->owned AST-204, 213, 215, 216, 218, 226, 227; new AST-299 Animation Designer, 300 Mobile Traffic
+    System v3, 301 Ultimate Foliage Renormalizer, 302 550 Cyberpunk Material Collection Vol 2; AST-236 Satomi removed. AST-147 and AST-292 marked `in Mr Moonlight? = Yes`.
+    01_DOWNLOAD files are renamed (log `_rename-log 2026-10-08.csv`). AST-301 and AST-147 were first installed under Assets/ThirdParty/ by this chat; ANOTHER chat later rolled
+    the Renormalizer back and removed AST-147 (memory notes foliage_renormalizer_ast301 / optimizer_assets_and_flora_status): verify on disk before assuming either is there.
+ 2. Custom Assets (not part of any pack): `Assets/_Project/Art/Custom Assets/{PersianRug,Broom,Dustpan}` + prefabs `Assets/_Project/Prefabs/Custom Assets/Prop_*.prefab`
+    (rug 1.5 x 2.6 m at 1024, broom/dustpan 512, box colliders on broom/dustpan only). `MoonlightTextureImporter.HeroEnvironmentFolders` got the PersianRug folder.
+    Waiting for Carlos's review; the prop-log entry (Docs/prop-log.md) is NOT written yet (wizard says only after sign-off).
+ 3. AST-292 Witch Village is IN Mr. Moonlight (details in Docs/playground-asset-log.md, the 2026-10-09 AST-292 rows): 262 prefabs (257 SM_ + 5 P_ particles), 251 FBX, 79 RetroLit
+    materials + 4 URP particle materials + glass, 132 pixelated textures; vendor GUIDs kept for prefabs/FBX/materials. Builder script: Tools/pipeline/move_pack_to_moonlight_witch_village.py
+    (hard-coded to this pack; copy and adapt, run `dry` first). Not placed in any scene, not reviewed by Carlos. Known approximations: no moss/wind/water, plank graphs reduced to
+    trim-sheet colour, `M_WoodBowls_Red/yellow` tints invented, vendor UCX box colliders copied untouched (collider policy not run).
+ 4. Playground AST-292 (Witch Village) folder is the vendor's URP package, cleaned: materials converted to URP, the 251 FBX remapped to the vendor M_* materials (needs
+    materialImportMode=ImportViaMaterialDescription + materialLocation=InPrefab or the remaps are ignored), SM_Bench prefab fixed. Still staged; removal only on Carlos's word.
+    URP_Overview scene was dark because the ambient probe was never computed (giWorkflowMode OnDemand): DynamicGI.UpdateEnvironment() fixed it live, unsaved; permanent fix =
+    Window > Rendering > Lighting > Generate Lighting (not done, asked Carlos).
+
+OPEN / NEXT (wait for Carlos)
+ - Next asset to move: he said he would name it once MCP is back.
+ - Candidates from earlier lists still in Playground: AST-108, 131, 074, 076, 162, 293, 294, 295, 296, 297, 298, 270 clutter collider verdicts (see 1c below).
+ - Unused grey extracted MI_*/No Name materials in Playground AST-292/Meshes: suggested for deletion, no go given.
+ - Backups in the old session scratchpad are gone with it; the originals live in 01_DOWNLOAD\AST-292.zip.
 
 ===========================================================================
 1c. UPDATE 2026-10-07 (READ THIS BLOCK FIRST; it supersedes 1b and the lists below where they differ)

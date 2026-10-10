@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
@@ -47,6 +48,18 @@ namespace MrMoonlight.EditorTools
         private static readonly string[] HeroEnvironmentFolders =
         {
             ArtRoot + "Environment/Moon/",
+            // 1.5 x 2.6 m rug seen close up at the church entrance (Carlos, 2026-10-09: 1024).
+            ArtRoot + "Custom Assets/PersianRug/",
+        };
+
+        // Folder-specific BaseColor ceilings for one-off big props, where 512/1024 is too pixelated.
+        // A ceiling, not a target: the file's own size still wins when it is smaller.
+        private static readonly KeyValuePair<string, int>[] FolderCeilings =
+        {
+            // The Shed (AST-108): hero building + tool atlas, files are 2048 / 2048 / 1024 (Carlos, 2026-10-09: "too pixelated").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-108 (The Shed)/", 2048),
+            // Swimming Pool (AST-162): large structures at 2048, props at 1024, chosen per material (Carlos, 2026-10-10: "don't give it the minimum").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-162 (Swimming Pool)/", 2048),
         };
 
         // Below this, uncompressed beats DXT: a 128 RGBA32 is 64 KB where a
@@ -137,6 +150,12 @@ namespace MrMoonlight.EditorTools
 
             if (path.StartsWith(ArtRoot + "Weapons/", System.StringComparison.OrdinalIgnoreCase))
                 return WeaponBaseColorSize;
+
+            foreach (KeyValuePair<string, int> entry in FolderCeilings)
+            {
+                if (path.StartsWith(entry.Key, System.StringComparison.OrdinalIgnoreCase))
+                    return entry.Value;
+            }
 
             foreach (string folder in HeroEnvironmentFolders)
             {

@@ -638,6 +638,7 @@ per-asset result are in `Docs/playground-asset-log.md`. What is new compared wit
 - **Not every download is a `.unitypackage`.** AST-294, 296, 297 are raw FBX + PNG folders: copy only what Unity needs (the FBX and the
   textures; leave `.blend`, `.obj`/`.mtl`, `.glb` duplicates in `02_extracted`) and let Unity import them. AST-296's nested `Hospital_horror.zip`
   is an **Unreal project** (160 `.uasset`): never stage it.
+- **CHECK FOR NESTED PER-PIPELINE PACKAGES FIRST (2026-10-09 correction).** AST-292 was staged as "HDRP-only" but shipped `URP/URP_Witch_Village.unitypackage` and a Built-in twin, unopened, next to the HDRP folder. Before converting any pack by hand, search the staged folder for `*.unitypackage` and `URP` / `Built-in` folders. A vendor's URP package may still ship some `Standard`/HDRP materials; run the local converters on what is left.
 - **An HDRP-only pack looks fine in a listing and is wholly pink in URP.** AST-292 and AST-295 ship only an `HDRP` folder: their materials are
   `HDRP/Lit` (error shader), Built-in `Standard`, and **HDRP Shader Graphs that report `Shader.isSupported = True` yet draw as the error
   colour in URP**. The listing/`isSupported` check passed all of them; only rendering showed it. So the check for a new pack is a **real render
@@ -714,3 +715,34 @@ one-off handoff file**, that's exactly the mistake this note is here to prevent.
 *already-installed* package's version, on the other hand, is explicitly called out as **not** an
 interim task (GUIDs are load-bearing) — that gets a normal standalone issue, the way the four
 version updates in the worked example above did (`MRM-83`).
+
+## Crash countermeasures when moving Playground assets into Mr. Moonlight (2026-10-10)
+
+**What happened.** Moving AST-162 (Swimming Pool) froze the Mr. Moonlight editor three times in one session. Every freeze was caused by *our own action*, none by
+the project: (1) a physics test run inside an editor preview scene through `execute_code`; (2) importing `AbandonedPool_Assembled.prefab`, a prefab **a script
+wrote** by lifting 3,190 nested instances out of a vendor `.unity` (20+ min with no `Library/` writes; Unity then logged *"A default asset was created for ...
+because the asset importer crashed on it last time"* and quarantined it as an empty prefab); (3) a **25-instance** copy of the same file froze it again, so it is the
+file, not its size. The cause is NOT proven. Not the "old" nested-instance format on its own (four vendor prefabs use it and import fine); not unresolved
+references (the 25-instance copy had none). Leading hypothesis, untested: the scene's `m_RootOrder` sibling indices (up to 3166) are out of range inside a prefab
+with fewer children. Integrity after the kill/restart was fine: assets on disk are plain files, `Library/` is only a cache.
+
+**Rules (all of them, every move):**
+1. **Run the preflight before asking Unity to refresh:** `python Tools/pipeline/preflight_import.py "<the new Assets folder>"`. It BLOCKs on a missing/orphan
+   `.meta`, a zero-byte file, a duplicate GUID (inside the folder or against the rest of Assets), and prefabs whose internal references are broken; it WARNs on
+   GUIDs that resolve nowhere and on any prefab with 20+ nested PrefabInstances. Do not refresh on a BLOCK.
+2. **Generated YAML is never first imported in Mr. Moonlight.** A prefab/scene/controller/material that a *script* wrote (not Unity) goes into **Playground**
+   (the disposable bench) first, with a canary ladder: 1 piece, then 25, then all, timing each. Copy the single finished file across only after it reimports
+   cleanly there. Prefer making nested/assembled prefabs **inside Unity with `PrefabUtility`** (`InstantiatePrefab` + `SaveAsPrefabAsset`) over writing YAML by hand.
+3. **Never run physics or preview scenes through `execute_code` on a project that matters** (`EditorSceneManager.NewPreviewScene`, `PhysicsScene` queries). Test on
+   hidden `HideFlags.HideAndDontSave` objects in the open scene, or in Playground.
+4. **Before a heavy import (more than ~100 assets or any single multi-MB generated file) tell Carlos to save the open scene**, and say what is coming. A busy editor
+   cannot save.
+5. **Watch the import, don't hope.** Poll the editor window title ("Importing (busy for ...)"), `Library/` write activity and the process CPU. A healthy import keeps
+   writing `Library/Artifacts`; 3+ minutes of busy with zero `Library/` writes and flat CPU is a hang. Report it to Carlos and let HIM kill the process.
+6. **After a hang, quarantine before restarting:** move the file(s) we just generated (and their `.meta`) OUT of `Assets/` (scratchpad), so the restart does not
+   re-trigger the crash; then restart; then read `Editor.log` for the "importer crashed" line to learn which asset it was.
+7. **After any import, verify imported state, not source state:** texture widths as imported (the importer clamps by folder, see `FolderCeilings`), no null or
+   `Scheduled_For_Extraction-*` placeholder materials in prefab renderers, console clean, and a real render with a magenta-pixel count.
+8. Unity writes `Assets/_Recovery/*.unity` when it dies with a dirty scene; those are crash backups, not our assets. Ask Carlos before touching them.
+
+**Resolved for AST-162 (2026-10-10):** `AbandonedPool_Assembled.prefab` was rebuilt in Playground with `PrefabUtility` (`InstantiatePrefab` + transform + name + the `m_Materials` overrides, `SaveAsPrefabAsset`) via the canary ladder 1 / 25 / 400 / 3,190 (all imported in under 1 s each there), copied as one file into `AST-162 (Swimming Pool)/Assembled/`, and imported in Mr. Moonlight with no hang. The Unity-written file carries no `m_RootOrder` modifications; the script-extracted one carried indices up to 3166 (still the leading, unproven explanation). Recipe is the method above; the extractor `Tools/pipeline/assemble_pool_prefab.py` is the thing NOT to use for import.

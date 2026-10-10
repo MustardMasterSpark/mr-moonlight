@@ -1075,6 +1075,28 @@ untracked files from the filesystem (plus the `.meta`) instead of disabling the 
    (LOD0 mesh; static props, so the cost is only the NavMesh bake and static physics: 26,078 tris over 42 props, Well_01 is the largest at 5,384).
    Edit with `PrefabUtility.LoadPrefabContents` / `SaveAsPrefabAsset` / `UnloadPrefabContents`; the 23 sets pick it up as nested instances.
 
+### G22 — Whole packs of vendor prefabs, again: what the importer, the FBX and Unity itself do behind your back (AST-074, AST-108, AST-162, 2026-10-09/10)
+
+Builders: `Tools/pipeline/move_pack_to_moonlight_{witch_village,graveyard_tombstones,shed,swimming_pool}.py` (copy the closest one, run `dry` first, then `go`).
+Always run `python Tools/pipeline/preflight_import.py "<new folder>"` before the refresh, and read "Crash countermeasures" in `Docs/asset-import-update-process.md`.
+
+1. **`MoonlightTextureImporter` clamps by folder, silently.** Every `*_BaseColor` is capped at 512 (normals 256) unless the folder is in `HeroEnvironmentFolders`
+   (1024) or `FolderCeilings` (explicit size, used for the shed and the pool, 2048). The shed was first delivered "at 1024" but imported at 512, which is why Carlos called it
+   too pixelated. **Add the folder to `FolderCeilings` BEFORE the first import and read the IMPORTED width back (`Texture2D.width`).** A texture imported before the script
+   change needs a `ForceUpdate` reimport. Pick sizes per material from how big the objects are that use it (average >= 6 m or any >= 20 m: 2048, else 1024), cap at the source.
+2. **Vendor FBX find their materials BY NAME** (`materialSearch` Recursive-Up, `materialLocation` External). Keep `Meshes/` and `Materials/` as siblings under one asset
+   folder and keep the vendor material file names and GUIDs. A name the pack did not ship shows up as `Scheduled_For_Extraction-<name>.mat` inside the FBX: scan prefab
+   renderers for any material whose asset path is not a `.mat` (a "Materials inside my folder" check does not catch these) and for null slots.
+3. **Vendor prefabs can carry dangling `abc0000...` GUIDs** (3 prefabs in AST-162): fix by taking the materials from the FBX renderer that uses the same mesh, then replacing
+   the `Scheduled_For_Extraction-*` leftovers with the pack's own materials.
+4. **Shader Graph packs (AST-162): read the `.shadergraph` property reference names**, map them to base / normal / AO / tint / tiling per graph, and rebuild as RetroLit.
+   Tint = `lerp(white, tint, amount)` (S_Master uses a float amount, others the alpha); floor black tints at 0.08. AORM maps: AO = R channel, multiplied into the base.
+   Dirt/blend/mask layers are lost on purpose. Materials that are only referenced by scene overrides (not by any prefab) are missed by a prefab scan: also scan the scene.
+5. **Never write a nested/assembled prefab as YAML from a scene.** It froze the editor (3,190 instances, and again with 25). Build it in Playground with `PrefabUtility`
+   (`InstantiatePrefab`, copy transform and name, re-apply only the `m_Materials` modifications, `SaveAsPrefabAsset`), canary 1 / 25 / 400 / all, then copy ONE file across.
+6. **FBX `Read/Write` is on in many vendor metas**: turn it off on the copies (`isReadable: 1` -> `0`).
+7. **Never test physics in a preview scene through the bridge** (froze the editor); use hidden `HideAndDontSave` objects.
+
 ### Closed gaps
 
 Moved here with the date and what closed them, rather than deleted — knowing a gap existed is
