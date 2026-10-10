@@ -60,6 +60,14 @@ namespace MrMoonlight.EditorTools
             new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-108 (The Shed)/", 2048),
             // Swimming Pool (AST-162): large structures at 2048, props at 1024, chosen per material (Carlos, 2026-10-10: "don't give it the minimum").
             new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-162 (Swimming Pool)/", 2048),
+            // Dead Bodies (AST-293): body-sized props at 1024, small parts 512 / 256, chosen per material (Carlos, 2026-10-10: "whatever you see fit").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-293 (Dead Bodies)/", 1024),
+            // Barricades (AST-294): big structures and ground patches at 2048, smaller materials 1024 (Carlos, 2026-10-10: "as you see fit").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-294 (Barricades)/", 2048),
+            // Medieval Furniture (AST-295): church interior props, 1024 for large pieces (cabinets, benches, flags), 512 for small ones, chosen per material (Carlos, 2026-10-10: "keep it optimal").
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-295 (Medieval Furniture)/", 1024),
+            // PSX Hospital Church (AST-296): the architecture atlas keeps 1024, props atlases 512 (Carlos, 2026-10-10: low-res PSX props).
+            new KeyValuePair<string, int>(ArtRoot + "Buildings & Props/AST-296 (PSX Hospital Church)/", 1024),
         };
 
         // Below this, uncompressed beats DXT: a 128 RGBA32 is 64 KB where a
