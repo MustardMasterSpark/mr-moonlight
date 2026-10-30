@@ -1,0 +1,13 @@
+SUMMARY
+Asset intake: 17 downloads processed (version updates for Magica Cloth 2 and Advanced Cable Creator, AST-307 to 320 added), spreadsheet mirror, import process examples 14 and 15, BRG Instanced Renderer trial prompt
+
+DESCRIPTION
+Docs and asset index only. No game code, scene or ProjectSettings changes; nothing was installed in a project.
+
+- Asset index (Docs/asset-index/ASSETS-Index.xlsx, mirror of the master): 301 to 315 IDs. Version updates AST-157 Magica Cloth 2 (2.18.4) and AST-266 Advanced Cable Creator (1.4.5). New rows AST-307 to 313 (Physics Tank Maker, Responsive Smokes, Flashlight Animation Set, VoluSmokeFX, AnimFuse, Toolkit for Ballistics 2026, Realistic Eye Movements) and AST-314 to 320 (BRG Instanced Renderer, Dark Fantasy Bandit Camp & Wilderness, Microdetail Terrain System, NewGen Sci-Fi Slums, FS Melee Combat System 2, Female Zombie Animations, Procedural Weapon Trails). Legend counts and change log updated. Browse by Category / By Category regenerated.
+- Docs/asset-import-update-process.md: worked examples 14 (2026-10-27) and 15 (2026-10-29), including the blocked-delete workaround and the python -I / UTF-8 traps.
+- Docs/performance-sessions.md section 8: change record C-038.
+- Docs/brg-trial-opus-prompt.txt (new): cold-start prompt for the next session, a trial of AST-314 BRG Instanced Renderer against Flora on a copy of scene 07 (the island trees already render through a BRG system, so Flora must be off in the copy).
+- Outside the repo: 01_DOWNLOAD renamed and logged (_rename-log 2026-10-27.csv, 2026-10-29.csv), 02_extracted\AST-307..320 extracted/unpacked, master spreadsheet updated (backups beside it).
+
+Co-Authored-By: Claude Sonnet 5.5 <noreply@anthropic.com>

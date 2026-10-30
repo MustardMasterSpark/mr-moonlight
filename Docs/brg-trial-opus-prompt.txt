@@ -1,0 +1,44 @@
+BRG INSTANCED RENDERER (AST-314) TRIAL: read me first, cold. Written 2026-10-29. Suggested model: Opus (new rendering system, render-audit and A/B measuring).
+
+GOAL (Carlos): find out whether AST-314 BRG Instanced Renderer v1.5.7 raises FPS on the island vegetation beyond the current best (build 56: Flora on, 162.1 fps avg, GPU 4.56 ms, CPU ~6.2 ms, scene 07, release build, standard route). The CPU is now the limit, not the trees' GPU cost (see Docs/optimization-decisions-2026-10.md, D7 and section 5 item 7).
+
+STATE
+- AST-314 is renamed, extracted and prepared, NOT installed in any project.
+  Download:   C:\Users\calva\Documents\Asset Collection\01_DOWNLOAD\AST-314.zip   (never touch)
+  Extracted:  ...\02_extracted\AST-314\BRG Instanced Renderer v1.5.7\*.unitypackage (+ README.txt)
+  Unpacked:   ...\02_extracted\AST-314\_unpacked\<guid>\{asset,asset.meta,pathname}   (166 entries, vendor root Assets/BRGInstancedRenderer/)
+- File is v1.5.7; the store has 1.6.0 (released 2026-10-29). Decide with Carlos whether to re-download before trusting results.
+- Spreadsheet row AST-314 added (Optimization & Performance, $99.99, publisher Milk_Drinker01, "No" up to date). Same publisher as AST-301 Foliage Renormalizer.
+- Docs: https://milk-drinker01.github.io/BRGInstancedRenderer/articles/overview.html (also Documentation.url in the package). Package content: Runtime/Scripts (Core, Config, Registerers/Terrain, Registerers/GameObjects, Registerers/Baked), Editor/Scripts (URP, HDRP patchers, Tools/ConvertToTerrainPrefab), compute shaders for culling, HZB, upload, 4 demo scenes in Examples/.
+
+WHAT THE VENDOR CLAIMS (from the overview page, unverified here)
+Unity 6+, URP or HDRP, any compute-capable API (DX11 included). BRG Indirect API, GPU compute culling (frustum, per-instance distance, HZB occlusion, shadow cascades), LOD selection on the GPU, Mesh LOD supported, no shader changes ("BRG variants", same as GPU Resident Drawer-compatible shaders). Two entry points: (1) one component on a Terrain for terrain trees and details; (2) right-click prefab instances in the Hierarchy > Convert to Instances (BRGGameObjectGroup). SpeedTree wind bridge, APV/light probes, rendering layers, per-instance colour.
+
+THE TRAPS TO CHECK FIRST (known from our own history)
+1. THE ISLAND TREES ARE ALREADY ON A BRG SYSTEM. Flora's FloraInstanceRenderer (8,786 renderers in scenes 07/06/08, 5,990 in 02) draws them through BatchRendererGroup. Never run both on the same trees. The test needs a scene copy where Flora's EnableRendering is OFF / FloraInstanceRenderer removed for the trees being converted, then compare against build 56 (Flora) and build 54 (plain Unity + Umbra).
+2. Project Settings > Graphics > BatchRendererGroup Variants is already Keep All (m_BrgStripping: 2). Without it the build shows NO trees while the editor looks fine (build 55).
+3. RetroLit must not read unity_ObjectToWorld directly (use GetObjectToWorldMatrix()); already patched for Flora, so BRG should inherit it. HAZE fog and Crest water must still render (render-audit for pink).
+4. The island has ZERO terrain trees (vegetation = GameObject prefabs + FloraInstanceRenderer), so the "Terrain component" route does nothing for trees. Use Convert to Instances (GameObject route) and check how it handles 8,786 instances plus the WoodColliders (MRM-84 colliders must stay; proxy colliders do not exist any more).
+5. Umbra occlusion is baked per scene (scene 07 = 56.9 MB). BRG has its own HZB occlusion: check whether it replaces or fights Umbra (double culling can hide trees wrongly).
+6. D3D11 is the Windows graphics API. Check the vendor's compute-shader requirements against it; the GPU Resident Drawer idea (optimization doc section 5 item 3) was parked for exactly this reason.
+7. The [PERF] counters (draws, tris) lie for BRG paths (build 56 showed 3.2k draws vs 8.6k). Trust fps, 1% low and GPU/CPU ms.
+8. Unity must be FOCUSED for editor work; verification needs a BUILD (editor screenshots and UnityStats lie). Build method: Docs memory "build via execute_code" (BuildPipeline with scenes array, E:\Builds\<N> - <2 words> - <date>). Standard route: spawn near the church, straight line through the dense forest, ~60 s, scene 07, release build, fog off. Test PC: Ryzen 9800X3D / RX 9070 XT.
+9. Import hygiene (Docs/asset-import-update-process.md, "Crash countermeasures"): run Tools/pipeline/preflight_import.py on the new Assets folder before refreshing; skip Packages/manifest.json if any; tell Carlos to save the open scene before the import. AST-314 is 166 files / 1.2 MB, so this is small.
+10. CLAUDE.md hard rules: scene and inspector work needs Carlos's permission first; never delete assets without his word; one issue one branch (branch is mrm-88; check git config --get branch.<name>.merge is not main); never commit or push; no 1 GB check during the demo; no hardcoded values (tunables in MoonlightTunables).
+
+DECISIONS ALREADY MADE (Carlos, 2026-10-29)
+- This is an OPUS session.
+- The test bed is a COPY of scene 07 ("07 LightingTestScene"), with Flora turned off in the copy only. Scene 07 itself stays untouched so build 56 stays reproducible. Carlos said yes to making the copy; it was NOT made yet (scene 07 is modified in git and Unity may have it open). First thing next session: confirm the editor is out of Play Mode and the scene saved, then copy the scene (new name e.g. "07b BRG Trial"; a scene copy does NOT copy its OcclusionCullingData.asset (114 MB, LFS): the copy needs its own bake or a deliberate reuse of the same asset, decide and write it down). Scene numbering/name strings: see memory "scene numbering and name strings" (scenes are "NN Name"; renames need the name strings updated).
+- Still open: re-download BRG v1.6.0 first? (file is 1.5.7). Ask Carlos. A kickoff prompt is context, not a start signal: read it, say what you understood, ask that one question, then begin.
+
+SUGGESTED PLAN
+A. Confirm the two items above (v1.6.0 or not; scene copy mechanics), then make the copy and verify by reading it back.
+B. Install into Assets/ThirdParty/AST-314 (BRG Instanced Renderer)/ (same method as AST-301: guid scan, 0 collisions, stream asset + asset.meta, leave out Examples/ unless needed). Read the vendor docs and the registerer code (BRGGameObjectGroup, BRGInstancedRendererConfig, BRGCullingInjector) before converting anything.
+C. In the duplicated scene: Flora trees off, convert one tree species (a few hundred) first, check render-audit, wind, shadows, LOD, colliders, fog. Then all 8,786.
+D. Build and measure with the standard route against build 56 (162.1 avg) and build 54 (154.0). Record in Docs/performance-sessions.md section 5 and MRM-85/MRM-88 comments. If it does not beat Flora, say so plainly and keep Flora (D7).
+E. Final: "run the final instructions" (commit message, docs, next-session prompt, change trace C-nnn in performance-sessions.md section 8).
+
+ALSO DONE THIS SESSION (2026-10-27 and 2026-10-29), for context only
+- 2026-10-27: AST-157 Magica Cloth 2 and AST-266 Advanced Cable Creator version updates; AST-307 to 313 new (Physics Tank Maker, Responsive Smokes, Flashlight Animation Set, VoluSmokeFX, AnimFuse, Toolkit for Ballistics, Realistic Eye Movements). Logs: 01_DOWNLOAD\_rename-log 2026-10-27.csv.
+- 2026-10-29: AST-314 to 320 new (BRG Instanced Renderer, Dark Fantasy Bandit Camp & Wilderness, Microdetail Terrain System, NewGen Sci-Fi Slums, FS Melee Combat System 2, Female Zombie Animations, Procedural Weapon Trails). All extracted to 02_extracted; nested URP packages for 315/316/317 unpacked under 02_extracted\AST-###\_nested. Log: _rename-log 2026-10-29.csv. Nothing installed.
+- Superseded/duplicate zips from 10-27 sit in 01_DOWNLOAD\_superseded 2026-10-27 (Carlos deletes them).
