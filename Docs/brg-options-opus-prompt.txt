@@ -1,0 +1,94 @@
+BRG OPTIONS SESSION (Opus) - what else can AST-314 BRG Instanced Renderer give us?
+Written 2026-10-30 at the end of the BRG trial session. Branch: mrm-88. Read this cold; do not rely on chat history.
+
+=== WHERE WE ARE ===
+- Scene `Assets/_Project/Scenes/09 BRG Trial.unity` = copy of scene 07 with Flora removed and AST-314 BRG drawing
+  the 8,786 trees and the terrain details. Scenes 07, 02, 06, 08 still use Flora. Nothing decided about switching them.
+- Build 60 (scene 09) is the best island run ever: 200.6 fps over the first 50 s (Flora build 56: 160.9),
+  1% low 141.8 (126.4), CPU 4.98 ms (6.21), GPU 4.73 ms (4.51), with HAZE fog and CRT ON (build 56 had them off).
+  Full story: Docs/performance-sessions.md section 5 "builds 57-60", change records C-039 / C-040 (section 8),
+  Docs/optimization-decisions-2026-10.md D8. Per-layer foliage numbers: Docs/foliage-brg-density-2026-10-30.csv.
+- Vendor: Assets/ThirdParty/AST-314 (BRG Instanced Renderer)/ (git-ignored, v1.5.7). Docs online:
+  https://milk-drinker01.github.io/BRGInstancedRenderer/ . Config asset: BRGIRConfig.asset next to the plugin,
+  listed in Player Settings > Preloaded Assets (REQUIRED for builds).
+
+Current scene 09 setup:
+- `BRGGameObjectGroup` on "Gaia Terrains/Terrain_0_0-20260829 - 035828/Gaia Game Object Spawns": chunk mode
+  Static Multi Chunk, 256 m, converted (16 chunks, 88 prototypes). Renderers are hidden with forceRenderingOff
+  (not serialized, re-applied on init); colliders untouched. After changing anything that feeds the prototype key
+  (BRGMeshLodData, BRGPrototypeExtraData, materials) do RevertToGameObjects -> change -> ConvertChildren.
+- `BRGMeshLodData` on all 8,786 trees (4 levels, vendor default screen sizes 1 / .5 / .25 / .1, no crossfade).
+- `TerrainBRGRegisterer` on the terrain, `useUnityTransforms` = ON (see trap 1). Terrain detail distance 150,
+  density 0.5 (has NO effect: useDensityScaling is off on all 90 layers).
+- Config: useBakedOcclusionCulling 1, useGPUOcclusionCulling 1, hzbTightness Tight, shadowCasterOcclusion 1,
+  defaultSmallMeshSize 0.5 (was 0.3), allowTextureGrass 1, cullDetailsAtDetailDistance 1,
+  autoBakePreExtractedTerrainDataOnBuild 1, skipIntermediateLODs 1.
+
+=== GOAL OF THIS SESSION ===
+Carlos: "explore everything BRG can bring, maybe we are not using all the options." Find more fps (or the same fps
+with more foliage), test each option ONE AT A TIME, in the editor first (Carlos prefers it: builds take a while),
+then confirm the winners in one build. Report each option's result as a short table: option, before/after fps at
+the same spot and yaw, visual cost.
+
+=== OPTIONS TO TEST (my order, cheapest/most promising first) ===
+1. Shadows (prime suspect for the slow distant view, hypothesis H16 in performance-sessions section 3):
+   BRGPrototypeExtraData per prototype: forceDisableShadows (small shrubs/dead trees), maxShadowCascade (e.g. 1-2 so
+   far trees cast no shadow), minShadowLOD (shadows from a lower LOD). Also URP shadow distance / cascade count.
+   Config shadowCasterOcclusion is already on.
+2. Distance density thinning (BRGPrototypeExtraData.enableDistanceDensity, densityStartDistance / EndDistance /
+   MinFraction / FadeWidth): thin far trees and far foliage instead of drawing them all. Likely the biggest win
+   for the distance view; check the fade looks fine in fog.
+3. Per-prototype minScreenSize (BRGPrototypeExtraData) and config defaultSmallMeshSize for foliage, with
+   defaultSmallMeshFadeMode crossfade so small things fade instead of pop.
+4. Mesh LOD screen sizes on BRGMeshLodData (more aggressive than 1/.5/.25/.1), crossfade mode. Build 59 showed
+   triangles are NOT the limit, so expect little; do it last or skip.
+5. Occlusion: scene 09 has NO Umbra bake (its occlusion reference was cleared when it was copied from 07, see
+   Docs/scene-numbering.md), so builds 57-60 ran on BRG's GPU (HZB) occlusion alone and still beat Flora + the
+   baked Umbra of scene 07. Test: bake Umbra for scene 09 (useBakedOcclusionCulling is on, so BRG would use it),
+   then A/B useGPUOcclusionCulling on/off, hzbTightness, useHZBRetestPass. Bake = ~57 MB data, Git LFS rule exists.
+6. Terrain streaming: allowAsyncDetailLoading, terrainMaxUploadsPerFrame, detail chunk size (32 m), and whether
+   the pre-extracted terrain data asset (autoBake on build) is actually produced and used in builds.
+7. `useUnityTransforms` cost: it is the vendor's slower, allocating path. Alternative that keeps BRG's fast path:
+   fix the 48 child-renderer detail prefabs (renderer on the root) and switch layers off by painting/biomes
+   instead. Check GC/hitches in the 1% low first; only change if it shows.
+8. Things that do not help perf but matter: enablePerInstanceColor (colour variation for free?), SpeedTree wind
+   (enableSpeedTreeWind; our trees use Retro Lit wind, verify wind still animates under BRG).
+9. Foliage design (Carlos, later): bring back chosen flowers from the 48 hidden layers per biome
+   (Desktop/Foliage_Distribution_Sheet.xlsx holds the per-biome rules). Not this session unless he asks.
+
+=== METHOD ===
+- Fixed benchmark spots in scene 09: (a) dense forest, (b) the corridor looking far into the forest (the slowest
+  view, ~144 fps in build 60), (c) open ground. Teleport Player_Tracey by script (CharacterController off, set
+  position, on) and keep the same yaw; read the FPS counter / SessionLog [PERF] lines.
+- Editor Game view is narrower than the build (~1590 px vs 1920), so editor fps is higher than builds: compare
+  editor to editor, build to build.
+- Back up scene 09 before structural changes (copy the .unity to the session scratchpad).
+- When done: one build of scene 09 with the winners (E:\Builds\<N> - <2 words> - <date>\_raw + Build.zip, see
+  memory build_process; registry fullscreen mode is already borderless), Carlos plays, then record per
+  Docs/performance-sessions.md section 1.
+
+=== TRAPS ALREADY FOUND (do not rediscover) ===
+1. BRG draws terrain-detail prefabs whose renderer is on a CHILD object; Unity's detail system (and Flora) rejects
+   them silently ("Renderer component is missing"). 48 of the 90 island layers are like that (asters, violets,
+   daisies, poppies, mushrooms, Fern_01A-03A, Old_RF bushes/ferns). With BRG's default path the island had 4.94 M
+   detail instances instead of 1.93 M and ran 135-139 fps. useUnityTransforms ON = Flora's set.
+2. BRG ignores native Mesh LOD unless the object has a BRGMeshLodData component (no error, just full detail).
+3. Builds need BRGIRConfig.asset in Preloaded Assets and BatchRendererGroup Variants = Keep All (m_BrgStripping 2).
+4. Changing prototype-feeding components needs Revert -> change -> Convert, or the old prototype keys stay; the
+   editor then logs "Removing prototype N but X instances still reference it" (harmless in edit mode).
+5. execute_code + BuildPipeline.BuildPlayer works, but Unity stalls when its window is unfocused or "stuck"
+   (build 59's first attempt hung 20 min): ask Carlos to focus/restart Unity.
+6. The [PERF] draws/tris counters undercount BRG. Trust fps, 1% low, CPU/GPU ms.
+7. The weather system copies the fog Volume's profile at runtime; anything toggling Volume components must edit
+   the runtime copy (SceneEffectsToggle does since C-040).
+8. Carlos's editor shortcut profile had F6 on Terrain/Detail Brush (removed) and still has F7 on
+   Terrain/Stamp Terrain (harmless so far).
+9. Scene 09 has enemies/NavMesh off like 07; numbers are a controlled run, not a fight.
+
+=== RULES ===
+Ask Carlos before Unity scene work (he approved scene 09 BRG work); never commit or push; never delete assets;
+never touch 01_DOWNLOAD or Assets.zip; ignore the 1 GB limit; update Docs/lighting.md if anything light-related
+(shadows count) changes; confirm with a screenshot before calling something fixed.
+
+Model: Opus for this exploration (reading vendor code, designing A/B tests). Once the winning settings are known,
+rolling them out to scenes 07/02/06/08 and biome foliage tuning suits Sonnet.

@@ -80,7 +80,10 @@ namespace MrMoonlight.Runtime
 
         private VolumeComponent FindVolumeComponent(string typeName)
         {
-            var profile = targetVolume != null ? targetVolume.sharedProfile : null;
+            if (targetVolume == null) return null;
+            // WeatherSystem reads Volume.profile, which swaps the Volume onto a runtime copy; the copy is
+            // what renders from then on, so the shared asset's flags would change nothing on screen.
+            var profile = targetVolume.HasInstantiatedProfile() ? targetVolume.profile : targetVolume.sharedProfile;
             if (profile == null) return null;
 
             foreach (var c in profile.components)
@@ -142,6 +145,11 @@ namespace MrMoonlight.Runtime
                     if (mesh != null) mesh.enabled = fogEnabled;
                 }
             }
+
+            // HAZE only rebuilds a camera's list of visible density boxes when that camera's transform has
+            // changed, and its own "volumes changed" nudge goes to the last camera it rendered (an overlay
+            // camera here). Without this, a player standing still keeps the old fog box until they move.
+            if (Camera.main != null) Camera.main.transform.hasChanged = true;
 
 #if UNITY_EDITOR
             if (targetVolume != null && targetVolume.sharedProfile != null)

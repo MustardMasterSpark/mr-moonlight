@@ -1,0 +1,18 @@
+SUMMARY
+MRM-88: BRG Instanced Renderer trial (scene 09) beats Flora, 200.6 vs 160.9 fps in build 60; sky striped-box fix, F6/F7 debug toggles fixed, Mesh LOD on 14 more meshes
+
+DESCRIPTION
+AST-314 BRG Instanced Renderer tried in place of Flora in a new scene, 09 BRG Trial (copy of 07). Scenes 07, 02, 06 and 08 still use Flora.
+
+- Scene 09 (new): Flora removed; BRGGameObjectGroup draws the 8,786 trees (16 chunks, 88 prototypes, BRGMeshLodData on every tree), TerrainBRGRegisterer draws the terrain details with useUnityTransforms on.
+- Why useUnityTransforms: 48 of the 90 detail layers use prefabs whose renderer is on a child object. Unity's detail system (and so Flora) never drew them; BRG did, giving 4.94 M foliage instances instead of 1.93 M and 135-139 fps in builds 57-59. With Unity's placement BRG draws exactly what Flora drew.
+- Build 60: 200.6 fps over the first 50 s (Flora build 56: 160.9), 1% low 141.8 (126.4), CPU 4.98 ms (6.21), with HAZE fog and CRT on and no Umbra bake in scene 09.
+- ProjectSettings: BRGIRConfig.asset (AST-314, git-ignored ThirdParty) added to Preloaded Assets, which BRG needs in builds.
+- Native Mesh LOD turned on for 14 more tree and rock FBX (all scenes that use them get their LODs).
+- SkyBlender: a cubemap starting sky is no longer photographed at scene start. The 512 px snapshot had the CRT baked into its six faces, which showed as a striped box on the sky that F7 could not remove.
+- SceneEffectsToggle: F7 now edits the fog Volume's runtime profile copy (it changed only the asset before, so nothing happened on screen); F6 tells HAZE to drop a switched-off fog box at once instead of after the camera moves.
+- SceneEffectsDebugToggle: the FOG/CRT label has its own row instead of printing over the F5 label.
+- Docs: performance-sessions.md section 5 builds 57-60, hypothesis H16, change records C-039 and C-040 (C-038 hash filled in); optimization-decisions-2026-10.md D8 candidate; lighting.md section 8; foliage-brg-density-2026-10-30.csv; scene-numbering.md (scene 09); handoff brg-options-opus-prompt.txt.
+- Rollback: scene 09 is a separate file; untick Generate Mesh LODs on the 14 FBX; the code fixes are independent of BRG.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

@@ -97,6 +97,11 @@ namespace MrMoonlight.World
         /// </summary>
         public IEnumerator CaptureCurrentSky()
         {
+            // A cubemap sky already has a texture to fade from, at full quality. A snapshot would be a 512 px
+            // copy with the capture camera's renderer features baked in: the CRT's scan lines showed up on the
+            // sky as a striped box that F7 could not remove (2026-10-30).
+            if (HasCubemap(_originalSkybox)) yield break;
+
             // Wait a frame so the scene's sky and sun are fully set up.
             yield return null;
 
@@ -132,10 +137,16 @@ namespace MrMoonlight.World
             Destroy(cameraObject);
         }
 
-        /// <summary>Fades FROM the snapshot taken by <see cref="CaptureCurrentSky"/> (grey if there is none).</summary>
+        /// <summary>Fades FROM the snapshot taken by <see cref="CaptureCurrentSky"/> (grey if there is none), or straight from the starting sky's own cubemap when it has one.</summary>
         public void SetFromCaptured()
         {
             if (_blendMaterial == null) return;
+            if (HasCubemap(_originalSkybox))
+            {
+                SetFrom(_originalSkybox);
+                return;
+            }
+
             _blendMaterial.SetTexture(TexId, _capturedSky);
             _blendMaterial.SetColor(TintId, NeutralTint);
             fromSky = _originalSkybox != null ? _originalSkybox.name + " (captured)" : "captured sky";
@@ -174,9 +185,11 @@ namespace MrMoonlight.World
             }
         }
 
+        private static bool HasCubemap(Material sky) => sky != null && sky.HasProperty(TexId) && sky.GetTexture(TexId) is Cubemap;
+
         private bool IsCubemapSky(Material sky)
         {
-            if (sky != null && sky.HasProperty(TexId) && sky.GetTexture(TexId) is Cubemap)
+            if (HasCubemap(sky))
             {
                 return true;
             }

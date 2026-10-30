@@ -103,8 +103,9 @@ namespace MrMoonlight.Runtime
             string fog = sceneEffects.FogEnabled ? "ON" : "OFF";
             string crt = sceneEffects.CrtEnabled ? "ON" : "OFF";
 
-            // Below the F3/F4 labels so all of them can be on screen at once.
-            var rect = new Rect(Screen.width / 2f - 250f, 100f, 500f, 30f);
+            // Below every other cheat label (F3 10, F4 40, F5 100, F8 130, ammo 160) so all of them can be
+            // on screen at once; it shared y=100 with F5 and the two printed on top of each other.
+            var rect = new Rect(Screen.width / 2f - 250f, 190f, 500f, 30f);
             GUI.Label(rect, $"FOG {fog} (F6)   ·   CRT {crt} (F7)", _style);
         }
     }

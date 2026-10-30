@@ -16,6 +16,7 @@ New scenes take the next number (12, 13...). **Docs, logs and Linear written bef
 | 06 | Island_Legion | 2026-09-18 (MRM-84) |
 | 07 | LightingTestScene | 2026-09-29 (MRM-86) |
 | 08 | LightingTestScene Fog Experiment (was 11) | 2026-09-30 (AST-282) |
+| 09 | BRG Trial (copy of 07 for the AST-314 BRG Instanced Renderer test; occlusion reference cleared, needs its own bake after conversion) | 2026-10-29 (MRM-88) |
 
 **Scene names are loaded by string.** Changed with the rename: `MainMenuController` (`demoSceneName` = "02 Island",
 `legionSceneName` = "06 Island_Legion"), `GameOverPanel` (`mainMenuSceneName` = "03 MainMenu"), plus the serialized values of
