@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 2104048804278271632}
   - component: {fileID: 8665335491055595363}
   - component: {fileID: 6803623870798648702}
+  - component: {fileID: 1057314552333042937}
   m_Layer: 0
   m_Name: GRASS_Gaia_WildGrass_Understory_Clover
   m_TagString: Untagged
@@ -90,3 +91,40 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &1057314552333042937
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3460217298160366238}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a6dd395de6fee4da5a5dfff7c50518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BRGInstancedRenderer::BRGInstancedRenderer.BRGPrototypeExtraData
+  prototypeGroup: {fileID: 11400000, guid: 2a36488ae97107b4cb8f756b56128046, type: 2}
+  forceDisableShadows: 0
+  maxShadowCascade: 4
+  minShadowLOD: 0
+  overrideMaxShadowCrossfadeCascade: 0
+  maxShadowCrossfadeCascade: 4
+  enableDistanceDensity: 1
+  densityMinFraction: 0.35
+  densityFadeWidth: 0.05
+  distanceDensityMode: 1
+  densityStartScreenSize: 2
+  densityStartDistance: 30
+  densityEndDistance: 100
+  overrideLodFadeDuration: 0
+  lodFadeDuration: 0.3
+  minScreenSize: 1
+  minScreenSizeFadeMode: 0
+  minScreenSizeFadeWidth: 0.5
+  prefitCullBounds:
+  - centre:
+      x: -0.005718887
+      y: 0.0029364077
+      z: -0.002490621
+    radius: 0.13641606
+    cylRadius: 0.1364159

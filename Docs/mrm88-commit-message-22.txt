@@ -1,0 +1,19 @@
+SUMMARY
+MRM-88: BRG replaces Flora in every island scene with performance profile v1 (build 61: 251 fps, 1% low 203); F11 BRG options bench and convert menu
+
+DESCRIPTION
+Flora is retired. AST-314 BRG Instanced Renderer now draws the trees and the terrain details in scenes 02, 06, 07 and 08 (and 09), with a performance profile chosen from an A/B sweep of every BRG option.
+
+- Build 61 (scene 09, profile v1) against build 60: 251.0 fps over the first 50 s (200.6), 1% low 203.0 (141.8), CPU ~3.9 ms (4.98), GPU ~3.5 ms (4.73). The far view, the slowest spot so far, went from 141 to 250 fps. Carlos saw no visual change.
+- Profile v1: the damage-numbers overlay camera is excluded from BRG (BRG ran a full cull for a camera that draws only damage numbers; the largest single gain), player camera BRG LOD bias 0.6, HZB tightness Aggressive, tree/dead-wood/rock shadows stop at 40 m, tree shadows drawn from LOD1, far grass and flowers thinned with distance and dropped below 1% screen size.
+- Scenes 07, 02, 06, 08: every Flora component removed (8,786 / 5,990 / 8,786 / 8,786 tree renderers, terrain provider, Flora Scene Settings); BRG set up exactly as in scene 09 plus the profile. Umbra bakes kept. The Flora package stays installed.
+- New dev tool: F11 BRG Options Bench (Code/Runtime/DevTools/BRG). 33 live options, teleport spots, automatic A/B sweeps, [BRGBENCH] log lines and a CSV next to the session logs. A GameObject in every island scene. Its panel draws only when open and caches its text (first version cost ~4 ms a frame in the editor).
+- New editor menus (Code/Editor/BRG): Mr. Moonlight/BRG/Convert Open Scene From Flora (also the step after any new Gaia spawn, replacing the old Flora pass) and Apply Groups And Baked Options.
+- New assets in Settings/BRG: four BRG Prototype Groups (Trees, DeadWood, Rocks, Details) and BRGBakedOptions.
+- The 78 terrain detail prefabs (Grass & Plants, Old Rough Colliders) got a BRGPrototypeExtraData component (inert outside BRG).
+- Not in git: BRGIRConfig.asset in the git-ignored AST-314 folder now has HZB tightness Aggressive.
+- Docs: brg-options.md (inventory, sweep results, profile v1, rollout), flora-retired-2026-10-30.md (what Flora was, its numbers, how to go back), optimization-decisions D8 decided, performance-sessions.md build 61 entry, H16 resolved, change record C-041, C-039/C-040 hashes filled in, log changelog v6.1, lighting.md section 8, CLAUDE.md read-first pointer, fog session handoff fog-volumetric-opus-prompt.txt.
+- Not yet checked in a build: scenes 02, 06, 08, and fights under BRG.
+- Rollback: git checkout 11a1ba2c -- <scene> restores a Flora scene; profile values in brg-options.md section 5.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>

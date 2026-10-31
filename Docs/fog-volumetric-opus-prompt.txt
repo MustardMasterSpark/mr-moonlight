@@ -1,0 +1,71 @@
+FOG SESSION (Opus) - which volumetric fog: best-performing and best-looking, and how it behaves with the light and the weather profiles.
+Written 2026-10-30 at the end of the BRG session. Read this cold; do not rely on chat history. Do NOT auto-start: this is context; wait for Carlos's go.
+
+=== WHAT JUST FINISHED (so you know the ground you stand on) ===
+- Vegetation rendering is DECIDED: AST-314 BRG Instanced Renderer with "profile v1" in every island scene (02, 06, 07, 08, 09). Flora is retired.
+  Docs/brg-options.md (sections 5-6), Docs/flora-retired-2026-10-30.md, decision D8 in Docs/optimization-decisions-2026-10.md, change record C-041.
+- Build 61 (scene 09): 251.0 fps first 50 s, 1% low 203.0 (Flora build 56: 160.9 / 126.4), with HAZE fog and CRT ON. Fog now matters more:
+  the vegetation no longer hides its cost.
+- Commit for that work: Docs/mrm88-commit-message-22.txt (branch mrm-88). When Carlos says he committed, read `git log -1` and fill the hash into
+  C-041 in Docs/performance-sessions.md section 8 (it says `pending`).
+- Scenes 07 (HAZE) and 08 (VF2) now run the SAME BRG setup, so a fog A/B between them is finally like-for-like.
+
+=== GOAL (Carlos, 2026-10-30) ===
+"Return to other facets of the optimization: the fog. Test volumetric fog in general and find the best one: the best-performing one, the best-looking
+one. It is tied to the lighting test of a few weeks ago, because we need to see how the fog behaves with the light (the weather profiles)."
+Performance is always the top priority (Carlos), but the look is the campaign's shop window (Kickstarter, before Halloween).
+
+=== THE CANDIDATES (asset index: Documents\Asset Collection\03_documentation\ASSETS - Index 2026-09-16.xlsx) ===
+| AST | Asset | State | Role |
+| AST-078 | HAZE - Volumetric Fog & Lighting for URP | in the game: renderer feature on PC_Renderer, adapter HazeFogAdapter, 27 weather profiles in scene 07 | the incumbent |
+| AST-282 | Volumetric Fog & Mist 2 (Kronnect) | imported, git-ignored ThirdParty; scene 08 only, own renderer PC_Renderer_VF2, Vf2WeatherSystem + WeatherProfiles_VF2.asset | the challenger, parked 2026-10-01 as "uncontrollable" |
+| AST-310 | VoluSmokeFX (volumetric smoke and fog, URP/HDRP) | owned, NOT in the project | Carlos's idea 2026-10-27: green fog, poison clouds, a nicer aurora substitute. Probably the "new fog asset" he means: CONFIRM with him |
+| AST-308 | Responsive Smokes (interactive volumetric smoke, URP) | owned, NOT in the project | smoke / white-phosphorus grenades; local effect, not a global fog |
+| AST-286 | Dynamic Fog & Mist 2 (Kronnect) | wishlist, not owned | cheap fullscreen ground mist; the index says "not a HAZE replacement" |
+Ask Carlos first which of these he means to test, and whether 310 / 308 are for the global fog or for local effects (they look like local effects).
+Importing a new pack: follow Docs/asset-import-update-process.md and memory feedback_disk_space_direct_moves (drive is full: install straight into
+Mr. Moonlight, no Playground copy) and feedback_import_crash_countermeasures (preflight script, quarantine). Never touch 01_DOWNLOAD or Assets.zip.
+
+=== READ FIRST ===
+1. Docs/fog-experiment-ast282.md (the VF2 experiment, its section 7 to-do list) and Docs/mrm85-fog-vf2-continue-prompt.txt (the parked plan; its build
+   numbers and AST-145 culling notes are OUT OF DATE: AST-145 was removed 2026-10-09, culling is Unity's baked Umbra + BRG's HZB now).
+2. Docs/weather-profiles.md (27 profiles: sky, light, fog per story moment; tuned in scene 07 only; P = save panel, O = enemies) and Docs/lighting.md.
+3. Docs/performance-sessions.md: hypothesis H14 (VF2 vs HAZE cost, UNMEASURED), section 1 (how to record a build run), section 8 (change records).
+4. Docs/brg-options.md section 2: the F11 BRG Options Bench. Its pattern (rows of live options, teleport spots, automatic A/B sweep, CSV) is the
+   cheapest way to measure fog too: a fog bench (or fog rows on the same panel) for HAZE density/steps/resolution, VF2 profile settings, on/off.
+   Carlos liked the workflow once the controls were clear (PgUp/PgDn row, Home/End value, Ctrl+Insert sweep; keep the panel cheap: cached text,
+   Repaint-only, hide during sweeps; the first version cost ~4 ms in the editor).
+
+=== SUGGESTED ORDER ===
+1. Confirm candidates and the issue/branch with Carlos (fog = MRM-85 perf + MRM-86 lighting; one issue, one branch:
+   `git switch -c <name> --no-track origin/main`, check `git config --get branch.<name>.merge` is not refs/heads/main).
+2. Fix VF2's known weave: set Jittering 0 on all 27 VF2 profiles + Vf2FogSettings defaults. Seen again 2026-10-30: scene 08 in Play Mode is a
+   full-screen weave (runtime profile VF2_Legion_Fog has jittering 0.5); with the VF2 object off the scene renders fine under BRG.
+3. Measure cost: HAZE (07) vs VF2 (08) vs fog off, same spots (the bench's 3 spots: dense forest (24,51,81) yaw 252; far view (-204,55,37) yaw 12;
+   open (50,51,87) yaw 271), editor sweep first, then builds. Compare with build 61 (scene 09 = 07 + profile, HAZE on).
+4. Look: match VF2 to HAZE's look first (HAZE global density, height fog, noise were never mapped), then judge with Carlos across a few weather
+   profiles (day, dusk, night, storm). The fog's reaction to the sun and lamps is the point: VF2 Native Lights Multiplier 0 = no fog at all, 1 =
+   washed white; its brightness follows sun intensity (~1/sun).
+5. Decide, record (performance-sessions section 5 entry + C-number + MRM-85 comment, lighting.md section 8), roll the winner to 02/06 if it changes.
+
+=== TRAPS ALREADY FOUND ===
+- Never mix HAZE and VF2 data (Carlos's ruling): two weather systems, two profile libraries.
+- HAZE renders only when the Main Camera has post-processing ON (memory haze_fog_postprocessing_fix).
+- The weather system copies the fog Volume's profile at runtime: anything toggling fog must edit the runtime copy (SceneEffectsToggle does, C-040).
+- Scene 08 has no SceneEffectsToggle (F6/F7 do nothing there); VF2 objects: "VF2 Island Fog" (VolumetricFog), "Weather" (Vf2WeatherSystem),
+  "Volumetric Fog Manager". Disabling the VolumetricFog component leaves its mesh drawing: deactivate the GameObject.
+- Assets touched in Play Mode (profiles, URP asset, BRG config) are NOT rolled back on stop: restore them (the bench does it in OnDisable).
+- Editor fps is not build fps; an unfocused editor runs at 2-20 fps (ask Carlos to focus Unity before any measurement). Editor GPU timings read ~0.
+- execute_code is C# 6 CodeDom: no `using` in the body, no tuples, `Object` is ambiguous (UnityEngine.Object), fully qualify.
+- Builds: BuildPipeline.BuildPlayer from execute_code with an explicit scenes array (07/08/09 are not in Build Settings); zip entry by entry with
+  '/' separators (memory build_process; last script: zip61.ps1 pattern). Next build number: 62.
+- Lamps (H13): Carlos ruled "do not change the lamps yet" (2026-09-30). Ask before touching enemy lamp lights.
+- BRG side, in case fog work touches it: the overlay camera must stay excluded from BRG; new cameras (e.g. a fog/aurora camera) should get a
+  BRGCameraSettings with Exclude From Rendering if they never draw vegetation.
+
+=== OPEN FROM THE BRG SESSION (not this session's job, mention if relevant) ===
+- Scenes 02, 06, 08 were converted to BRG but not yet checked in a build; fights under BRG not yet played (02/06 have enemies).
+- Assets/Screenshots/ has 9 editor screenshots from 2026-10-30 (Claude's checks), left out of the commit; Carlos can delete them.
+- Scene 09 is now redundant with 07 (same content + profile). Keep or remove: Carlos's call.
+
+Model: Opus to design the comparison, wire a new fog in or build the fog bench; Sonnet to run sweeps, tune profiles and record builds.

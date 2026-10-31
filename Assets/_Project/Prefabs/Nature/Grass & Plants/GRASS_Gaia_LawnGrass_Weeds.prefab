@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 8586982295162225132}
   - component: {fileID: 306626507143661855}
   - component: {fileID: 3042167803553103412}
+  - component: {fileID: 3410028815800960291}
   m_Layer: 0
   m_Name: GRASS_Gaia_LawnGrass_Weeds
   m_TagString: Untagged
@@ -90,3 +91,40 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3410028815800960291
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7054546684423386750}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a6dd395de6fee4da5a5dfff7c50518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BRGInstancedRenderer::BRGInstancedRenderer.BRGPrototypeExtraData
+  prototypeGroup: {fileID: 11400000, guid: 2a36488ae97107b4cb8f756b56128046, type: 2}
+  forceDisableShadows: 0
+  maxShadowCascade: 4
+  minShadowLOD: 0
+  overrideMaxShadowCrossfadeCascade: 0
+  maxShadowCrossfadeCascade: 4
+  enableDistanceDensity: 1
+  densityMinFraction: 0.35
+  densityFadeWidth: 0.05
+  distanceDensityMode: 1
+  densityStartScreenSize: 2
+  densityStartDistance: 30
+  densityEndDistance: 100
+  overrideLodFadeDuration: 0
+  lodFadeDuration: 0.3
+  minScreenSize: 1
+  minScreenSizeFadeMode: 0
+  minScreenSizeFadeWidth: 0.5
+  prefitCullBounds:
+  - centre:
+      x: -0.01503244
+      y: 0.089049965
+      z: -0.032547653
+    radius: 0.15025002
+    cylRadius: 0.117568955

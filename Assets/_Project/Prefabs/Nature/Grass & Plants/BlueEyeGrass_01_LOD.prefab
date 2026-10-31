@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5520773963930630480}
+  - component: {fileID: 1599423460416227124}
   m_Layer: 0
   m_Name: BlueEyeGrass_01_LOD
   m_TagString: Untagged
@@ -32,6 +33,43 @@ Transform:
   - {fileID: 2515077744717734167}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1599423460416227124
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5759398683466248106}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a6dd395de6fee4da5a5dfff7c50518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BRGInstancedRenderer::BRGInstancedRenderer.BRGPrototypeExtraData
+  prototypeGroup: {fileID: 11400000, guid: 2a36488ae97107b4cb8f756b56128046, type: 2}
+  forceDisableShadows: 0
+  maxShadowCascade: 4
+  minShadowLOD: 0
+  overrideMaxShadowCrossfadeCascade: 0
+  maxShadowCrossfadeCascade: 4
+  enableDistanceDensity: 1
+  densityMinFraction: 0.35
+  densityFadeWidth: 0.05
+  distanceDensityMode: 1
+  densityStartScreenSize: 2
+  densityStartDistance: 30
+  densityEndDistance: 100
+  overrideLodFadeDuration: 0
+  lodFadeDuration: 0.3
+  minScreenSize: 1
+  minScreenSizeFadeMode: 0
+  minScreenSizeFadeWidth: 0.5
+  prefitCullBounds:
+  - centre:
+      x: -0.06375347
+      y: 0.09529065
+      z: -0.12356533
+    radius: 0.52939266
+    cylRadius: 0.52927935
 --- !u!1 &6481420528800162762
 GameObject:
   m_ObjectHideFlags: 0

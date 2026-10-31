@@ -9,6 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3653321265681872216}
+  - component: {fileID: 5247426048085736801}
   m_Layer: 0
   m_Name: AP_plant_001_28
   m_TagString: Untagged
@@ -32,6 +33,43 @@ Transform:
   - {fileID: 8770456952763311546}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5247426048085736801
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3916163310754766073}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a6dd395de6fee4da5a5dfff7c50518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BRGInstancedRenderer::BRGInstancedRenderer.BRGPrototypeExtraData
+  prototypeGroup: {fileID: 11400000, guid: 2a36488ae97107b4cb8f756b56128046, type: 2}
+  forceDisableShadows: 0
+  maxShadowCascade: 4
+  minShadowLOD: 0
+  overrideMaxShadowCrossfadeCascade: 0
+  maxShadowCrossfadeCascade: 4
+  enableDistanceDensity: 1
+  densityMinFraction: 0.35
+  densityFadeWidth: 0.05
+  distanceDensityMode: 1
+  densityStartScreenSize: 2
+  densityStartDistance: 30
+  densityEndDistance: 100
+  overrideLodFadeDuration: 0
+  lodFadeDuration: 0.3
+  minScreenSize: 1
+  minScreenSizeFadeMode: 0
+  minScreenSizeFadeWidth: 0.5
+  prefitCullBounds:
+  - centre:
+      x: 0.02070354
+      y: 0.11102973
+      z: 0.007437147
+    radius: 0.25089785
+    cylRadius: 0.24505927
 --- !u!1 &4463132904298150825
 GameObject:
   m_ObjectHideFlags: 0

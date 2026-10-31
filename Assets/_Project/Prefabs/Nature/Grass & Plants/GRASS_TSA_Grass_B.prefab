@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4194035079845810449}
   - component: {fileID: 5882981954394160639}
   - component: {fileID: 1204890378324254325}
+  - component: {fileID: 9129705654735793345}
   m_Layer: 0
   m_Name: GRASS_TSA_Grass_B
   m_TagString: Untagged
@@ -90,3 +91,40 @@ MeshRenderer:
   m_SortingOrder: 0
   m_MaskInteraction: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &9129705654735793345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6468775695570964375}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 78a6dd395de6fee4da5a5dfff7c50518, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: BRGInstancedRenderer::BRGInstancedRenderer.BRGPrototypeExtraData
+  prototypeGroup: {fileID: 11400000, guid: 2a36488ae97107b4cb8f756b56128046, type: 2}
+  forceDisableShadows: 0
+  maxShadowCascade: 4
+  minShadowLOD: 0
+  overrideMaxShadowCrossfadeCascade: 0
+  maxShadowCrossfadeCascade: 4
+  enableDistanceDensity: 1
+  densityMinFraction: 0.35
+  densityFadeWidth: 0.05
+  distanceDensityMode: 1
+  densityStartScreenSize: 2
+  densityStartDistance: 30
+  densityEndDistance: 100
+  overrideLodFadeDuration: 0
+  lodFadeDuration: 0.3
+  minScreenSize: 1
+  minScreenSizeFadeMode: 0
+  minScreenSizeFadeWidth: 0.5
+  prefitCullBounds:
+  - centre:
+      x: 0
+      y: 0.15152672
+      z: 0
+    radius: 0.6042201
+    cylRadius: 0.59731394
